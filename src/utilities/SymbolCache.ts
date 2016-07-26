@@ -20,7 +20,6 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
         explicitExport: /export(.*)(function|class|type|interface|var|let|const|enum)\s/,
         commonWords: /([.?_:\'\"a-zA-Z0-9]{2,})/g,
         exports: /export[\s]+[\s]?[\=]?[\s]?(function|class|type|interface|var|let|const|enum|[\s]+)*([a-zA-Z_$][0-9a-zA-Z_$]*)[\:|\(|\s|\;\<]/,
-        imports: /import[\s]+[\*\{]*[\s]*([a-zA-Z\_\,\s]*)[\s]*[\}]*[\s]*from[\s]*[\'\"]([\S]*)[\'|\"]+/,
         node: /export[\s]+declare[\s]+[a-zA-Z]+[\s]+([a-zA-Z_$][0-9a-zA-Z_$]*)[\:]?[\s]?/,
         nodeExportFrom: /export\s\{?([*]|.*?)\}?\sfrom\s['"]\.\/(.*)['"]/,
         typings: /declare[\s]+module[\s]+[\"|\']+([\S]*)[\"|\']+/
