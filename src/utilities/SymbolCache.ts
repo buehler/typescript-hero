@@ -18,7 +18,6 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
     utilityKeywords = ['cancel', 'build', 'finish', 'merge', 'clamp', 'construct', 'native', 'clear', 'update', 'parse', 'sanitize', 'render', 'has', 'equal', 'dispose', 'create', 'as', 'is', 'init', 'process', 'get', 'set'],
     matchers = {
         explicitExport: /export(.*)(function|class|type|interface|var|let|const|enum)\s/,
-        commonWords: /([.?_:\'\"a-zA-Z0-9]{2,})/g,
         exports: /export[\s]+[\s]?[\=]?[\s]?(function|class|type|interface|var|let|const|enum|[\s]+)*([a-zA-Z_$][0-9a-zA-Z_$]*)[\:|\(|\s|\;\<]/,
         node: /export[\s]+declare[\s]+[a-zA-Z]+[\s]+([a-zA-Z_$][0-9a-zA-Z_$]*)[\:]?[\s]?/,
         nodeExportFrom: /export\s\{?([*]|.*?)\}?\sfrom\s['"]\.\/(.*)['"]/,
@@ -87,8 +86,8 @@ export class SymbolCache {
                     ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
                 if (packageJson['devDependencies']) {
-                    globs = globs.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
-                    ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
+                    globs = globs.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
+                    ignores = ignores.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
             } else {
                 globs.push('**/node_modules/**/*.d.ts');

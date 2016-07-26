@@ -1,49 +1,169 @@
+import {Logger} from './Logger';
+import {Configuration} from './Configuration';
+import {SymbolType, TypescriptSymbol} from '../models/TypescriptSymbol';
 import {ImportSymbol} from '../models/ImportSymbol';
 import {SymbolCache} from './SymbolCache';
 import * as vscode from 'vscode';
+import * as path from 'path';
+
+const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get', 'set', 'boolean', 'string', 'if', 'var', 'let', 'const', 'for', 'public', 'class', 'interface', 'new', 'import', 'as', 'private', 'while', 'case', 'switch', 'this', 'function', 'enum'],
+    utilityKeywords = ['cancel', 'build', 'finish', 'merge', 'clamp', 'construct', 'native', 'clear', 'update', 'parse', 'sanitize', 'render', 'has', 'equal', 'dispose', 'create', 'as', 'is', 'init', 'process', 'get', 'set'],
+    matchers = {
+        imports: /import[\s]+[\*\{]*[\s]*([a-zA-Z\_\,\s]*)[\s]*[\}]*[\s]*from[\s]*[\'\"]([\S]*)[\'|\"]+/,
+        types: /([.?_:\'\"a-zA-Z0-9]{2,})/g
+    };
 
 class ImportList {
-    
+    private imports: { [libName: string]: ImportSymbol[] } = {};
+
+    private static isValidName(name: string): boolean {
+        return reservedWords.indexOf(name) === -1 && !utilityKeywords.some(o => name.startsWith(o));
+    }
+
+    constructor(private editor: vscode.TextEditor, private cache: SymbolCache) {
+        let filename = path.parse(editor.document.fileName).name;
+        for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {
+            let line = editor.document.lineAt(lineNr);
+            this.matchImports(line.text);
+            this.matchTypes(line, filename);
+        }
+    }
+
+    public addImport(newImport: ImportSymbol): void {
+        if (newImport.symbol.type === SymbolType.Typings && this.imports[newImport.symbol.alias]) {
+            return;
+        }
+        if (!this.imports[newImport.symbol.library]) {
+            this.imports[newImport.symbol.library] = [newImport];
+        } else if (!this.imports[newImport.symbol.library].some(o => o.element === newImport.element)) {
+            this.imports[newImport.symbol.library].push(newImport);
+        }
+    }
+
+    public commit(): void {
+        this.editor.edit(builder => {
+            let nonImportLine;
+            for (let lineNr = 0; lineNr < this.editor.document.lineCount; lineNr++) {
+                let line = this.editor.document.lineAt(lineNr);
+                if (!line.text.match(matchers.imports)) {
+                    nonImportLine = lineNr;
+                    break;
+                }
+            }
+            builder.replace(new vscode.Range(new vscode.Position(0, 0), new vscode.Position(nonImportLine, 0)), this.buildImports());
+        });
+    }
+
+    private matchImports(lineText: string): void {
+        let matches = lineText.match(matchers.imports);
+        if (!matches) {
+            return;
+        }
+        let libName = path.parse(matches[2]).name;
+
+        let symbol = this.cache.symbolCache.find(o => o.library === libName);;
+
+        if (!symbol) {
+            Logger.instance.warn('A symbol was not found in the cache.', { symbol: libName });
+            return;
+            // TODO: is this needed?
+            // symbol = new TypescriptSymbol(libName, '', SymbolType.Typings);
+            // this.imports[libName].push(new ImportSymbol(symbol.alias, symbol));
+        }
+
+        if (!this.imports[libName]) {
+            this.imports[libName] = [];
+        }
+
+        if (symbol.type === SymbolType.Typings) {
+            this.imports[libName].push(new ImportSymbol(symbol.alias, symbol));
+        } else {
+            matches[1]
+                .split(',')
+                .map(o => o.trim())
+                .forEach(o => this.imports[libName].push(new ImportSymbol(o, symbol)));
+        }
+    }
+
+    private matchTypes(line: vscode.TextLine, filename: string): void {
+        if (line.isEmptyOrWhitespace || line.text.match(matchers.imports)) {
+            return;
+        }
+        let text = line.text.trim();
+        if (text.startsWith('//') || text.startsWith('/*') || text.startsWith('*')) {
+            return;
+        }
+        if (text.indexOf('//') !== -1) {
+            text = text.split('//')[0];
+        }
+        let matches = text.match(matchers.types);
+        if (!matches) {
+            return;
+        }
+
+
+        for (let word of matches) {
+            // only process unquoted words which are not listed in the commonList
+            if (word.indexOf(`'`) > -1 || word.indexOf(`"`) > -1 || !ImportList.isValidName(word)) {
+                continue;
+            }
+
+            let splitted = word.split('.');
+            word = splitted[0];
+
+            this.cache.symbolCache
+                .filter(o => {
+                    return o.library !== filename &&
+                        (
+                            (o.type === SymbolType.Typings && word === o.alias) ||
+                            ((o.type === SymbolType.Local || o.type === SymbolType.Node) && o.exports.indexOf(word) > -1)
+                        );
+                })
+                .forEach(o => {
+                    if (o.type === SymbolType.Typings) {
+                        if (!this.imports[o.library]) {
+                            this.imports[o.library] = [new ImportSymbol(o.alias, o)];
+                        }
+                    } else {
+                        if (!this.imports[o.library].some(i => i.element === word)) {
+                            this.imports[o.library].push(new ImportSymbol(word, o));
+                        }
+                    }
+                });
+        }
+    }
+
+    private buildImports(): string {
+        let imports = '';
+        for (let lib in this.imports) {
+            let symbols = this.imports[lib],
+                libSymbol = symbols[0].symbol;
+
+            if (libSymbol.type === SymbolType.Typings) {
+                imports += `import * as ${libSymbol.alias} from ${Configuration.pathStringDelimiter}${libSymbol.library}${Configuration.pathStringDelimiter};\n`;
+            } else if (libSymbol.type === SymbolType.Node) {
+                imports += `import {${symbols.map(o => o.element).join(', ')}} from ${Configuration.pathStringDelimiter}${libSymbol.library}${Configuration.pathStringDelimiter};\n`;
+            } else {
+                let importPath = './' + path.relative(path.parse(this.editor.document.fileName).dir, `${libSymbol.path}/${libSymbol.library}`);
+                imports += `import {${symbols.map(o => o.element).join(', ')}} from ${Configuration.pathStringDelimiter}${importPath}${Configuration.pathStringDelimiter};\n`;
+            }
+        }
+        return imports;
+    }
 }
 
 export class ImportManager {
     constructor(private cache: SymbolCache) { }
 
     public organizeImports(item?: ImportSymbol): void {
-        vscode.window.activeTextEditor.
+        let list = new ImportList(vscode.window.activeTextEditor, this.cache);
+        if (item) {
+            list.addImport(item);
+        }
+        list.commit();
     }
 
     public addImport(item: ImportSymbol): void {
         this.organizeImports(item);
     }
 }
-
-
-// const filteredExports = filterExports(exports, nonTypedEntry);
-//     vscode.window.activeTextEditor.edit((builder) => {
-//         const lineCount = vscode.window.activeTextEditor.document.lineCount;
-//         // search for import-lines we can replace instead of adding another bunch of the same lines
-//         for (let i = 0; i < lineCount; i++) {
-//             const line = vscode.window.activeTextEditor.document.lineAt(i);
-//             const matches = line.text.match(matchers.imports);
-//             if (matches) {
-//                 const _export = containsLibraryName(filteredExports, matches[2]) || containsSanitizedPath(filteredExports, matches[2]);
-//                 if (_export !== null) {
-//                     const range = new vscode.Range(new vscode.Position(i, 0), new vscode.Position(i + 1, 0));
-//                     builder.replace(range, createImportLine(_export));
-//                     // remove the updated import line from the list ...
-//                     filteredExports.splice(filteredExports.indexOf(_export), 1);
-//                     // ... and search for seperate libraryNames with the same exports and remove them (ex. angular has deprecated doubles)
-//                     const exportedNameList = matches[1].split(',').map(item => item.trim());
-//                     exportedNameList.forEach((name) => {
-//                         const _export = containsExportedName(filteredExports, name)
-//                         if (_export) filteredExports.splice(filteredExports.indexOf(_export), 1);
-//                     });
-//                 }
-//             }
-//         }
-//         // all filtered exportes left are added as new imports
-//         for (let i = 0; i < filteredExports.length; i++) {
-//             builder.replace(new vscode.Position(0, 0), createImportLine(filteredExports[i]));
-//         }
-//     });
