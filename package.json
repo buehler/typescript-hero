@@ -20,6 +20,14 @@
             {
                 "command": "typescriptHero.refreshSymbolCache",
                 "title": "tsh: refresh symbol cache"
+            },
+            {
+                "command": "typescriptHero.organizeImports",
+                "title": "tsh: organize imports"
+            },
+            {
+                "command": "typescriptHero.addImport",
+                "title": "tsh: add specific import and organize imports"
             }
         ],
         "configuration": {
