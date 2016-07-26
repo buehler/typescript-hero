@@ -1,36 +1,73 @@
 {
-  "name": "typescript-hero",
-  "displayName": "TypeScript Hero",
-  "description": "Additional tooling for the typescript language",
-  "version": "0.0.1",
-  "publisher": "rbbit",
-  "engines": {
-    "vscode": "^1.0.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onCommand:extension.sayHello"
-  ],
-  "main": "./out/src/extension",
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.sayHello",
-        "title": "Hello World"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "node ./node_modules/vscode/bin/test"
-  },
-  "devDependencies": {
-    "chai": "^3.5.0",
-    "typescript": "^1.8.5",
-    "vscode": "^0.11.0"
-  }
+    "name": "typescript-hero",
+    "displayName": "TypeScript Hero",
+    "description": "Additional tooling for the typescript language",
+    "version": "0.0.1",
+    "publisher": "rbbit",
+    "engines": {
+        "vscode": "^1.0.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "onCommand:extension.sayHello",
+        "onLanguage:typescript"
+    ],
+    "main": "./out/src/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "typescriptHero.refreshSymbolCache",
+                "title": "tsh: refresh symbol cache"
+            }
+        ],
+        "configuration": {
+            "title": "Configuration section of the typescript hero extension",
+            "properties": {
+                "typescriptHero.pathStringDelimiter": {
+                    "type": "string",
+                    "default": "'",
+                    "description": "Defines if single or double quotes should be used."
+                },
+                "typescriptHero.includeNodeModules": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, search referenced node_modules for .d.ts files."
+                },
+                "typescriptHero.includeTypings": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, search the typings folder for .d.ts files."
+                },
+                "typescriptHero.refreshOnSave": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, refreshes the symbols cache on save."
+                },
+                "typescriptHero.organizeOnSave": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "If true, automatically organize imports on save."
+                },
+                "typescriptHero.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "If true, typescript hero does output debug logs."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
+        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "chai": "^3.5.0",
+        "tslint": "^3.13.0",
+        "typescript": "^1.8.5",
+        "vscode": "^0.11.0"
+    }
 }
