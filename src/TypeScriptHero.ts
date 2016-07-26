@@ -3,7 +3,10 @@ import {ImportManager} from './utilities/ImportManager';
 import {QuickPickProvider} from './providers/QuickPickProvider';
 import {SymbolCache} from './utilities/SymbolCache';
 import {Logger} from './utilities/Logger';
+import {Configuration} from './utilities/Configuration';
 import * as vscode from 'vscode';
+
+const TYPESCRIPT: vscode.DocumentFilter = { language: 'typescript', pattern: '*.ts', scheme: 'file' };
 
 export class TypeScriptHero implements vscode.Disposable {
     private cache = new SymbolCache();
@@ -18,6 +21,15 @@ export class TypeScriptHero implements vscode.Disposable {
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.refreshSymbolCache', () => this.refreshSymbolCache()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.addImport', () => this.addImport()));
+
+        if (Configuration.refreshOnSave) {
+            vscode.workspace.onDidSaveTextDocument(event => this.refreshSymbolCache());
+        }
+
+        if (Configuration.organizeOnSave) {
+            vscode.workspace.onDidSaveTextDocument(event => this.organizeImports());
+        }
+        //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, new CompletionItemProvider(this.cache)));
     }
 
     public dispose(): void {

@@ -42,10 +42,6 @@ export class SymbolCache {
         this.statusBarItem.tooltip = 'Click to manually resync the symbols.';
         this.statusBarItem.command = 'typescriptHero.refreshSymbolCache';
         this.statusBarItem.show();
-
-        vscode.workspace.onDidSaveTextDocument(event => {
-            this.refreshCache();
-        });
     }
 
     public refreshCache(): void {

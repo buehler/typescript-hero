@@ -19,15 +19,27 @@
         "commands": [
             {
                 "command": "typescriptHero.refreshSymbolCache",
-                "title": "tsh: refresh symbol cache"
+                "title": "Typescript: Refresh symbol cache"
             },
             {
                 "command": "typescriptHero.organizeImports",
-                "title": "tsh: organize imports"
+                "title": "Typescript: Organize imports"
             },
             {
                 "command": "typescriptHero.addImport",
-                "title": "tsh: add specific import and organize imports"
+                "title": "Typescript: Add specific import and organize imports"
+            }
+        ],
+        "keybindings": [
+            {
+                "command": "typescriptHero.addImport",
+                "key": "ctrl+alt+i",
+                "when": "editorTextFocus"
+            },
+            {
+                "command": "typescriptHero.organizeImports",
+                "key": "ctrl+alt+o",
+                "when": "editorTextFocus"
             }
         ],
         "configuration": {
