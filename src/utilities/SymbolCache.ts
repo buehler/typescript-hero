@@ -26,14 +26,9 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
     };
 
 export class SymbolCache {
-    private static _instance: SymbolCache = new SymbolCache();
     private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
     private synching: boolean;
     private _symbolCache: TypescriptSymbol[];
-
-    public static get instance(): SymbolCache {
-        return SymbolCache._instance;
-    }
 
     public get symbolCache(): TypescriptSymbol[] {
         return this._symbolCache;
@@ -44,9 +39,6 @@ export class SymbolCache {
     }
 
     constructor() {
-        if (SymbolCache._instance) {
-            throw new TypeError('SymbolCache cannot be instantiated');
-        }
         this.statusBarItem.text = cacheSyncing;
         this.statusBarItem.tooltip = 'Click to manually resync the symbols.';
         this.statusBarItem.command = 'typescriptHero.refreshSymbolCache';
