@@ -58,6 +58,7 @@ export class SymbolCache {
                 .then(symbols => {
                     Logger.instance.log(`Cache refresh successfull. Found ${symbols.length} symbols.`);
                     this._symbolCache = symbols;
+                    this.statusBarItem.tooltip = 'Click to manually resync the symbols. Currently in cache: ' + symbols.length;
                     return true;
                 })
                 .catch(err => {
