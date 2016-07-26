@@ -220,8 +220,6 @@ export class SymbolCache {
             }
         }
 
-        console.log('yay');
-
         return symbols;
     }
 
