@@ -1,3 +1,5 @@
+import {ImportSymbol} from './models/ImportSymbol';
+import {ImportManager} from './utilities/ImportManager';
 import {QuickPickProvider} from './providers/QuickPickProvider';
 import {SymbolCache} from './utilities/SymbolCache';
 import {Logger} from './utilities/Logger';
@@ -6,6 +8,7 @@ import * as vscode from 'vscode';
 export class TypeScriptHero implements vscode.Disposable {
     private cache = new SymbolCache();
     private quickPickProvider = new QuickPickProvider(this.cache);
+    private importManager = new ImportManager(this.cache);
 
     constructor(context: vscode.ExtensionContext) {
         Logger.instance.log('Activation event called. TypeScriptHero instantiated.');
@@ -30,6 +33,7 @@ export class TypeScriptHero implements vscode.Disposable {
             this.showCacheWarning();
             return;
         }
+        this.importManager.organizeImports();
     }
 
     private addImport(): void {
@@ -37,10 +41,9 @@ export class TypeScriptHero implements vscode.Disposable {
             this.showCacheWarning();
             return;
         }
-        this.quickPickProvider.showAddImportList()
-            .then(selected => {
-                console.log(selected);
-             }); 
+        this.quickPickProvider
+            .showAddImportList()
+            .then(selected => this.importManager.addImport(new ImportSymbol(selected.label, selected.symbol)));
     }
 
     private showCacheWarning(): void {
