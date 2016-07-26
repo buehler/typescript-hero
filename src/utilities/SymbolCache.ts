@@ -16,13 +16,13 @@ const errColor = '#CE4543',
 // Regex and word lists (thanks to https://github.com/cybertim!)
 const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get', 'set', 'boolean', 'string', 'if', 'var', 'let', 'const', 'for', 'public', 'class', 'interface', 'new', 'import', 'as', 'private', 'while', 'case', 'switch', 'this', 'function', 'enum'],
     utilityKeywords = ['cancel', 'build', 'finish', 'merge', 'clamp', 'construct', 'native', 'clear', 'update', 'parse', 'sanitize', 'render', 'has', 'equal', 'dispose', 'create', 'as', 'is', 'init', 'process', 'get', 'set'],
-    nodeIgnorePaths = ['esm', 'testing', 'test', 'facade', 'backends'],
     matchers = {
         explicitExport: /export(.*)(function|class|type|interface|var|let|const|enum)\s/,
         commonWords: /([.?_:\'\"a-zA-Z0-9]{2,})/g,
         exports: /export[\s]+[\s]?[\=]?[\s]?(function|class|type|interface|var|let|const|enum|[\s]+)*([a-zA-Z_$][0-9a-zA-Z_$]*)[\:|\(|\s|\;\<]/,
         imports: /import[\s]+[\*\{]*[\s]*([a-zA-Z\_\,\s]*)[\s]*[\}]*[\s]*from[\s]*[\'\"]([\S]*)[\'|\"]+/,
         node: /export[\s]+declare[\s]+[a-zA-Z]+[\s]+([a-zA-Z_$][0-9a-zA-Z_$]*)[\:]?[\s]?/,
+        nodeExportFrom: /export\s\{?([*]|.*?)\}?\sfrom\s['"]\.\/(.*)['"]/,
         typings: /declare[\s]+module[\s]+[\"|\']+([\S]*)[\"|\']+/
     };
 
@@ -150,6 +150,7 @@ export class SymbolCache {
         let packages: { [id: string]: TypescriptFile[] } = {},
             symbols: TypescriptSymbol[] = [];
 
+        // groups all node files by package name
         for (let file of files) {
             let pathes = file.path.dir.split(path.sep);
             let packageName = pathes[pathes.indexOf('node_modules') + 1];
@@ -159,52 +160,69 @@ export class SymbolCache {
             packages[packageName].push(file);
         }
 
-        for (let p in packages) {
-            let files = packages[p].sort((o1, o2) => o2.pathSegments - o1.pathSegments);
-            console.log(1);
+        // process each package
+        // read all exports and process "moves" (export * from..; export {..} from) at the end.        
+        for (let name in packages) {
+            let files = packages[name].sort((o1, o2) => o2.pathSegments - o1.pathSegments),
+                fileExports: { [path: string]: string[] } = {},
+                exportMoves: { from: string, to: string, exports: string[] }[] = [];
+
+            for (let file of files) {
+                let packagePath = path.join(file.path.dir.substring(file.path.dir.indexOf(name) + 1 + name.length), file.path.base.substring(0, file.path.base.indexOf('.')));
+                if (!fileExports[packagePath]) {
+                    fileExports[packagePath] = [];
+                }
+                for (let line of file.content) {
+                    const matches = line.match(matchers.node),
+                        exportFromMatches = line.match(matchers.nodeExportFrom);
+                    if (exportFromMatches) {
+                        exportMoves.push({
+                            to: packagePath,
+                            from: exportFromMatches[2],
+                            exports: exportFromMatches[1].split(',').map(o => o.trim())
+                        });
+                    }
+                    if (!matches || !matches.map(o => o ? o.trim() : '').filter(Boolean).length || !this.isValidName(matches[1], line)) {
+                        continue;
+                    }
+                    fileExports[packagePath].push(matches[1]);
+                }
+            }
+
+            for (let move of exportMoves) {
+                if (!(fileExports[move.from] && fileExports[move.to])) {
+                    continue;
+                }
+                if (move.exports[0] === '*') {
+                    fileExports[move.to].push(...fileExports[move.from]);
+                    delete fileExports[move.from];
+                } else {
+                    for (let moveExport of move.exports){
+                        let index = fileExports[move.from].indexOf(moveExport);
+                        fileExports[move.to].push(...fileExports[move.from].splice(index, 1));
+                        if (!fileExports[move.from].length) {
+                            delete fileExports[move.from];
+                        }
+                    }
+                }
+            }
+
+            let packageJson = require(path.join(vscode.workspace.rootPath, 'node_modules', name, 'package.json'));
+            let replace = packageJson['main'] ? packageJson['main'].substring(0, packageJson['main'].indexOf('.')) : '';
+            for (let file in fileExports) {
+                let libName = `${name}/${file.replace(replace, '')}`;
+                if (libName[libName.length - 1] === '/') {
+                    libName = libName.substring(0, libName.length - 1);
+                }
+                let symbol = new TypescriptSymbol(libName, libName, SymbolType.Node);
+                symbol.exports = fileExports[file];
+                symbols.push(symbol);
+            }
         }
 
         console.log('yay');
 
-        // const tree = _path.dir.split(path.sep);
-        // const node = tree.indexOf('node_modules') + 1;
-        // for (let i = tree.length; i >= node; i--) {
-        //     let constructedPath = '/';
-        //     for (let j = 0; j < i; j++) {
-        //         constructedPath = constructedPath + tree[j] + '/';
-        //     }
-        //     let files = fs.readdirSync(constructedPath);
-        //     if (files.indexOf('index.d.ts') !== -1) {
-        //         let returnPath = '';
-        //         for (let j = node; j < i; j++) {
-        //             returnPath = returnPath + (returnPath === '' ? '' : '/') + tree[j];
-        //         }
-        //         return returnPath;
-        //     }
-        // }
-        // return null;
-
-        // // Process node_modules like Angular2 etc.
-        // // these libraries contain their own d.ts files with 'export declares'
-        // if (validPath) {
-        //     let _export: IExport = {
-        //         libraryName: constructNodeLibraryName(file.path),
-        //         path: file.path.dir,
-        //         type: ExportType.NODE,
-        //         exported: []
-        //     }
-        //     for (let k = 0; k < file.lines.length; k++) {
-        //         const line = file.lines[k];
-        //         const matches = line.match(matchers.node);
-        //         if (matches &&
-        //             checkIfValid(matches[1], line)) {
-        //             _export.exported.push(matches[1]);
-        //         }
-        //     }
-        //     exports.push(_export);
-        // }
-
-        return Promise.resolve([]);
+        return symbols;
     }
 
     private processTypingsFile(file: TypescriptFile): TypescriptSymbol[] {
