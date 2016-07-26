@@ -23,10 +23,6 @@ export class Configuration {
         return vscode.workspace.getConfiguration(sectionKey).get<boolean>('organizeOnSave');
     }
 
-    public static get organizeOnFormatCode(): boolean {
-        return vscode.workspace.getConfiguration(sectionKey).get<boolean>('organizeOnFormatCode');
-    }
-
     public static get debug(): boolean {
         return vscode.workspace.getConfiguration(sectionKey).get<boolean>('debug');
     }
