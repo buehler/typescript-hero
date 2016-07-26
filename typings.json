@@ -1,0 +1,7 @@
+{
+  "name": "typescript-hero",
+  "dependencies": {},
+  "devDependencies": {
+    "chai": "registry:npm/chai#3.5.0+20160723033700"
+  }
+}
