@@ -1,9 +1,11 @@
+import {QuickPickProvider} from './providers/QuickPickProvider';
 import {SymbolCache} from './utilities/SymbolCache';
 import {Logger} from './utilities/Logger';
 import * as vscode from 'vscode';
 
 export class TypeScriptHero implements vscode.Disposable {
-    private cache: SymbolCache = new SymbolCache();
+    private cache = new SymbolCache();
+    private quickPickProvider = new QuickPickProvider(this.cache);
 
     constructor(context: vscode.ExtensionContext) {
         Logger.instance.log('Activation event called. TypeScriptHero instantiated.');
@@ -35,6 +37,10 @@ export class TypeScriptHero implements vscode.Disposable {
             this.showCacheWarning();
             return;
         }
+        this.quickPickProvider.showAddImportList()
+            .then(selected => {
+                console.log(selected);
+             }); 
     }
 
     private showCacheWarning(): void {
