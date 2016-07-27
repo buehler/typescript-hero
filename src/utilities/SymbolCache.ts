@@ -44,29 +44,33 @@ export class SymbolCache {
         this.statusBarItem.show();
     }
 
-    public refreshCache(): void {
-        if (!this.synching) {
-            Logger.instance.log('Start refreshing of symbol cache.');
-            this.synching = true;
-            this.statusBarItem.text = cacheSyncing;
+    public refreshCache(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            if (!this.synching) {
+                Logger.instance.log('Start refreshing of symbol cache.');
+                this.synching = true;
+                this.statusBarItem.text = cacheSyncing;
 
-            this.analyzeSymbols()
-                .then(symbols => {
-                    Logger.instance.log(`Cache refresh successfull. Found ${symbols.length} symbols.`);
-                    this._symbolCache = symbols;
-                    this.statusBarItem.tooltip = 'Click to manually resync the symbols. Currently in cache: ' + symbols.length;
-                    return true;
-                })
-                .catch(err => {
-                    Logger.instance.error('An error happend during cache refresh', err);
-                    return false;
-                })
-                .then(success => {
-                    this.synching = false;
-                    this.statusBarItem.color = success ? okColor : errColor;
-                    this.statusBarItem.text = success ? cacheCheck : cacheErr;
-                });
-        }
+                return this.analyzeSymbols()
+                    .then(symbols => {
+                        Logger.instance.log(`Cache refresh successfull. Found ${symbols.length} symbols.`);
+                        this._symbolCache = symbols;
+                        this.statusBarItem.tooltip = 'Click to manually resync the symbols. Currently in cache: ' + symbols.length;
+                        return true;
+                    })
+                    .catch(err => {
+                        Logger.instance.error('An error happend during cache refresh', err);
+                        return false;
+                    })
+                    .then(success => {
+                        this.synching = false;
+                        this.statusBarItem.color = success ? okColor : errColor;
+                        this.statusBarItem.text = success ? cacheCheck : cacheErr;
+                    })
+                    .then(resolve);
+            }
+            return reject();
+        });
     }
 
     private analyzeSymbols(): Promise<TypescriptSymbol[]> {
@@ -184,7 +188,7 @@ export class SymbolCache {
                     fileExports[move.to].push(...fileExports[move.from]);
                     delete fileExports[move.from];
                 } else {
-                    for (let moveExport of move.exports){
+                    for (let moveExport of move.exports) {
                         let index = fileExports[move.from].indexOf(moveExport);
                         fileExports[move.to].push(...fileExports[move.from].splice(index, 1));
                         if (!fileExports[move.from].length) {
