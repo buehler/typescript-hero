@@ -19,9 +19,9 @@ export class Configuration {
         return vscode.workspace.getConfiguration(sectionKey).get<boolean>('refreshOnSave');
     }
 
-    public static get organizeOnSave(): boolean {
-        return vscode.workspace.getConfiguration(sectionKey).get<boolean>('organizeOnSave');
-    }
+    // public static get organizeOnSave(): boolean {
+    //     return vscode.workspace.getConfiguration(sectionKey).get<boolean>('organizeOnSave');
+    // }
 
     public static get debug(): boolean {
         return vscode.workspace.getConfiguration(sectionKey).get<boolean>('debug');

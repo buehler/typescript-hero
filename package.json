@@ -65,11 +65,6 @@
                     "default": true,
                     "description": "If true, refreshes the symbols cache on save."
                 },
-                "typescriptHero.organizeOnSave": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, automatically organize imports on save."
-                },
                 "typescriptHero.debug": {
                     "type": "boolean",
                     "default": false,
