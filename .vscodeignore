@@ -9,4 +9,4 @@ src/**
 tsconfig.json
 tslint.json
 typings.json
-vsc-extension-quickstart.md
+*.vsix

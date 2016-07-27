@@ -4,3 +4,4 @@ typings
 !typings/node.d.ts
 !typings/vscode-typings.d.ts
 .vscode-test
+*.vsix
