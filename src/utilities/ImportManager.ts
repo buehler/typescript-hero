@@ -149,7 +149,10 @@ class ImportList {
             } else if (libSymbol.type === SymbolType.Node) {
                 imports += `import {${symbols.map(o => o.element).join(', ')}} from ${Configuration.pathStringDelimiter}${libSymbol.library}${Configuration.pathStringDelimiter};\n`;
             } else {
-                let importPath = './' + path.relative(path.parse(this.editor.document.fileName).dir, `${libSymbol.path}/${libSymbol.library}`);
+                let importPath = path.relative(path.parse(this.editor.document.fileName).dir, `${libSymbol.path}/${libSymbol.library}`);
+                if (!importPath.startsWith('.')) {
+                    importPath = './' + importPath;
+                }
                 imports += `import {${symbols.map(o => o.element).join(', ')}} from ${Configuration.pathStringDelimiter}${importPath}${Configuration.pathStringDelimiter};\n`;
             }
         }
