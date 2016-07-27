@@ -16,18 +16,24 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
 class ImportList {
     private imports: { [libName: string]: ImportSymbol[] } = {};
 
+    public static create(editor: vscode.TextEditor, cache: SymbolCache): ImportList {
+        let obj = new ImportList(editor, cache);
+
+        let filename = path.parse(editor.document.fileName).name;
+        for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {
+            let line = editor.document.lineAt(lineNr);
+            obj.matchImports(line.text);
+            obj.matchTypes(line, filename);
+        }
+
+        return obj;
+    }
+
     private static isValidName(name: string): boolean {
         return reservedWords.indexOf(name) === -1 && !utilityKeywords.some(o => name.startsWith(o));
     }
 
-    constructor(private editor: vscode.TextEditor, private cache: SymbolCache) {
-        let filename = path.parse(editor.document.fileName).name;
-        for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {
-            let line = editor.document.lineAt(lineNr);
-            this.matchImports(line.text);
-            this.matchTypes(line, filename);
-        }
-    }
+    constructor(private editor: vscode.TextEditor, private cache: SymbolCache) { }
 
     public addImport(newImport: ImportSymbol): void {
         if (newImport.symbol.type === SymbolType.Typings && this.imports[newImport.symbol.alias]) {
@@ -101,7 +107,6 @@ class ImportList {
             return;
         }
 
-
         for (let word of matches) {
             // only process unquoted words which are not listed in the commonList
             if (word.indexOf(`'`) > -1 || word.indexOf(`"`) > -1 || !ImportList.isValidName(word)) {
@@ -125,7 +130,7 @@ class ImportList {
                             this.imports[o.library] = [new ImportSymbol(o.alias, o)];
                         }
                     } else {
-                        if (!this.imports[o.library].some(i => i.element === word)) {
+                        if (this.imports[o.library] && !this.imports[o.library].some(i => i.element === word)) {
                             this.imports[o.library].push(new ImportSymbol(word, o));
                         }
                     }
@@ -156,7 +161,7 @@ export class ImportManager {
     constructor(private cache: SymbolCache) { }
 
     public organizeImports(item?: ImportSymbol): void {
-        let list = new ImportList(vscode.window.activeTextEditor, this.cache);
+        let list = ImportList.create(vscode.window.activeTextEditor, this.cache);
         if (item) {
             list.addImport(item);
         }
