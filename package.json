@@ -2,13 +2,14 @@
     "name": "typescript-hero",
     "displayName": "TypeScript Hero",
     "description": "Additional tooling for the typescript language",
-    "version": "0.0.1",
+    "icon": "etc/icon.png",
+    "version": "0.1.0",
     "publisher": "rbbit",
     "engines": {
         "vscode": "^1.0.0"
     },
     "categories": [
-        "Other"
+        "Other", "Languages", "Productivity"
     ],
     "activationEvents": [
         "onCommand:extension.sayHello",
