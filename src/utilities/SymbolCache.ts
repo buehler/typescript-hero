@@ -21,7 +21,7 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
         exports: /export[\s]+[\s]?[\=]?[\s]?(function|class|type|interface|var|let|const|enum|[\s]+)*([a-zA-Z_$][0-9a-zA-Z_$]*)[\:|\(|\s|\;\<]/,
         node: /export[\s]+declare[\s]+[a-zA-Z]+[\s]+([a-zA-Z_$][0-9a-zA-Z_$]*)[\:]?[\s]?/,
         nodeExportFrom: /export\s\{?([*]|.*?)\}?\sfrom\s['"]\.\/(.*)['"]/,
-        typings: /declare[\s]+module[\s]+[\"|\']+([\S]*)[\"|\']+/
+        typings: /declare[\s]+(module|namespace)[\s]+[\"|\']?([a-zA-Z]*)[\"|\']?/
     };
 
 export class SymbolCache {
@@ -78,63 +78,64 @@ export class SymbolCache {
         let searches = [vscode.workspace.findFiles('**/*.ts', '{**/node_modules/**,**/typings/**}', undefined, tokenSource.token)];
 
         if (Configuration.includeNodeModules) {
-            let globs = [],
-                ignores = [];
+            let globs = [];
             if (vscode.workspace.rootPath && fs.existsSync(path.join(vscode.workspace.rootPath, 'package.json'))) {
                 let packageJson = require(path.join(vscode.workspace.rootPath, 'package.json'));
                 if (packageJson['dependencies']) {
                     globs = globs.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
-                    ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
                 if (packageJson['devDependencies']) {
                     globs = globs.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
-                    ignores = ignores.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
             } else {
                 globs.push('**/node_modules/**/*.d.ts');
             }
-            searches.push(vscode.workspace.findFiles(`{${globs.join(',')}}`, ignores.length ? `${ignores.join(',')}` : '', undefined, tokenSource.token));
+            searches.push(vscode.workspace.findFiles(`{${globs.join(',')}}`, '**/typings/**', undefined, tokenSource.token));
+        } else {
+            searches.push(Promise.resolve([]));
         }
 
         if (Configuration.includeTypings) {
             searches.push(vscode.workspace.findFiles('**/typings/**/*.ts', '', undefined, tokenSource.token));
+        } else {
+            searches.push(Promise.resolve([]));
         }
 
         return Promise
             .all(searches)
             .then(uris => {
                 tokenSource.dispose();
-                let symbols: TypescriptSymbol[] = [];
-                let files: vscode.Uri[] = uris.reduce((all, element) => all.concat(element), []);
+                let files: TypescriptFile[][] = uris.map((o: any) => o.map(f => new TypescriptFile(f)));
 
-                let tsFiles = files.map(o => new TypescriptFile(o));
-
-                for (let file of tsFiles.filter(o => !o.nodeModule)) {
-                    if (file.defintion && file.typings) {
-                        symbols.push(...this.processTypingsFile(file));
-                    } else if (!(file.defintion || file.typings)) {
-                        symbols.push(this.processLocalFile(file));
-                    }
-                }
-
-                return symbols.concat(this.processNodeModules(tsFiles.filter(o => o.nodeModule)));
+                return [
+                    ...this.processLocalFiles(files[0].filter(o => !o.defintion)),
+                    ...this.processNodeModules(files[1]),
+                    ...this.processTypingsFiles(files[2])
+                ];
             })
+            .then(symbols => symbols.filter(o => !!o.library))
             .catch(errors => {
                 tokenSource.dispose();
                 throw errors;
             });
     }
 
-    private processLocalFile(file: TypescriptFile): TypescriptSymbol {
-        let symbol = new TypescriptSymbol(file.path.name, file.path.dir, SymbolType.Local);
-        for (let line of file.content) {
-            let matches = line.match(matchers.exports);
-            if (!matches || !matches.map(o => o ? o.trim() : '').filter(Boolean).length || !this.isValidName(matches[2], line)) {
-                continue;
+    private processLocalFiles(files: TypescriptFile[]): TypescriptSymbol[] {
+        let symbols: TypescriptSymbol[] = [];
+
+        for (let file of files) {
+            let symbol = new TypescriptSymbol(file.path.name, file.path.dir, SymbolType.Local);
+            for (let line of file.content) {
+                let matches = line.match(matchers.exports);
+                if (!matches || !matches.map(o => o ? o.trim() : '').filter(Boolean).length || !this.isValidName(matches[2], line)) {
+                    continue;
+                }
+                symbol.exports.push(matches[2]);
             }
-            symbol.exports.push(matches[2]);
+            symbols.push(symbol);
         }
-        return symbol;
+
+        return symbols;
     }
 
     private processNodeModules(files: TypescriptFile[]): TypescriptSymbol[] {
@@ -165,7 +166,12 @@ export class SymbolCache {
                 }
                 for (let line of file.content) {
                     const matches = line.match(matchers.node),
-                        exportFromMatches = line.match(matchers.nodeExportFrom);
+                        exportFromMatches = line.match(matchers.nodeExportFrom),
+                        typingsMatches = line.match(matchers.typings);
+                    if (typingsMatches) {
+                        symbols.push(...this.processTypingsFiles([file]));
+                        break;
+                    }
                     if (exportFromMatches) {
                         exportMoves.push({
                             to: packagePath,
@@ -214,18 +220,22 @@ export class SymbolCache {
         return symbols;
     }
 
-    private processTypingsFile(file: TypescriptFile): TypescriptSymbol[] {
+    private processTypingsFiles(files: TypescriptFile[]): TypescriptSymbol[] {
         let symbols: TypescriptSymbol[] = [];
-        for (let line of file.content) {
-            let matches = line.match(matchers.typings);
-            if (!matches || !matches.map(o => o.trim()).filter(Boolean).length) {
-                continue;
-            }
-            let symbol = new TypescriptSymbol(matches[1], file.path.dir, SymbolType.Typings);
-            if (!symbols.find(o => o.alias === symbol.alias)) {
-                symbols.push(symbol);
+
+        for (let file of files) {
+            for (let line of file.content) {
+                let matches = line.match(matchers.typings);
+                if (!matches || !matches.map(o => o.trim()).filter(Boolean).length) {
+                    continue;
+                }
+                let symbol = new TypescriptSymbol(matches[2], file.path.dir, SymbolType.Typings);
+                if (!symbols.find(o => o.alias === symbol.alias)) {
+                    symbols.push(symbol);
+                }
             }
         }
+
         return symbols;
     }
 
