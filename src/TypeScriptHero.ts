@@ -6,7 +6,7 @@ import {Logger} from './utilities/Logger';
 import {Configuration} from './utilities/Configuration';
 import * as vscode from 'vscode';
 
-const TYPESCRIPT: vscode.DocumentFilter = { language: 'typescript', pattern: '*.ts', scheme: 'file' };
+const TYPESCRIPT: vscode.DocumentFilter = { language: 'typescript', scheme: 'file' };
 
 export class TypeScriptHero implements vscode.Disposable {
     private cache = new SymbolCache();
@@ -26,10 +26,11 @@ export class TypeScriptHero implements vscode.Disposable {
             vscode.workspace.onDidSaveTextDocument(event => this.refreshSymbolCache());
         }
 
-        if (Configuration.organizeOnSave) {
-            vscode.workspace.onDidSaveTextDocument(event => this.organizeImports());
-        }
-        //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, new CompletionItemProvider(this.cache)));
+        // if (Configuration.organizeOnSave) {
+        //     vscode.workspace.onDidSaveTextDocument(event => this.organizeImports());
+        // }
+
+        //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, new CompletionItemProvider(this.cache), 'tsh'));
     }
 
     public dispose(): void {
@@ -41,11 +42,16 @@ export class TypeScriptHero implements vscode.Disposable {
     }
 
     private organizeImports(): void {
-        if (!this.cache.cacheBuilt) {
-            this.showCacheWarning();
-            return;
+        try {
+            if (!this.cache.cacheBuilt) {
+                this.showCacheWarning();
+                return;
+            }
+            this.importManager.organizeImports();
+        } catch (e) {
+            Logger.instance.error('An error happend during organizeImports.', e);
+            vscode.window.showErrorMessage('There was an error during the command.');
         }
-        this.importManager.organizeImports();
     }
 
     private addImport(): void {
@@ -55,7 +61,17 @@ export class TypeScriptHero implements vscode.Disposable {
         }
         this.quickPickProvider
             .showAddImportList()
-            .then(selected => this.importManager.addImport(new ImportSymbol(selected.label, selected.symbol)));
+            .then(selected => {
+                try {
+                    if (!selected) {
+                        return;
+                    }
+                    this.importManager.addImport(new ImportSymbol(selected.label, selected.symbol))
+                } catch (e) {
+                    Logger.instance.error('An error happend during addImport.', e);
+                    vscode.window.showErrorMessage('There was an error during the command.');
+                }
+            });
     }
 
     private showCacheWarning(): void {
