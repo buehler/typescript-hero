@@ -64,23 +64,21 @@
                     "type": "boolean",
                     "default": true,
                     "description": "If true, refreshes the symbols cache on save."
-                },
-                "typescriptHero.debug": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "If true, typescript hero does output debug logs."
                 }
             }
         }
     },
     "scripts": {
-        "vscode:prepublish": "node ./node_modules/vscode/bin/compile",
-        "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+        "vscode:prepublish": "npm run build",
+        "compile": "tsc -w",
         "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test"
+        "test": "node ./node_modules/vscode/bin/test",
+        "build": "del ./out && tsc",
+        "package": "npm run build && del './*.vsix' && vsce package"
     },
     "devDependencies": {
         "chai": "^3.5.0",
+        "del-cli": "^0.2.0",
         "tslint": "^3.13.0",
         "typescript": "^1.8.5",
         "vscode": "^0.11.0"
