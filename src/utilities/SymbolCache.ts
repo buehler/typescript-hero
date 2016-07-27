@@ -21,7 +21,7 @@ const reservedWords = ['window', 'dom', 'array', 'from', 'null', 'return', 'get'
         exports: /export[\s]+[\s]?[\=]?[\s]?(function|class|type|interface|var|let|const|enum|[\s]+)*([a-zA-Z_$][0-9a-zA-Z_$]*)[\:|\(|\s|\;\<]/,
         node: /export[\s]+declare[\s]+[a-zA-Z]+[\s]+([a-zA-Z_$][0-9a-zA-Z_$]*)[\:]?[\s]?/,
         nodeExportFrom: /export\s\{?([*]|.*?)\}?\sfrom\s['"]\.\/(.*)['"]/,
-        typings: /declare[\s]+(module|namespace)[\s]+[\"|\']?([a-zA-Z]*)[\"|\']?/
+        typings: /declare[\s]+(module|namespace)[\s]+[\"|\']?([0-9a-zA-Z-_]*)[\"|\']?/
     };
 
 export class SymbolCache {
@@ -78,25 +78,28 @@ export class SymbolCache {
         let searches = [vscode.workspace.findFiles('**/*.ts', '{**/node_modules/**,**/typings/**}', undefined, tokenSource.token)];
 
         if (Configuration.includeNodeModules) {
-            let globs = [];
+            let globs = [],
+                ignores = ['**/typings/**'];
             if (vscode.workspace.rootPath && fs.existsSync(path.join(vscode.workspace.rootPath, 'package.json'))) {
                 let packageJson = require(path.join(vscode.workspace.rootPath, 'package.json'));
                 if (packageJson['dependencies']) {
                     globs = globs.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
+                    ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
                 if (packageJson['devDependencies']) {
                     globs = globs.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
+                    ignores = ignores.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
                 }
             } else {
                 globs.push('**/node_modules/**/*.d.ts');
             }
-            searches.push(vscode.workspace.findFiles(`{${globs.join(',')}}`, '**/typings/**', undefined, tokenSource.token));
+            searches.push(vscode.workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`, undefined, tokenSource.token));
         } else {
             searches.push(Promise.resolve([]));
         }
 
         if (Configuration.includeTypings) {
-            searches.push(vscode.workspace.findFiles('**/typings/**/*.ts', '', undefined, tokenSource.token));
+            searches.push(vscode.workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**', undefined, tokenSource.token));
         } else {
             searches.push(Promise.resolve([]));
         }
