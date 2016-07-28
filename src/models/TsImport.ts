@@ -1,7 +1,7 @@
 import {TsResolveSpecifier} from './TsResolveSpecifier';
 
 export abstract class TsImport {
-    public name: string;
+    constructor(public name: string) { }
 }
 
 export abstract class TsAliasedImport extends TsImport {
@@ -9,6 +9,9 @@ export abstract class TsAliasedImport extends TsImport {
 }
 
 export class TsStringImport extends TsImport {
+    constructor(name: string) {
+        super(name);
+    }
 }
 
 export class TsNamedImport extends TsImport {
