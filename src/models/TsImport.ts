@@ -1,4 +1,4 @@
-import {TsImportSpecifier} from './TsImportSpecifier';
+import {TsResolveSpecifier} from './TsResolveSpecifier';
 
 export abstract class TsImport {
     public name: string;
@@ -12,7 +12,7 @@ export class TsStringImport extends TsImport {
 }
 
 export class TsNamedImport extends TsImport {
-    public specifiers: TsImportSpecifier[];
+    public specifiers: TsResolveSpecifier[];
 }
 
 export class TsNamespaceImport extends TsAliasedImport {
