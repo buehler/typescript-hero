@@ -9,7 +9,9 @@
         "vscode": "^1.0.0"
     },
     "categories": [
-        "Other", "Languages", "Productivity"
+        "Other",
+        "Languages",
+        "Productivity"
     ],
     "activationEvents": [
         "onCommand:extension.sayHello",
@@ -69,6 +71,22 @@
             }
         }
     },
+    "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
+    "contributors": [
+        {
+            "name": "Dominique Wirz",
+            "email": "dominique.wirz@gmail.com"
+        }
+    ],
+    "license": "SEE LICENSE IN LICENSE.md",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com:buehler/typescript-hero.git"
+    },
+    "bugs": {
+        "url": "https://github.com/buehler/typescript-hero/issues"
+    },
+    "homepage": "https://github.com/buehler/typescript-hero#readme",
     "scripts": {
         "vscode:prepublish": "npm run build",
         "precompile": "del ./out",
@@ -78,11 +96,13 @@
         "build": "del ./out && tsc",
         "package": "npm run build && del './*.vsix' && vsce package"
     },
+    "dependencies": {
+        "typescript": "^1.8.10"
+    },
     "devDependencies": {
         "chai": "^3.5.0",
         "del-cli": "^0.2.0",
         "tslint": "^3.13.0",
-        "typescript": "^1.8.10",
         "vscode": "^0.11.0"
     }
 }
