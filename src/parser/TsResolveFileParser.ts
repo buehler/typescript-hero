@@ -20,7 +20,7 @@ export class TsResolveFileParser {
     }
 
     private parseTypescript(source: SourceFile): TsResolveFile {
-        let tsFile = new TsResolveFile();
+        let tsFile = new TsResolveFile(source.fileName);
 
         this.rootSyntaxList(tsFile, source.getChildAt(0));
 

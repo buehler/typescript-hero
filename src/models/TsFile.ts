@@ -1,6 +1,9 @@
 import path = require('path');
 
 export class TsFile {
-    public fileName: string;
-    public path: path.ParsedPath;
+    private path: path.ParsedPath;
+
+    constructor(fileName: string) {
+        this.path = path.parse(fileName);
+    }
 }
