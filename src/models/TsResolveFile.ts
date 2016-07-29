@@ -13,8 +13,4 @@ export class TsResolveFile extends TsFile implements TsResolveInformation {
     public get nonLocalUsages(): string[] {
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage));
     }
-
-    public get exportedDeclarations(): TsDeclaration[] {
-        return this.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
-    }
 }

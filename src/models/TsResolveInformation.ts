@@ -7,7 +7,5 @@ export interface TsResolveInformation {
     declarations: TsDeclaration[];
     exports: TsExport[];
     usages: string[];
-
     nonLocalUsages: string[];
-    exportedDeclarations: TsDeclaration[];
 }

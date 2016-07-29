@@ -45,10 +45,6 @@ export class TsModuleDeclaration extends TsExportableDeclaration implements TsRe
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage));
     }
 
-    public get exportedDeclarations(): TsDeclaration[] {
-        return this.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
-    }
-
     constructor(name: string, isExported: boolean, public isNamespace: boolean) {
         super(name, isExported);
     }
