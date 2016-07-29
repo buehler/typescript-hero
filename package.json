@@ -1,108 +1,110 @@
 {
-    "name": "typescript-hero",
-    "displayName": "TypeScript Hero",
-    "description": "Additional tooling for the typescript language",
-    "icon": "etc/icon.png",
-    "version": "0.1.0",
-    "publisher": "rbbit",
-    "engines": {
-        "vscode": "^1.0.0"
-    },
-    "categories": [
-        "Other",
-        "Languages",
-        "Productivity"
+  "name": "typescript-hero",
+  "displayName": "TypeScript Hero",
+  "description": "Additional tooling for the typescript language",
+  "icon": "etc/icon.png",
+  "version": "0.1.0",
+  "publisher": "rbbit",
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "categories": [
+    "Other",
+    "Languages",
+    "Productivity"
+  ],
+  "activationEvents": [
+    "onCommand:extension.sayHello",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "typescriptHero.refreshSymbolCache",
+        "title": "Typescript: Refresh symbol cache"
+      },
+      {
+        "command": "typescriptHero.organizeImports",
+        "title": "Typescript: Organize imports"
+      },
+      {
+        "command": "typescriptHero.addImport",
+        "title": "Typescript: Add specific import and organize imports"
+      }
     ],
-    "activationEvents": [
-        "onCommand:extension.sayHello",
-        "onLanguage:typescript"
+    "keybindings": [
+      {
+        "command": "typescriptHero.addImport",
+        "key": "ctrl+alt+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "typescriptHero.organizeImports",
+        "key": "ctrl+alt+o",
+        "when": "editorTextFocus"
+      }
     ],
-    "main": "./out/src/extension",
-    "contributes": {
-        "commands": [
-            {
-                "command": "typescriptHero.refreshSymbolCache",
-                "title": "Typescript: Refresh symbol cache"
-            },
-            {
-                "command": "typescriptHero.organizeImports",
-                "title": "Typescript: Organize imports"
-            },
-            {
-                "command": "typescriptHero.addImport",
-                "title": "Typescript: Add specific import and organize imports"
-            }
-        ],
-        "keybindings": [
-            {
-                "command": "typescriptHero.addImport",
-                "key": "ctrl+alt+i",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "typescriptHero.organizeImports",
-                "key": "ctrl+alt+o",
-                "when": "editorTextFocus"
-            }
-        ],
-        "configuration": {
-            "title": "Configuration section of the typescript hero extension",
-            "properties": {
-                "typescriptHero.pathStringDelimiter": {
-                    "type": "string",
-                    "default": "'",
-                    "description": "Defines if single or double quotes should be used."
-                },
-                "typescriptHero.includeNodeModules": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, search referenced node_modules for .d.ts files."
-                },
-                "typescriptHero.includeTypings": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, search the typings folder for .d.ts files."
-                },
-                "typescriptHero.refreshOnSave": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "If true, refreshes the symbols cache on save."
-                }
-            }
+    "configuration": {
+      "title": "Configuration section of the typescript hero extension",
+      "properties": {
+        "typescriptHero.pathStringDelimiter": {
+          "type": "string",
+          "default": "'",
+          "description": "Defines if single or double quotes should be used."
+        },
+        "typescriptHero.includeNodeModules": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, search referenced node_modules for .d.ts files."
+        },
+        "typescriptHero.includeTypings": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, search the typings folder for .d.ts files."
+        },
+        "typescriptHero.refreshOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "If true, refreshes the symbols cache on save."
         }
-    },
-    "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
-    "contributors": [
-        {
-            "name": "Dominique Wirz",
-            "email": "dominique.wirz@gmail.com"
-        }
-    ],
-    "license": "SEE LICENSE IN LICENSE.md",
-    "repository": {
-        "type": "git",
-        "url": "git+ssh://git@github.com:buehler/typescript-hero.git"
-    },
-    "bugs": {
-        "url": "https://github.com/buehler/typescript-hero/issues"
-    },
-    "homepage": "https://github.com/buehler/typescript-hero#readme",
-    "scripts": {
-        "vscode:prepublish": "npm run build",
-        "precompile": "del ./out",
-        "compile": "tsc -w",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test",
-        "build": "del ./out && tsc",
-        "package": "npm run build && del './*.vsix' && vsce package"
-    },
-    "dependencies": {
-        "typescript": "^1.8.10"
-    },
-    "devDependencies": {
-        "chai": "^3.5.0",
-        "del-cli": "^0.2.0",
-        "tslint": "^3.13.0",
-        "vscode": "^0.11.0"
+      }
     }
+  },
+  "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
+  "contributors": [
+    {
+      "name": "Dominique Wirz",
+      "email": "dominique.wirz@gmail.com"
+    }
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:buehler/typescript-hero.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buehler/typescript-hero/issues"
+  },
+  "homepage": "https://github.com/buehler/typescript-hero#readme",
+  "scripts": {
+    "vscode:prepublish": "npm run build && npm prune --production",
+    "precompile": "del ./out",
+    "compile": "tsc -w",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test",
+    "build": "del ./out && tsc",
+    "package": "npm run build && del './*.vsix' && vsce package"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "del-cli": "^0.2.0",
+    "tslint": "^3.13.0",
+    "typescript": "^1.8.10",
+    "vscode": "^0.11.0"
+  },
+  "dependencies": {
+    "inversify": "^2.0.0-rc.1",
+    "reflect-metadata": "^0.1.3"
+  }
 }
