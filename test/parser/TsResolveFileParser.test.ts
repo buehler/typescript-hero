@@ -169,7 +169,7 @@ describe('TsResolveFileParser', () => {
             });
 
             it('should parse non exported class', () => {
-                parsed.declarations[11].should.be.an.instanceOf(TsInterfaceDeclaration)
+                parsed.declarations[11].should.be.an.instanceOf(TsClassDeclaration)
                     .with.property('name')
                     .that.equals('NotExported');
             });
@@ -220,9 +220,29 @@ describe('TsResolveFileParser', () => {
                     'functionCall',
                     'MyProperty',
                     'Indexing',
-                    'AssignmentToVariable'
-                ]);
-            })
+                    'AssignmentToVariable',
+                    'console',
+                    'a',
+                    'b']);
+            });
+
+            it('should parse corret nonlocal usages', () => {
+                parsed.nonLocalUsages.should.be.an('array').that.deep.equals([
+                    'ClassDecorator',
+                    'PropertyDecorator',
+                    'TypedPropertyRef',
+                    'AssignedProperty',
+                    'FunctionDecorator',
+                    'TypedParam',
+                    'DefaultParam',
+                    'ReturnValue',
+                    'PropertyAccess',
+                    'functionCall',
+                    'MyProperty',
+                    'Indexing',
+                    'AssignmentToVariable',
+                    'console']);
+            });
 
         });
 

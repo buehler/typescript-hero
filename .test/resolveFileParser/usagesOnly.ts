@@ -11,7 +11,7 @@ class Class {
     public func(param: TypedParam, defaultParam = DefaultParam) {
     }
 
-    private prv(): ReturnValue {
+    private prv(param): ReturnValue {
         let a = PropertyAccess.To.My.Foobar;
 
         functionCall(MyProperty);
@@ -20,6 +20,9 @@ class Class {
 
         let b;
         b = AssignmentToVariable;
+
+        console.log(a);
+        console.log(b);
 
         return null;
     }
