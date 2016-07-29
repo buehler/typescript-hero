@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
+import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport} from '../models/TsExport';
 import fs = require('fs');
-import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, ClassDeclaration, FunctionDeclaration, EnumDeclaration, InterfaceDeclaration, VariableStatement, TypeAliasDeclaration} from 'typescript';
+import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
 export class TsResolveFileParser {
     public parseFile(filePath: string | vscode.Uri): TsResolveFile {
@@ -38,22 +39,22 @@ export class TsResolveFileParser {
                     this.importEqualsDeclaration(tsFile, <ImportEqualsDeclaration>child);
                     break;
                 case SyntaxKind.ClassDeclaration:
-
+                    this.exportDeclaration(tsFile, child, TsClassExport);
                     break;
                 case SyntaxKind.FunctionDeclaration:
-
+                    this.exportDeclaration(tsFile, child, TsFunctionExport);
                     break;
                 case SyntaxKind.EnumDeclaration:
-
-                    break;
-                case SyntaxKind.VariableStatement:
-
+                    this.exportDeclaration(tsFile, child, TsEnumExport);
                     break;
                 case SyntaxKind.TypeAliasDeclaration:
-
+                    this.exportDeclaration(tsFile, child, TsTypeExport);
                     break;
                 case SyntaxKind.InterfaceDeclaration:
-
+                    this.exportDeclaration(tsFile, child, TsInterfaceExport);
+                    break;
+                case SyntaxKind.VariableStatement:
+                    this.exportVariableDeclaration(tsFile, <VariableStatement>child);
                     break;
             }
         }
@@ -105,5 +106,26 @@ export class TsResolveFileParser {
         tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
     }
 
-    private classDeclaration(tsFile: TsResolveFile, node: )
+    private exportDeclaration(tsFile: TsResolveFile, node: Node, ctor: new (name: string) => TsNamedExport): void {
+        if (!this.checkIfExported(node)) {
+            return;
+        }
+        let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+        tsFile.exports.push(new ctor(name.text));
+    }
+
+    private exportVariableDeclaration(tsFile: TsResolveFile, node: VariableStatement): void {
+        if (!this.checkIfExported(node)) {
+            return;
+        }
+        let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
+        node.declarationList.declarations.forEach(o => tsFile.exports.push(new TsVariableExport(o.name.getText(), isConst)));
+    }
+
+    private checkIfExported(node: Node): boolean {
+        let children = node.getChildren();
+        return children.length > 0 &&
+            children[0].kind === SyntaxKind.SyntaxList &&
+            children[0].getChildren().some(o => o.kind === SyntaxKind.ExportKeyword);
+    }
 }

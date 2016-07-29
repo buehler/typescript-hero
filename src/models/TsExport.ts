@@ -31,7 +31,9 @@ export class TsInterfaceExport extends TsNamedExport {
 }
 
 export class TsVariableExport extends TsNamedExport {
-    public isConst: boolean;
+    constructor(name: string, public isConst: boolean) {
+        super(name);
+    }
 }
 
 export class TsAllFromExport extends TsFromExport {
