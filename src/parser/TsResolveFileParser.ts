@@ -2,7 +2,8 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport, TsAllFromExport, TsNamedFromExport} from '../models/TsDeclaration';
+import {TsNamedDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
+import {TsAllExport, TsExport, TsNamedExport} from '../models//TsExport';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
@@ -37,12 +38,6 @@ const usagePredicates = [
     allowedIfPropertyAccessFirst
 ];
 
-// use mues:
-// - lokali variable
-// - lokali parameter (normal & arrow funcs)
-
-
-
 function allowedIfLastIdentifier(node: Node): boolean {
     if (usageAllowedIfLast.indexOf(node.parent.kind) === -1) {
         return true;
@@ -62,7 +57,9 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
 }
 
 function allowedIfNotLocalScoped(node: Node) {
-    //arrow func, func, 
+    // use mues:
+    // - lokali variable ()
+    // - lokali parameter (normal & arrow funcs)
 }
 
 function importDeclaration(tsFile: TsResolveFile, node: ImportDeclaration): void {
@@ -111,23 +108,20 @@ function importEqualsDeclaration(tsFile: TsResolveFile, node: ImportEqualsDeclar
     tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
 }
 
-function exportDeclaration(tsFile: TsResolveFile, node: Node, ctor: new (name: string) => TsNamedExport): void {
-    if (!checkIfExported(node)) {
-        return;
-    }
+function declaration(tsFile: TsResolveFile, node: Node, ctor: new (isExported: boolean, name: string) => TsNamedDeclaration): void {
     let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
-    tsFile.exports.push(new ctor(name.text));
+    tsFile.declarations.push(new ctor(checkIfExported(node), name.text));
 }
 
-function exportFromDeclaration(tsFile: TsResolveFile, node: Node): void {
+function exportDeclaration(tsFile: TsResolveFile, node: Node): void {
     let children = node.getChildren();
     let libName = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
 
     if (children.some(o => o.kind === SyntaxKind.AsteriskToken)) {
-        tsFile.exports.push(new TsAllFromExport(libName.text));
+        tsFile.exports.push(new TsAllExport(libName.text));
     } else if (children.some(o => o.kind === SyntaxKind.NamedExports)) {
         let specifiers = [],
-            tsExport = new TsNamedFromExport(libName.text);
+            tsExport = new TsNamedExport(libName.text);
         children[1]
             .getChildAt(1) // SyntaxList
             .getChildren() // All children
@@ -145,12 +139,9 @@ function exportFromDeclaration(tsFile: TsResolveFile, node: Node): void {
     }
 }
 
-function exportVariableDeclaration(tsFile: TsResolveFile, node: VariableStatement): void {
-    if (!checkIfExported(node)) {
-        return;
-    }
+function variableDeclaration(tsFile: TsResolveFile, node: VariableStatement): void {
     let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
-    node.declarationList.declarations.forEach(o => tsFile.exports.push(new TsVariableExport(o.name.getText(), isConst)));
+    node.declarationList.declarations.forEach(o => tsFile.declarations.push(new TsVariableDeclaration(checkIfExported(node), o.name.getText(), isConst)));
 }
 
 function checkIfExported(node: Node): boolean {
@@ -177,7 +168,7 @@ export class TsResolveFileParser {
 
         let syntaxList = source.getChildAt(0);
         this.parseTypescriptImports(tsFile, syntaxList);
-        this.parseTypescriptExports(tsFile, syntaxList);
+        this.parseTypescriptDeclarations(tsFile, syntaxList);
         this.parseTypescriptUsages(tsFile, syntaxList);
 
         return tsFile;
@@ -198,29 +189,29 @@ export class TsResolveFileParser {
         }
     }
 
-    private parseTypescriptExports(tsFile: TsResolveFile, node: Node): void {
+    private parseTypescriptDeclarations(tsFile: TsResolveFile, node: Node): void {
         for (let child of node.getChildren()) {
             switch (child.kind) {
                 case SyntaxKind.ClassDeclaration:
-                    exportDeclaration(tsFile, child, TsClassExport);
+                    declaration(tsFile, child, TsClassDeclaration);
                     break;
                 case SyntaxKind.FunctionDeclaration:
-                    exportDeclaration(tsFile, child, TsFunctionExport);
+                    declaration(tsFile, child, TsFunctionDeclaration);
                     break;
                 case SyntaxKind.EnumDeclaration:
-                    exportDeclaration(tsFile, child, TsEnumExport);
+                    declaration(tsFile, child, TsEnumDeclaration);
                     break;
                 case SyntaxKind.TypeAliasDeclaration:
-                    exportDeclaration(tsFile, child, TsTypeExport);
+                    declaration(tsFile, child, TsTypeDeclaration);
                     break;
                 case SyntaxKind.InterfaceDeclaration:
-                    exportDeclaration(tsFile, child, TsInterfaceExport);
+                    declaration(tsFile, child, TsInterfaceDeclaration);
                     break;
                 case SyntaxKind.VariableStatement:
-                    exportVariableDeclaration(tsFile, <VariableStatement>child);
+                    variableDeclaration(tsFile, <VariableStatement>child);
                     break;
                 case SyntaxKind.ExportDeclaration:
-                    exportFromDeclaration(tsFile, child);
+                    exportDeclaration(tsFile, child);
                     break;
             }
         }

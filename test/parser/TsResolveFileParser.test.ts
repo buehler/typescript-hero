@@ -2,7 +2,8 @@ import * as chai from 'chai';
 import {TsResolveFileParser} from '../../src/parser/TsResolveFileParser';
 import {TsStringImport, TsNamedImport, TsNamespaceImport, TsExternalModuleImport} from '../../src/models/TsImport';
 import {TsResolveFile} from '../../src/models/TsResolveFile';
-import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsVariableExport, TsTypeExport, TsInterfaceExport, TsAllFromExport, TsNamedFromExport} from '../../src/models/TsDeclaration';
+import {TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsVariableDeclaration, TsTypeDeclaration, TsInterfaceDeclaration} from '../../src/models/TsDeclaration';
+import {TsAllExport, TsNamedExport} from '../../src/models/TsExport';
 import path = require('path');
 
 chai.should();
@@ -85,6 +86,96 @@ describe('TsResolveFileParser', () => {
 
         });
 
+        describe('Declarations', () => {
+
+            const file = path.join(__dirname, '../../../.test/resolveFileParser/declarationsOnly.ts');
+
+            beforeEach(() => {
+                parsed = parser.parseFile(file);
+            });
+
+            it('should parse exports', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(12);
+            });
+
+            it('should parse class export', () => {
+                parsed.declarations[0].should.be.an.instanceOf(TsClassDeclaration)
+                    .with.property('name')
+                    .that.equals('ExportedClass');
+            });
+
+            it('should parse function export', () => {
+                parsed.declarations[1].should.be.an.instanceOf(TsFunctionDeclaration)
+                    .with.property('name')
+                    .that.equals('exportedFunction');
+            });
+
+            it('should parse enum export', () => {
+                parsed.declarations[2].should.be.an.instanceOf(TsEnumDeclaration)
+                    .with.property('name')
+                    .that.equals('ExportedEnum');
+            });
+
+            it('should parse const enum export', () => {
+                parsed.declarations[3].should.be.an.instanceOf(TsEnumDeclaration)
+                    .with.property('name')
+                    .that.equals('ExportedConstEnum');
+            });
+
+            it('should parse variable export', () => {
+                parsed.declarations[4].should.be.an.instanceOf(TsVariableDeclaration);
+                let tsExport = parsed.declarations[4] as TsVariableDeclaration;
+                tsExport.name.should.equal('ExportedVariable');
+                tsExport.isConst.should.be.false;
+            });
+
+            it('should parse constant export', () => {
+                parsed.declarations[5].should.be.an.instanceOf(TsVariableDeclaration);
+                let tsExport = parsed.declarations[5] as TsVariableDeclaration;
+                tsExport.name.should.equal('ExportedConst');
+                tsExport.isConst.should.be.true;
+            });
+
+            it('should parse let variable export', () => {
+                parsed.declarations[6].should.be.an.instanceOf(TsVariableDeclaration);
+                let tsExport = parsed.declarations[6] as TsVariableDeclaration;
+                tsExport.name.should.equal('ExportedLet');
+                tsExport.isConst.should.be.false;
+            });
+
+            it('should parse multiline variable export', () => {
+                parsed.declarations[7].should.be.an.instanceOf(TsVariableDeclaration);
+                parsed.declarations[8].should.be.an.instanceOf(TsVariableDeclaration);
+
+                let tsExport = parsed.declarations[7] as TsVariableDeclaration;
+                tsExport.name.should.equal('MultiLet1');
+                tsExport.isConst.should.be.false;
+
+                tsExport = parsed.declarations[8] as TsVariableDeclaration;
+                tsExport.name.should.equal('MultiLet2');
+                tsExport.isConst.should.be.false;
+            });
+
+            it('should parse type export', () => {
+                parsed.declarations[9].should.be.an.instanceOf(TsTypeDeclaration)
+                    .with.property('name')
+                    .that.equals('ExportedType');
+            });
+
+            it('should parse interface export', () => {
+                parsed.declarations[10].should.be.an.instanceOf(TsInterfaceDeclaration)
+                    .with.property('name')
+                    .that.equals('ExportedInterface');
+            });
+
+            it('should parse non exported class', () => {
+                parsed.declarations[11].should.be.an.instanceOf(TsInterfaceDeclaration)
+                    .with.property('name')
+                    .that.equals('NotExported');
+            });
+
+        });
+
         describe('Exports', () => {
 
             const file = path.join(__dirname, '../../../.test/resolveFileParser/exportsOnly.ts');
@@ -93,92 +184,14 @@ describe('TsResolveFileParser', () => {
                 parsed = parser.parseFile(file);
             });
 
-            it('should parse exports', () => {
-                parsed.exports.should.be.an('array').with.lengthOf(13);
-            });
-
-            it('should parse class export', () => {
-                parsed.exports[0].should.be.an.instanceOf(TsClassExport)
-                    .with.property('name')
-                    .that.equals('ExportedClass');
-            });
-
-            it('should parse function export', () => {
-                parsed.exports[1].should.be.an.instanceOf(TsFunctionExport)
-                    .with.property('name')
-                    .that.equals('exportedFunction');
-            });
-
-            it('should parse enum export', () => {
-                parsed.exports[2].should.be.an.instanceOf(TsEnumExport)
-                    .with.property('name')
-                    .that.equals('ExportedEnum');
-            });
-
-            it('should parse const enum export', () => {
-                parsed.exports[3].should.be.an.instanceOf(TsEnumExport)
-                    .with.property('name')
-                    .that.equals('ExportedConstEnum');
-            });
-
-            it('should parse variable export', () => {
-                parsed.exports[4].should.be.an.instanceOf(TsVariableExport);
-                let tsExport = parsed.exports[4] as TsVariableExport;
-                tsExport.name.should.equal('ExportedVariable');
-                tsExport.isConst.should.be.false;
-            });
-
-            it('should parse constant export', () => {
-                parsed.exports[5].should.be.an.instanceOf(TsVariableExport);
-                let tsExport = parsed.exports[5] as TsVariableExport;
-                tsExport.name.should.equal('ExportedConst');
-                tsExport.isConst.should.be.true;
-            });
-
-            it('should parse let variable export', () => {
-                parsed.exports[6].should.be.an.instanceOf(TsVariableExport);
-                let tsExport = parsed.exports[6] as TsVariableExport;
-                tsExport.name.should.equal('ExportedLet');
-                tsExport.isConst.should.be.false;
-            });
-
-            it('should parse multiline variable export', () => {
-                parsed.exports[7].should.be.an.instanceOf(TsVariableExport);
-                parsed.exports[8].should.be.an.instanceOf(TsVariableExport);
-
-                let tsExport = parsed.exports[7] as TsVariableExport;
-                tsExport.name.should.equal('MultiLet1');
-                tsExport.isConst.should.be.false;
-
-                tsExport = parsed.exports[8] as TsVariableExport;
-                tsExport.name.should.equal('MultiLet2');
-                tsExport.isConst.should.be.false;
-            });
-
-            it('should parse type export', () => {
-                parsed.exports[9].should.be.an.instanceOf(TsTypeExport)
-                    .with.property('name')
-                    .that.equals('ExportedType');
-            });
-
-            it('should parse interface export', () => {
-                parsed.exports[10].should.be.an.instanceOf(TsInterfaceExport)
-                    .with.property('name')
-                    .that.equals('ExportedInterface');
-            });
-
-            it('should not parse non exported class', () => {
-                parsed.exports.some(o => o instanceof TsNamedExport && o.name === 'NotExported').should.be.false;
-            });
-
             it('should parse export all from another file', () => {
-                parsed.exports[11].should.be.an.instanceOf(TsAllFromExport)
+                parsed.exports[0].should.be.an.instanceOf(TsAllExport)
                     .with.property('from')
                     .that.equals('./OtherFile');
             });
 
             it('should parse export named from another file', () => {
-                parsed.exports[12].should.be.an.instanceOf(TsNamedFromExport)
+                parsed.exports[1].should.be.an.instanceOf(TsNamedExport)
                     .with.property('from')
                     .that.equals('./AnotherFile');
             });

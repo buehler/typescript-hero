@@ -1,44 +1,30 @@
-import {TsResolveSpecifier} from './TsResolveSpecifier';
-
-export abstract class TsExport {
+export abstract class TsDeclaration {
+    constructor(public isExported: boolean) { }
 }
 
-export abstract class TsNamedExport extends TsExport {
-    constructor(public name: string) {
-        super();
+export abstract class TsNamedDeclaration extends TsDeclaration {
+    constructor(isExported: boolean, public name: string) {
+        super(isExported);
     }
 }
 
-export abstract class TsFromExport extends TsExport {
-    constructor(public from: string) {
-        super();
+export class TsClassDeclaration extends TsNamedDeclaration {
+}
+
+export class TsFunctionDeclaration extends TsNamedDeclaration {
+}
+
+export class TsEnumDeclaration extends TsNamedDeclaration {
+}
+
+export class TsTypeDeclaration extends TsNamedDeclaration {
+}
+
+export class TsInterfaceDeclaration extends TsNamedDeclaration {
+}
+
+export class TsVariableDeclaration extends TsNamedDeclaration {
+    constructor(isExported: boolean, name: string, public isConst: boolean) {
+        super(isExported, name);
     }
-}
-
-export class TsClassExport extends TsNamedExport {
-}
-
-export class TsFunctionExport extends TsNamedExport {
-}
-
-export class TsEnumExport extends TsNamedExport {
-}
-
-export class TsTypeExport extends TsNamedExport {
-}
-
-export class TsInterfaceExport extends TsNamedExport {
-}
-
-export class TsVariableExport extends TsNamedExport {
-    constructor(name: string, public isConst: boolean) {
-        super(name);
-    }
-}
-
-export class TsAllFromExport extends TsFromExport {
-}
-
-export class TsNamedFromExport extends TsFromExport {
-    public specifiers: TsResolveSpecifier[];
 }
