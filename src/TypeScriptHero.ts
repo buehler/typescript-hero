@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import * as inversify from 'inversify';
+import {ResolveExtension} from './extensions/ResolveExtension';
 
 const TYPESCRIPT: vscode.DocumentFilter = { language: 'typescript', scheme: 'file' };
 
 @inversify.injectable()
 export class TypeScriptHero implements vscode.Disposable {
-    
-    constructor(@inversify.inject('context')context: vscode.ExtensionContext) {
+
+    constructor(private resolveExtension: ResolveExtension) {
         console.log('Activation event called. TypeScriptHero instantiated.');
 
         //this.refreshSymbolCache();

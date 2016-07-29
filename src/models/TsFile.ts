@@ -5,5 +5,9 @@ export class TsFile {
 
     constructor(fileName: string) {
         this.path = path.parse(fileName);
+        if (this.path.name.endsWith('.d')) {
+            this.path.name = this.path.name.replace('.d', '');
+            this.path.ext = '.d.ts';
+        }
     }
 }

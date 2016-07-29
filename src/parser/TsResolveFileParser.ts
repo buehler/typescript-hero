@@ -5,6 +5,7 @@ import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsExportableDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsNamedFromExport, TsAssignedExport} from '../models/TsExport';
 import {TsResolveInformation} from '../models/TsResolveInformation';
+import * as inversify from 'inversify';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ModuleDeclaration, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
@@ -167,6 +168,7 @@ function checkIfExported(node: Node): boolean {
         children.filter(o => o.kind === SyntaxKind.SyntaxList).some(o => o.getChildren().some(o => o.kind === SyntaxKind.ExportKeyword));
 }
 
+@inversify.injectable()
 export class TsResolveFileParser {
     public parseFile(filePath: string | vscode.Uri): TsResolveFile {
         let files = this.parseFiles([filePath]);
