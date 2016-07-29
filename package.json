@@ -71,6 +71,7 @@
     },
     "scripts": {
         "vscode:prepublish": "npm run build",
+        "precompile": "del ./out",
         "compile": "tsc -w",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "node ./node_modules/vscode/bin/test",

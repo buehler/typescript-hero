@@ -3,7 +3,7 @@ import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import fs = require('fs');
-import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier} from 'typescript';
+import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, ClassDeclaration, FunctionDeclaration, EnumDeclaration, InterfaceDeclaration, VariableStatement, TypeAliasDeclaration} from 'typescript';
 
 export class TsResolveFileParser {
     public parseFile(filePath: string | vscode.Uri): TsResolveFile {
@@ -36,6 +36,24 @@ export class TsResolveFileParser {
                     break;
                 case SyntaxKind.ImportEqualsDeclaration:
                     this.importEqualsDeclaration(tsFile, <ImportEqualsDeclaration>child);
+                    break;
+                case SyntaxKind.ClassDeclaration:
+
+                    break;
+                case SyntaxKind.FunctionDeclaration:
+
+                    break;
+                case SyntaxKind.EnumDeclaration:
+
+                    break;
+                case SyntaxKind.VariableStatement:
+
+                    break;
+                case SyntaxKind.TypeAliasDeclaration:
+
+                    break;
+                case SyntaxKind.InterfaceDeclaration:
+
                     break;
             }
         }
@@ -86,4 +104,6 @@ export class TsResolveFileParser {
 
         tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
     }
+
+    private classDeclaration(tsFile: TsResolveFile, node: )
 }

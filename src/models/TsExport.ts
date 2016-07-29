@@ -3,12 +3,16 @@ import {TsResolveSpecifier} from './TsResolveSpecifier';
 export abstract class TsExport {
 }
 
-export abstract class TsNamedExport {
-    public name: string;
+export abstract class TsNamedExport extends TsExport {
+    constructor(public name: string) {
+        super();
+    }
 }
 
 export abstract class TsFromExport extends TsExport {
-    public from: string;
+    constructor(public from: string) {
+        super();
+    }
 }
 
 export class TsClassExport extends TsNamedExport {
