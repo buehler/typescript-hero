@@ -2,8 +2,8 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsNamedDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
-import {TsAllExport, TsExport, TsNamedExport} from '../models//TsExport';
+import {TsDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration} from '../models/TsDeclaration';
+import {TsAllExport, TsNamedExport} from '../models/TsExport';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
@@ -56,12 +56,6 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
     return children.indexOf(node) === 0;
 }
 
-function allowedIfNotLocalScoped(node: Node) {
-    // use mues:
-    // - lokali variable ()
-    // - lokali parameter (normal & arrow funcs)
-}
-
 function importDeclaration(tsFile: TsResolveFile, node: ImportDeclaration): void {
     let children = node.getChildren();
 
@@ -108,7 +102,7 @@ function importEqualsDeclaration(tsFile: TsResolveFile, node: ImportEqualsDeclar
     tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
 }
 
-function declaration(tsFile: TsResolveFile, node: Node, ctor: new (isExported: boolean, name: string) => TsNamedDeclaration): void {
+function declaration(tsFile: TsResolveFile, node: Node, ctor: new (isExported: boolean, name: string) => TsDeclaration): void {
     let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
     tsFile.declarations.push(new ctor(checkIfExported(node), name.text));
 }
@@ -207,6 +201,9 @@ export class TsResolveFileParser {
                 case SyntaxKind.InterfaceDeclaration:
                     declaration(tsFile, child, TsInterfaceDeclaration);
                     break;
+                case SyntaxKind.Parameter:
+                    declaration(tsFile, child, TsParameterDeclaration);
+                    break;
                 case SyntaxKind.VariableStatement:
                     variableDeclaration(tsFile, <VariableStatement>child);
                     break;
@@ -214,6 +211,7 @@ export class TsResolveFileParser {
                     exportDeclaration(tsFile, child);
                     break;
             }
+            this.parseTypescriptDeclarations(tsFile, child);
         }
     }
 

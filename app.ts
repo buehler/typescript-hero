@@ -6,4 +6,5 @@ const file = path.join(__dirname, '../test.ts');
 let a = new TsResolveFileParser().parseFile(file);
 
 console.log(a);
+console.log(a.nonLocalUsages);
 process.exit(0);
