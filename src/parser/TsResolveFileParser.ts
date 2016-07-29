@@ -1,15 +1,9 @@
 import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
-import {TsStringImport} from '../models/TsImport';
-import * as typescript from 'typescript';
+import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
+import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import fs = require('fs');
-import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral} from 'typescript';
-
-const syntaxDefinitions = {
-    imports: {
-        string: [SyntaxKind.ImportKeyword, SyntaxKind.StringLiteral, SyntaxKind.SemicolonToken]
-    }
-};
+import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier} from 'typescript';
 
 export class TsResolveFileParser {
     public parseFile(filePath: string | vscode.Uri): TsResolveFile {
@@ -27,14 +21,14 @@ export class TsResolveFileParser {
     private parseTypescript(source: SourceFile): TsResolveFile {
         let tsFile = new TsResolveFile();
 
-        this.syntaxList(tsFile, source.getChildAt(0));
+        this.rootSyntaxList(tsFile, source.getChildAt(0));
 
         return tsFile;
     }
 
     private parseDefinition(source: SourceFile): any { }
 
-    private syntaxList(tsFile: TsResolveFile, node: Node): void {
+    private rootSyntaxList(tsFile: TsResolveFile, node: Node): void {
         for (let child of node.getChildren()) {
             switch (child.kind) {
                 case SyntaxKind.ImportDeclaration:
@@ -54,12 +48,42 @@ export class TsResolveFileParser {
             return;
         }
 
-        if (children.every((child, idx) => child.kind === syntaxDefinitions.imports.string[idx])) {
-            let strLiteral = <StringLiteral>children[1];
-            tsFile.imports.push(new TsStringImport(strLiteral.text));
+        let libName = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+
+        if (children[1].kind === SyntaxKind.StringLiteral) {
+            tsFile.imports.push(new TsStringImport(libName.text));
+        } else if (children[1].kind === SyntaxKind.ImportClause && children[1].getChildAt(0).kind === SyntaxKind.NamespaceImport) {
+            let alias = children[1].getChildAt(0).getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+            tsFile.imports.push(new TsNamespaceImport(libName.text, alias.text));
+        } else if (children[1].kind === SyntaxKind.ImportClause && children[1].getChildAt(0).kind === SyntaxKind.NamedImports) {
+            let specifiers = [],
+                tsImport = new TsNamedImport(libName.text);
+            children[1]
+                .getChildAt(0) // NamedImports
+                .getChildAt(1) // SyntaxList
+                .getChildren() // All children
+                .filter(o => o.kind === SyntaxKind.ImportSpecifier)
+                .forEach(o => {
+                    let children = o.getChildren();
+                    let specifier = new TsResolveSpecifier(children[0].getText());
+                    if (children.length === 3 && children.some(c => c.kind === SyntaxKind.AsKeyword)) {
+                        specifier.alias = children[2].getText();
+                    }
+                    specifiers.push(specifier);
+                });
+            tsImport.specifiers = specifiers;
+            tsFile.imports.push(tsImport);
         }
     }
 
     private importEqualsDeclaration(tsFile: TsResolveFile, node: ImportEqualsDeclaration): void {
+        let children = node.getChildren();
+        let alias = children.find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+        let libName = children
+            .find(o => o.kind === SyntaxKind.ExternalModuleReference)
+            .getChildren()
+            .find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+
+        tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
     }
 }

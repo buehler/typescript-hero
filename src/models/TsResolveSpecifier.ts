@@ -1,4 +1,3 @@
 export class TsResolveSpecifier {
-    public name: string;
-    public alias: string;
+    constructor(public specifier: string, public alias?: string) { }
 }
