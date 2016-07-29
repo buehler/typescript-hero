@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport, TsAllFromExport, TsNamedFromExport} from '../models/TsExport';
+import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport, TsAllFromExport, TsNamedFromExport} from '../models/TsDeclaration';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 

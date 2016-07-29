@@ -2,7 +2,7 @@ import * as chai from 'chai';
 import {TsResolveFileParser} from '../../src/parser/TsResolveFileParser';
 import {TsStringImport, TsNamedImport, TsNamespaceImport, TsExternalModuleImport} from '../../src/models/TsImport';
 import {TsResolveFile} from '../../src/models/TsResolveFile';
-import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsVariableExport, TsTypeExport, TsInterfaceExport, TsAllFromExport, TsNamedFromExport} from '../../src/models/TsExport';
+import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsVariableExport, TsTypeExport, TsInterfaceExport, TsAllFromExport, TsNamedFromExport} from '../../src/models/TsDeclaration';
 import path = require('path');
 
 chai.should();
