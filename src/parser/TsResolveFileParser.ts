@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration} from '../models/TsDeclaration';
+import {TsExportableDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration} from '../models/TsDeclaration';
 import {TsAllExport, TsNamedExport} from '../models/TsExport';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
@@ -102,9 +102,9 @@ function importEqualsDeclaration(tsFile: TsResolveFile, node: ImportEqualsDeclar
     tsFile.imports.push(new TsExternalModuleImport(libName.text, alias.text));
 }
 
-function declaration(tsFile: TsResolveFile, node: Node, ctor: new (isExported: boolean, name: string) => TsDeclaration): void {
+function declaration(tsFile: TsResolveFile, node: Node, ctor: new (name: string, isExported: boolean) => TsExportableDeclaration): void {
     let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
-    tsFile.declarations.push(new ctor(checkIfExported(node), name.text));
+    tsFile.declarations.push(new ctor(name.text, checkIfExported(node)));
 }
 
 function exportDeclaration(tsFile: TsResolveFile, node: Node): void {

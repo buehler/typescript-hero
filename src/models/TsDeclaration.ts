@@ -1,26 +1,32 @@
 export abstract class TsDeclaration {
-    constructor(public isExported: boolean, public name: string) { }
+    constructor(public name: string) { }
 }
 
-export class TsClassDeclaration extends TsDeclaration {
+export abstract class TsExportableDeclaration extends TsDeclaration {
+    constructor(name: string, public isExported: boolean) {
+        super(name);
+    }
 }
 
-export class TsFunctionDeclaration extends TsDeclaration {
+export class TsClassDeclaration extends TsExportableDeclaration {
 }
 
-export class TsEnumDeclaration extends TsDeclaration {
+export class TsFunctionDeclaration extends TsExportableDeclaration {
 }
 
-export class TsTypeDeclaration extends TsDeclaration {
+export class TsEnumDeclaration extends TsExportableDeclaration {
 }
 
-export class TsInterfaceDeclaration extends TsDeclaration {
+export class TsTypeDeclaration extends TsExportableDeclaration {
+}
+
+export class TsInterfaceDeclaration extends TsExportableDeclaration {
 }
 
 export class TsVariableDeclaration extends TsDeclaration {
     constructor(isExported: boolean, name: string, public isConst: boolean) {
-        super(isExported, name);
+        super(name);
     }
 }
 
-export class TsParameterDeclaration extends TsDeclaration { }
+export class TsParameterDeclaration extends TsExportableDeclaration { }
