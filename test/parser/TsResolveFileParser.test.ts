@@ -122,26 +122,37 @@ describe('TsResolveFileParser', () => {
             });
 
             it('should parse variable export', () => {
-                parsed.exports[4].should.be.an.instanceOf(TsVariableExport)
-                    .that.deep.equals({ name: 'ExportedVariable', isConst: false });
+                parsed.exports[4].should.be.an.instanceOf(TsVariableExport);
+                let tsExport = parsed.exports[4] as TsVariableExport;
+                tsExport.name.should.equal('ExportedVariable');
+                tsExport.isConst.should.be.false;
             });
 
             it('should parse constant export', () => {
-                parsed.exports[5].should.be.an.instanceOf(TsVariableExport)
-                    .that.deep.equals({ name: 'ExportedConst', isConst: true });
+                parsed.exports[5].should.be.an.instanceOf(TsVariableExport);
+                let tsExport = parsed.exports[5] as TsVariableExport;
+                tsExport.name.should.equal('ExportedConst');
+                tsExport.isConst.should.be.true;
             });
 
             it('should parse let variable export', () => {
-                parsed.exports[6].should.be.an.instanceOf(TsVariableExport)
-                    .that.deep.equals({ name: 'ExportedLet', isConst: false });
+                parsed.exports[6].should.be.an.instanceOf(TsVariableExport);
+                let tsExport = parsed.exports[6] as TsVariableExport;
+                tsExport.name.should.equal('ExportedLet');
+                tsExport.isConst.should.be.false;
             });
 
             it('should parse multiline variable export', () => {
-                parsed.exports[7].should.be.an.instanceOf(TsVariableExport)
-                    .that.deep.equals({ name: 'MultiLet1', isConst: false });
+                parsed.exports[7].should.be.an.instanceOf(TsVariableExport);
+                parsed.exports[8].should.be.an.instanceOf(TsVariableExport);
 
-                parsed.exports[8].should.be.an.instanceOf(TsVariableExport)
-                    .that.deep.equals({ name: 'MultiLet2', isConst: false });
+                let tsExport = parsed.exports[7] as TsVariableExport;
+                tsExport.name.should.equal('MultiLet1');
+                tsExport.isConst.should.be.false;
+
+                tsExport = parsed.exports[8] as TsVariableExport;
+                tsExport.name.should.equal('MultiLet2');
+                tsExport.isConst.should.be.false;
             });
 
             it('should parse type export', () => {
@@ -168,13 +179,8 @@ describe('TsResolveFileParser', () => {
 
             it('should parse export named from another file', () => {
                 parsed.exports[12].should.be.an.instanceOf(TsNamedFromExport)
-                    .that.deep.equals({
-                        from: './AnotherFile',
-                        specifiers: [
-                            { specifier: 'Specifier', alias: undefined },
-                            { specifier: 'Specifier', alias: 'Alias' }
-                        ]
-                    });
+                    .with.property('from')
+                    .that.equals('./AnotherFile');
             });
 
         });
