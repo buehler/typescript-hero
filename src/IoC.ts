@@ -11,7 +11,7 @@ injector.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 injector.bind(ExtensionConfig).to(ExtensionConfig).inSingletonScope();
 
 injector.bind(ResolveExtension).to(ResolveExtension).inSingletonScope();
-injector.bind(ResolveCache).to(ResolveCache);
+injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
 injector.bind(TsResolveFileParser).to(TsResolveFileParser);
 
 export const Injector = injector;

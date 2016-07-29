@@ -24,7 +24,7 @@ export class ResolveCache {
             this.cancelRefresh();
         }
 
-        console.log('ResolveCache: Starting cache refresh.');        
+        console.log('ResolveCache: Starting cache refresh.');
         this.cancelToken = new vscode.CancellationTokenSource();
         let searches: PromiseLike<vscode.Uri[]>[] = [vscode.workspace.findFiles('**/*.ts', '{**/node_modules/**,**/typings/**}', undefined, this.cancelToken.token)];
 
