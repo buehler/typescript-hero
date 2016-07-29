@@ -118,7 +118,7 @@ function moduleDeclaration(child: ModuleDeclaration): TsModuleDeclaration {
         isNamespace = true;
         name = (children.find(o => o.kind === SyntaxKind.Identifier) as Identifier).text;
     } else {
-        name = (children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral).text;
+        name = ((children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral) || (children.find(o => o.kind === SyntaxKind.Identifier) as Identifier)).text;
     }
 
     name = name.replace(/[\"\']/g, '');
@@ -128,13 +128,14 @@ function moduleDeclaration(child: ModuleDeclaration): TsModuleDeclaration {
 
 function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): void {
     let children = node.getChildren();
-    let libName = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
-
+    let libLiteral = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+    let libName = libLiteral ? libLiteral.text : undefined;
+    
     if (children.some(o => o.kind === SyntaxKind.AsteriskToken)) {
-        tsResolveInfo.exports.push(new TsAllFromExport(libName.text));
+        tsResolveInfo.exports.push(new TsAllFromExport(libName));
     } else if (children.some(o => o.kind === SyntaxKind.NamedExports)) {
         let specifiers = [],
-            tsExport = new TsNamedFromExport(libName.text);
+            tsExport = new TsNamedFromExport(libName);
         children[1]
             .getChildAt(1) // SyntaxList
             .getChildren() // All children

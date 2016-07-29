@@ -5,7 +5,7 @@ export abstract class TsExport {
 }
 
 export abstract class TsFromExport {
-    constructor(public from: string) { }
+    constructor(public from?: string) { }
 }
 
 export class TsAllFromExport extends TsFromExport {
