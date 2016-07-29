@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport} from '../models/TsExport';
+import {TsNamedExport, TsClassExport, TsFunctionExport, TsEnumExport, TsTypeExport, TsInterfaceExport, TsVariableExport, TsAllFromExport, TsNamedFromExport} from '../models/TsExport';
 import fs = require('fs');
 import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
@@ -12,6 +12,10 @@ const usageNotAllowedParents = [
     SyntaxKind.NamespaceImport,
     SyntaxKind.ClassDeclaration,
     SyntaxKind.ImportDeclaration,
+    SyntaxKind.InterfaceDeclaration,
+    SyntaxKind.ExportDeclaration,
+    SyntaxKind.ExportSpecifier,
+    SyntaxKind.ImportSpecifier,
     SyntaxKind.FunctionDeclaration,
     SyntaxKind.EnumDeclaration,
     SyntaxKind.TypeAliasDeclaration,
@@ -104,6 +108,32 @@ function exportDeclaration(tsFile: TsResolveFile, node: Node, ctor: new (name: s
     tsFile.exports.push(new ctor(name.text));
 }
 
+function exportFromDeclaration(tsFile: TsResolveFile, node: Node): void {
+    let children = node.getChildren();
+    let libName = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+
+    if (children.some(o => o.kind === SyntaxKind.AsteriskToken)) {
+        tsFile.exports.push(new TsAllFromExport(libName.text));
+    } else if (children.some(o => o.kind === SyntaxKind.NamedExports)) {
+        let specifiers = [],
+            tsExport = new TsNamedFromExport(libName.text);
+        children[1]
+            .getChildAt(1) // SyntaxList
+            .getChildren() // All children
+            .filter(o => o.kind === SyntaxKind.ExportSpecifier)
+            .forEach(o => {
+                let children = o.getChildren();
+                let specifier = new TsResolveSpecifier(children[0].getText());
+                if (children.length === 3 && children.some(c => c.kind === SyntaxKind.AsKeyword)) {
+                    specifier.alias = children[2].getText();
+                }
+                specifiers.push(specifier);
+            });
+        tsExport.specifiers = specifiers;
+        tsFile.exports.push(tsExport);
+    }
+}
+
 function exportVariableDeclaration(tsFile: TsResolveFile, node: VariableStatement): void {
     if (!checkIfExported(node)) {
         return;
@@ -179,6 +209,9 @@ export class TsResolveFileParser {
                 case SyntaxKind.VariableStatement:
                     exportVariableDeclaration(tsFile, <VariableStatement>child);
                     break;
+                case SyntaxKind.ExportDeclaration:
+                    exportFromDeclaration(tsFile, child);
+                    break;
             }
         }
     }
@@ -187,7 +220,10 @@ export class TsResolveFileParser {
         for (let child of node.getChildren()) {
             if (child.kind === SyntaxKind.Identifier) {
                 if (child.parent && usagePredicates.every(predicate => predicate(child))) {
-                    console.log(`${(<Identifier>child).text} - ${(<any>SyntaxKind)[child.parent.kind]}`);
+                    let identifier = <Identifier>child;
+                    if (tsFile.usages.indexOf(identifier.text) === -1) {
+                        tsFile.usages.push(identifier.text);
+                    }
                 }
             }
 
