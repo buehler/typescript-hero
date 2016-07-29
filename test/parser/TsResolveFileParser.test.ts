@@ -17,7 +17,7 @@ describe('TsResolveFileParser', () => {
 
         describe('Imports', () => {
 
-            const file = path.join(__dirname, '../../../test/etc/resolveFileParser/importsOnly.ts');
+            const file = path.join(__dirname, '../../../.test/resolveFileParser/importsOnly.ts');
 
             it('should parse imports correctly', () => {
                 let parsed = parser.parseFile(file);
