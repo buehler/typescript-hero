@@ -14,6 +14,10 @@ export class ResolveCache {
         return !!this.cache;
     }
 
+    public get cachedFiles(): TsResolveFile[] {
+        return this.cache;
+    }
+
     constructor(private parser: TsResolveFileParser) {
         this.refreshCache();
     }

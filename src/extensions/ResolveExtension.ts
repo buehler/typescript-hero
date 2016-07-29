@@ -1,10 +1,11 @@
 import * as inversify from 'inversify';
 import * as vscode from 'vscode';
 import {ResolveCache} from '../caches/ResolveCache';
+import {QuickPickProvider} from '../provider/QuickPickProvider';
 
 @inversify.injectable()
 export class ResolveExtension {
-    constructor( @inversify.inject('context') context: vscode.ExtensionContext, private cache: ResolveCache) {
+    constructor( @inversify.inject('context') context: vscode.ExtensionContext, private cache: ResolveCache, private pickProvider: QuickPickProvider) {
         console.log('ResolveExtension instantiated');
 
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.addImport', () => this.addImport()));
@@ -16,6 +17,9 @@ export class ResolveExtension {
             this.showCacheWarning();
             return;
         }
+        this.pickProvider.addImportPick().then(o => {
+            console.log(o);
+        });
     }
 
     private showCacheWarning(): void {

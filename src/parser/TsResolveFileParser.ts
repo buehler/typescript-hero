@@ -106,6 +106,9 @@ function importEqualsDeclaration(tsResolveInfo: TsResolveInformation, node: Impo
 
 function declaration(tsResolveInfo: TsResolveInformation, node: Node, ctor: new (name: string, isExported: boolean) => TsExportableDeclaration): void {
     let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+    if (!name) {
+        return;
+    }
     tsResolveInfo.declarations.push(new ctor(name.text, checkIfExported(node)));
 }
 
