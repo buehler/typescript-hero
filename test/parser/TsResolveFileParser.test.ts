@@ -3,7 +3,7 @@ import {TsResolveFileParser} from '../../src/parser/TsResolveFileParser';
 import {TsStringImport, TsNamedImport, TsNamespaceImport, TsExternalModuleImport} from '../../src/models/TsImport';
 import {TsResolveFile} from '../../src/models/TsResolveFile';
 import {TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsVariableDeclaration, TsTypeDeclaration, TsInterfaceDeclaration} from '../../src/models/TsDeclaration';
-import {TsAllExport, TsNamedExport} from '../../src/models/TsExport';
+import {TsAllFromExport, TsNamedFromExport} from '../../src/models/TsExport';
 import path = require('path');
 
 chai.should();
@@ -185,13 +185,13 @@ describe('TsResolveFileParser', () => {
             });
 
             it('should parse export all from another file', () => {
-                parsed.exports[0].should.be.an.instanceOf(TsAllExport)
+                parsed.exports[0].should.be.an.instanceOf(TsAllFromExport)
                     .with.property('from')
                     .that.equals('./OtherFile');
             });
 
             it('should parse export named from another file', () => {
-                parsed.exports[1].should.be.an.instanceOf(TsNamedExport)
+                parsed.exports[1].should.be.an.instanceOf(TsNamedFromExport)
                     .with.property('from')
                     .that.equals('./AnotherFile');
             });

@@ -7,7 +7,7 @@ declare module "body-parser" {
         export function raw(): express.RequestHandler;
     }
 
-    export = bodyParser;
+    export = bodyParser;    
 }
 
 declare module "mime" {

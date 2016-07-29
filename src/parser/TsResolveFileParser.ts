@@ -2,11 +2,11 @@ import * as vscode from 'vscode';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsExportableDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration} from '../models/TsDeclaration';
-import {TsAllExport, TsNamedExport} from '../models/TsExport';
+import {TsExportableDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TsAllFromExport, TsNamedFromExport, TsAssignedExport} from '../models/TsExport';
 import {TsResolveInformation} from '../models/TsResolveInformation';
 import fs = require('fs');
-import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
+import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ModuleDeclaration, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
 
 const usageNotAllowedParents = [
     SyntaxKind.ImportEqualsDeclaration,
@@ -108,15 +108,32 @@ function declaration(tsResolveInfo: TsResolveInformation, node: Node, ctor: new 
     tsResolveInfo.declarations.push(new ctor(name.text, checkIfExported(node)));
 }
 
+function moduleDeclaration(child: ModuleDeclaration): TsModuleDeclaration {
+    let name: string,
+        isNamespace = false,
+        children = child.getChildren();
+
+    if (children.some(o => o.kind === SyntaxKind.NamespaceKeyword)) {
+        isNamespace = true;
+        name = (children.find(o => o.kind === SyntaxKind.Identifier) as Identifier).text;
+    } else {
+        name = (children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral).text;
+    }
+
+    name = name.replace(/[\"\']/g, '');
+
+    return new TsModuleDeclaration(name, checkIfExported(child), isNamespace);
+}
+
 function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): void {
     let children = node.getChildren();
     let libName = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
 
     if (children.some(o => o.kind === SyntaxKind.AsteriskToken)) {
-        tsResolveInfo.exports.push(new TsAllExport(libName.text));
+        tsResolveInfo.exports.push(new TsAllFromExport(libName.text));
     } else if (children.some(o => o.kind === SyntaxKind.NamedExports)) {
         let specifiers = [],
-            tsExport = new TsNamedExport(libName.text);
+            tsExport = new TsNamedFromExport(libName.text);
         children[1]
             .getChildAt(1) // SyntaxList
             .getChildren() // All children
@@ -132,6 +149,11 @@ function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): voi
         tsExport.specifiers = specifiers;
         tsResolveInfo.exports.push(tsExport);
     }
+}
+
+function exportAssignment(tsResolveInfo: TsResolveInformation, node: Node): void {
+    let declarationIdentifier = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+    tsResolveInfo.exports.push(new TsAssignedExport(declarationIdentifier.text, tsResolveInfo.declarations));
 }
 
 function variableDeclaration(tsResolveInfo: TsResolveInformation, node: VariableStatement): void {
@@ -200,6 +222,9 @@ export class TsResolveFileParser {
                 case SyntaxKind.ExportDeclaration:
                     exportDeclaration(tsResolveInfo, child);
                     break;
+                case SyntaxKind.ExportAssignment:
+                    exportAssignment(tsResolveInfo, child);
+                    break;
                 case SyntaxKind.Identifier:
                     if (child.parent && usagePredicates.every(predicate => predicate(child))) {
                         let identifier = <Identifier>child;
@@ -208,6 +233,11 @@ export class TsResolveFileParser {
                         }
                     }
                     break;
+                case SyntaxKind.ModuleDeclaration:
+                    let module = moduleDeclaration(<ModuleDeclaration>child);
+                    tsResolveInfo.declarations.push(module);
+                    this.parseDeclarations(module, child);
+                    continue;
             }
             this.parseDeclarations(tsResolveInfo, child);
         }
