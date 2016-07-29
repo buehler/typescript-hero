@@ -19,7 +19,8 @@ const usageNotAllowedParents = [
     SyntaxKind.FunctionDeclaration,
     SyntaxKind.EnumDeclaration,
     SyntaxKind.TypeAliasDeclaration,
-    SyntaxKind.MethodDeclaration
+    SyntaxKind.MethodDeclaration,
+    SyntaxKind.PropertyAssignment
 ];
 
 const usageAllowedIfLast = [
@@ -33,10 +34,16 @@ const usageAllowedIfLast = [
 const usagePredicates = [
     (o: Node) => usageNotAllowedParents.indexOf(o.parent.kind) === -1,
     allowedIfLastIdentifier,
-    allowedIfPropertyDeclarationFirst
+    allowedIfPropertyAccessFirst
 ];
 
-function allowedIfLastIdentifier(node: Node) {
+// use mues:
+// - lokali variable
+// - lokali parameter (normal & arrow funcs)
+
+
+
+function allowedIfLastIdentifier(node: Node): boolean {
     if (usageAllowedIfLast.indexOf(node.parent.kind) === -1) {
         return true;
     }
@@ -45,13 +52,17 @@ function allowedIfLastIdentifier(node: Node) {
     return children.indexOf(node) === 1;
 }
 
-function allowedIfPropertyDeclarationFirst(node: Node) {
+function allowedIfPropertyAccessFirst(node: Node): boolean {
     if (node.parent.kind !== SyntaxKind.PropertyAccessExpression) {
         return true;
     }
 
     let children = node.parent.getChildren();
     return children.indexOf(node) === 0;
+}
+
+function allowedIfNotLocalScoped(node: Node) {
+    //arrow func, func, 
 }
 
 function importDeclaration(tsFile: TsResolveFile, node: ImportDeclaration): void {
@@ -145,8 +156,7 @@ function exportVariableDeclaration(tsFile: TsResolveFile, node: VariableStatemen
 function checkIfExported(node: Node): boolean {
     let children = node.getChildren();
     return children.length > 0 &&
-        children[0].kind === SyntaxKind.SyntaxList &&
-        children[0].getChildren().some(o => o.kind === SyntaxKind.ExportKeyword);
+        children.filter(o => o.kind === SyntaxKind.SyntaxList).some(o => o.getChildren().some(o => o.kind === SyntaxKind.ExportKeyword));
 }
 
 export class TsResolveFileParser {
