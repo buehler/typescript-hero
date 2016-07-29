@@ -10,3 +10,4 @@ tsconfig.json
 tslint.json
 typings.json
 *.vsix
+.test/**
