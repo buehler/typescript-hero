@@ -1,7 +1,7 @@
 import {TsResolveFileParser} from './src/parser/TsResolveFileParser';
 import path = require('path');
 
-const file = path.join(__dirname, '../demo.ts');
+const file = path.join(__dirname, '../demo.d.ts');
 
 let a = new TsResolveFileParser().parseFile(file);
 

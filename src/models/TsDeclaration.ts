@@ -1,3 +1,7 @@
+import {TsResolveInformation} from './TsResolveInformation';
+import {TsImport} from './TsImport';
+import {TsExport} from './TsExport';
+
 export abstract class TsDeclaration {
     constructor(public name: string) { }
 }
@@ -30,3 +34,18 @@ export class TsVariableDeclaration extends TsDeclaration {
 }
 
 export class TsParameterDeclaration extends TsExportableDeclaration { }
+
+export class TsModuleDeclaration extends TsExportableDeclaration implements TsResolveInformation {
+    public imports: TsImport[] = [];
+    public declarations: TsDeclaration[] = [];
+    public exports: TsExport[] = [];
+    public usages: string[] = [];
+
+    public get nonLocalUsages(): string[] {
+        return this.usages.filter(usage => !this.declarations.some(o => o.name === usage));
+    }
+
+    public get exportedDeclarations(): TsDeclaration[] {
+        return this.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
+    }
+}
