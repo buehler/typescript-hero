@@ -112,6 +112,14 @@ function declaration(tsResolveInfo: TsResolveInformation, node: Node, ctor: new 
     tsResolveInfo.declarations.push(new ctor(name.text, checkIfExported(node)));
 }
 
+function parameterDeclaration(tsResolveInfo: TsResolveInformation, node: Node): void {
+    let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+    if (!name) {
+        return;
+    }
+    tsResolveInfo.declarations.push(new TsParameterDeclaration(name.text));
+}
+
 function moduleDeclaration(child: ModuleDeclaration): TsModuleDeclaration {
     let name: string,
         isNamespace = false,
@@ -133,7 +141,7 @@ function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): voi
     let children = node.getChildren();
     let libLiteral = children.find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
     let libName = libLiteral ? libLiteral.text : undefined;
-    
+
     if (children.some(o => o.kind === SyntaxKind.AsteriskToken)) {
         tsResolveInfo.exports.push(new TsAllFromExport(libName));
     } else if (children.some(o => o.kind === SyntaxKind.NamedExports)) {
@@ -220,7 +228,7 @@ export class TsResolveFileParser {
                     declaration(tsResolveInfo, child, TsInterfaceDeclaration);
                     break;
                 case SyntaxKind.Parameter:
-                    declaration(tsResolveInfo, child, TsParameterDeclaration);
+                    parameterDeclaration(tsResolveInfo, child);
                     break;
                 case SyntaxKind.VariableStatement:
                     variableDeclaration(tsResolveInfo, <VariableStatement>child);

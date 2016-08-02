@@ -12,11 +12,12 @@ export class ResolveExtension {
         vscode.workspace.onDidSaveTextDocument(event => this.cache.refreshCache());
     }
 
-    private addImport(): void{
+    private addImport(): void {
         if (!this.cache.cacheReady) {
             this.showCacheWarning();
             return;
         }
+        // filter already imported
         this.pickProvider.addImportPick().then(o => {
             console.log(o);
         });

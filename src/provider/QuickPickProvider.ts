@@ -8,7 +8,7 @@ import {ResolveItemFactory} from '../factories/ResolveItemFactory';
 export class QuickPickProvider {
     constructor(private cache: ResolveCache, private resolveItemFactory: ResolveItemFactory) { }
 
-    public addImportPick(showAlreadyImported: boolean = false): Thenable<ResolveQuickPickItem> {
+    public addImportPick(): Thenable<ResolveQuickPickItem> {
         return vscode.window.showQuickPick(this.buildQuickPickList());
     }
 
