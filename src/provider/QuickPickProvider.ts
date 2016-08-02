@@ -3,12 +3,11 @@ import {ResolveCache} from '../caches/ResolveCache';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
 import * as inversify from 'inversify';
 import {ResolveItemFactory} from '../factories/ResolveItemFactory';
-import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {TsNamespaceImport, TsNamedImport, TsExternalModuleImport} from '../models/TsImport';
 
 @inversify.injectable()
 export class QuickPickProvider {
-    constructor(private cache: ResolveCache, private resolveItemFactory: ResolveItemFactory, private parser: TsResolveFileParser) { }
+    constructor(private cache: ResolveCache, private resolveItemFactory: ResolveItemFactory) { }
 
     public addImportPick(openDocument?: vscode.Uri): Thenable<ResolveQuickPickItem> {
         return vscode.window.showQuickPick(this.buildQuickPickList(openDocument));

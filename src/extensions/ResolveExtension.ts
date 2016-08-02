@@ -3,9 +3,10 @@ import * as vscode from 'vscode';
 import {ResolveCache} from '../caches/ResolveCache';
 import {QuickPickProvider} from '../provider/QuickPickProvider';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsImport, TsNamedImport} from '../models/TsImport';
+import {TsImport, TsNamedImport, TsExternalModuleImport, TsNamespaceImport} from '../models/TsImport';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
+import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 
 const importMatcher = /^import\s.*;$/;
 
@@ -23,10 +24,16 @@ function importSort(i1: TsImport, i2: TsImport): number {
 
 @inversify.injectable()
 export class ResolveExtension {
-    constructor( @inversify.inject('context') context: vscode.ExtensionContext, private cache: ResolveCache, private pickProvider: QuickPickProvider, private config: ExtensionConfig) {
+    constructor( @inversify.inject('context') context: vscode.ExtensionContext,
+        private cache: ResolveCache,
+        private pickProvider: QuickPickProvider,
+        private config: ExtensionConfig,
+        private parser: TsResolveFileParser) {
+
         console.log('ResolveExtension instantiated');
 
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.addImport', () => this.addImport()));
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.organizeImports', () => this.organizeImports()));
         vscode.workspace.onDidSaveTextDocument(event => this.cache.refreshCache());
     }
 
@@ -40,6 +47,26 @@ export class ResolveExtension {
                 this.addImportToDocument(o);
             }
         });
+    }
+
+    private organizeImports(): void {
+        let parsed = this.parser.parseFile(vscode.window.activeTextEditor.document.uri);
+        let keep: TsImport[] = [];
+
+        for (let actImport of parsed.imports) {
+            if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport) {
+                if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                    keep.push(actImport);
+                }
+            } else if (actImport instanceof TsNamedImport) {
+                actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1);
+                if (actImport.specifiers.length) {
+                    keep.push(actImport);
+                }
+            }
+        }
+
+        this.commitDocumentImports(keep);
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): void {
@@ -57,8 +84,11 @@ export class ResolveExtension {
             }
         }
 
-        imports = imports.sort(importSort);
+        this.commitDocumentImports(imports);
+    }
 
+    private commitDocumentImports(imports: TsImport[]): void {
+        imports = imports.sort(importSort);
         let editor = vscode.window.activeTextEditor;
         editor.edit(builder => {
             for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {

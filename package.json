@@ -14,7 +14,8 @@
         "Productivity"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello",
+        "onCommand:typescriptHero.addImport",
+        "onCommand:typescriptHero.organizeImports",
         "onLanguage:typescript"
     ],
     "main": "./out/src/extension",
@@ -26,7 +27,7 @@
             },
             {
                 "command": "typescriptHero.organizeImports",
-                "title": "Typescript: Organize imports"
+                "title": "Typescript: Organize imports (sort and remove unused)"
             }
         ],
         "keybindings": [
