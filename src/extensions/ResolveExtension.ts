@@ -18,7 +18,7 @@ export class ResolveExtension {
             return;
         }
         // filter already imported
-        this.pickProvider.addImportPick().then(o => {
+        this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri).then(o => {
             console.log(o);
         });
     }

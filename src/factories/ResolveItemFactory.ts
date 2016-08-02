@@ -4,6 +4,7 @@ import * as inversify from 'inversify';
 import {TsDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsExport, TsFromExport, TsAssignedExport, TsAllFromExport, TsNamedFromExport} from '../models/TsExport';
 import path = require('path');
+import vscode = require('vscode');
 
 type LibExports = { [libName: string]: { declarations: ResolveItem[], exports: TsExport[] } };
 
@@ -17,13 +18,14 @@ function isModule(declaration: TsDeclaration): declaration is TsModuleDeclaratio
 
 @inversify.injectable()
 export class ResolveItemFactory {
-    public getResolvableItems(files: TsResolveFile[]): ResolveItem[] {
-        let libExports: LibExports = {};
+    public getResolvableItems(files: TsResolveFile[], relativeDocument: vscode.Uri): ResolveItem[] {
+        let libExports: LibExports = {},
+        relativePath = path.parse(relativeDocument.fsPath);
 
         // process all the files        
         for (let file of files.filter(o => !!o.declarations.length || !!o.exports.length)) {
             if (!file.isDeclarationFile) {
-                this.processLocalFile(libExports, file);
+                this.processLocalFile(libExports, file, relativePath);
             } else {
                 if (file.declarations.some(o => isModule(o))) {
                     this.processTypingsFile(libExports, file);
@@ -59,8 +61,12 @@ export class ResolveItemFactory {
         return Object.keys(libExports).reduce((all, key) => all.concat(libExports[key].declarations), []);
     }
 
-    private processLocalFile(libExports: LibExports, file: TsResolveFile): void {
-        let libname = file.path.name;
+    private processLocalFile(libExports: LibExports, file: TsResolveFile, relativeDocument: path.ParsedPath): void {
+        let libname = path.relative(relativeDocument.dir, path.format(file.path));
+        if (!libname.startsWith('.')) {
+            libname = './' + libname;
+        }
+
         if (!libExports[libname]) {
             libExports[libname] = { declarations: [], exports: [] };
         }
