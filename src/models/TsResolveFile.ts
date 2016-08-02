@@ -14,17 +14,7 @@ export class TsResolveFile extends TsFile implements TsResolveInformation {
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage));
     }
 
-    public get libraryName(): string {
-        if (this.path.ext === '.ts') {
-            return this.path.name;
-        }
-        let dirSplit = this.path.dir.split('/');
-
-        let nodeIndex = dirSplit.indexOf('node_modules');
-        if (nodeIndex > -1 && nodeIndex + 1 <= dirSplit.length) {
-            return dirSplit.slice(nodeIndex + 1).join('/');
-        }
-
-        return dirSplit[dirSplit.length - 1];
+    public get isDeclarationFile(): boolean {
+        return this.path.ext === '.d.ts';
     }
 }

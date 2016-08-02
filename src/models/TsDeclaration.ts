@@ -27,13 +27,13 @@ export class TsTypeDeclaration extends TsExportableDeclaration {
 export class TsInterfaceDeclaration extends TsExportableDeclaration {
 }
 
-export class TsVariableDeclaration extends TsDeclaration {
+export class TsVariableDeclaration extends TsExportableDeclaration {
     constructor(isExported: boolean, name: string, public isConst: boolean) {
-        super(name);
+        super(name, isExported);
     }
 }
 
-export class TsParameterDeclaration extends TsExportableDeclaration { }
+export class TsParameterDeclaration extends TsDeclaration { }
 
 export class TsModuleDeclaration extends TsExportableDeclaration implements TsResolveInformation {
     public imports: TsImport[] = [];

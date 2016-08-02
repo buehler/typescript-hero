@@ -16,11 +16,11 @@ export class TsNamedFromExport extends TsFromExport {
 }
 
 export class TsAssignedExport extends TsExport {
-    public get declaration(): TsDeclaration {
-        return this.declarations.find(o => o.name === this.declarationIdentifier);
+    public get declarations(): TsDeclaration[] {
+        return this._declarations.filter(o => o.name === this.declarationIdentifier);
     }
 
-    constructor(public declarationIdentifier: string, private declarations: TsDeclaration[]) {
+    constructor(public declarationIdentifier: string, private _declarations: TsDeclaration[]) {
         super();
     }
 }

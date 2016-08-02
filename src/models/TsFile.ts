@@ -1,13 +1,17 @@
 import path = require('path');
 
 export class TsFile {
-    protected path: path.ParsedPath;
+    private _path: path.ParsedPath;
+
+    public get path(): path.ParsedPath {
+        return this._path;
+    }
 
     constructor(fileName: string) {
-        this.path = path.parse(fileName);
-        if (this.path.name.endsWith('.d')) {
-            this.path.name = this.path.name.replace('.d', '');
-            this.path.ext = '.d.ts';
+        this._path = path.parse(fileName);
+        if (this._path.name.endsWith('.d')) {
+            this._path.name = this._path.name.replace('.d', '');
+            this._path.ext = '.d.ts';
         }
     }
 }
