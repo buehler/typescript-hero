@@ -115,6 +115,13 @@ function declaration(tsResolveInfo: TsResolveInformation, node: Node, ctor: new 
 function parameterDeclaration(tsResolveInfo: TsResolveInformation, node: Node): void {
     let name = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
     if (!name) {
+        let objArrBinding = node.getChildren().find(o => o.kind === SyntaxKind.ObjectBindingPattern || o.kind === SyntaxKind.ArrayBindingPattern);
+        if (objArrBinding) {
+            let bindings = objArrBinding.getChildren().find(o => o.kind === SyntaxKind.SyntaxList).getChildren().filter(o => o.kind === SyntaxKind.BindingElement);
+            for (let binding of bindings) {
+                parameterDeclaration(tsResolveInfo, binding);
+            }
+        }
         return;
     }
     tsResolveInfo.declarations.push(new TsParameterDeclaration(name.text));
