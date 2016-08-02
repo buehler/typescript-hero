@@ -21,7 +21,7 @@ export class QuickPickProvider {
             if (openDocument) {
                 let exclude = this.cache.getResolveFileForPath(openDocument);
                 if (exclude) {
-                    console.log(exclude);
+                    //console.log(exclude);
                 }
             }
 
