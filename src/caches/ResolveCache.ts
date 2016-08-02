@@ -1,9 +1,9 @@
-import * as inversify from 'inversify';
-import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {TsResolveFile} from '../models/TsResolveFile';
-import * as vscode from 'vscode';
+import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import fs = require('fs');
-import path = require('path');
+import * as inversify from 'inversify';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 @inversify.injectable()
 export class ResolveCache {

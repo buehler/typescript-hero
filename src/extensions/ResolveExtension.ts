@@ -1,12 +1,12 @@
-import * as inversify from 'inversify';
-import * as vscode from 'vscode';
 import {ResolveCache} from '../caches/ResolveCache';
-import {QuickPickProvider} from '../provider/QuickPickProvider';
-import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsImport, TsNamedImport, TsExternalModuleImport, TsNamespaceImport} from '../models/TsImport';
 import {ExtensionConfig} from '../ExtensionConfig';
+import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
+import {TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
+import {QuickPickProvider} from '../provider/QuickPickProvider';
+import * as inversify from 'inversify';
+import * as vscode from 'vscode';
 
 const importMatcher = /^import\s.*;$/;
 
@@ -63,6 +63,8 @@ export class ResolveExtension {
                 if (actImport.specifiers.length) {
                     keep.push(actImport);
                 }
+            } else if (actImport instanceof TsStringImport) {
+                keep.push(actImport);
             }
         }
 
@@ -88,7 +90,10 @@ export class ResolveExtension {
     }
 
     private commitDocumentImports(imports: TsImport[]): void {
-        imports = imports.sort(importSort);
+        imports = [
+            ...imports.filter(o => o instanceof TsStringImport).sort(importSort),
+            ...imports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+        ];
         let editor = vscode.window.activeTextEditor;
         editor.edit(builder => {
             for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {

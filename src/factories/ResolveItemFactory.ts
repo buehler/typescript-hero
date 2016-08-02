@@ -43,9 +43,12 @@ export class ResolveItemFactory {
                 let lib = libExports[key];
                 for (let ex of lib.exports) {
                     if (ex instanceof TsFromExport) {
+                        if (!libExports[key] || !ex.from) {
+                            continue;
+                        }
                         let fromLib = path.resolve(key, ex.from);
                         fromLib = fromLib.substring(fromLib.indexOf(key));
-                        if (!libExports[key]) {
+                        if (!libExports[fromLib]) {
                             continue;
                         }
                         if (ex instanceof TsAllFromExport) {
