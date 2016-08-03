@@ -5,4 +5,8 @@ typings
 !typings/vscode-typings.d.ts
 .vscode-test
 *.vsix
+
+# Logs
+logs
 *.log
+npm-debug.log*
