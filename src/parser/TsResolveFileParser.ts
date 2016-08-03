@@ -173,6 +173,9 @@ function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): voi
 
 function exportAssignment(tsResolveInfo: TsResolveInformation, node: Node): void {
     let declarationIdentifier = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+    if (!declarationIdentifier) {
+        return;
+    }
     tsResolveInfo.exports.push(new TsAssignedExport(declarationIdentifier.text, tsResolveInfo.declarations));
 }
 
