@@ -20,7 +20,7 @@ function isModule(declaration: TsDeclaration): declaration is TsModuleDeclaratio
 export class ResolveItemFactory {
     public getResolvableItems(files: TsResolveFile[], relativeDocument: vscode.Uri): ResolveItem[] {
         let libExports: LibExports = {},
-        relativePath = path.parse(relativeDocument.fsPath);
+            relativePath = path.parse(relativeDocument.fsPath);
 
         // process all the files        
         for (let file of files.filter(o => !!o.declarations.length || !!o.exports.length)) {
@@ -48,15 +48,26 @@ export class ResolveItemFactory {
                         }
                         let fromLib = path.resolve(key, ex.from);
                         fromLib = fromLib.substring(fromLib.indexOf(key));
+
                         if (!libExports[fromLib]) {
                             continue;
-                        }
-                        if (ex instanceof TsAllFromExport) {
+                        } else if (ex instanceof TsAllFromExport) {
                             libExports[fromLib].declarations.forEach(o => o.libraryName = key);
                             libExports[key].declarations.push(...libExports[fromLib].declarations);
                             libExports[fromLib].declarations = [];
+                        } else if (ex instanceof TsNamedFromExport) {
+                            libExports[fromLib].declarations
+                                .filter(o => ex.specifiers.some(s => s.specifier === (o.alias || o.declaration.name)))
+                                .forEach(o => {
+                                    o.libraryName = key;
+                                    let spec = ex.specifiers.find(s => s.specifier === (o.alias || o.declaration.name));
+                                    if (spec.alias) {
+                                        o.alias = spec.alias;
+                                    }
+                                    libExports[fromLib].declarations.splice(libExports[fromLib].declarations.indexOf(o), 1);
+                                    libExports[key].declarations.push(o);
+                                });
                         }
-                        // ts export from (named)
                     }
                 }
             });
