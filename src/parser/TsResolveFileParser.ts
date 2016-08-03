@@ -189,16 +189,23 @@ function checkIfExported(node: Node): boolean {
 
 @inversify.injectable()
 export class TsResolveFileParser {
-    public parseFile(filePath: string | vscode.Uri): TsResolveFile {
-        let files = this.parseFiles([filePath]);
-        return files[0];
+    public parseFile(filePath: string | vscode.Uri): Promise<TsResolveFile> {
+        return this.parseFiles([filePath]).then(files => files[0]);
     }
 
-    public parseFiles(filePathes: (string | vscode.Uri)[]): TsResolveFile[] {
-        return filePathes
-            .map(o => typeof o === 'string' ? o : o.fsPath)
-            .map(o => createSourceFile(o, fs.readFileSync(o).toString(), ScriptTarget.ES6, true))
-            .map(o => this.parseTypescript(o));
+    public parseFiles(filePathes: (string | vscode.Uri)[]): Promise<TsResolveFile[]> {
+        return new Promise((resolve, reject) => {
+            try {
+                let parsed = filePathes
+                    .map(o => typeof o === 'string' ? o : o.fsPath)
+                    .map(o => createSourceFile(o, fs.readFileSync(o).toString(), ScriptTarget.ES6, true))
+                    .map(o => this.parseTypescript(o));
+                resolve(parsed);
+            } catch (e) {
+                console.error('TsResolveFileParser: Error happend during file parsing', { error: e });
+                reject(e);
+            }
+        });
     }
 
     private parseTypescript(source: SourceFile): TsResolveFile {

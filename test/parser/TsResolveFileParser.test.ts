@@ -24,7 +24,7 @@ describe('TsResolveFileParser', () => {
             const file = path.join(__dirname, '../../../.test/resolveFileParser/importsOnly.ts');
 
             beforeEach(() => {
-                parsed = parser.parseFile(file);
+                return parser.parseFile(file).then(file => parsed = file);
             });
 
             it('should parse imports', () => {
@@ -91,7 +91,7 @@ describe('TsResolveFileParser', () => {
             const file = path.join(__dirname, '../../../.test/resolveFileParser/declarationsOnly.ts');
 
             beforeEach(() => {
-                parsed = parser.parseFile(file);
+                return parser.parseFile(file).then(file => parsed = file);
             });
 
             it('should parse exports', () => {
@@ -181,7 +181,7 @@ describe('TsResolveFileParser', () => {
             const file = path.join(__dirname, '../../../.test/resolveFileParser/exportsOnly.ts');
 
             beforeEach(() => {
-                parsed = parser.parseFile(file);
+                return parser.parseFile(file).then(file => parsed = file);
             });
 
             it('should parse export all from another file', () => {
@@ -203,7 +203,7 @@ describe('TsResolveFileParser', () => {
             const file = path.join(__dirname, '../../../.test/resolveFileParser/usagesOnly.ts');
 
             beforeEach(() => {
-                parsed = parser.parseFile(file);
+                return parser.parseFile(file).then(file => parsed = file);
             });
 
             it('should parse usages', () => {

@@ -22,6 +22,11 @@ export class ResolveCache {
         this.buildCache();
     }
 
+    public rebuildForFile(file: vscode.Uri): Promise<void> {
+        console.log('ResolveCache: Rebuild index for file triggered. Indexing file: ' + file.fsPath);
+        return null;
+    }
+
     public buildCache(): Promise<void> {
         if (this.cancelToken) {
             console.log('ResolveCache: Refresh already running, canceling first.');
@@ -51,7 +56,6 @@ export class ResolveCache {
 
         searches.push(vscode.workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**', undefined, this.cancelToken.token));
 
-
         return Promise
             .all(searches)
             .then(uris => {
@@ -61,6 +65,8 @@ export class ResolveCache {
             .then(resolveFiles => {
                 console.log(`ResolveCache: Refresh finished. Parsed ${resolveFiles.length} files.`);
                 this.cache = resolveFiles;
+                this.cancelToken.dispose();
+                this.cancelToken = null;
             });
     }
 

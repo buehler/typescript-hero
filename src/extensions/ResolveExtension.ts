@@ -50,25 +50,29 @@ export class ResolveExtension {
     }
 
     private organizeImports(): void {
-        let parsed = this.parser.parseFile(vscode.window.activeTextEditor.document.uri);
-        let keep: TsImport[] = [];
-
-        for (let actImport of parsed.imports) {
-            if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport) {
-                if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
-                    keep.push(actImport);
+        this.parser
+            .parseFile(vscode.window.activeTextEditor.document.uri)
+            .then(parsed => {
+                let keep: TsImport[] = [];
+                for (let actImport of parsed.imports) {
+                    if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport) {
+                        if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                            keep.push(actImport);
+                        }
+                    } else if (actImport instanceof TsNamedImport) {
+                        actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1);
+                        if (actImport.specifiers.length) {
+                            keep.push(actImport);
+                        }
+                    } else if (actImport instanceof TsStringImport) {
+                        keep.push(actImport);
+                    }
                 }
-            } else if (actImport instanceof TsNamedImport) {
-                actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1);
-                if (actImport.specifiers.length) {
-                    keep.push(actImport);
-                }
-            } else if (actImport instanceof TsStringImport) {
-                keep.push(actImport);
-            }
-        }
-
-        this.commitDocumentImports(keep);
+                this.commitDocumentImports(keep);
+            })
+            .catch(e => { 
+                console.error('ERROR HAPPEND', { e });
+            });
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): void {
