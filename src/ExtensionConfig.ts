@@ -6,10 +6,6 @@ const sectionKey = 'typescriptHero';
 @inversify.injectable()
 export class ExtensionConfig {
     public get pathStringDelimiter(): string {
-        return vscode.workspace.getConfiguration(sectionKey).get<string>('pathStringDelimiter');
+        return vscode.workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
     }
-    
-    // public static get organizeOnSave(): boolean {
-    //     return vscode.workspace.getConfiguration(sectionKey).get<boolean>('organizeOnSave');
-    // }
 }

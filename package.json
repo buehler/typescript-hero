@@ -22,22 +22,26 @@
     "contributes": {
         "commands": [
             {
-                "command": "typescriptHero.addImport",
+                "command": "typescriptHero.resolve.addImport",
                 "title": "Typescript: Add import to current file"
             },
             {
-                "command": "typescriptHero.organizeImports",
+                "command": "typescriptHero.resolve.organizeImports",
                 "title": "Typescript: Organize imports (sort and remove unused)"
+            },
+            {
+                "command": "typescriptHero.resolve.rebuildCache",
+                "title": "Typescript: Rebuild the resolver cache"
             }
         ],
         "keybindings": [
             {
-                "command": "typescriptHero.addImport",
+                "command": "typescriptHero.resolve.addImport",
                 "key": "ctrl+alt+i",
                 "when": "editorTextFocus"
             },
             {
-                "command": "typescriptHero.organizeImports",
+                "command": "typescriptHero.resolve.organizeImports",
                 "key": "ctrl+alt+o",
                 "when": "editorTextFocus"
             }
@@ -45,7 +49,7 @@
         "configuration": {
             "title": "Configuration section of the typescript hero extension",
             "properties": {
-                "typescriptHero.pathStringDelimiter": {
+                "typescriptHero.resolver.pathStringDelimiter": {
                     "type": "string",
                     "default": "'",
                     "description": "Defines if single or double quotes should be used."

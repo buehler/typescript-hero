@@ -31,10 +31,10 @@ export class ResolveExtension {
         private parser: TsResolveFileParser) {
 
         console.log('ResolveExtension instantiated');
-
-        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.addImport', () => this.addImport()));
-        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.organizeImports', () => this.organizeImports()));
-        vscode.workspace.onDidSaveTextDocument(event => this.cache.refreshCache());
+        // TODO: file watcher; cancel token
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.addImport', () => this.addImport()));
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.cache.buildCache()));
     }
 
     private addImport(): void {

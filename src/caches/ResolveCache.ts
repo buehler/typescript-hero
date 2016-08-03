@@ -19,10 +19,10 @@ export class ResolveCache {
     }
 
     constructor(private parser: TsResolveFileParser) {
-        this.refreshCache();
+        this.buildCache();
     }
 
-    public refreshCache(): Promise<void> {
+    public buildCache(): Promise<void> {
         if (this.cancelToken) {
             console.log('ResolveCache: Refresh already running, canceling first.');
             this.cancelRefresh();
