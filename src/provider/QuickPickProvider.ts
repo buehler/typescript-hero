@@ -1,10 +1,9 @@
-import * as vscode from 'vscode';
 import {ResolveCache} from '../caches/ResolveCache';
-import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import * as inversify from 'inversify';
-import * as path from 'path';
 import {ResolveItemFactory} from '../factories/ResolveItemFactory';
-import {TsNamespaceImport, TsNamedImport, TsExternalModuleImport} from '../models/TsImport';
+import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
+import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
+import * as inversify from 'inversify';
+import * as vscode from 'vscode';
 
 @inversify.injectable()
 export class QuickPickProvider {

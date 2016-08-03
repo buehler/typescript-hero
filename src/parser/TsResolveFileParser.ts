@@ -96,10 +96,20 @@ function importDeclaration(tsResolveInfo: TsResolveInformation, node: ImportDecl
 function importEqualsDeclaration(tsResolveInfo: TsResolveInformation, node: ImportEqualsDeclaration): void {
     let children = node.getChildren();
     let alias = children.find(o => o.kind === SyntaxKind.Identifier) as Identifier;
-    let libName = children
-        .find(o => o.kind === SyntaxKind.ExternalModuleReference)
-        .getChildren()
-        .find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+
+    if (!alias || !children.length) {
+        return;
+    }
+
+    let moduleRef = children.find(o => o.kind === SyntaxKind.ExternalModuleReference);
+    if (!moduleRef) {
+        return;
+    }
+    let libName = moduleRef.getChildren().find(o => o.kind === SyntaxKind.StringLiteral) as StringLiteral;
+
+    if (!libName) {
+        return;
+    }
 
     tsResolveInfo.imports.push(new TsExternalModuleImport(libName.text, alias.text));
 }
