@@ -36,6 +36,7 @@ export class ResolveCache {
         return this.parser
             .parseFile(file)
             .then(parsed => {
+                console.log('ResolveCache: Rebuild for file finished.');
                 this.cache[parsed.fsPath] = parsed;
             });
     }
