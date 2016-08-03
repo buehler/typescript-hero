@@ -7,7 +7,7 @@ import * as vscode from 'vscode';
 
 @inversify.injectable()
 export class ResolveCache {
-    private cache: TsResolveFile[];
+    private cache: { [path: string]: TsResolveFile };
     private cancelToken: vscode.CancellationTokenSource;
 
     public get cacheReady(): boolean {
@@ -15,14 +15,29 @@ export class ResolveCache {
     }
 
     public get cachedFiles(): TsResolveFile[] {
-        return this.cache;
+        return Object.keys(this.cache).reduce((all, cur) => {
+            all.push(this.cache[cur]);
+            return all;
+        }, []);
     }
 
     constructor(private parser: TsResolveFileParser) { }
 
+    public removeForFile(file: vscode.Uri): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            let parsed = path.parse(file.fsPath);
+            delete this.cache[path.format(parsed)];
+            resolve();
+        });
+    }
+
     public rebuildForFile(file: vscode.Uri): Promise<void> {
         console.log('ResolveCache: Rebuild index for file triggered. Indexing file: ' + file.fsPath);
-        return null;
+        return this.parser
+            .parseFile(file)
+            .then(parsed => {
+                this.cache[parsed.fsPath] = parsed;
+            });
     }
 
     public buildCache(): Promise<void> {
@@ -62,7 +77,10 @@ export class ResolveCache {
             })
             .then(resolveFiles => {
                 console.log(`ResolveCache: Refresh finished. Parsed ${resolveFiles.length} files.`);
-                this.cache = resolveFiles;
+                this.cache = {};
+                resolveFiles.forEach(o => {
+                    this.cache[o.fsPath] = o;
+                });
                 this.cancelToken.dispose();
                 this.cancelToken = null;
             });

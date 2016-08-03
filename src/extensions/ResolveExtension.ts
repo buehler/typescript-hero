@@ -28,6 +28,7 @@ function importSort(i1: TsImport, i2: TsImport): number {
 @inversify.injectable()
 export class ResolveExtension {
     private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
+    private fileWatcher: vscode.FileSystemWatcher = vscode.workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
 
     constructor( @inversify.inject('context') context: vscode.ExtensionContext,
         private cache: ResolveCache,
@@ -40,6 +41,8 @@ export class ResolveExtension {
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        context.subscriptions.push(this.statusBarItem);
+        context.subscriptions.push(this.fileWatcher);
 
         this.statusBarItem.text = resolverOk;
         this.statusBarItem.tooltip = 'Click to manually reindex all files.';
@@ -47,6 +50,25 @@ export class ResolveExtension {
         this.statusBarItem.show();
 
         this.refreshCache();
+
+        this.fileWatcher.onDidChange(uri => {
+            if (uri.fsPath.endsWith('.d.ts')) {
+                return;
+            }
+            if (uri.fsPath.endsWith('package.json') || uri.fsPath.endsWith('typings.json')) {
+                console.log('ResolveExtension: package.json or typings.json modified. Refreshing cache.');
+                this.refreshCache();
+            } else {
+                console.log(`ResolveExtension: File "${uri.fsPath}" changed. Reindexing file.`);
+                this.refreshCache(uri);
+            }
+        });
+        this.fileWatcher.onDidDelete(uri => {
+            if (uri.fsPath.endsWith('.d.ts')) {
+                return;
+            }
+            this.cache.removeForFile(uri);
+        });
     }
 
     private addImport(): void {
@@ -87,12 +109,18 @@ export class ResolveExtension {
             });
     }
 
-    private refreshCache(): void {
+    private refreshCache(file?: vscode.Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
-        this.cache.buildCache()
-            .then(() => this.statusBarItem.text = resolverOk)
-            .catch(() => this.statusBarItem.text = resolverErr);
+        if (file) {
+            this.cache.rebuildForFile(file)
+                .then(() => this.statusBarItem.text = resolverOk)
+                .catch(() => this.statusBarItem.text = resolverErr);
+        } else {
+            this.cache.buildCache()
+                .then(() => this.statusBarItem.text = resolverOk)
+                .catch(() => this.statusBarItem.text = resolverErr);
+        }
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): void {

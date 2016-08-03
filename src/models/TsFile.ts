@@ -7,6 +7,10 @@ export class TsFile {
         return this._path;
     }
 
+    public get fsPath(): string {
+        return path.format(this._path);
+    }
+
     constructor(fileName: string) {
         this._path = path.parse(fileName);
         if (this._path.name.endsWith('.d')) {
