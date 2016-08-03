@@ -45,6 +45,16 @@ export class TsModuleDeclaration extends TsExportableDeclaration implements TsRe
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage));
     }
 
+    public get moduleNamespaceName(): string {
+        return this.name.split(/[-_]/).reduce((all, cur, idx) => {
+            if (idx === 0) {
+                return all + cur.toLowerCase();
+            } else {
+                return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
+            }
+        }, '');
+    }
+
     constructor(name: string, isExported: boolean, public isNamespace: boolean) {
         super(name, isExported);
     }

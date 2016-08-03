@@ -1,6 +1,7 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
+import {TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
@@ -126,9 +127,12 @@ export class ResolveExtension {
     private addImportToDocument(item: ResolveQuickPickItem): void {
         let docResolve = this.cache.getResolveFileForPath(vscode.window.activeTextEditor.document.uri);
         let imports = [...docResolve.imports];
+        let declaration = item.resolveItem.declaration;
 
         let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName);
-        if (!imported) {
+        if (!imported && declaration instanceof TsModuleDeclaration) {
+            imports.push(new TsNamespaceImport(item.description, item.label));
+        } else if (!imported) {
             let named = new TsNamedImport(item.resolveItem.libraryName);
             named.specifiers.push(new TsResolveSpecifier(item.label));
             imports.push(named);

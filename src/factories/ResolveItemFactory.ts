@@ -108,11 +108,13 @@ export class ResolveItemFactory {
     private processTypingsFile(libExports: LibExports, file: TsResolveFile): void {
         for (let mod of file.declarations) {
             if (isModule(mod)) {
+                if (!libExports[mod.name]) {
+                    libExports[mod.name] = { declarations: [], exports: [] };
+                }
+                libExports[mod.name].declarations.push(new ResolveItem(mod, mod.name, file, mod.moduleNamespaceName));
+
                 for (let declaration of mod.declarations) {
                     if (isExportable(declaration) && declaration.isExported) {
-                        if (!libExports[mod.name]) {
-                            libExports[mod.name] = { declarations: [], exports: [] };
-                        }
                         if (!libExports[mod.name].declarations.some(o => o.declaration.name === declaration.name)) {
                             libExports[mod.name].declarations.push(new ResolveItem(declaration, mod.name, file));
                         }
@@ -120,9 +122,6 @@ export class ResolveItemFactory {
                 }
 
                 for (let ex of mod.exports) {
-                    if (!libExports[mod.name]) {
-                        libExports[mod.name] = { declarations: [], exports: [] };
-                    }
                     if (ex instanceof TsAssignedExport) {
                         for (let declaration of ex.declarations) {
                             if (isExportable(declaration) && declaration.isExported && !libExports[mod.name].declarations.some(o => o.declaration.name === declaration.name)) {
