@@ -97,6 +97,6 @@ export class ResolveCache {
 
     public getResolveFileForPath(filePath: vscode.Uri): TsResolveFile {
         let parsed = path.parse(filePath.fsPath);
-        return this.cache.find(o => o.path.dir === parsed.dir && o.path.base === parsed.base);
+        return this.cache[path.format(parsed)];
     }
 }
