@@ -78,7 +78,7 @@ export class ResolveItemFactory {
     private processLocalFile(libExports: LibExports, file: TsResolveFile, relativeDocument: path.ParsedPath): void {
         let libname = path.relative(relativeDocument.dir, path.format(file.path)).replace('.ts', '');
         if (!libname.startsWith('.')) {
-            libname = './';
+            libname = './' + libname;
         }
 
         if (!libExports[libname]) {
