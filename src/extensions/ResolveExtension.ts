@@ -8,7 +8,10 @@ import {QuickPickProvider} from '../provider/QuickPickProvider';
 import * as inversify from 'inversify';
 import * as vscode from 'vscode';
 
-const importMatcher = /^import\s.*;$/;
+const importMatcher = /^import\s.*;$/,
+    resolverOk = 'Resolver $(check)',
+    resolverSyncing = 'Resolver $(sync)',
+    resolverErr = 'Resolver $(flame)';
 
 function importSort(i1: TsImport, i2: TsImport): number {
     let strA = i1.libraryName.toLowerCase(),
@@ -24,6 +27,8 @@ function importSort(i1: TsImport, i2: TsImport): number {
 
 @inversify.injectable()
 export class ResolveExtension {
+    private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
+
     constructor( @inversify.inject('context') context: vscode.ExtensionContext,
         private cache: ResolveCache,
         private pickProvider: QuickPickProvider,
@@ -34,7 +39,14 @@ export class ResolveExtension {
         // TODO: file watcher; cancel token
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.cache.buildCache()));
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+
+        this.statusBarItem.text = resolverOk;
+        this.statusBarItem.tooltip = 'Click to manually reindex all files.';
+        this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
+        this.statusBarItem.show();
+
+        this.refreshCache();
     }
 
     private addImport(): void {
@@ -70,9 +82,17 @@ export class ResolveExtension {
                 }
                 this.commitDocumentImports(keep);
             })
-            .catch(e => { 
+            .catch(e => {
                 console.error('ERROR HAPPEND', { e });
             });
+    }
+
+    private refreshCache(): void {
+        this.statusBarItem.text = resolverSyncing;
+
+        this.cache.buildCache()
+            .then(() => this.statusBarItem.text = resolverOk)
+            .catch(() => this.statusBarItem.text = resolverErr);
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): void {

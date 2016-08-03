@@ -18,9 +18,7 @@ export class ResolveCache {
         return this.cache;
     }
 
-    constructor(private parser: TsResolveFileParser) {
-        this.buildCache();
-    }
+    constructor(private parser: TsResolveFileParser) { }
 
     public rebuildForFile(file: vscode.Uri): Promise<void> {
         console.log('ResolveCache: Rebuild index for file triggered. Indexing file: ' + file.fsPath);
