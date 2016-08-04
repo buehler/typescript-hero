@@ -35,6 +35,8 @@ export class TsVariableDeclaration extends TsExportableDeclaration {
 
 export class TsParameterDeclaration extends TsDeclaration { }
 
+export class TsDefaultDeclaration extends TsDeclaration { }
+
 export class TsModuleDeclaration extends TsExportableDeclaration implements TsResolveInformation {
     public imports: TsImport[] = [];
     public declarations: TsDeclaration[] = [];

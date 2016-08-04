@@ -1,8 +1,8 @@
-import {TsResolveFile} from '../models/TsResolveFile';
 import {ResolveItem} from '../models/ResolveItem';
+import {TsDeclaration, TsDefaultDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
+import {TsResolveFile} from '../models/TsResolveFile';
 import * as inversify from 'inversify';
-import {TsDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
-import {TsExport, TsFromExport, TsAssignedExport, TsAllFromExport, TsNamedFromExport} from '../models/TsExport';
 import path = require('path');
 import vscode = require('vscode');
 
@@ -89,6 +89,9 @@ export class ResolveItemFactory {
             if (isExportable(declaration) && declaration.isExported) {
                 libExports[libname].declarations.push(new ResolveItem(declaration, libname, file));
             }
+        }
+        if (file.exports.some(o => o instanceof TsDefaultExport)) {
+            libExports[libname].declarations.push(new ResolveItem(new TsDefaultDeclaration(libname), libname, file));
         }
     }
 

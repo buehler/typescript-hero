@@ -13,10 +13,6 @@ export abstract class TsAliasedImport extends TsImport {
 }
 
 export class TsStringImport extends TsImport {
-    constructor(libraryName: string) {
-        super(libraryName);
-    }
-
     public toImport(delimiter: string): string {
         return `import ${delimiter}${this.libraryName}${delimiter};\n`;
     }
@@ -24,10 +20,6 @@ export class TsStringImport extends TsImport {
 
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
-
-    constructor(libraryName: string) {
-        super(libraryName);
-    }
 
     public toImport(delimiter: string): string {
         return `import {${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}} from ${delimiter}${this.libraryName}${delimiter};\n`;
@@ -47,21 +39,19 @@ export class TsNamedImport extends TsImport {
 }
 
 export class TsNamespaceImport extends TsAliasedImport {
-    constructor(libraryName: string, alias: string) {
-        super(libraryName, alias);
-    }
-
     public toImport(delimiter: string): string {
         return `import * as ${this.alias} from ${delimiter}${this.libraryName}${delimiter};\n`;
     }
 }
 
 export class TsExternalModuleImport extends TsAliasedImport {
-    constructor(libraryName: string, alias: string) {
-        super(libraryName, alias);
-    }
-
     public toImport(delimiter: string): string {
         return `import ${this.alias} = require(${delimiter}${this.libraryName}${delimiter});\n`;
+    }
+}
+
+export class TsDefaultImport extends TsAliasedImport {
+    public toImport(delimiter: string): string {
+        return `import ${this.alias} from ${delimiter}${this.libraryName}${delimiter};\n`;
     }
 }

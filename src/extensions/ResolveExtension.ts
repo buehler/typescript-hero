@@ -1,8 +1,8 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsModuleDeclaration} from '../models/TsDeclaration';
-import {TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {QuickPickProvider} from '../provider/QuickPickProvider';
@@ -124,25 +124,38 @@ export class ResolveExtension {
         }
     }
 
-    private addImportToDocument(item: ResolveQuickPickItem): void {
+    private addImportToDocument(item: ResolveQuickPickItem): Promise<void> {
         let docResolve = this.cache.getResolveFileForPath(vscode.window.activeTextEditor.document.uri);
         let imports = [...docResolve.imports];
         let declaration = item.resolveItem.declaration;
 
-        let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName);
-        if (!imported && declaration instanceof TsModuleDeclaration) {
-            imports.push(new TsNamespaceImport(item.description, item.label));
-        } else if (!imported) {
-            let named = new TsNamedImport(item.resolveItem.libraryName);
-            named.specifiers.push(new TsResolveSpecifier(item.label));
-            imports.push(named);
-        } else {
-            if (imported instanceof TsNamedImport) {
-                imported.specifiers.push(new TsResolveSpecifier(item.label));
+        let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName),
+            promise = Promise.resolve(imports);
+
+        if (!imported) {
+            if (declaration instanceof TsModuleDeclaration) {
+                imports.push(new TsNamespaceImport(item.description, item.label));
+            } else if (declaration instanceof TsDefaultDeclaration) {
+                promise = promise.then(imports => vscode.window.showInputBox({
+                    prompt: 'Please enter a variable name for the default export..',
+                    placeHolder: 'Default export name',
+                    validateInput: s => !!s ? '' : 'Please enter a variable name'
+                }).then(defaultAlias => {
+                    if (defaultAlias) {
+                        imports.push(new TsDefaultImport(item.label, defaultAlias));
+                    }
+                    return imports;
+                }));
+            } else {
+                let named = new TsNamedImport(item.resolveItem.libraryName);
+                named.specifiers.push(new TsResolveSpecifier(item.label));
+                imports.push(named);
             }
+        } else if (imported instanceof TsNamedImport) {
+            imported.specifiers.push(new TsResolveSpecifier(item.label));
         }
 
-        this.commitDocumentImports(imports);
+        return promise.then(imports => this.commitDocumentImports(imports));
     }
 
     private commitDocumentImports(imports: TsImport[]): void {
