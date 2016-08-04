@@ -86,7 +86,7 @@ export class ResolveExtension {
 
     private organizeImports(): void {
         this.parser
-            .parseFile(vscode.window.activeTextEditor.document.uri)
+            .parseSource(vscode.window.activeTextEditor.document.getText())
             .then(parsed => {
                 let keep: TsImport[] = [];
                 for (let actImport of parsed.imports) {
