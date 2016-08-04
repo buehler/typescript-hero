@@ -1,0 +1,36 @@
+import {ExtensionConfig} from '../ExtensionConfig';
+import {inject, injectable} from 'inversify';
+import {commands, ExtensionContext, FileSystemWatcher, workspace} from 'vscode';
+
+const DEBOUNCE = 1500;
+
+@injectable()
+export class RestartDebuggerExtension {
+    private fileWatcher: FileSystemWatcher;
+    private restartCall: number;
+
+    // TODO: on config change -> recreate filewatcher; may be even deactivate stuff.
+    // TODO: in "gui" add possibility to toggle for the session    
+    constructor( @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
+        console.log('RestartDebuggerExtension instantiated');
+        if (this.config.restartDebugger.active) {
+            let watcherGlob = this.config.restartDebugger.watchFolders.map(o => `**/${o}/**/*.*`).join(',');
+            console.log(`RestartDebuggerExtension activated for glob: ${watcherGlob}`);
+            this.fileWatcher = workspace.createFileSystemWatcher(`{${watcherGlob}}`);
+            this.fileWatcher.onDidChange(() => this.restartDebugger());
+            this.fileWatcher.onDidCreate(() => this.restartDebugger());
+            this.fileWatcher.onDidDelete(() => this.restartDebugger());
+            context.subscriptions.push(this.fileWatcher);
+        }
+    }
+
+    private restartDebugger(): void {
+        if (this.restartCall) {
+            clearTimeout(this.restartCall);
+            delete this.restartCall;
+        }
+        this.restartCall = setTimeout(() => {
+            commands.executeCommand('workbench.action.debug.restart');
+        }, DEBOUNCE);
+    }
+}

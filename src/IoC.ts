@@ -1,11 +1,12 @@
-import * as inversify from 'inversify';
-import {TypeScriptHero} from './TypeScriptHero';
-import {ExtensionConfig} from './ExtensionConfig';
 import {ResolveCache} from './caches/ResolveCache';
+import {ExtensionConfig} from './ExtensionConfig';
 import {ResolveExtension} from './extensions/ResolveExtension';
+import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
+import {ResolveItemFactory} from './factories/ResolveItemFactory';
 import {TsResolveFileParser} from './parser/TsResolveFileParser';
 import {QuickPickProvider} from './provider/QuickPickProvider';
-import {ResolveItemFactory} from './factories/ResolveItemFactory';
+import {TypeScriptHero} from './TypeScriptHero';
+import * as inversify from 'inversify';
 
 let injector = new inversify.Kernel();
 
@@ -18,5 +19,7 @@ injector.bind(ResolveExtension).to(ResolveExtension).inSingletonScope();
 injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
 injector.bind(TsResolveFileParser).to(TsResolveFileParser);
 injector.bind(ResolveItemFactory).to(ResolveItemFactory);
+
+injector.bind(RestartDebuggerExtension).to(RestartDebuggerExtension).inSingletonScope();
 
 export const Injector = injector;

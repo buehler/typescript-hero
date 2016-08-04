@@ -177,7 +177,7 @@ export class ResolveExtension {
                     builder.delete(line.rangeIncludingLineBreak);
                 }
             }
-            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.pathStringDelimiter), ''));
+            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.pathStringDelimiter), ''));
         });
     }
 
