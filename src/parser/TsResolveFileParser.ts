@@ -206,6 +206,18 @@ function checkIfExported(node: Node): boolean {
 
 @inversify.injectable()
 export class TsResolveFileParser {
+    public parseSource(source: string): Promise<TsResolveFile> {
+        return new Promise((resolve, reject) => {
+            try {
+                let tmp = createSourceFile('inline.ts', source, ScriptTarget.ES6, true);
+                resolve(this.parseTypescript(tmp));
+            } catch (e) {
+                console.error('TsResolveFileParser: Error happend during source parsing', { error: e });
+                reject(e);
+            }
+        });
+    }
+
     public parseFile(filePath: string | vscode.Uri): Promise<TsResolveFile> {
         return this.parseFiles([filePath]).then(files => files[0]);
     }
