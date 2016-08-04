@@ -2,7 +2,7 @@ import {ResolveItem} from '../models/ResolveItem';
 import {TsDeclaration, TsDefaultDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
 import {TsResolveFile} from '../models/TsResolveFile';
-import * as inversify from 'inversify';
+import {injectable} from 'inversify';
 import path = require('path');
 import vscode = require('vscode');
 
@@ -16,7 +16,7 @@ function isModule(declaration: TsDeclaration): declaration is TsModuleDeclaratio
     return declaration instanceof TsModuleDeclaration;
 }
 
-@inversify.injectable()
+@injectable()
 export class ResolveItemFactory {
     public getResolvableItems(files: TsResolveFile[], relativeDocument: vscode.Uri): ResolveItem[] {
         let libExports: LibExports = {},

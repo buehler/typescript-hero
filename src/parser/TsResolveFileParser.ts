@@ -1,3 +1,4 @@
+import {CancellationRequested} from '../models/CancellationRequested';
 import {TsClassDeclaration, TsEnumDeclaration, TsExportableDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsParameterDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
@@ -225,32 +226,46 @@ export class TsResolveFileParser {
         return this.parseFiles([filePath]).then(files => files[0]);
     }
 
-    public parseFiles(filePathes: (string | vscode.Uri)[]): Promise<TsResolveFile[]> {
+    public parseFiles(filePathes: (string | vscode.Uri)[], cancellationToken?: vscode.CancellationToken): Promise<TsResolveFile[]> {
         return new Promise((resolve, reject) => {
             try {
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
                 let parsed = filePathes
                     .map(o => typeof o === 'string' ? o : o.fsPath)
                     .map(o => createSourceFile(o, fs.readFileSync(o).toString(), ScriptTarget.ES6, true))
-                    .map(o => this.parseTypescript(o));
+                    .map(o => this.parseTypescript(o, cancellationToken));
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
                 resolve(parsed);
             } catch (e) {
-                console.error('TsResolveFileParser: Error happend during file parsing', { error: e });
+                if (!(e instanceof CancellationRequested)) {
+                    console.error('TsResolveFileParser: Error happend during file parsing', { error: e });
+                }
                 reject(e);
             }
         });
     }
 
-    private parseTypescript(source: SourceFile): TsResolveFile {
+    private parseTypescript(source: SourceFile, cancellationToken?: vscode.CancellationToken): TsResolveFile {
         let tsFile = new TsResolveFile(source.fileName);
 
         let syntaxList = source.getChildAt(0);
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            throw new CancellationRequested();
+        }
         this.parseDeclarations(tsFile, syntaxList);
 
         return tsFile;
     }
 
-    private parseDeclarations(tsResolveInfo: TsResolveInformation, node: Node): void {
+    private parseDeclarations(tsResolveInfo: TsResolveInformation, node: Node, cancellationToken?: vscode.CancellationToken): void {
         for (let child of node.getChildren()) {
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                throw new CancellationRequested();
+            }
             switch (child.kind) {
                 case SyntaxKind.ImportDeclaration:
                     importDeclaration(tsResolveInfo, <ImportDeclaration>child);
@@ -299,7 +314,7 @@ export class TsResolveFileParser {
                     this.parseDeclarations(module, child);
                     continue;
             }
-            this.parseDeclarations(tsResolveInfo, child);
+            this.parseDeclarations(tsResolveInfo, child, cancellationToken);
         }
     }
 }

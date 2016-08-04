@@ -1,11 +1,12 @@
+import {CancellationRequested} from '../models/CancellationRequested';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import fs = require('fs');
-import * as inversify from 'inversify';
+import {injectable} from 'inversify';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-@inversify.injectable()
+@injectable()
 export class ResolveCache {
     private cache: { [path: string]: TsResolveFile };
     private cancelToken: vscode.CancellationTokenSource;
@@ -41,7 +42,7 @@ export class ResolveCache {
             });
     }
 
-    public buildCache(): Promise<void> {
+    public buildCache(cancellationToken?: vscode.CancellationToken): Promise<void> {
         if (this.cancelToken) {
             console.log('ResolveCache: Refresh already running, canceling first.');
             this.cancelRefresh();
@@ -73,10 +74,16 @@ export class ResolveCache {
         return Promise
             .all(searches)
             .then(uris => {
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
                 console.log(`ResolveCache: Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
-                return this.parser.parseFiles(uris.reduce((all, cur) => all.concat(cur), []));
+                return this.parser.parseFiles(uris.reduce((all, cur) => all.concat(cur), []), cancellationToken);
             })
             .then(resolveFiles => {
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
                 console.log(`ResolveCache: Refresh finished. Parsed ${resolveFiles.length} files.`);
                 this.cache = {};
                 resolveFiles.forEach(o => {
@@ -84,6 +91,12 @@ export class ResolveCache {
                 });
                 this.cancelToken.dispose();
                 this.cancelToken = null;
+            })
+            .catch(e => {
+                if (!(e instanceof CancellationRequested)) {
+                    throw e;
+                }
+                console.log('ResolveCache: Cancellation requested.');
             });
     }
 
