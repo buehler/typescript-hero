@@ -130,12 +130,8 @@ export class ResolveExtension {
             let declaration = item.resolveItem.declaration;
 
             let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName),
-                promise = Promise.resolve(imports);
-
-            if (!imported) {
-                if (declaration instanceof TsModuleDeclaration) {
-                    imports.push(new TsNamespaceImport(item.description, item.label));
-                } else if (declaration instanceof TsDefaultDeclaration) {
+                promise = Promise.resolve(imports),
+                defaultImportAlias = () => {
                     promise = promise.then(imports => vscode.window.showInputBox({
                         prompt: 'Please enter a variable name for the default export..',
                         placeHolder: 'Default export name',
@@ -146,11 +142,20 @@ export class ResolveExtension {
                         }
                         return imports;
                     }));
+                };
+
+            if (!imported) {
+                if (declaration instanceof TsModuleDeclaration) {
+                    imports.push(new TsNamespaceImport(item.description, item.label));
+                } else if (declaration instanceof TsDefaultDeclaration) {
+                    defaultImportAlias();
                 } else {
                     let named = new TsNamedImport(item.resolveItem.libraryName);
                     named.specifiers.push(new TsResolveSpecifier(item.label));
                     imports.push(named);
                 }
+            } else if (declaration instanceof TsDefaultDeclaration) {
+                defaultImportAlias();
             } else if (imported instanceof TsNamedImport) {
                 imported.specifiers.push(new TsResolveSpecifier(item.label));
             }
