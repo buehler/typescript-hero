@@ -24,3 +24,6 @@ export class TsAssignedExport extends TsExport {
         super();
     }
 }
+
+export class TsDefaultExport extends TsExport {
+}

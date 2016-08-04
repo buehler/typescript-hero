@@ -1,13 +1,13 @@
-import * as vscode from 'vscode';
+import {TsClassDeclaration, TsEnumDeclaration, TsExportableDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsParameterDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
+import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
+import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveFile} from '../models/TsResolveFile';
-import {TsStringImport, TsExternalModuleImport, TsNamespaceImport, TsNamedImport} from '../models/TsImport';
-import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsExportableDeclaration, TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsTypeDeclaration, TsInterfaceDeclaration, TsVariableDeclaration, TsParameterDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
-import {TsAllFromExport, TsNamedFromExport, TsAssignedExport} from '../models/TsExport';
 import {TsResolveInformation} from '../models/TsResolveInformation';
-import * as inversify from 'inversify';
+import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import fs = require('fs');
-import {SyntaxKind, createSourceFile, ScriptTarget, SourceFile, ModuleDeclaration, ImportDeclaration, ImportEqualsDeclaration, Node, StringLiteral, Identifier, VariableStatement} from 'typescript';
+import * as inversify from 'inversify';
+import {createSourceFile, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
+import * as vscode from 'vscode';
 
 const usageNotAllowedParents = [
     SyntaxKind.ImportEqualsDeclaration,
@@ -182,11 +182,15 @@ function exportDeclaration(tsResolveInfo: TsResolveInformation, node: Node): voi
 }
 
 function exportAssignment(tsResolveInfo: TsResolveInformation, node: Node): void {
-    let declarationIdentifier = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
-    if (!declarationIdentifier) {
-        return;
+    if (node.getChildren().find(o => o.kind === SyntaxKind.DefaultKeyword)) {
+        tsResolveInfo.exports.push(new TsDefaultExport());
+    } else {
+        let declarationIdentifier = node.getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
+        if (!declarationIdentifier) {
+            return;
+        }
+        tsResolveInfo.exports.push(new TsAssignedExport(declarationIdentifier.text, tsResolveInfo.declarations));
     }
-    tsResolveInfo.exports.push(new TsAssignedExport(declarationIdentifier.text, tsResolveInfo.declarations));
 }
 
 function variableDeclaration(tsResolveInfo: TsResolveInformation, node: VariableStatement): void {
