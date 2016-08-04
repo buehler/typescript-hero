@@ -1,6 +1,6 @@
 import {TsClassDeclaration, TsEnumDeclaration, TsExportableDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsParameterDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
-import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveInformation} from '../models/TsResolveInformation';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
@@ -72,6 +72,9 @@ function importDeclaration(tsResolveInfo: TsResolveInformation, node: ImportDecl
     } else if (children[1].kind === SyntaxKind.ImportClause && children[1].getChildAt(0).kind === SyntaxKind.NamespaceImport) {
         let alias = children[1].getChildAt(0).getChildren().find(o => o.kind === SyntaxKind.Identifier) as Identifier;
         tsResolveInfo.imports.push(new TsNamespaceImport(libName.text, alias.text));
+    } else if (children[1].kind === SyntaxKind.ImportClause && children[1].getChildAt(0).kind === SyntaxKind.Identifier) {
+        let alias = children[1].getChildAt(0) as Identifier;
+        tsResolveInfo.imports.push(new TsDefaultImport(libName.text, alias.text));
     } else if (children[1].kind === SyntaxKind.ImportClause && children[1].getChildAt(0).kind === SyntaxKind.NamedImports) {
         let specifiers = [],
             tsImport = new TsNamedImport(libName.text);

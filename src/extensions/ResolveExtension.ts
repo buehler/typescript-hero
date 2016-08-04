@@ -90,7 +90,7 @@ export class ResolveExtension {
             .then(parsed => {
                 let keep: TsImport[] = [];
                 for (let actImport of parsed.imports) {
-                    if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport) {
+                    if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
                         if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
                             keep.push(actImport);
                         }
@@ -129,7 +129,7 @@ export class ResolveExtension {
             let imports = [...docResolve.imports];
             let declaration = item.resolveItem.declaration;
 
-            let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName),
+            let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName && !(o instanceof TsDefaultImport)),
                 promise = Promise.resolve(imports),
                 defaultImportAlias = () => {
                     promise = promise.then(imports => vscode.window.showInputBox({

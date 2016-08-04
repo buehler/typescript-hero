@@ -1,7 +1,8 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ResolveItemFactory} from '../factories/ResolveItemFactory';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
+import {TsDefaultDeclaration} from '../models/TsDeclaration';
+import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import * as inversify from 'inversify';
 import * as vscode from 'vscode';
@@ -25,6 +26,13 @@ export class QuickPickProvider {
                         resolveItems = resolveItems.filter(o => o.libraryName !== exImport.libraryName || !exImport.specifiers.some(s => s.specifier === o.declaration.name));
                     } else if (exImport instanceof TsNamespaceImport || exImport instanceof TsExternalModuleImport) {
                         resolveItems = resolveItems.filter(o => o.libraryName !== exImport.libraryName);
+                    } else if (exImport instanceof TsDefaultImport) {
+                        resolveItems = resolveItems.filter(o => {
+                            if (!(o.declaration instanceof TsDefaultDeclaration)) {
+                                return true;
+                            }
+                            return exImport.libraryName !== o.libraryName;
+                        });
                     }
                 }
 
