@@ -77,7 +77,7 @@ export class ResolveExtension {
             this.showCacheWarning();
             return;
         }
-        this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri).then(o => {
+        this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText()).then(o => {
             if (o) {
                 this.addImportToDocument(o);
             }
