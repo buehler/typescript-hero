@@ -79,7 +79,9 @@ export class ResolveExtension extends BaseExtension {
         return [];
     }
 
-    public dispose(): void { }
+    public dispose(): void {
+        console.log('ResolveExtension: Dispose called.');
+    }
 
     private addImport(): void {
         if (!this.cache.cacheReady) {

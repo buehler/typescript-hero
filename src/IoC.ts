@@ -5,16 +5,18 @@ import {ResolveExtension} from './extensions/ResolveExtension';
 import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
 import {ResolveItemFactory} from './factories/ResolveItemFactory';
 import {TsResolveFileParser} from './parser/TsResolveFileParser';
+import {GuiProvider} from './provider/GuiProvider';
 import {QuickPickProvider} from './provider/QuickPickProvider';
 import {TypeScriptHero} from './TypeScriptHero';
-import * as inversify from 'inversify';
+import {Kernel} from 'inversify';
 
-let injector = new inversify.Kernel();
+let injector = new Kernel();
 
 injector.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 injector.bind(ExtensionConfig).to(ExtensionConfig).inSingletonScope();
 
 injector.bind(QuickPickProvider).to(QuickPickProvider).inSingletonScope();
+injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
 
 injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
 injector.bind(TsResolveFileParser).to(TsResolveFileParser);

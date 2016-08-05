@@ -22,6 +22,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "typescriptHero.showCmdGui",
+                "title": "Typescript: Show the command gui of typescripthero"
+            },
+            {
                 "command": "typescriptHero.resolve.addImport",
                 "title": "Typescript: Add import to current file"
             },
@@ -35,6 +39,10 @@
             }
         ],
         "keybindings": [
+            {
+                "command": "typescriptHero.showCmdGui",
+                "key": "ctrl+alt+g"
+            },
             {
                 "command": "typescriptHero.resolve.addImport",
                 "key": "ctrl+alt+i",

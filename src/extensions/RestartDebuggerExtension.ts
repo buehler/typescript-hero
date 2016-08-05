@@ -31,7 +31,9 @@ export class RestartDebuggerExtension extends BaseExtension {
         return [];
     }
 
-    public dispose(): void { }
+    public dispose(): void {
+        console.log('RestartDebuggerExtension: Dispose called.');
+    }
 
     private restartDebugger(): void {
         if (this.restartCall) {
