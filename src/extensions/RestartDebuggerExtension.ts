@@ -13,8 +13,6 @@ export class RestartDebuggerExtension extends BaseExtension {
     private restartCall: number;
     private active: boolean;
 
-    // TODO: on config change -> recreate filewatcher; may be even deactivate stuff.
-    // TODO: in "gui" add possibility to toggle for the session    
     constructor( @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
         super();
         console.log('RestartDebuggerExtension instantiated');
