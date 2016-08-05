@@ -7,7 +7,7 @@ deploy:
   script: ./deploy.sh
   skip_cleanup: true
   on:
-    branch: master
+    tags: true
     repo: buehler/typescript-hero
 notifications:
   email: false
