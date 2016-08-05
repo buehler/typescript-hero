@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo $(which npm)
+echo "Deploy vsix package with $(which npm)"
 
-echo "yay!"
+npm i -g vsce
 
-exit 0
+vsce publish -p $VSCE_TOKEN
