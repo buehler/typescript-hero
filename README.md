@@ -1,65 +1,47 @@
-# typescript-hero README
+# Typescript Hero
 
-This is the README for your extension "typescript-hero". After writing up a brief description, we recommend including the following sections.
+`typescript hero` is a vscode extension that makes your live easier.
+When you are coding a lot of `TypeScript` you may want vscode to automatically
+include your imports.
+
+If you search for this feature: here's the solution. Typescript hero will be extended
+in the future and there are many features in the pipeline that will enhance the way you
+work with typescript.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
-
-## Requirements
-
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Open a command list to see all commands of typescript hero [`ctrl+alt+g`]
+- Add imports of your project or libraries to your current file [`ctrl+alt+i`]
+- Sort and organize your imports (sort and remove unused) [`ctrl+alt+o`]
+- Restart your debug session when your code changes
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+### Input organizer
 
-For example:
+- `typescriptHero.resolver.pathStringDelimiter`: The string delimiter to use for the imports
 
-This extension contributes the following settings:
+### Debug session restarter
 
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+- `typescriptHero.restartDebugger.watchFolders`: Which output folders should be watched to trigger a restart
+- `typescriptHero.restartDebugger.active`: Is the automatical debug restarter active at startup 
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Some module declarations from typings files can be duplicated
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
+This section will cover the newest release, for the rest of the changelog,
+please visit the [CHANGELOG.md](CHANGELOG.md)
 
-### 1.0.0
+### 0.4.0
 
-Initial release of ...
+#### Added
+- Organize imports
+- Add new imports
+- Debug restarter feature
+- Command palette (`ctrl+alt+g`)
 
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+#### Fixed
+- Various bugs in AST parsing

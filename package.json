@@ -3,7 +3,11 @@
     "displayName": "TypeScript Hero",
     "description": "Additional tooling for the typescript language",
     "icon": "etc/icon.png",
-    "version": "0.3.1",
+    "galleryBanner": {
+        "color": "#7E7865",
+        "theme": "dark"
+    },
+    "version": "0.4.0",
     "publisher": "rbbit",
     "engines": {
         "vscode": "^1.0.0"
@@ -58,7 +62,10 @@
             "title": "Configuration section of the typescript hero extension",
             "properties": {
                 "typescriptHero.resolver.pathStringDelimiter": {
-                    "type": "string",
+                    "enum": [
+                        "'",
+                        "\""
+                    ],
                     "default": "'",
                     "description": "Defines if single or double quotes should be used."
                 },
