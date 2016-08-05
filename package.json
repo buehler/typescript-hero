@@ -14,8 +14,7 @@
   },
   "categories": [
     "Other",
-    "Languages",
-    "Productivity"
+    "Languages"
   ],
   "activationEvents": [
     "onCommand:typescriptHero.addImport",
