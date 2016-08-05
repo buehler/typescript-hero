@@ -78,7 +78,7 @@
                 "typescriptHero.restartDebugger.active": {
                     "type":"boolean",
                     "default": true,
-                    "description": "Defines if the restart debugger extension is active."
+                    "description": "Defines if the restart debugger extension is active at startup."
                 }
             }
         }
