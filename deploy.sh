@@ -1,3 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
-npm --version
+echo $(which npm)
+
+echo "yay!"
+
+exit 0
