@@ -5,10 +5,14 @@
         "outDir": "out",
         "noLib": true,
         "sourceMap": true,
-        "rootDir": "."
+        "rootDir": ".",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules",
-        ".vscode-test"
+        ".vscode-test",
+        "out",
+        ".test"
     ]
 }
