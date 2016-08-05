@@ -1,7 +1,7 @@
 import {BaseExtension} from '../extensions/BaseExtension';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {inject, injectable, multiInject} from 'inversify';
-import {commands, ExtensionContext} from 'vscode';
+import {commands, ExtensionContext, window} from 'vscode';
 
 @injectable()
 export class GuiProvider {
@@ -12,10 +12,16 @@ export class GuiProvider {
     }
 
     private showGui(): void {
-        console.log('yay');
+        window.showQuickPick<CommandQuickPickItem>(this.extensions.reduce((all, cur) => all.concat(cur.getGuiCommands()), []))
+            .then(cmd => {
+                if (!cmd) {
+                    return;
+                }
+                this.executeCommand(cmd);
+            });
     }
 
     private executeCommand(cmd: CommandQuickPickItem): void {
-        
+        cmd.command.action();
     }
 }
