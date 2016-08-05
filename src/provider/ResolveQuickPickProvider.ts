@@ -8,7 +8,7 @@ import * as inversify from 'inversify';
 import * as vscode from 'vscode';
 
 @inversify.injectable()
-export class QuickPickProvider {
+export class ResolveQuickPickProvider {
     constructor(private cache: ResolveCache, private parser: TsResolveFileParser, private resolveItemFactory: ResolveItemFactory) { }
 
     public addImportPick(openDocument: vscode.Uri, openSource: string): Thenable<ResolveQuickPickItem> {

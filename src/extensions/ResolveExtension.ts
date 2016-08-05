@@ -6,7 +6,7 @@ import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
-import {QuickPickProvider} from '../provider/QuickPickProvider';
+import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {BaseExtension} from './BaseExtension';
 import * as inversify from 'inversify';
 import * as vscode from 'vscode';
@@ -35,7 +35,7 @@ export class ResolveExtension extends BaseExtension {
 
     constructor( @inversify.inject('context') context: vscode.ExtensionContext,
         private cache: ResolveCache,
-        private pickProvider: QuickPickProvider,
+        private pickProvider: ResolveQuickPickProvider,
         private config: ExtensionConfig,
         private parser: TsResolveFileParser) {
         super();

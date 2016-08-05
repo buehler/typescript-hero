@@ -6,7 +6,7 @@ import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
 import {ResolveItemFactory} from './factories/ResolveItemFactory';
 import {TsResolveFileParser} from './parser/TsResolveFileParser';
 import {GuiProvider} from './provider/GuiProvider';
-import {QuickPickProvider} from './provider/QuickPickProvider';
+import {ResolveQuickPickProvider} from './provider/ResolveQuickPickProvider';
 import {TypeScriptHero} from './TypeScriptHero';
 import {Kernel} from 'inversify';
 
@@ -15,7 +15,7 @@ let injector = new Kernel();
 injector.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 injector.bind(ExtensionConfig).to(ExtensionConfig).inSingletonScope();
 
-injector.bind(QuickPickProvider).to(QuickPickProvider).inSingletonScope();
+injector.bind(ResolveQuickPickProvider).to(ResolveQuickPickProvider).inSingletonScope();
 injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
 
 injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
