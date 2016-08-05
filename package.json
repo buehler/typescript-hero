@@ -1,129 +1,131 @@
 {
-    "name": "typescript-hero",
-    "displayName": "TypeScript Hero",
-    "description": "Additional tooling for the typescript language",
-    "icon": "etc/icon.png",
-    "galleryBanner": {
-        "color": "#7E7865",
-        "theme": "dark"
-    },
-    "version": "0.4.0",
-    "publisher": "rbbit",
-    "engines": {
-        "vscode": "^1.0.0"
-    },
-    "categories": [
-        "Other",
-        "Languages",
-        "Productivity"
+  "name": "typescript-hero",
+  "displayName": "TypeScript Hero",
+  "description": "Additional tooling for the typescript language",
+  "icon": "etc/icon.png",
+  "galleryBanner": {
+    "color": "#7E7865",
+    "theme": "dark"
+  },
+  "version": "0.4.0",
+  "publisher": "rbbit",
+  "engines": {
+    "vscode": "^1.0.0"
+  },
+  "categories": [
+    "Other",
+    "Languages",
+    "Productivity"
+  ],
+  "activationEvents": [
+    "onCommand:typescriptHero.addImport",
+    "onCommand:typescriptHero.organizeImports",
+    "onLanguage:typescript"
+  ],
+  "main": "./out/src/extension",
+  "contributes": {
+    "commands": [
+      {
+        "command": "typescriptHero.showCmdGui",
+        "title": "Typescript: Show the command gui of typescripthero"
+      },
+      {
+        "command": "typescriptHero.resolve.addImport",
+        "title": "Typescript: Add import to current file"
+      },
+      {
+        "command": "typescriptHero.resolve.organizeImports",
+        "title": "Typescript: Organize imports (sort and remove unused)"
+      },
+      {
+        "command": "typescriptHero.resolve.rebuildCache",
+        "title": "Typescript: Rebuild the resolver cache"
+      }
     ],
-    "activationEvents": [
-        "onCommand:typescriptHero.addImport",
-        "onCommand:typescriptHero.organizeImports",
-        "onLanguage:typescript"
+    "keybindings": [
+      {
+        "command": "typescriptHero.showCmdGui",
+        "key": "ctrl+alt+g"
+      },
+      {
+        "command": "typescriptHero.resolve.addImport",
+        "key": "ctrl+alt+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "typescriptHero.resolve.organizeImports",
+        "key": "ctrl+alt+o",
+        "when": "editorTextFocus"
+      }
     ],
-    "main": "./out/src/extension",
-    "contributes": {
-        "commands": [
-            {
-                "command": "typescriptHero.showCmdGui",
-                "title": "Typescript: Show the command gui of typescripthero"
-            },
-            {
-                "command": "typescriptHero.resolve.addImport",
-                "title": "Typescript: Add import to current file"
-            },
-            {
-                "command": "typescriptHero.resolve.organizeImports",
-                "title": "Typescript: Organize imports (sort and remove unused)"
-            },
-            {
-                "command": "typescriptHero.resolve.rebuildCache",
-                "title": "Typescript: Rebuild the resolver cache"
-            }
-        ],
-        "keybindings": [
-            {
-                "command": "typescriptHero.showCmdGui",
-                "key": "ctrl+alt+g"
-            },
-            {
-                "command": "typescriptHero.resolve.addImport",
-                "key": "ctrl+alt+i",
-                "when": "editorTextFocus"
-            },
-            {
-                "command": "typescriptHero.resolve.organizeImports",
-                "key": "ctrl+alt+o",
-                "when": "editorTextFocus"
-            }
-        ],
-        "configuration": {
-            "title": "Configuration section of the typescript hero extension",
-            "properties": {
-                "typescriptHero.resolver.pathStringDelimiter": {
-                    "enum": [
-                        "'",
-                        "\""
-                    ],
-                    "default": "'",
-                    "description": "Defines if single or double quotes should be used."
-                },
-                "typescriptHero.restartDebugger.watchFolders": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "uniqueItems": true,
-                    "default": [
-                        "build",
-                        "out",
-                        "dist"
-                    ],
-                    "description": "Defines the folders that are watched for filechanges to restart the debugger."
-                },
-                "typescriptHero.restartDebugger.active": {
-                    "type":"boolean",
-                    "default": true,
-                    "description": "Defines if the restart debugger extension is active at startup."
-                }
-            }
+    "configuration": {
+      "title": "Configuration section of the typescript hero extension",
+      "properties": {
+        "typescriptHero.resolver.pathStringDelimiter": {
+          "enum": [
+            "'",
+            "\""
+          ],
+          "default": "'",
+          "description": "Defines if single or double quotes should be used."
+        },
+        "typescriptHero.restartDebugger.watchFolders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "build",
+            "out",
+            "dist"
+          ],
+          "description": "Defines the folders that are watched for filechanges to restart the debugger."
+        },
+        "typescriptHero.restartDebugger.active": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if the restart debugger extension is active at startup."
         }
-    },
-    "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
-    "contributors": [
-        {
-            "name": "Dominique Wirz",
-            "email": "dominique.wirz@gmail.com"
-        }
-    ],
-    "license": "SEE LICENSE IN LICENSE.md",
-    "repository": {
-        "type": "git",
-        "url": "git+ssh://git@github.com:buehler/typescript-hero.git"
-    },
-    "bugs": {
-        "url": "https://github.com/buehler/typescript-hero/issues"
-    },
-    "homepage": "https://github.com/buehler/typescript-hero#readme",
-    "scripts": {
-        "vscode:prepublish": "npm run build && npm prune --production",
-        "precompile": "del ./out",
-        "compile": "tsc -w",
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test",
-        "build": "del ./out && tsc",
-        "package": "npm run build && del './*.vsix' && vsce package"
-    },
-    "devDependencies": {
-        "chai": "^3.5.0",
-        "del-cli": "^0.2.0",
-        "tslint": "^3.13.0",
-        "vscode": "^0.11.0"
-    },
-    "dependencies": {
-        "inversify": "^2.0.0-rc.1",
-        "reflect-metadata": "^0.1.3",
-        "typescript": "^1.8.10"
+      }
     }
+  },
+  "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
+  "contributors": [
+    {
+      "name": "Dominique Wirz",
+      "email": "dominique.wirz@gmail.com"
+    }
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:buehler/typescript-hero.git"
+  },
+  "bugs": {
+    "url": "https://github.com/buehler/typescript-hero/issues"
+  },
+  "homepage": "https://github.com/buehler/typescript-hero#readme",
+  "scripts": {
+    "bootstrap": "npm install && typings install",
+    "vscode:prepublish": "npm run build && npm prune --production",
+    "precompile": "del ./out",
+    "compile": "tsc -w",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test",
+    "build": "del ./out && tsc",
+    "package": "npm run build && del './*.vsix' && vsce package"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "del-cli": "^0.2.0",
+    "tslint": "^3.13.0",
+    "typings": "^1.3.2",
+    "vscode": "^0.11.0"
+  },
+  "dependencies": {
+    "inversify": "^2.0.0-rc.1",
+    "reflect-metadata": "^0.1.3",
+    "typescript": "^1.8.10"
+  }
 }
