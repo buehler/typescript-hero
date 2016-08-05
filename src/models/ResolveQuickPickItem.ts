@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
 import {ResolveItem} from './ResolveItem';
+import {QuickPickItem} from 'vscode';
 
-export class ResolveQuickPickItem implements vscode.QuickPickItem {
+export class ResolveQuickPickItem implements QuickPickItem {
     public label: string;
     public description: string;
 

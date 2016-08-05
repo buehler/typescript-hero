@@ -1,11 +1,13 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
+import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
 import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {QuickPickProvider} from '../provider/QuickPickProvider';
+import {BaseExtension} from './BaseExtension';
 import * as inversify from 'inversify';
 import * as vscode from 'vscode';
 
@@ -27,7 +29,7 @@ function importSort(i1: TsImport, i2: TsImport): number {
 }
 
 @inversify.injectable()
-export class ResolveExtension {
+export class ResolveExtension extends BaseExtension {
     private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
     private fileWatcher: vscode.FileSystemWatcher = vscode.workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
 
@@ -36,6 +38,7 @@ export class ResolveExtension {
         private pickProvider: QuickPickProvider,
         private config: ExtensionConfig,
         private parser: TsResolveFileParser) {
+        super();
 
         console.log('ResolveExtension instantiated');
         // TODO: file watcher; cancel token
@@ -71,6 +74,12 @@ export class ResolveExtension {
             this.cache.removeForFile(uri);
         });
     }
+
+    public getGuiCommands(): CommandQuickPickItem[] {
+        return [];
+    }
+
+    public dispose(): void { }
 
     private addImport(): void {
         if (!this.cache.cacheReady) {
