@@ -10,7 +10,10 @@ export class TypeScriptHero implements Disposable {
 
     constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private guiProvider: GuiProvider, @multiInject('Extension') private extensions: BaseExtension[]) {
         this.logger = loggerFactory('TypescriptHero');
-        this.logger.info('Activation event called. TypeScriptHero instantiated.');
+        //this.logger.error('Activation event called. TypeScriptHero instantiated.');
+        this.logger.error('err', {foo: 'bar', baz: 15});
+        this.logger.warning('warn', {foo: 'bar', baz: 15});
+        this.logger.info('info', {foo: 'bar', baz: 15});
     }
 
     public dispose(): void {
