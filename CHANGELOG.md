@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 
 
-### 0.4.0
+### [0.4.0]
 
 #### Added
 - Organize imports
