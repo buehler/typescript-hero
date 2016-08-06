@@ -3,10 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-
+#### Fixed
+- Tests on travis-ci
+- Typos
 
 ### [0.4.0]
-
 #### Added
 - Organize imports
 - Add new imports
