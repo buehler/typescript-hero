@@ -1,5 +1,6 @@
+import {LogLevel} from './utilities/Logger';
 import {injectable} from 'inversify';
-import * as vscode from 'vscode';
+import {workspace} from 'vscode';
 
 const sectionKey = 'typescriptHero';
 
@@ -7,6 +8,20 @@ const sectionKey = 'typescriptHero';
 export class ExtensionConfig {
     private resolverConfig: ResolverConfig = new ResolverConfig();
     private restartDebuggerConfig: RestartDebuggerConfig = new RestartDebuggerConfig();
+
+    public get logLevel(): LogLevel {
+        let optString = workspace.getConfiguration(sectionKey).get<string>('verbosity');
+        switch (optString) {
+            case 'Nothing':
+                return LogLevel.Nothing;
+            case 'Errors':
+                return LogLevel.Errors;
+            case 'All':
+                return LogLevel.All;
+            default:
+                return LogLevel.Warnings;
+        }
+    }
 
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
@@ -19,16 +34,16 @@ export class ExtensionConfig {
 
 class ResolverConfig {
     public get pathStringDelimiter(): string {
-        return vscode.workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
+        return workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
     }
 }
 
 class RestartDebuggerConfig {
     public get watchFolders(): string[] {
-        return vscode.workspace.getConfiguration(sectionKey).get<string[]>('restartDebugger.watchFolders');
+        return workspace.getConfiguration(sectionKey).get<string[]>('restartDebugger.watchFolders');
     }
 
     public get active(): boolean {
-        return vscode.workspace.getConfiguration(sectionKey).get<boolean>('restartDebugger.active');
+        return workspace.getConfiguration(sectionKey).get<boolean>('restartDebugger.active');
     }
 }

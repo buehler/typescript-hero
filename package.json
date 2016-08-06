@@ -98,6 +98,16 @@
     "configuration": {
       "title": "Configuration section of the typescript hero extension",
       "properties": {
+        "typescriptHero.verbosity": {
+          "enum": [
+            "Nothing",
+            "Errors",
+            "Warnings",
+            "All"
+          ],
+          "default": "Warnings",
+          "description": "Defines the log output level in the output window."
+        },
         "typescriptHero.resolver.pathStringDelimiter": {
           "enum": [
             "'",
