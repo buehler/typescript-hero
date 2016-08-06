@@ -22,10 +22,15 @@ export class RestartDebuggerExtension extends BaseExtension {
 
     public getGuiCommands(): CommandQuickPickItem[] {
         return [
-            new CommandQuickPickItem('Debug restarter: toggle', `currently: ${this.active ? 'activated' : 'deactivated'}`, 'Toggles the active state of the automatic debugger restarter.', new TshCommand(() => {
-                this.active = !this.active;
-                this.configure();
-            }))
+            new CommandQuickPickItem(
+                'Debug restarter: toggle',
+                `currently: ${this.active ? 'activated' : 'deactivated'}`,
+                'Toggles the active state of the automatic debug restarter.',
+                new TshCommand(() => {
+                    this.active = !this.active;
+                    this.configure();
+                })
+            )
         ];
     }
 
