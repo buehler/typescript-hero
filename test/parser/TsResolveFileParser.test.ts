@@ -1,9 +1,10 @@
-import * as chai from 'chai';
-import {TsResolveFileParser} from '../../src/parser/TsResolveFileParser';
-import {TsStringImport, TsNamedImport, TsNamespaceImport, TsExternalModuleImport} from '../../src/models/TsImport';
-import {TsResolveFile} from '../../src/models/TsResolveFile';
-import {TsClassDeclaration, TsFunctionDeclaration, TsEnumDeclaration, TsVariableDeclaration, TsTypeDeclaration, TsInterfaceDeclaration} from '../../src/models/TsDeclaration';
+import 'reflect-metadata';
+import {TsClassDeclaration, TsEnumDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsNamedFromExport} from '../../src/models/TsExport';
+import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
+import {TsResolveFile} from '../../src/models/TsResolveFile';
+import {TsResolveFileParser} from '../../src/parser/TsResolveFileParser';
+import * as chai from 'chai';
 import path = require('path');
 
 chai.should();
@@ -28,7 +29,7 @@ describe('TsResolveFileParser', () => {
             });
 
             it('should parse imports', () => {
-                parsed.imports.should.be.an('array').with.lengthOf(6);
+                parsed.imports.should.be.an('array').with.lengthOf(7);
             });
 
             it('should parse string import', () => {
@@ -42,11 +43,9 @@ describe('TsResolveFileParser', () => {
 
                 tsImport.should.be.an.instanceOf(TsNamedImport);
                 tsImport.libraryName.should.equal('namedImport');
-                tsImport.specifiers.should.deep.equal([
-                    { specifier: 'Specifier1', alias: undefined },
-                    { specifier: 'Specifier2', alias: undefined },
-                    { specifier: 'Specifier3', alias: undefined }
-                ]);
+                tsImport.specifiers[0].specifier.should.equal('Specifier1');
+                tsImport.specifiers[1].specifier.should.equal('Specifier2');
+                tsImport.specifiers[2].specifier.should.equal('Specifier3');
             });
 
             it('should parse named import with aliased specifier', () => {
@@ -54,7 +53,8 @@ describe('TsResolveFileParser', () => {
 
                 tsImport.should.be.an.instanceOf(TsNamedImport);
                 tsImport.libraryName.should.equal('namedAliasedImport');
-                tsImport.specifiers.should.deep.equal([{ specifier: 'Specifier1', alias: 'Alias1' }]);
+                tsImport.specifiers[0].specifier.should.equal('Specifier1');
+                tsImport.specifiers[0].alias.should.equal('Alias1');
             });
 
             it('should parse namespace import', () => {
@@ -78,10 +78,17 @@ describe('TsResolveFileParser', () => {
 
                 tsImport.should.be.an.instanceOf(TsNamedImport);
                 tsImport.libraryName.should.equal('multiLineImport');
-                tsImport.specifiers.should.deep.equal([
-                    { specifier: 'Spec1', alias: undefined },
-                    { specifier: 'Spec2', alias: 'Alias2' }
-                ]);
+                tsImport.specifiers[0].specifier.should.equal('Spec1');
+                tsImport.specifiers[1].specifier.should.equal('Spec2');
+                tsImport.specifiers[1].alias.should.equal('Alias2');
+            });
+
+            it('should parse a default import', () => {
+                let tsImport = parsed.imports[6] as TsDefaultImport;
+
+                tsImport.should.be.an.instanceOf(TsDefaultImport);
+                tsImport.libraryName.should.equal('aFile');
+                tsImport.alias.should.equal('Foobar');
             });
 
         });
