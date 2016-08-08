@@ -1,14 +1,18 @@
-import {injectable} from 'inversify';
+import {Logger, LoggerFactory} from '../utilities/Logger';
+import {inject, injectable} from 'inversify';
 import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument} from 'vscode';
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
-    constructor() {
-        
+    private logger: Logger;
+
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory) {
+        this.logger = loggerFactory('ResolveCompletionItemProvider');
+        this.logger.info('Instantiated.');
     }
 
     provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): CompletionItem[] {
-        console.log('called');
+        this.logger.info('Called', { position, document: document.fileName });
         return [];
     }
 }

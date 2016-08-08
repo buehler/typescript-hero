@@ -21,7 +21,7 @@ export class RestartDebuggerExtension extends BaseExtension {
         this.active = this.config.restartDebugger.active;
         this.configure();
 
-        this.logger.info('Extension instantiated');
+        this.logger.info('Extension instantiated.');
     }
 
     public getGuiCommands(): CommandQuickPickItem[] {
