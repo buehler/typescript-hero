@@ -35,13 +35,11 @@ work with typescript.
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG.md](CHANGELOG.md)
 
-### 0.4.0
-
+### [0.5.0]
 #### Added
-- Organize imports
-- Add new imports
-- Debug restarter feature
-- Command palette (`ctrl+alt+g`)
+- Output channel for logging (configurable verbosity)
+- Commands from the resolver extension (to the cmd gui)
 
 #### Fixed
-- Various bugs in AST parsing
+- Tests on travis-ci
+- Typos
