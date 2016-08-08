@@ -3,6 +3,7 @@ import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
 import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
@@ -80,7 +81,26 @@ export class ResolveExtension extends BaseExtension {
     }
 
     public getGuiCommands(): CommandQuickPickItem[] {
-        return [];
+        return [
+            new CommandQuickPickItem(
+                'Import resolver: Add import',
+                '',
+                'Does open the list of unimported symbols.',
+                new TshCommand(() => this.addImport())
+            ),
+            new CommandQuickPickItem(
+                'Import resolver: Organize imports',
+                '',
+                'Sorts imports and removes unused imports.',
+                new TshCommand(() => this.organizeImports())
+            ),
+            new CommandQuickPickItem(
+                'Import resolver: Rebuild cache',
+                `currently: ${this.cache.cachedCount} symbols`,
+                'Does rebuild the whole symbol index.',
+                new TshCommand(() => this.refreshCache())
+            )
+        ];
     }
 
     public dispose(): void {
