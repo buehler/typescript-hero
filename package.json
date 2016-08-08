@@ -28,7 +28,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com:buehler/typescript-hero.git"
+    "url": "https://github.com/buehler/typescript-hero.git"
   },
   "bugs": {
     "url": "https://github.com/buehler/typescript-hero/issues"
