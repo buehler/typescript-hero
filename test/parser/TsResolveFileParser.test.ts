@@ -15,7 +15,13 @@ describe('TsResolveFileParser', () => {
         parsed: TsResolveFile;
 
     beforeEach(() => {
-        parser = new TsResolveFileParser();
+        parser = new TsResolveFileParser(() => {
+            return <any>{
+                info: () => {},
+                error: () => {},
+                warning: () => {}
+            }
+        });
     });
 
     describe('Local typescript files', () => {
