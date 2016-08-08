@@ -1,6 +1,7 @@
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {TshCommand} from '../models/TshCommand';
+import {Logger} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {commands, ExtensionContext, FileSystemWatcher, workspace} from 'vscode';
@@ -10,27 +11,35 @@ const DEBOUNCE = 1500;
 @injectable()
 export class RestartDebuggerExtension extends BaseExtension {
     private fileWatcher: FileSystemWatcher;
+    private logger: Logger;
     private restartCall: number;
     private active: boolean;
 
-    constructor( @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
         super();
-        console.log('RestartDebuggerExtension instantiated');
+        this.logger = loggerFactory('RestartDebuggerExtension');
         this.active = this.config.restartDebugger.active;
         this.configure();
+
+        this.logger.info('Extension instantiated');
     }
 
     public getGuiCommands(): CommandQuickPickItem[] {
         return [
-            new CommandQuickPickItem('Debug restarter: toggle', `currently: ${this.active ? 'activated' : 'deactivated'}`, 'Toggles the active state of the automatic debugger restarter.', new TshCommand(() => {
-                this.active = !this.active;
-                this.configure();
-            }))
+            new CommandQuickPickItem(
+                'Debug restarter: toggle',
+                `currently: ${this.active ? 'activated' : 'deactivated'}`,
+                'Toggles the active state of the automatic debug restarter.',
+                new TshCommand(() => {
+                    this.active = !this.active;
+                    this.configure();
+                })
+            )
         ];
     }
 
     public dispose(): void {
-        console.log('RestartDebuggerExtension: Dispose called.');
+        this.logger.info('Dispose called.');
         if (this.fileWatcher) {
             this.fileWatcher.dispose();
             this.fileWatcher = null;
@@ -40,7 +49,7 @@ export class RestartDebuggerExtension extends BaseExtension {
     private configure(): void {
         if (this.active && !this.fileWatcher) {
             let watcherGlob = this.config.restartDebugger.watchFolders.map(o => `**/${o}/**/*.*`).join(',');
-            console.log(`RestartDebuggerExtension activated for glob: ${watcherGlob}`);
+            this.logger.info(`Activated for glob: ${watcherGlob}`);
             this.fileWatcher = workspace.createFileSystemWatcher(`{${watcherGlob}}`);
             this.fileWatcher.onDidChange(() => this.restartDebugger());
             this.fileWatcher.onDidCreate(() => this.restartDebugger());
@@ -48,7 +57,7 @@ export class RestartDebuggerExtension extends BaseExtension {
         } else if (!this.active && this.fileWatcher) {
             this.fileWatcher.dispose();
             this.fileWatcher = null;
-            console.log(`RestartDebuggerExtension deactivated`);
+            this.logger.info(`Deactivated`);
         }
     }
 

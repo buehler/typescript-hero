@@ -8,7 +8,9 @@ import {TsResolveFileParser} from './parser/TsResolveFileParser';
 import {GuiProvider} from './provider/GuiProvider';
 import {ResolveQuickPickProvider} from './provider/ResolveQuickPickProvider';
 import {TypeScriptHero} from './TypeScriptHero';
-import {Kernel} from 'inversify';
+import {Logger} from './utilities/Logger';
+import {interfaces, Kernel} from 'inversify';
+import {ExtensionContext} from 'vscode';
 
 let injector = new Kernel();
 
@@ -24,5 +26,13 @@ injector.bind(ResolveItemFactory).to(ResolveItemFactory);
 
 injector.bind<BaseExtension>('Extension').to(ResolveExtension).inSingletonScope();
 injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
+
+injector.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((context: interfaces.Context) => {
+    return (prefix?: string) => {
+        let extContext = context.kernel.get<ExtensionContext>('context'),
+            config = context.kernel.get<ExtensionConfig>(ExtensionConfig);
+        return new Logger(extContext, config, prefix);
+    };
+});
 
 export const Injector = injector;

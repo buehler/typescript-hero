@@ -1,8 +1,9 @@
 import {CancellationRequested} from '../models/CancellationRequested';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
+import {Logger} from '../utilities/Logger';
 import fs = require('fs');
-import {injectable} from 'inversify';
+import {inject, injectable} from 'inversify';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -10,6 +11,7 @@ import * as vscode from 'vscode';
 export class ResolveCache {
     private cache: { [path: string]: TsResolveFile };
     private cancelToken: vscode.CancellationTokenSource;
+    private logger: Logger;
 
     public get cacheReady(): boolean {
         return !!this.cache;
@@ -22,7 +24,9 @@ export class ResolveCache {
         }, []);
     }
 
-    constructor(private parser: TsResolveFileParser) { }
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private parser: TsResolveFileParser) {
+        this.logger = loggerFactory('ResolveCache');
+    }
 
     public removeForFile(file: vscode.Uri): Promise<void> {
         return new Promise<void>((resolve, reject) => {
@@ -33,22 +37,22 @@ export class ResolveCache {
     }
 
     public rebuildForFile(file: vscode.Uri): Promise<void> {
-        console.log('ResolveCache: Rebuild index for file triggered. Indexing file: ' + file.fsPath);
+        this.logger.info('Rebuild index for file triggered.', { path: file.fsPath });
         return this.parser
             .parseFile(file)
             .then(parsed => {
-                console.log('ResolveCache: Rebuild for file finished.');
+                this.logger.info('Rebuild for file finished.');
                 this.cache[parsed.fsPath] = parsed;
             });
     }
 
     public buildCache(cancellationToken?: vscode.CancellationToken): Promise<void> {
         if (this.cancelToken) {
-            console.log('ResolveCache: Refresh already running, canceling first.');
+            this.logger.info('Refresh already running, canceling first.');
             this.cancelRefresh();
         }
 
-        console.log('ResolveCache: Starting cache refresh.');
+        this.logger.info('Starting cache refresh.');
         this.cancelToken = new vscode.CancellationTokenSource();
         let searches: PromiseLike<vscode.Uri[]>[] = [vscode.workspace.findFiles('**/*.ts', '{**/node_modules/**,**/typings/**}', undefined, this.cancelToken.token)];
 
@@ -77,14 +81,14 @@ export class ResolveCache {
                 if (cancellationToken && cancellationToken.onCancellationRequested) {
                     throw new CancellationRequested();
                 }
-                console.log(`ResolveCache: Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
+                this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
                 return this.parser.parseFiles(uris.reduce((all, cur) => all.concat(cur), []), cancellationToken);
             })
             .then(resolveFiles => {
                 if (cancellationToken && cancellationToken.onCancellationRequested) {
                     throw new CancellationRequested();
                 }
-                console.log(`ResolveCache: Refresh finished. Parsed ${resolveFiles.length} files.`);
+                this.logger.info(`Refresh finished. Parsed ${resolveFiles.length} files.`);
                 this.cache = {};
                 resolveFiles.forEach(o => {
                     this.cache[o.fsPath] = o;
@@ -96,13 +100,13 @@ export class ResolveCache {
                 if (!(e instanceof CancellationRequested)) {
                     throw e;
                 }
-                console.log('ResolveCache: Cancellation requested.');
+                this.logger.info('Cancellation requested.');
             });
     }
 
     public cancelRefresh(): void {
         if (this.cancelToken) {
-            console.log('ResolveCache: Canceling refresh.');
+            this.logger.info('Canceling refresh.');
             this.cancelToken.dispose();
             this.cancelToken = null;
         }

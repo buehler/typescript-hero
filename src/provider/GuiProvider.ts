@@ -6,8 +6,6 @@ import {commands, ExtensionContext, window} from 'vscode';
 @injectable()
 export class GuiProvider {
     constructor( @inject('context') context: ExtensionContext, @multiInject('Extension') private extensions: BaseExtension[]) {
-        console.log('GuiProvider instantiated');
-
         context.subscriptions.push(commands.registerCommand('typescriptHero.showCmdGui', () => this.showGui()));
     }
 

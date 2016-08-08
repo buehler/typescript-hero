@@ -4,10 +4,10 @@ import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
 import {TsDefaultDeclaration} from '../models/TsDeclaration';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
-import * as inversify from 'inversify';
+import {injectable} from 'inversify';
 import * as vscode from 'vscode';
 
-@inversify.injectable()
+@injectable()
 export class ResolveQuickPickProvider {
     constructor(private cache: ResolveCache, private parser: TsResolveFileParser, private resolveItemFactory: ResolveItemFactory) { }
 

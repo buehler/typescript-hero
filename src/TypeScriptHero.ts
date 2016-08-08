@@ -1,17 +1,20 @@
 import {BaseExtension} from './extensions/BaseExtension';
 import {GuiProvider} from './provider/GuiProvider';
-import {injectable, multiInject} from 'inversify';
+import {Logger} from './utilities/Logger';
+import {inject, injectable, multiInject} from 'inversify';
 import {Disposable} from 'vscode';
 
 @injectable()
 export class TypeScriptHero implements Disposable {
+    private logger: Logger;
 
-    constructor(private guiProvider: GuiProvider, @multiInject('Extension') private extensions: BaseExtension[]) {
-        console.log('Activation event called. TypeScriptHero instantiated.');
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private guiProvider: GuiProvider, @multiInject('Extension') private extensions: BaseExtension[]) {
+        this.logger = loggerFactory('TypescriptHero');
+        this.logger.info('Activation event called. TypeScriptHero instantiated.');
     }
 
     public dispose(): void {
-        console.log('Deactivation event called. Disposing TypeScriptHero.');
+        this.logger.info('Deactivation event called. Disposing TypeScriptHero.');
         for (let ext of this.extensions) {
             ext.dispose();
         }

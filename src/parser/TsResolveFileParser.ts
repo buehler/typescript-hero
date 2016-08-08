@@ -5,8 +5,9 @@ import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImpor
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveInformation} from '../models/TsResolveInformation';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
+import {Logger} from '../utilities/Logger';
 import fs = require('fs');
-import * as inversify from 'inversify';
+import {inject, injectable} from 'inversify';
 import {createSourceFile, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
 import * as vscode from 'vscode';
 
@@ -40,6 +41,124 @@ const usagePredicates = [
     allowedIfLastIdentifier,
     allowedIfPropertyAccessFirst
 ];
+
+
+@injectable()
+export class TsResolveFileParser {
+    private logger: Logger;
+
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger) {
+        this.logger = loggerFactory('TsResolveFileParser');
+    }
+
+    public parseSource(source: string): Promise<TsResolveFile> {
+        return new Promise((resolve, reject) => {
+            try {
+                let tmp = createSourceFile('inline.ts', source, ScriptTarget.ES6, true);
+                resolve(this.parseTypescript(tmp));
+            } catch (e) {
+                this.logger.error('Error happend during source parsing', { error: e });
+                reject(e);
+            }
+        });
+    }
+
+    public parseFile(filePath: string | vscode.Uri): Promise<TsResolveFile> {
+        return this.parseFiles([filePath]).then(files => files[0]);
+    }
+
+    public parseFiles(filePathes: (string | vscode.Uri)[], cancellationToken?: vscode.CancellationToken): Promise<TsResolveFile[]> {
+        return new Promise((resolve, reject) => {
+            try {
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
+                let parsed = filePathes
+                    .map(o => typeof o === 'string' ? o : o.fsPath)
+                    .map(o => createSourceFile(o, fs.readFileSync(o).toString(), ScriptTarget.ES6, true))
+                    .map(o => this.parseTypescript(o, cancellationToken));
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
+                resolve(parsed);
+            } catch (e) {
+                if (!(e instanceof CancellationRequested)) {
+                    this.logger.error('Error happend during file parsing', { error: e });
+                }
+                reject(e);
+            }
+        });
+    }
+
+    private parseTypescript(source: SourceFile, cancellationToken?: vscode.CancellationToken): TsResolveFile {
+        let tsFile = new TsResolveFile(source.fileName);
+
+        let syntaxList = source.getChildAt(0);
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            throw new CancellationRequested();
+        }
+        this.parseDeclarations(tsFile, syntaxList);
+
+        return tsFile;
+    }
+
+    private parseDeclarations(tsResolveInfo: TsResolveInformation, node: Node, cancellationToken?: vscode.CancellationToken): void {
+        for (let child of node.getChildren()) {
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                throw new CancellationRequested();
+            }
+            switch (child.kind) {
+                case SyntaxKind.ImportDeclaration:
+                    importDeclaration(tsResolveInfo, <ImportDeclaration>child);
+                    break;
+                case SyntaxKind.ImportEqualsDeclaration:
+                    importEqualsDeclaration(tsResolveInfo, <ImportEqualsDeclaration>child);
+                    break;
+                case SyntaxKind.ClassDeclaration:
+                    declaration(tsResolveInfo, child, TsClassDeclaration);
+                    break;
+                case SyntaxKind.FunctionDeclaration:
+                    declaration(tsResolveInfo, child, TsFunctionDeclaration);
+                    break;
+                case SyntaxKind.EnumDeclaration:
+                    declaration(tsResolveInfo, child, TsEnumDeclaration);
+                    break;
+                case SyntaxKind.TypeAliasDeclaration:
+                    declaration(tsResolveInfo, child, TsTypeDeclaration);
+                    break;
+                case SyntaxKind.InterfaceDeclaration:
+                    declaration(tsResolveInfo, child, TsInterfaceDeclaration);
+                    break;
+                case SyntaxKind.Parameter:
+                    parameterDeclaration(tsResolveInfo, child);
+                    break;
+                case SyntaxKind.VariableStatement:
+                    variableDeclaration(tsResolveInfo, <VariableStatement>child);
+                    break;
+                case SyntaxKind.ExportDeclaration:
+                    exportDeclaration(tsResolveInfo, child);
+                    break;
+                case SyntaxKind.ExportAssignment:
+                    exportAssignment(tsResolveInfo, child);
+                    break;
+                case SyntaxKind.Identifier:
+                    if (child.parent && usagePredicates.every(predicate => predicate(child))) {
+                        let identifier = <Identifier>child;
+                        if (tsResolveInfo.usages.indexOf(identifier.text) === -1) {
+                            tsResolveInfo.usages.push(identifier.text);
+                        }
+                    }
+                    break;
+                case SyntaxKind.ModuleDeclaration:
+                    let module = moduleDeclaration(<ModuleDeclaration>child);
+                    tsResolveInfo.declarations.push(module);
+                    this.parseDeclarations(module, child);
+                    continue;
+            }
+            this.parseDeclarations(tsResolveInfo, child, cancellationToken);
+        }
+    }
+}
 
 function allowedIfLastIdentifier(node: Node): boolean {
     if (usageAllowedIfLast.indexOf(node.parent.kind) === -1) {
@@ -206,115 +325,4 @@ function checkIfExported(node: Node): boolean {
     let children = node.getChildren();
     return children.length > 0 &&
         children.filter(o => o.kind === SyntaxKind.SyntaxList).some(o => o.getChildren().some(o => o.kind === SyntaxKind.ExportKeyword));
-}
-
-@inversify.injectable()
-export class TsResolveFileParser {
-    public parseSource(source: string): Promise<TsResolveFile> {
-        return new Promise((resolve, reject) => {
-            try {
-                let tmp = createSourceFile('inline.ts', source, ScriptTarget.ES6, true);
-                resolve(this.parseTypescript(tmp));
-            } catch (e) {
-                console.error('TsResolveFileParser: Error happend during source parsing', { error: e });
-                reject(e);
-            }
-        });
-    }
-
-    public parseFile(filePath: string | vscode.Uri): Promise<TsResolveFile> {
-        return this.parseFiles([filePath]).then(files => files[0]);
-    }
-
-    public parseFiles(filePathes: (string | vscode.Uri)[], cancellationToken?: vscode.CancellationToken): Promise<TsResolveFile[]> {
-        return new Promise((resolve, reject) => {
-            try {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                let parsed = filePathes
-                    .map(o => typeof o === 'string' ? o : o.fsPath)
-                    .map(o => createSourceFile(o, fs.readFileSync(o).toString(), ScriptTarget.ES6, true))
-                    .map(o => this.parseTypescript(o, cancellationToken));
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                resolve(parsed);
-            } catch (e) {
-                if (!(e instanceof CancellationRequested)) {
-                    console.error('TsResolveFileParser: Error happend during file parsing', { error: e });
-                }
-                reject(e);
-            }
-        });
-    }
-
-    private parseTypescript(source: SourceFile, cancellationToken?: vscode.CancellationToken): TsResolveFile {
-        let tsFile = new TsResolveFile(source.fileName);
-
-        let syntaxList = source.getChildAt(0);
-        if (cancellationToken && cancellationToken.onCancellationRequested) {
-            throw new CancellationRequested();
-        }
-        this.parseDeclarations(tsFile, syntaxList);
-
-        return tsFile;
-    }
-
-    private parseDeclarations(tsResolveInfo: TsResolveInformation, node: Node, cancellationToken?: vscode.CancellationToken): void {
-        for (let child of node.getChildren()) {
-            if (cancellationToken && cancellationToken.onCancellationRequested) {
-                throw new CancellationRequested();
-            }
-            switch (child.kind) {
-                case SyntaxKind.ImportDeclaration:
-                    importDeclaration(tsResolveInfo, <ImportDeclaration>child);
-                    break;
-                case SyntaxKind.ImportEqualsDeclaration:
-                    importEqualsDeclaration(tsResolveInfo, <ImportEqualsDeclaration>child);
-                    break;
-                case SyntaxKind.ClassDeclaration:
-                    declaration(tsResolveInfo, child, TsClassDeclaration);
-                    break;
-                case SyntaxKind.FunctionDeclaration:
-                    declaration(tsResolveInfo, child, TsFunctionDeclaration);
-                    break;
-                case SyntaxKind.EnumDeclaration:
-                    declaration(tsResolveInfo, child, TsEnumDeclaration);
-                    break;
-                case SyntaxKind.TypeAliasDeclaration:
-                    declaration(tsResolveInfo, child, TsTypeDeclaration);
-                    break;
-                case SyntaxKind.InterfaceDeclaration:
-                    declaration(tsResolveInfo, child, TsInterfaceDeclaration);
-                    break;
-                case SyntaxKind.Parameter:
-                    parameterDeclaration(tsResolveInfo, child);
-                    break;
-                case SyntaxKind.VariableStatement:
-                    variableDeclaration(tsResolveInfo, <VariableStatement>child);
-                    break;
-                case SyntaxKind.ExportDeclaration:
-                    exportDeclaration(tsResolveInfo, child);
-                    break;
-                case SyntaxKind.ExportAssignment:
-                    exportAssignment(tsResolveInfo, child);
-                    break;
-                case SyntaxKind.Identifier:
-                    if (child.parent && usagePredicates.every(predicate => predicate(child))) {
-                        let identifier = <Identifier>child;
-                        if (tsResolveInfo.usages.indexOf(identifier.text) === -1) {
-                            tsResolveInfo.usages.push(identifier.text);
-                        }
-                    }
-                    break;
-                case SyntaxKind.ModuleDeclaration:
-                    let module = moduleDeclaration(<ModuleDeclaration>child);
-                    tsResolveInfo.declarations.push(module);
-                    this.parseDeclarations(module, child);
-                    continue;
-            }
-            this.parseDeclarations(tsResolveInfo, child, cancellationToken);
-        }
-    }
 }

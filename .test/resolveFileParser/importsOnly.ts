@@ -7,3 +7,4 @@ import {
     Spec1,
     Spec2 as Alias2
 } from 'multiLineImport';
+import Foobar from 'aFile';

@@ -7,8 +7,9 @@ import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsName
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
+import {Logger} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
-import * as inversify from 'inversify';
+import {inject, injectable} from 'inversify';
 import * as vscode from 'vscode';
 
 const importMatcher = /^import\s.*;$/,
@@ -28,20 +29,21 @@ function importSort(i1: TsImport, i2: TsImport): number {
     return 0;
 }
 
-@inversify.injectable()
+@injectable()
 export class ResolveExtension extends BaseExtension {
+    private logger: Logger;
     private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
     private fileWatcher: vscode.FileSystemWatcher = vscode.workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
 
-    constructor( @inversify.inject('context') context: vscode.ExtensionContext,
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger,
+        @inject('context') context: vscode.ExtensionContext,
         private cache: ResolveCache,
         private pickProvider: ResolveQuickPickProvider,
         private config: ExtensionConfig,
         private parser: TsResolveFileParser) {
         super();
 
-        console.log('ResolveExtension instantiated');
-        // TODO: file watcher; cancel token
+        this.logger = loggerFactory('ResolveExtension');
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
@@ -60,10 +62,10 @@ export class ResolveExtension extends BaseExtension {
                 return;
             }
             if (uri.fsPath.endsWith('package.json') || uri.fsPath.endsWith('typings.json')) {
-                console.log('ResolveExtension: package.json or typings.json modified. Refreshing cache.');
+                this.logger.info('package.json or typings.json modified. Refreshing cache.');
                 this.refreshCache();
             } else {
-                console.log(`ResolveExtension: File "${uri.fsPath}" changed. Reindexing file.`);
+                this.logger.info(`File "${uri.fsPath}" changed. Reindexing file.`);
                 this.refreshCache(uri);
             }
         });
@@ -73,6 +75,8 @@ export class ResolveExtension extends BaseExtension {
             }
             this.cache.removeForFile(uri);
         });
+
+        this.logger.info('Extension instantiated.');
     }
 
     public getGuiCommands(): CommandQuickPickItem[] {
@@ -80,7 +84,7 @@ export class ResolveExtension extends BaseExtension {
     }
 
     public dispose(): void {
-        console.log('ResolveExtension: Dispose called.');
+        this.logger.info('Dispose called.');
     }
 
     private addImport(): void {
@@ -117,7 +121,7 @@ export class ResolveExtension extends BaseExtension {
                 this.commitDocumentImports(keep);
             })
             .catch(e => {
-                console.error('ERROR HAPPEND', { e });
+                this.logger.error('An error happend during "organize imports".', { error: e });
             });
     }
 
