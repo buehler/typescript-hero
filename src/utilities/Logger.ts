@@ -3,6 +3,8 @@ import {injectable} from 'inversify';
 import {ExtensionContext, OutputChannel, window} from 'vscode';
 import * as util from 'util';
 
+export type LoggerFactory = (prefix?: string) => Logger;
+
 export const enum LogLevel {
     Nothing,
     Errors,

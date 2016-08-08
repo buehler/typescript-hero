@@ -5,7 +5,7 @@ import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImpor
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveInformation} from '../models/TsResolveInformation';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {Logger} from '../utilities/Logger';
+import {Logger, LoggerFactory} from '../utilities/Logger';
 import fs = require('fs');
 import {inject, injectable} from 'inversify';
 import {createSourceFile, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
@@ -47,7 +47,7 @@ const usagePredicates = [
 export class TsResolveFileParser {
     private logger: Logger;
 
-    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger) {
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory) {
         this.logger = loggerFactory('TsResolveFileParser');
     }
 

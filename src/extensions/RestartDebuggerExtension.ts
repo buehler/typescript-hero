@@ -1,7 +1,7 @@
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {TshCommand} from '../models/TshCommand';
-import {Logger} from '../utilities/Logger';
+import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {commands, ExtensionContext, FileSystemWatcher, workspace} from 'vscode';
@@ -15,7 +15,7 @@ export class RestartDebuggerExtension extends BaseExtension {
     private restartCall: number;
     private active: boolean;
 
-    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
         super();
         this.logger = loggerFactory('RestartDebuggerExtension');
         this.active = this.config.restartDebugger.active;
