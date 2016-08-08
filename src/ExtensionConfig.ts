@@ -40,6 +40,10 @@ class ResolverConfig {
     public get ignorePatterns(): string[] {
         return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
     }
+
+    public get minCharactersForCompletion(): number {
+        return workspace.getConfiguration(sectionKey).get<number>('resolver.minCharactersForCompletion');
+    }
 }
 
 class RestartDebuggerConfig {
