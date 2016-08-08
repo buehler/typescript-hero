@@ -1,3 +1,4 @@
+import {ExtensionConfig} from '../ExtensionConfig';
 import {CancellationRequested} from '../models/CancellationRequested';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
@@ -28,7 +29,7 @@ export class ResolveCache {
         }, []);
     }
 
-    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private parser: TsResolveFileParser) {
+    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private parser: TsResolveFileParser, private config: ExtensionConfig) {
         this.logger = loggerFactory('ResolveCache');
     }
 
@@ -85,6 +86,8 @@ export class ResolveCache {
                 if (cancellationToken && cancellationToken.onCancellationRequested) {
                     throw new CancellationRequested();
                 }
+                let excludePatterns = this.config.resolver.ignorePatterns;
+                uris = uris.map(o => o.filter(f => f.fsPath.split(path.sep).every(p => excludePatterns.indexOf(p) < 0)));
                 this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
                 return this.parser.parseFiles(uris.reduce((all, cur) => all.concat(cur), []), cancellationToken);
             })

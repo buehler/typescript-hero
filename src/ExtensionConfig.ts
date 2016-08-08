@@ -36,6 +36,10 @@ class ResolverConfig {
     public get pathStringDelimiter(): string {
         return workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
     }
+
+    public get ignorePatterns(): string[] {
+        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
+    }
 }
 
 class RestartDebuggerConfig {

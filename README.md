@@ -20,6 +20,7 @@ work with typescript.
 ### Input organizer
 
 - `typescriptHero.resolver.pathStringDelimiter`: The string delimiter to use for the imports
+- `typescriptHero.resolver.ignorePatterns`: If any of these strings is part of a file path, the file is ignored
 
 ### Debug session restarter
 
