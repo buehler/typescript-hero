@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Fixed
 - Duplicated module entries should be gone
+- Url for "Get Started" on publish page
 
 ## [0.5.0]
 #### Added
