@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.0]
 #### Added
 - Output channel for logging (configurable verbosity)
 - Commands from the resolver extension (to the cmd gui)
@@ -22,5 +24,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.4.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.5.0...master
+[0.5.0]: https://github.com/buehler/typescript-hero/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/buehler/typescript-hero/tree/v0.4.0
