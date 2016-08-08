@@ -114,7 +114,9 @@ export class ResolveItemFactory {
                 if (!libExports[mod.name]) {
                     libExports[mod.name] = { declarations: [], exports: [] };
                 }
-                libExports[mod.name].declarations.push(new ResolveItem(mod, mod.name, file, mod.moduleNamespaceName));
+                if (!libExports[mod.name].declarations.some(o => o.libraryName === mod.name)) {
+                    libExports[mod.name].declarations.push(new ResolveItem(mod, mod.name, file, mod.moduleNamespaceName));
+                }
 
                 for (let declaration of mod.declarations) {
                     if (isExportable(declaration) && declaration.isExported) {
@@ -129,6 +131,12 @@ export class ResolveItemFactory {
                         for (let declaration of ex.declarations) {
                             if (isExportable(declaration) && declaration.isExported && !libExports[mod.name].declarations.some(o => o.declaration.name === declaration.name)) {
                                 libExports[mod.name].declarations.push(new ResolveItem(declaration, mod.name, file));
+                            } else if (declaration instanceof TsModuleDeclaration) {
+                                declaration.declarations.forEach(o => {
+                                    if (isExportable(o) && o.isExported && !libExports[mod.name].declarations.some(d => d.declaration.name === o.name)) {
+                                        libExports[mod.name].declarations.push(new ResolveItem(o, mod.name, file));
+                                    }
+                                });
                             }
                         }
                     } else if (ex instanceof TsNamedFromExport) {
