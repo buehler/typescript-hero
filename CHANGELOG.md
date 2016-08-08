@@ -4,7 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 #### Added
-- Output channel for logging (configurable verbosity) 
+- Output channel for logging (configurable verbosity)
+- Commands from the resolver extension (to the cmd gui)
 
 #### Fixed
 - Tests on travis-ci
