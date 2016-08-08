@@ -22,5 +22,5 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/smartive/giuseppe/compare/v0.4.0...master
-[0.4.0]: https://github.com/smartive/giuseppe/tree/v0.4.0
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.4.0...master
+[0.4.0]: https://github.com/buehler/typescript-hero/tree/v0.4.0
