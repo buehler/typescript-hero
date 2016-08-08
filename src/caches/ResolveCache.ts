@@ -17,6 +17,10 @@ export class ResolveCache {
         return !!this.cache;
     }
 
+    public get cachedCount(): number {
+        return Object.keys(this.cache).length;
+    }
+
     public get cachedFiles(): TsResolveFile[] {
         return Object.keys(this.cache).reduce((all, cur) => {
             all.push(this.cache[cur]);
