@@ -1,19 +1,10 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {ResolveItemFactory} from '../factories/ResolveItemFactory';
-import {TsDeclaration, TsFunctionDeclaration} from '../models/TsDeclaration';
+import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
-import {CancellationToken, CompletionItem, CompletionItemKind, CompletionItemProvider, Position, TextDocument} from 'vscode';
-
-function completionItemKind(declaration: TsDeclaration): CompletionItemKind {
-    switch (true) {
-        case declaration instanceof TsFunctionDeclaration:
-            return CompletionItemKind.Function;
-        default:
-            return CompletionItemKind.Keyword;
-    }
-}
+import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument} from 'vscode';
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
@@ -22,7 +13,8 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private config: ExtensionConfig,
         private cache: ResolveCache,
-        private itemFactory: ResolveItemFactory) {
+        private itemFactory: ResolveItemFactory,
+        private parser: TsResolveFileParser) {
         this.logger = loggerFactory('ResolveCompletionItemProvider');
         this.logger.info('Instantiated.');
     }
@@ -41,28 +33,29 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         this.logger.info('Search completion for word.', { searchWord });
 
-        return new Promise((resolve, reject) => {
-            if (token.isCancellationRequested) {
-                return resolve([]);
-            }
-            let items = this.itemFactory.getResolvableItems(this.cache.cachedFiles, document.uri);
-            if (token.isCancellationRequested) {
-                return resolve([]);
-            }
+        return Promise.resolve()
+            .then(() => {
+                if (token.isCancellationRequested) {
+                    return [];
+                }
+                let items = this.itemFactory.getResolvableItems(this.cache.cachedFiles, document.uri);
+                if (token.isCancellationRequested) {
+                    return [];
+                }
 
-            let filtered = items.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
-                let item = new CompletionItem(o.declaration.name);
-                item.detail = o.alias || o.libraryName;
-                item.kind = completionItemKind(o.declaration);
-                return item;
+                let filtered = items.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
+                    let item = new CompletionItem(o.alias || o.declaration.name);
+                    item.detail = o.libraryName;
+                    item.kind = o.declaration.getItemKind();
+                    return item;
+                });
+
+                if (token.isCancellationRequested) {
+                    return [];
+                }
+
+                return filtered;
             });
-
-            if (token.isCancellationRequested) {
-                return resolve([]);
-            }
-
-            resolve(filtered);
-        });
     }
 }
 
