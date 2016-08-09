@@ -2,7 +2,7 @@ import {ExtensionConfig} from '../ExtensionConfig';
 import {CancellationRequested} from '../models/CancellationRequested';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
-import {Logger} from '../utilities/Logger';
+import {Logger, LoggerFactory} from '../utilities/Logger';
 import fs = require('fs');
 import {inject, injectable} from 'inversify';
 import * as path from 'path';
@@ -29,7 +29,7 @@ export class ResolveCache {
         }, []);
     }
 
-    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger, private parser: TsResolveFileParser, private config: ExtensionConfig) {
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private parser: TsResolveFileParser, private config: ExtensionConfig) {
         this.logger = loggerFactory('ResolveCache');
     }
 

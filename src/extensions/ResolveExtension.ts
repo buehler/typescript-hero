@@ -7,8 +7,9 @@ import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
+import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
-import {Logger} from '../utilities/Logger';
+import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import * as vscode from 'vscode';
@@ -16,7 +17,8 @@ import * as vscode from 'vscode';
 const importMatcher = /^import\s.*;$/,
     resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
-    resolverErr = 'Resolver $(flame)';
+    resolverErr = 'Resolver $(flame)',
+    TYPESCRIPT = { language: 'typescript' };
 
 function importSort(i1: TsImport, i2: TsImport): number {
     let strA = i1.libraryName.toLowerCase(),
@@ -36,18 +38,21 @@ export class ResolveExtension extends BaseExtension {
     private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
     private fileWatcher: vscode.FileSystemWatcher = vscode.workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
 
-    constructor( @inject('LoggerFactory') loggerFactory: (prefix?: string) => Logger,
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
         @inject('context') context: vscode.ExtensionContext,
         private cache: ResolveCache,
         private pickProvider: ResolveQuickPickProvider,
         private config: ExtensionConfig,
-        private parser: TsResolveFileParser) {
+        private parser: TsResolveFileParser,
+        completionProvider: ResolveCompletionItemProvider) {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
+
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
