@@ -20,15 +20,23 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
     }
 
     provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
-        let wordAtPosition = document.getWordRangeAtPosition(position);
-        let searchWord = '';
+        let wordAtPosition = document.getWordRangeAtPosition(position),
+            lineText = document.lineAt(position.line).text,
+            searchWord = '';
+
         if (wordAtPosition && wordAtPosition.start.character < position.character) {
             let word = document.getText(wordAtPosition);
             searchWord = word.substr(0, position.character - wordAtPosition.start.character);
         }
 
-        if (token.isCancellationRequested || !this.cache.cacheReady || searchWord.length < this.config.resolver.minCharactersForCompletion) {
-            return Promise.resolve([]);
+        if (!searchWord ||
+            token.isCancellationRequested ||
+            !this.cache.cacheReady ||
+            searchWord.length < this.config.resolver.minCharactersForCompletion ||
+            (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
+            lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
+            lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
+            return Promise.resolve(null);
         }
 
         this.logger.info('Search completion for word.', { searchWord });
