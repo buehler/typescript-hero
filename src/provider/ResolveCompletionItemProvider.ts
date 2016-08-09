@@ -1,9 +1,19 @@
 import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {ResolveItemFactory} from '../factories/ResolveItemFactory';
+import {TsDeclaration, TsFunctionDeclaration} from '../models/TsDeclaration';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
-import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument} from 'vscode';
+import {CancellationToken, CompletionItem, CompletionItemKind, CompletionItemProvider, Position, TextDocument} from 'vscode';
+
+function completionItemKind(declaration: TsDeclaration): CompletionItemKind {
+    switch (true) {
+        case declaration instanceof TsFunctionDeclaration:
+            return CompletionItemKind.Function;
+        default:
+            return CompletionItemKind.Keyword;
+    }
+}
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
@@ -43,6 +53,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             let filtered = items.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
                 let item = new CompletionItem(o.declaration.name);
                 item.detail = o.alias || o.libraryName;
+                item.kind = completionItemKind(o.declaration);
                 return item;
             });
 

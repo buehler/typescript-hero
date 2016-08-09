@@ -1,6 +1,7 @@
 import {ResolveItem} from '../models/ResolveItem';
 import {TsDeclaration, TsDefaultDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
+import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResolveFile} from '../models/TsResolveFile';
 import {injectable} from 'inversify';
 import path = require('path');
@@ -18,12 +19,14 @@ function isModule(declaration: TsDeclaration): declaration is TsModuleDeclaratio
 
 @injectable()
 export class ResolveItemFactory {
-    public getResolvableItems(files: TsResolveFile[], relativeDocument: vscode.Uri): ResolveItem[] {
+    public getResolvableItems(files: TsResolveFile[], openDocument: vscode.Uri, filterImports?: TsImport[]): ResolveItem[] {
         let libExports: LibExports = {},
-            relativePath = path.parse(relativeDocument.fsPath);
+            relativePath = path.parse(openDocument.fsPath);
 
-        // process all the files        
-        for (let file of files.filter(o => !!o.declarations.length || !!o.exports.length)) {
+        // process all the files 
+        let fileFilter = (o: TsResolveFile) => (!!o.declarations.length || !!o.exports.length) && o.fsPath !== openDocument.fsPath;
+
+        for (let file of files.filter(fileFilter)) {
             if (!file.isDeclarationFile) {
                 this.processLocalFile(libExports, file, relativePath);
             } else {
@@ -72,7 +75,21 @@ export class ResolveItemFactory {
                 }
             });
 
-        return Object.keys(libExports).reduce((all, key) => all.concat(libExports[key].declarations), []);
+        let items = Object.keys(libExports).reduce((all, key) => all.concat(libExports[key].declarations), []);
+
+        if (filterImports) {
+            for (let imp of filterImports) {
+                if (imp instanceof TsNamedImport) {
+                    items = items.filter(o => o.libraryName !== imp.libraryName || !imp.specifiers.some(s => s.specifier === o.declaration.name));
+                } else if (imp instanceof TsNamespaceImport || imp instanceof TsExternalModuleImport) {
+                    items = items.filter(o => o.libraryName !== imp.libraryName);
+                } else if (imp instanceof TsDefaultImport) {
+                    items = items.filter(o => (!(o.declaration instanceof TsDefaultDeclaration) || imp.libraryName !== o.libraryName));
+                }
+            }
+        }
+
+        return items;
     }
 
     private processLocalFile(libExports: LibExports, file: TsResolveFile, relativeDocument: path.ParsedPath): void {
