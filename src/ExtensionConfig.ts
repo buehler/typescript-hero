@@ -33,6 +33,10 @@ export class ExtensionConfig {
 }
 
 class ResolverConfig {
+    public get useImportDestructuringSpacing(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.useImportDestructuringSpacing');
+    }
+
     public get pathStringDelimiter(): string {
         return workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
     }

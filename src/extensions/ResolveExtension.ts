@@ -217,7 +217,7 @@ export class ResolveExtension extends BaseExtension {
                     builder.delete(line.rangeIncludingLineBreak);
                 }
             }
-            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.pathStringDelimiter), ''));
+            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.pathStringDelimiter, this.config.resolver.useImportDestructuringSpacing), ''));
         });
     }
 
