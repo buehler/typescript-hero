@@ -110,6 +110,14 @@
           "default": "Warnings",
           "description": "Defines the log output level in the output window."
         },
+        "typescriptHero.resolver.useImportDestructuringSpacing": {
+          "enum": [
+            false,
+            true
+          ],
+          "default": false,
+          "description": "Defines if there should be a space inside curly braces of import statements."
+        },
         "typescriptHero.resolver.pathStringDelimiter": {
           "enum": [
             "'",
