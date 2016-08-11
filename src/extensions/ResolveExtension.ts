@@ -7,7 +7,7 @@ import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
-import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
+import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
@@ -17,8 +17,8 @@ import * as vscode from 'vscode';
 const importMatcher = /^import\s.*;$/,
     resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
-    resolverErr = 'Resolver $(flame)',
-    TYPESCRIPT = { language: 'typescript' };
+    resolverErr = 'Resolver $(flame)'; //,
+//TYPESCRIPT = { language: 'typescript' };
 
 function importSort(i1: TsImport, i2: TsImport): number {
     let strA = i1.libraryName.toLowerCase(),
@@ -217,7 +217,7 @@ export class ResolveExtension extends BaseExtension {
                     builder.delete(line.rangeIncludingLineBreak);
                 }
             }
-            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.pathStringDelimiter, this.config.resolver.insertSpaceBeforeAndAfterImportBraces), ''));
+            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
         });
     }
 

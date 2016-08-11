@@ -1,3 +1,4 @@
+import {TsImportOptions} from './models/TsImportOptions';
 import {LogLevel} from './utilities/Logger';
 import {injectable} from 'inversify';
 import {workspace} from 'vscode';
@@ -47,6 +48,13 @@ class ResolverConfig {
 
     public get minCharactersForCompletion(): number {
         return workspace.getConfiguration(sectionKey).get<number>('resolver.minCharactersForCompletion');
+    }
+
+    public get importOptions(): TsImportOptions {
+        return {
+            pathDelimiter: this.pathStringDelimiter,
+            spaceBraces: this.insertSpaceBeforeAndAfterImportBraces
+        };
     }
 }
 

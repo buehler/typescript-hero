@@ -1,9 +1,10 @@
+import {TsImportOptions} from './TsImportOptions';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
 
 export abstract class TsImport {
     constructor(public libraryName: string) { }
 
-    public abstract toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string;
+    public abstract toImport(options: TsImportOptions): string;
 }
 
 export abstract class TsAliasedImport extends TsImport {
@@ -13,16 +14,16 @@ export abstract class TsAliasedImport extends TsImport {
 }
 
 export class TsStringImport extends TsImport {
-    public toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string {
-        return `import ${delimiter}${this.libraryName}${delimiter};\n`;
+    public toImport(options: TsImportOptions): string {
+        return `import ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
     }
 }
 
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
-    public toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string {
-        return `import {${insertSpaceBeforeAndAfterImportBraces?' ':''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${insertSpaceBeforeAndAfterImportBraces?' ':''}} from ${delimiter}${this.libraryName}${delimiter};\n`;
+    public toImport(options: TsImportOptions): string {
+        return `import {${options.spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${options.spaceBraces ? ' ' : ''}} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
     }
 
     private specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
@@ -39,19 +40,19 @@ export class TsNamedImport extends TsImport {
 }
 
 export class TsNamespaceImport extends TsAliasedImport {
-    public toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string {
-        return `import * as ${this.alias} from ${delimiter}${this.libraryName}${delimiter};\n`;
+    public toImport(options: TsImportOptions): string {
+        return `import * as ${this.alias} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
     }
 }
 
 export class TsExternalModuleImport extends TsAliasedImport {
-    public toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string {
-        return `import ${this.alias} = require(${delimiter}${this.libraryName}${delimiter});\n`;
+    public toImport(options: TsImportOptions): string {
+        return `import ${this.alias} = require(${options.pathDelimiter}${this.libraryName}${options.pathDelimiter});\n`;
     }
 }
 
 export class TsDefaultImport extends TsAliasedImport {
-    public toImport(delimiter: string, insertSpaceBeforeAndAfterImportBraces?: boolean): string {
-        return `import ${this.alias} from ${delimiter}${this.libraryName}${delimiter};\n`;
+    public toImport(options: TsImportOptions): string {
+        return `import ${this.alias} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
     }
 }
