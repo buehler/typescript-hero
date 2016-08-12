@@ -10,6 +10,55 @@ import {inject, injectable} from 'inversify';
 import {createSourceFile, ExportAssignment, ExportDeclaration, ExternalModuleReference, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
 import {CancellationToken, Uri} from 'vscode';
 
+const usageNotAllowedParents = [
+    SyntaxKind.ImportEqualsDeclaration,
+    SyntaxKind.ImportSpecifier,
+    SyntaxKind.NamespaceImport,
+    SyntaxKind.ClassDeclaration,
+    SyntaxKind.ImportDeclaration,
+    SyntaxKind.InterfaceDeclaration,
+    SyntaxKind.ExportDeclaration,
+    SyntaxKind.ExportSpecifier,
+    SyntaxKind.ImportSpecifier,
+    SyntaxKind.FunctionDeclaration,
+    SyntaxKind.EnumDeclaration,
+    SyntaxKind.TypeAliasDeclaration,
+    SyntaxKind.MethodDeclaration,
+    SyntaxKind.PropertyAssignment
+];
+
+const usageAllowedIfLast = [
+    SyntaxKind.Parameter,
+    SyntaxKind.PropertyDeclaration,
+    SyntaxKind.VariableDeclaration,
+    SyntaxKind.ElementAccessExpression,
+    SyntaxKind.BinaryExpression
+];
+
+const usagePredicates = [
+    (o: Node) => usageNotAllowedParents.indexOf(o.parent.kind) === -1,
+    allowedIfLastIdentifier,
+    allowedIfPropertyAccessFirst
+];
+
+function allowedIfLastIdentifier(node: Node): boolean {
+    if (usageAllowedIfLast.indexOf(node.parent.kind) === -1) {
+        return true;
+    }
+
+    let children = node.parent.getChildren().filter(o => o.kind === SyntaxKind.Identifier);
+    return children.indexOf(node) === 1;
+}
+
+function allowedIfPropertyAccessFirst(node: Node): boolean {
+    if (node.parent.kind !== SyntaxKind.PropertyAccessExpression) {
+        return true;
+    }
+
+    let children = node.parent.getChildren();
+    return children.indexOf(node) === 0;
+}
+
 @injectable()
 export class TsResourceParser {
     private logger: Logger;
@@ -83,6 +132,9 @@ export class TsResourceParser {
                 case SyntaxKind.ExportAssignment:
                     this.parseExport(tsResource, <ExportAssignment | ExportDeclaration>child);
                     break;
+                case SyntaxKind.Identifier:
+                    this.parseIdentifier(tsResource, <Identifier>child);
+                    break;
                 //     case SyntaxKind.ClassDeclaration:
                 //         declaration(tsResolveInfo, child, TsClassDeclaration);
                 //         break;
@@ -103,20 +155,6 @@ export class TsResourceParser {
                 //         break;
                 //     case SyntaxKind.VariableStatement:
                 //         variableDeclaration(tsResolveInfo, <VariableStatement>child);
-                //         break;
-                //     case SyntaxKind.ExportDeclaration:
-                //         exportDeclaration(tsResolveInfo, child);
-                //         break;
-                //     case SyntaxKind.ExportAssignment:
-                //         exportAssignment(tsResolveInfo, child);
-                //         break;
-                //     case SyntaxKind.Identifier:
-                //         if (child.parent && usagePredicates.every(predicate => predicate(child))) {
-                //             let identifier = <Identifier>child;
-                //             if (tsResolveInfo.usages.indexOf(identifier.text) === -1) {
-                //                 tsResolveInfo.usages.push(identifier.text);
-                //             }
-                //         }
                 //         break;
                 //     case SyntaxKind.ModuleDeclaration:
                 //         let module = moduleDeclaration(<ModuleDeclaration>child);
@@ -180,4 +218,14 @@ export class TsResourceParser {
             }
         }
     }
+
+    private parseIdentifier(tsResource: TsResource, node: Identifier): void {
+        if (node.parent && usagePredicates.every(predicate => predicate(node))) {
+            if (tsResource.usages.indexOf(node.text) === -1) {
+                tsResource.usages.push(node.text);
+            }
+        }
+    }
 }
+
+

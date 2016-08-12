@@ -21,6 +21,10 @@ export class TsClassDeclaration extends TsExportableDeclaration {
     }
 }
 
+export class TsMethodDeclaration extends TsDeclaration {
+    
+}
+
 export class TsFunctionDeclaration extends TsExportableDeclaration {
     public getItemKind(): CompletionItemKind {
         return CompletionItemKind.Function;
