@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- Option to insert spaces before and after the curly braces of an import statement
+
 #### Fixed
 - Duplicated module entries should be gone
 - Url for "Get Started" on publish page

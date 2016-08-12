@@ -1,3 +1,4 @@
+import {TsImportOptions} from './models/TsImportOptions';
 import {LogLevel} from './utilities/Logger';
 import {injectable} from 'inversify';
 import {workspace} from 'vscode';
@@ -33,8 +34,8 @@ export class ExtensionConfig {
 }
 
 class ResolverConfig {
-    public get useImportDestructuringSpacing(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.useImportDestructuringSpacing');
+    public get insertSpaceBeforeAndAfterImportBraces(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
     }
 
     public get pathStringDelimiter(): string {
@@ -47,6 +48,13 @@ class ResolverConfig {
 
     public get minCharactersForCompletion(): number {
         return workspace.getConfiguration(sectionKey).get<number>('resolver.minCharactersForCompletion');
+    }
+
+    public get importOptions(): TsImportOptions {
+        return {
+            pathDelimiter: this.pathStringDelimiter,
+            spaceBraces: this.insertSpaceBeforeAndAfterImportBraces
+        };
     }
 }
 
