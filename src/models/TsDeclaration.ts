@@ -54,7 +54,7 @@ export class TsVariableDeclaration extends TsExportableDeclaration {
     }
 }
 
-export class TsParameterDeclaration extends TsDeclaration { 
+export class TsParameterDeclaration extends TsDeclaration {
     public getItemKind(): CompletionItemKind {
         return null;
     }
@@ -64,7 +64,7 @@ export class TsDefaultDeclaration extends TsDeclaration {
     public getItemKind(): CompletionItemKind {
         return CompletionItemKind.File;
     }
- }
+}
 
 export class TsModuleDeclaration extends TsExportableDeclaration implements TsResolveInformation {
     public imports: TsImport[] = [];

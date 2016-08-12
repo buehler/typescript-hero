@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
 import {TsResourceParser} from '../../src/parser/TsResourceParser';
@@ -27,7 +28,7 @@ describe('TsResourceParser', () => {
         const file = join(process.cwd(), '.test/resolveFileParser/importsOnly.ts');
 
         beforeEach(() => {
-            return parser.parseFile(<any>{fsPath: file}).then(file => parsed = file);
+            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
         });
 
         it('should parse imports', () => {
@@ -91,6 +92,38 @@ describe('TsResourceParser', () => {
             tsImport.should.be.an.instanceOf(TsDefaultImport);
             tsImport.libraryName.should.equal('aFile');
             tsImport.alias.should.equal('Foobar');
+        });
+
+    });
+
+    describe('Exports', () => {
+
+        const file = join(process.cwd(), '.test/resolveFileParser/exportsOnly.ts');
+
+        beforeEach(() => {
+            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+        });
+
+        it('should parse export all from another file', () => {
+            parsed.exports[0].should.be.an.instanceOf(TsAllFromExport)
+                .with.property('from')
+                .that.equals('./OtherFile');
+        });
+
+        it('should parse export named from another file', () => {
+            parsed.exports[1].should.be.an.instanceOf(TsNamedFromExport)
+                .with.property('from')
+                .that.equals('./AnotherFile');
+        });
+
+        it('should parse export assignment', () => {
+            parsed.exports[2].should.be.an.instanceOf(TsAssignedExport)
+                .with.property('declarationIdentifier')
+                .that.equals('Foo');
+        });
+
+        it('should parse default export', () => {
+            parsed.exports[3].should.be.an.instanceOf(TsDefaultExport);
         });
 
     });
