@@ -1,5 +1,5 @@
 import {CancellationRequested} from '../models/CancellationRequested';
-import {TsClassDeclaration, TsEnumDeclaration, TsExportableDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsParameterDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../models/TsDeclaration';
+import {TsClassDeclaration, TsEnumDeclaration, TsExportableDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsModuleDeclaration, TsParameterDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../models/TsOldDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveFile} from '../models/TsResolveFile';

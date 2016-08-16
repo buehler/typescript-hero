@@ -1,7 +1,7 @@
 import {TsFile} from './TsFile';
 import {TsImport} from './TsImport';
 import {TsExport} from './TsExport';
-import {TsDeclaration} from './TsDeclaration';
+import {TsDeclaration} from './TsOldDeclaration';
 import {TsResolveInformation} from './TsResolveInformation';
 
 export class TsResolveFile extends TsFile implements TsResolveInformation {

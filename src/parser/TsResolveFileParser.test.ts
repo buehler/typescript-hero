@@ -1,5 +1,5 @@
 // import 'reflect-metadata';
-// import {TsClassDeclaration, TsEnumDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../../src/models/TsDeclaration';
+// import {TsClassDeclaration, TsEnumDeclaration, TsFunctionDeclaration, TsInterfaceDeclaration, TsTypeDeclaration, TsVariableDeclaration} from '../../src/models/TsOldDeclaration';
 // import {TsAllFromExport, TsNamedFromExport} from '../../src/models/TsExport';
 // import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 // import {TsResolveFile} from '../../src/models/TsResolveFile';

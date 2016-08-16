@@ -2,7 +2,7 @@ import {ResolveCache} from '../caches/ResolveCache';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsOldDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';

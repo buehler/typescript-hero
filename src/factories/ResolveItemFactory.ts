@@ -1,5 +1,5 @@
 import {ResolveItem} from '../models/ResolveItem';
-import {TsDeclaration, TsDefaultDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {TsDeclaration, TsDefaultDeclaration, TsExportableDeclaration, TsModuleDeclaration} from '../models/TsOldDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResolveFile} from '../models/TsResolveFile';

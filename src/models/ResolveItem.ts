@@ -1,4 +1,4 @@
-import {TsDeclaration} from './TsDeclaration';
+import {TsDeclaration} from './TsOldDeclaration';
 import {TsResolveFile} from './TsResolveFile';
 
 export class ResolveItem {
