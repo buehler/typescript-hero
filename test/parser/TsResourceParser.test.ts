@@ -25,7 +25,7 @@ describe('TsResourceParser', () => {
 
     describe('Imports', () => {
 
-        const file = join(process.cwd(), '.test/resolveFileParser/importsOnly.ts');
+        const file = join(process.cwd(), '.test/resourceParser/importsOnly.ts');
 
         beforeEach(() => {
             return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
@@ -98,7 +98,7 @@ describe('TsResourceParser', () => {
 
     describe('Exports', () => {
 
-        const file = join(process.cwd(), '.test/resolveFileParser/exportsOnly.ts');
+        const file = join(process.cwd(), '.test/resourceParser/exportsOnly.ts');
 
         beforeEach(() => {
             return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
