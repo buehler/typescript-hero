@@ -37,10 +37,9 @@ work with typescript.
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG.md](CHANGELOG.md)
 
-### [0.5.0]
+## 0.5.4
 #### Added
-- Output channel for logging (configurable verbosity)
-- Commands from the resolver extension (to the cmd gui)
+- Option to insert spaces before and after the curly braces of an import statement
 
 #### Fixed
 - Tests on travis-ci
