@@ -49,7 +49,7 @@ export class EnumDeclaration extends TsExportableDeclaration {
 }
 
 export class VariableDeclaration extends TsExportableDeclaration {
-    constructor(isExported: boolean, name: string, public isConst: boolean) {
+    constructor(name: string, isExported: boolean, public isConst: boolean) {
         super(name, isExported);
     }
 }

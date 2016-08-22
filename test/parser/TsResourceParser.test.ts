@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {EnumDeclaration} from '../../src/models/TsDeclaration';
+import {EnumDeclaration, TypeAliasDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
@@ -157,6 +157,32 @@ describe('TsResourceParser', () => {
                 parsedEnum.name.should.equal('ConstantEnumeration');
                 parsedEnum.members.should.be.an('array').with.lengthOf(2);
                 parsedEnum.members[0].should.equal('ConstMember1');
+            });
+
+        });
+
+        describe('Type aliases', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/typeAlias.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(2);
+            });
+
+            it('should parse a type alias correctly', () => {
+                let parsedAlias = parsed.declarations[0] as TypeAliasDeclaration;
+                parsedAlias.isExported.should.be.false;
+                parsedAlias.name.should.equal('Alias');
+            });
+
+            it('should parse an exported type alias correctly', () => {
+                let parsedAlias = parsed.declarations[1] as TypeAliasDeclaration;
+                parsedAlias.isExported.should.be.true;
+                parsedAlias.name.should.equal('ExportedAlias');
             });
 
         });

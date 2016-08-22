@@ -1,14 +1,14 @@
 import {CancellationRequested} from '../models/CancellationRequested';
-import {EnumDeclaration as TshEnumDeclaration} from '../models/TsDeclaration';
+import {EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, ParameterDeclaration as TshParameterDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile, TsResource} from '../models/TsResource';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {isExportDeclaration, isExternalModuleReference, isImportDeclaration, isNamedExports, isNamedImports, isNamespaceImport, isStringLiteral} from '../utilities/TypeGuards';
+import {isArrayBindingPattern, isExportDeclaration, isExternalModuleReference, isFunctionDeclaration, isIdentifier, isImportDeclaration, isNamedExports, isNamedImports, isNamespaceImport, isObjectBindingPattern, isStringLiteral} from '../utilities/TypeGuards';
 import {readFileSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
+import {ArrayBindingPattern, BindingElement, createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ObjectBindingPattern, ParameterDeclaration, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, TypeAliasDeclaration, VariableStatement} from 'typescript';
 import {CancellationToken, Uri} from 'vscode';
 
 
@@ -137,19 +137,20 @@ export class TsResourceParser {
                 case SyntaxKind.EnumDeclaration:
                     this.parseEnum(tsResource, <EnumDeclaration>child);
                     break;
+                case SyntaxKind.TypeAliasDeclaration:
+                    this.parseTypeAlias(tsResource, <TypeAliasDeclaration>child);
+                    break;
+                case SyntaxKind.FunctionDeclaration:
+                    this.parseFunction(tsResource, <FunctionDeclaration>child);
+                    break;
                 case SyntaxKind.Identifier:
                     this.parseIdentifier(tsResource, <Identifier>child);
                     break;
                 //     case SyntaxKind.ClassDeclaration:
                 //         declaration(tsResolveInfo, child, TsClassDeclaration);
                 //         break;
-                //     case SyntaxKind.FunctionDeclaration:
-                //         declaration(tsResolveInfo, child, TsFunctionDeclaration);
-                //         break;
 
-                //     case SyntaxKind.TypeAliasDeclaration:
-                //         declaration(tsResolveInfo, child, TsTypeDeclaration);
-                //         break;
+
                 //     case SyntaxKind.InterfaceDeclaration:
                 //         declaration(tsResolveInfo, child, TsInterfaceDeclaration);
                 //         break;
@@ -236,11 +237,58 @@ export class TsResourceParser {
         tsResource.declarations.push(declaration);
     }
 
+    private parseTypeAlias(tsResource: TsResource, node: TypeAliasDeclaration): void {
+        tsResource.declarations.push(new TshTypeAliasDeclaration(node.name.text, this.checkExported(node)));
+    }
+
+    private parseFunction(tsResource: TsResource, node: FunctionDeclaration | Node, functionDeclaration?: TshFunctionDeclaration): void {
+        let func = functionDeclaration;
+        if (isFunctionDeclaration(node) && !func) {
+            func = new TshFunctionDeclaration(node.name.text, this.checkExported(node));
+            tsResource.declarations.push(func);
+            func.parameters = node.parameters.reduce((all: TshParameterDeclaration[], cur: ParameterDeclaration) => {
+                if (isIdentifier(cur.name)) {
+                    all.push(new TshParameterDeclaration((cur.name as Identifier).text));
+                } else if (isObjectBindingPattern(cur.name) || isArrayBindingPattern(cur.name)) {
+                    let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern;
+                    all = all.concat(identifiers.elements.map((o: BindingElement) => {
+                        if (isIdentifier(o.name)) {
+                            return new TshParameterDeclaration((o.name as Identifier).text);
+                        }
+                    }).filter(Boolean));
+                }
+                return all;
+            }, []);
+        }
+
+        for (let child of node.getChildren()) {
+            switch (child.kind) {
+                case SyntaxKind.Identifier:
+                    this.parseIdentifier(tsResource, <Identifier>child);
+                    break;
+                case SyntaxKind.VariableStatement:
+                    this.parseVariable(func, <VariableStatement>child);
+                    break;
+            }
+            this.parseFunction(tsResource, child, func);
+        }
+    }
+
+    private parseVariable(parent: TsResource | TshFunctionDeclaration, node: VariableStatement): void {
+        let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
+        node.declarationList.declarations.forEach(o => {
+            let declaration = new TshVariableDeclaration(o.name.getText(), this.checkExported(node), isConst);
+            if (parent instanceof TshFunctionDeclaration) {
+                parent.variables.push(declaration);
+            } else {
+                parent.declarations.push(declaration);
+            }
+        });
+    }
+
     private checkExported(node: Node): boolean {
         let children = node.getChildren();
         return children.length > 0 &&
             children.filter(o => o.kind === SyntaxKind.SyntaxList).some(o => o.getChildren().some(o => o.kind === SyntaxKind.ExportKeyword));
     }
 }
-
-

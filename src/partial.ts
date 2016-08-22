@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import {TsResourceParser} from './parser/TsResourceParser';
 import {join} from 'path';
+import {inspect} from 'util';
 
 let parser = new TsResourceParser(() => {
     return <any>{
@@ -10,10 +11,10 @@ let parser = new TsResourceParser(() => {
     };
 });
 
-const file = join(process.cwd(), '.test/resourceParser/enum.ts');
+const file = join(process.cwd(), '.test/resourceParser/function.ts');
 
 parser.parseFile(<any>{ fsPath: file })
     .then(parsed => {
-        console.log(parsed);
+        console.log(inspect(parsed, false, null));
         process.exit(0);
     });
