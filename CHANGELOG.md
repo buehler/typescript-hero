@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.5.4]
 #### Added
 - Option to insert spaces before and after the curly braces of an import statement
 
@@ -30,6 +32,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.5.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.5.4...master
+[0.5.4]: https://github.com/buehler/typescript-hero/compare/v0.5.0...v0.5.4
 [0.5.0]: https://github.com/buehler/typescript-hero/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/buehler/typescript-hero/tree/v0.4.0
