@@ -1,5 +1,5 @@
 import {TsResolveSpecifier} from './TsResolveSpecifier';
-import {TsDeclaration} from './TsOldDeclaration';
+import {TsDeclaration} from './TsDeclaration';
 
 export abstract class TsExport {
 }

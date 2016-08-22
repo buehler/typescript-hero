@@ -1,4 +1,5 @@
 import {CancellationRequested} from '../models/CancellationRequested';
+import {EnumDeclaration as TshEnumDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
@@ -7,8 +8,9 @@ import {Logger, LoggerFactory} from '../utilities/Logger';
 import {isExportDeclaration, isExternalModuleReference, isImportDeclaration, isNamedExports, isNamedImports, isNamespaceImport, isStringLiteral} from '../utilities/TypeGuards';
 import {readFileSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {createSourceFile, ExportAssignment, ExportDeclaration, ExternalModuleReference, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
+import {createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, VariableStatement} from 'typescript';
 import {CancellationToken, Uri} from 'vscode';
+
 
 const usageNotAllowedParents = [
     SyntaxKind.ImportEqualsDeclaration,
@@ -132,6 +134,9 @@ export class TsResourceParser {
                 case SyntaxKind.ExportAssignment:
                     this.parseExport(tsResource, <ExportAssignment | ExportDeclaration>child);
                     break;
+                case SyntaxKind.EnumDeclaration:
+                    this.parseEnum(tsResource, <EnumDeclaration>child);
+                    break;
                 case SyntaxKind.Identifier:
                     this.parseIdentifier(tsResource, <Identifier>child);
                     break;
@@ -141,9 +146,7 @@ export class TsResourceParser {
                 //     case SyntaxKind.FunctionDeclaration:
                 //         declaration(tsResolveInfo, child, TsFunctionDeclaration);
                 //         break;
-                //     case SyntaxKind.EnumDeclaration:
-                //         declaration(tsResolveInfo, child, TsEnumDeclaration);
-                //         break;
+
                 //     case SyntaxKind.TypeAliasDeclaration:
                 //         declaration(tsResolveInfo, child, TsTypeDeclaration);
                 //         break;
@@ -162,7 +165,7 @@ export class TsResourceParser {
                 //         this.parse(module, child);
                 //         continue;
             }
-            //this.parse(tsResolveInfo, child, cancellationToken);
+            this.parse(tsResource, child, cancellationToken);
         }
     }
 
@@ -225,6 +228,19 @@ export class TsResourceParser {
                 tsResource.usages.push(node.text);
             }
         }
+    }
+
+    private parseEnum(tsResource: TsResource, node: EnumDeclaration): void {
+        let declaration = new TshEnumDeclaration(node.name.text, this.checkExported(node));
+        declaration.members = node.members.map(o => o.name.getText());
+        tsResource.declarations.push(declaration);
+        console.log(declaration);
+    }
+
+    private checkExported(node: Node): boolean {
+        let children = node.getChildren();
+        return children.length > 0 &&
+            children.filter(o => o.kind === SyntaxKind.SyntaxList).some(o => o.getChildren().some(o => o.kind === SyntaxKind.ExportKeyword));
     }
 }
 

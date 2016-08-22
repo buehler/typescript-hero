@@ -7,11 +7,13 @@ export function exportedFunction() {
 }
 
 export enum ExportedEnum {
-
+    Member1,
+    Member2
 }
 
 export const enum ExportedConstEnum {
-
+    ConstMember1,
+    ConstMember2
 }
 
 export var ExportedVariable = '';

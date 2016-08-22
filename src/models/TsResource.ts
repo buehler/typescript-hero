@@ -1,4 +1,4 @@
-import {TsDeclaration} from './TsOldDeclaration';
+import {TsDeclaration} from './TsDeclaration';
 import {TsExport} from './TsExport';
 import {TsImport} from './TsImport';
 import {ParsedPath, parse} from 'path';

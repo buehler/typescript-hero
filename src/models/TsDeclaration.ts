@@ -44,7 +44,9 @@ export class ConstructorDeclaration extends TsExportableCallableDeclaration { }
 
 export class TypeAliasDeclaration extends TsExportableDeclaration { }
 
-export class EnumDeclaration extends TsExportableDeclaration { }
+export class EnumDeclaration extends TsExportableDeclaration {
+    public members: string[] = [];
+}
 
 export class VariableDeclaration extends TsExportableDeclaration {
     constructor(isExported: boolean, name: string, public isConst: boolean) {

@@ -128,4 +128,22 @@ describe('TsResourceParser', () => {
 
     });
 
+    describe('Declarations', () => {
+
+        describe('Enums', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/enum.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse an enum correctly', () => {
+                console.log('enum parser');
+            });
+
+        });
+
+    });
+
 });
