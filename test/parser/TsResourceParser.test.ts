@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {EnumDeclaration, TypeAliasDeclaration} from '../../src/models/TsDeclaration';
+import {EnumDeclaration, FunctionDeclaration, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
@@ -183,6 +183,121 @@ describe('TsResourceParser', () => {
                 let parsedAlias = parsed.declarations[1] as TypeAliasDeclaration;
                 parsedAlias.isExported.should.be.true;
                 parsedAlias.name.should.equal('ExportedAlias');
+            });
+
+        });
+
+        describe('Functions', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/function.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(2);
+            });
+
+            it('should parse a function correctly', () => {
+                let parsedAlias = parsed.declarations[0] as FunctionDeclaration;
+                parsedAlias.isExported.should.be.false;
+                parsedAlias.name.should.equal('function1');
+            });
+
+            it('should parse an exported function correctly', () => {
+                let parsedAlias = parsed.declarations[1] as FunctionDeclaration;
+                parsedAlias.isExported.should.be.true;
+                parsedAlias.name.should.equal('function2');
+            });
+
+            it('should parse parameters correctly', () => {
+                let func1 = parsed.declarations[0] as FunctionDeclaration,
+                    func2 = parsed.declarations[1] as FunctionDeclaration;
+
+                func1.parameters.should.be.an('array').with.lengthOf(1);
+                func1.parameters[0].name.should.equal('param1');
+
+                func2.parameters.should.be.an('array').with.lengthOf(5);
+                func2.parameters[0].name.should.equal('param1');
+                func2.parameters[1].name.should.equal('objParam1');
+                func2.parameters[2].name.should.equal('objParam2');
+                func2.parameters[3].name.should.equal('arrParam1');
+                func2.parameters[4].name.should.equal('arrParam2');
+            });
+
+            it('should parse variables correctly', () => {
+                let func1 = parsed.declarations[0] as FunctionDeclaration,
+                    func2 = parsed.declarations[1] as FunctionDeclaration;
+
+                func1.variables.should.be.an('array').with.lengthOf(1);
+                func1.variables[0].name.should.equal('var1');
+                func1.variables[0].isExported.should.be.false;
+                func1.variables[0].isConst.should.be.false;
+
+                func2.variables[1].name.should.equal('constVar1');
+                func2.variables[1].isExported.should.be.false;
+                func2.variables[1].isConst.should.be.true;
+            });
+
+        });
+
+        describe('Variables', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/variable.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(7);
+            });
+
+            it('should parse a non exported variable', () => {
+                let parsedVar = parsed.declarations[0] as VariableDeclaration;
+                parsedVar.name.should.equal('NonExportedVariable');
+                parsedVar.isExported.should.be.false;
+                parsedVar.isConst.should.be.false;
+            });
+
+            it('should parse a non exported const', () => {
+                let parsedVar = parsed.declarations[1] as VariableDeclaration;
+                parsedVar.name.should.equal('NonExportedConst');
+                parsedVar.isExported.should.be.false;
+                parsedVar.isConst.should.be.true;
+            });
+
+            it('should parse an exported variable', () => {
+                let parsedVar = parsed.declarations[2] as VariableDeclaration;
+                parsedVar.name.should.equal('ExportedVariable');
+                parsedVar.isExported.should.be.true;
+                parsedVar.isConst.should.be.false;
+            });
+
+            it('should parse an exported const', () => {
+                let parsedVar = parsed.declarations[3] as VariableDeclaration;
+                parsedVar.name.should.equal('ExportedConst');
+                parsedVar.isExported.should.be.true;
+                parsedVar.isConst.should.be.true;
+            });
+
+            it('should parse an exported scope variable', () => {
+                let parsedVar = parsed.declarations[4] as VariableDeclaration;
+                parsedVar.name.should.equal('ExportedLet');
+                parsedVar.isExported.should.be.true;
+                parsedVar.isConst.should.be.false;
+            });
+
+            it('should parse an exported multiline variable', () => {
+                let parsedVar = parsed.declarations[5] as VariableDeclaration;
+                parsedVar.name.should.equal('MultiLet1');
+                parsedVar.isExported.should.be.true;
+                parsedVar.isConst.should.be.false;
+                parsedVar = parsed.declarations[6] as VariableDeclaration;
+                parsedVar.name.should.equal('MultiLet2');
+                parsedVar.isExported.should.be.true;
+                parsedVar.isConst.should.be.false;
             });
 
         });

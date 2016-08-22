@@ -143,22 +143,17 @@ export class TsResourceParser {
                 case SyntaxKind.FunctionDeclaration:
                     this.parseFunction(tsResource, <FunctionDeclaration>child);
                     break;
+                case SyntaxKind.VariableStatement:
+                    this.parseVariable(tsResource, <VariableStatement>child);
+                    break;
                 case SyntaxKind.Identifier:
                     this.parseIdentifier(tsResource, <Identifier>child);
                     break;
                 //     case SyntaxKind.ClassDeclaration:
                 //         declaration(tsResolveInfo, child, TsClassDeclaration);
                 //         break;
-
-
                 //     case SyntaxKind.InterfaceDeclaration:
                 //         declaration(tsResolveInfo, child, TsInterfaceDeclaration);
-                //         break;
-                //     case SyntaxKind.Parameter:
-                //         parameterDeclaration(tsResolveInfo, child);
-                //         break;
-                //     case SyntaxKind.VariableStatement:
-                //         variableDeclaration(tsResolveInfo, <VariableStatement>child);
                 //         break;
                 //     case SyntaxKind.ModuleDeclaration:
                 //         let module = moduleDeclaration(<ModuleDeclaration>child);
