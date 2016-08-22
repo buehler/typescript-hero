@@ -46,7 +46,11 @@ export class TypeAliasDeclaration extends TsExportableDeclaration { }
 
 export class EnumDeclaration extends TsExportableDeclaration { }
 
-export class VariableDeclaration extends TsExportableDeclaration { }
+export class VariableDeclaration extends TsExportableDeclaration {
+    constructor(isExported: boolean, name: string, public isConst: boolean) {
+        super(name, isExported);
+    }
+}
 
 export class ParameterDeclaration extends TsDeclaration { }
 
