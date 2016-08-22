@@ -15,4 +15,5 @@ const file = join(process.cwd(), '.test/resourceParser/enum.ts');
 parser.parseFile(<any>{ fsPath: file })
     .then(parsed => {
         console.log(parsed);
+        process.exit(0);
     });

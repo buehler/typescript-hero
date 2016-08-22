@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import {EnumDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
@@ -138,8 +139,24 @@ describe('TsResourceParser', () => {
                 return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
             });
 
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(2);
+            });
+
             it('should parse an enum correctly', () => {
-                console.log('enum parser');
+                let parsedEnum = parsed.declarations[0] as EnumDeclaration;
+                parsedEnum.isExported.should.be.false;
+                parsedEnum.name.should.equal('Enumeration');
+                parsedEnum.members.should.be.an('array').with.lengthOf(3);
+                parsedEnum.members[0].should.equal('Member1');
+            });
+
+            it('should parse an exported enum correctly', () => {
+                let parsedEnum = parsed.declarations[1] as EnumDeclaration;
+                parsedEnum.isExported.should.be.true;
+                parsedEnum.name.should.equal('ConstantEnumeration');
+                parsedEnum.members.should.be.an('array').with.lengthOf(2);
+                parsedEnum.members[0].should.equal('ConstMember1');
             });
 
         });

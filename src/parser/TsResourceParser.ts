@@ -234,7 +234,6 @@ export class TsResourceParser {
         let declaration = new TshEnumDeclaration(node.name.text, this.checkExported(node));
         declaration.members = node.members.map(o => o.name.getText());
         tsResource.declarations.push(declaration);
-        console.log(declaration);
     }
 
     private checkExported(node: Node): boolean {
