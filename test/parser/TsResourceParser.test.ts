@@ -235,9 +235,9 @@ describe('TsResourceParser', () => {
                 func1.variables[0].isExported.should.be.false;
                 func1.variables[0].isConst.should.be.false;
 
-                func2.variables[1].name.should.equal('constVar1');
-                func2.variables[1].isExported.should.be.false;
-                func2.variables[1].isConst.should.be.true;
+                func2.variables[0].name.should.equal('constVar1');
+                func2.variables[0].isExported.should.be.false;
+                func2.variables[0].isConst.should.be.true;
             });
 
         });

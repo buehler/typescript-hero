@@ -142,7 +142,7 @@ export class TsResourceParser {
                     break;
                 case SyntaxKind.FunctionDeclaration:
                     this.parseFunction(tsResource, <FunctionDeclaration>child);
-                    break;
+                    continue;
                 case SyntaxKind.VariableStatement:
                     this.parseVariable(tsResource, <VariableStatement>child);
                     break;
