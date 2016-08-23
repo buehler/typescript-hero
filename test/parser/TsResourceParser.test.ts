@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {EnumDeclaration, FunctionDeclaration, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
+import {EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
@@ -298,6 +298,51 @@ describe('TsResourceParser', () => {
                 parsedVar.name.should.equal('MultiLet2');
                 parsedVar.isExported.should.be.true;
                 parsedVar.isConst.should.be.false;
+            });
+
+        });
+
+        describe('Interfaces', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/interface.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(2);
+            });
+
+            it('should parse a non exported interface', () => {
+                let parsedInterface = parsed.declarations[0] as InterfaceDeclaration;
+                parsedInterface.name.should.equal('NonExportedInterface');
+                parsedInterface.isExported.should.be.false;
+
+                parsedInterface.methods[0].name.should.equal('method1');
+                parsedInterface.methods[1].name.should.equal('method2');
+
+                parsedInterface.properties[0].name.should.equal('property1');
+                parsedInterface.properties[1].name.should.equal('property2');
+
+                parsedInterface.properties[0].visibility.should.equal(PropertyVisibility.Public);
+                parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
+            });
+
+            it('should parse an exported interface', () => {
+                let parsedInterface = parsed.declarations[1] as InterfaceDeclaration;
+                parsedInterface.name.should.equal('ExportedInterface');
+                parsedInterface.isExported.should.be.true;
+
+                parsedInterface.methods[0].name.should.equal('method1');
+                parsedInterface.methods[1].name.should.equal('method2');
+                parsedInterface.methods[1].parameters[0].name.should.equal('param1');
+
+                parsedInterface.properties[0].name.should.equal('property1');
+                parsedInterface.properties[1].name.should.equal('property2');
+
+                parsedInterface.properties[0].visibility.should.equal(PropertyVisibility.Public);
+                parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
             });
 
         });

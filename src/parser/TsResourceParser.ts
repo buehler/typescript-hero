@@ -1,14 +1,14 @@
 import {CancellationRequested} from '../models/CancellationRequested';
-import {EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, ParameterDeclaration as TshParameterDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
+import {EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, InterfaceDeclaration as TshInterfaceDeclaration, ParameterDeclaration as TshParameterDeclaration, PropertyDeclaration as TshPropertyDeclaration, PropertyVisibility, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration, MethodDeclaration as TshMethodDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile, TsResource} from '../models/TsResource';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {isArrayBindingPattern, isExportDeclaration, isExternalModuleReference, isFunctionDeclaration, isIdentifier, isImportDeclaration, isNamedExports, isNamedImports, isNamespaceImport, isObjectBindingPattern, isStringLiteral} from '../utilities/TypeGuards';
+import {isArrayBindingPattern, isExportDeclaration, isExternalModuleReference, isFunctionDeclaration, isIdentifier, isImportDeclaration, isMethodSignature, isNamedExports, isNamedImports, isNamespaceImport, isObjectBindingPattern, isPropertySignature, isStringLiteral} from '../utilities/TypeGuards';
 import {readFileSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {ArrayBindingPattern, BindingElement, createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, ModuleDeclaration, NamedImports, NamespaceImport, Node, ObjectBindingPattern, ParameterDeclaration, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, TypeAliasDeclaration, VariableStatement} from 'typescript';
+import {ArrayBindingPattern, MethodSignature, MethodDeclaration, BindingElement, createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, InterfaceDeclaration, NamedImports, NamespaceImport, Node, ObjectBindingPattern, ParameterDeclaration, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, TypeAliasDeclaration, VariableStatement} from 'typescript';
 import {CancellationToken, Uri} from 'vscode';
 
 
@@ -146,14 +146,14 @@ export class TsResourceParser {
                 case SyntaxKind.VariableStatement:
                     this.parseVariable(tsResource, <VariableStatement>child);
                     break;
+                case SyntaxKind.InterfaceDeclaration:
+                    this.parseInterface(tsResource, <InterfaceDeclaration>child);
+                    break;
                 case SyntaxKind.Identifier:
                     this.parseIdentifier(tsResource, <Identifier>child);
                     break;
                 //     case SyntaxKind.ClassDeclaration:
                 //         declaration(tsResolveInfo, child, TsClassDeclaration);
-                //         break;
-                //     case SyntaxKind.InterfaceDeclaration:
-                //         declaration(tsResolveInfo, child, TsInterfaceDeclaration);
                 //         break;
                 //     case SyntaxKind.ModuleDeclaration:
                 //         let module = moduleDeclaration(<ModuleDeclaration>child);
@@ -241,19 +241,7 @@ export class TsResourceParser {
         if (isFunctionDeclaration(node) && !func) {
             func = new TshFunctionDeclaration(node.name.text, this.checkExported(node));
             tsResource.declarations.push(func);
-            func.parameters = node.parameters.reduce((all: TshParameterDeclaration[], cur: ParameterDeclaration) => {
-                if (isIdentifier(cur.name)) {
-                    all.push(new TshParameterDeclaration((cur.name as Identifier).text));
-                } else if (isObjectBindingPattern(cur.name) || isArrayBindingPattern(cur.name)) {
-                    let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern;
-                    all = all.concat(identifiers.elements.map((o: BindingElement) => {
-                        if (isIdentifier(o.name)) {
-                            return new TshParameterDeclaration((o.name as Identifier).text);
-                        }
-                    }).filter(Boolean));
-                }
-                return all;
-            }, []);
+            func.parameters = this.parseMethodParams(node);
         }
 
         for (let child of node.getChildren()) {
@@ -279,6 +267,36 @@ export class TsResourceParser {
                 parent.declarations.push(declaration);
             }
         });
+    }
+
+    private parseInterface(tsResource: TsResource, node: InterfaceDeclaration): void {
+        let interfaceDeclaration = new TshInterfaceDeclaration(node.name.text, this.checkExported(node));
+        node.members.forEach(o => {
+            if (isPropertySignature(o)) {
+                interfaceDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+            } else if (isMethodSignature(o)) {
+                let method = new TshMethodDeclaration((o.name as Identifier).text, false);
+                method.parameters = this.parseMethodParams(o);
+                interfaceDeclaration.methods.push(method);
+            }
+        });
+        tsResource.declarations.push(interfaceDeclaration);
+    }
+
+    private parseMethodParams(node: FunctionDeclaration | MethodDeclaration | MethodSignature): TshParameterDeclaration[] {
+        return node.parameters.reduce((all: TshParameterDeclaration[], cur: ParameterDeclaration) => {
+            if (isIdentifier(cur.name)) {
+                all.push(new TshParameterDeclaration((cur.name as Identifier).text));
+            } else if (isObjectBindingPattern(cur.name) || isArrayBindingPattern(cur.name)) {
+                let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern;
+                all = all.concat(identifiers.elements.map((o: BindingElement) => {
+                    if (isIdentifier(o.name)) {
+                        return new TshParameterDeclaration((o.name as Identifier).text);
+                    }
+                }).filter(Boolean));
+            }
+            return all;
+        }, []);
     }
 
     private checkExported(node: Node): boolean {

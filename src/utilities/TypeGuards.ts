@@ -1,4 +1,4 @@
-import {ArrayBindingPattern, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, NamedExports, NamedImports, NamespaceImport, Node, ObjectBindingPattern, StringLiteral, SyntaxKind} from 'typescript';
+import {ArrayBindingPattern, PropertyDeclaration, MethodDeclaration, PropertySignature, MethodSignature, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, NamedExports, NamedImports, NamespaceImport, Node, ObjectBindingPattern, StringLiteral, SyntaxKind} from 'typescript';
 
 export function isImportDeclaration(node: Node): node is ImportDeclaration {
     return node && node.kind === SyntaxKind.ImportDeclaration;
@@ -46,4 +46,20 @@ export function isArrayBindingPattern(node: Node): node is ArrayBindingPattern {
 
 export function isFunctionDeclaration(node: Node): node is FunctionDeclaration {
     return node && node.kind === SyntaxKind.FunctionDeclaration;
+}
+
+export function isMethodSignature(node: Node): node is MethodSignature {
+    return node && node.kind === SyntaxKind.MethodSignature;
+}
+
+export function isPropertySignature(node: Node): node is PropertySignature {
+    return node && node.kind === SyntaxKind.PropertySignature;
+}
+
+export function isMethodDeclaration(node: Node): node is MethodDeclaration {
+    return node && node.kind === SyntaxKind.MethodDeclaration;
+}
+
+export function isPropertyDeclaration(node: Node): node is PropertyDeclaration {
+    return node && node.kind === SyntaxKind.PropertyDeclaration;
 }
