@@ -1,10 +1,12 @@
 import {ResolveCache} from './caches/ResolveCache';
+import {ResolveIndex} from './caches/ResolveIndex';
 import {ExtensionConfig} from './ExtensionConfig';
 import {BaseExtension} from './extensions/BaseExtension';
 import {ResolveExtension} from './extensions/ResolveExtension';
 import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
 import {ResolveItemFactory} from './factories/ResolveItemFactory';
 import {TsResolveFileParser} from './parser/TsResolveFileParser';
+import {TsResourceParser} from './parser/TsResourceParser';
 import {GuiProvider} from './provider/GuiProvider';
 import {ResolveCompletionItemProvider} from './provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from './provider/ResolveQuickPickProvider';
@@ -25,6 +27,9 @@ injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
 injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
 injector.bind(TsResolveFileParser).to(TsResolveFileParser);
 injector.bind(ResolveItemFactory).to(ResolveItemFactory);
+
+injector.bind(ResolveIndex).to(ResolveIndex);
+injector.bind(TsResourceParser).to(TsResourceParser);
 
 injector.bind<BaseExtension>('Extension').to(ResolveExtension).inSingletonScope();
 injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
