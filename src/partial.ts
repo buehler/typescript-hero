@@ -11,7 +11,7 @@ let parser = new TsResourceParser(() => {
     };
 });
 
-const file = join(process.cwd(), '.test/resourceParser/module.ts');
+const file = join(process.cwd(), '.test/resourceParser/class.ts');
 
 parser.parseFile(<any>{ fsPath: file })
     .then(parsed => {

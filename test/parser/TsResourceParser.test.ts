@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import {ClassDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
-import {TsResource} from '../../src/models/TsResource';
+import {TsModule, TsNamespace, TsResource} from '../../src/models/TsResource';
 import {TsResourceParser} from '../../src/parser/TsResourceParser';
 import * as chai from 'chai';
 import {join} from 'path';
@@ -396,6 +396,33 @@ describe('TsResourceParser', () => {
                 parsedClass.properties[1].visibility.should.equal(PropertyVisibility.Protected);
                 parsedClass.properties[2].name.should.equal('pub');
                 parsedClass.properties[2].visibility.should.equal(PropertyVisibility.Public);
+            });
+
+        });
+
+        describe('Modules', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/module.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(2);
+            });
+
+            it('should parse a module', () => {
+                let parsedModule = parsed.declarations[0] as TsModule;
+                parsedModule.name.should.equal('Module');
+                parsedModule.declarations[0].name.should.equal('modFunc');
+            });
+
+            it('should parse a namespace', () => {
+                let parsedNamespace = parsed.declarations[1] as TsNamespace;
+                parsedNamespace.name.should.equal('Namespace');
+                parsedNamespace.declarations[0].name.should.equal('NotExported');
+                parsedNamespace.declarations[1].name.should.equal('Exported');
             });
 
         });
