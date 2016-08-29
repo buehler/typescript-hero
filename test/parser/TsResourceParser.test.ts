@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
+import {ClassDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsResource} from '../../src/models/TsResource';
@@ -343,6 +343,59 @@ describe('TsResourceParser', () => {
 
                 parsedInterface.properties[0].visibility.should.equal(PropertyVisibility.Public);
                 parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
+            });
+
+        });
+
+        describe('Classes', () => {
+
+            const file = join(process.cwd(), '.test/resourceParser/class.ts');
+
+            beforeEach(() => {
+                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            });
+
+            it('should parse a file', () => {
+                parsed.declarations.should.be.an('array').with.lengthOf(3);
+            });
+
+            it('should parse an abstract class', () => {
+                let parsedClass = parsed.declarations[0] as ClassDeclaration;
+                parsedClass.name.should.equal('AbstractClass');
+                parsedClass.isExported.should.be.false;
+
+                parsedClass.methods[0].name.should.equal('method1');
+                parsedClass.methods[1].name.should.equal('abstractMethod');
+            });
+
+            it('should parse a non exported class', () => {
+                let parsedClass = parsed.declarations[1] as ClassDeclaration;
+                parsedClass.name.should.equal('NonExportedClass');
+                parsedClass.isExported.should.be.false;
+
+                parsedClass.methods[0].name.should.equal('method1');
+                parsedClass.methods[1].name.should.equal('method2');
+                parsedClass.methods[2].name.should.equal('method3');
+
+                parsedClass.methods[2].variables[0].name.should.equal('variable');
+
+                parsedClass.ctor.parameters[0].name.should.equal('param1');
+
+                parsedClass.properties[0].name.should.equal('param1');
+                parsedClass.properties[0].visibility.should.equal(PropertyVisibility.Public);
+            });
+
+            it('should parse an exported class', () => {
+                let parsedClass = parsed.declarations[2] as ClassDeclaration;
+                parsedClass.name.should.equal('ExportedClass');
+                parsedClass.isExported.should.be.true;
+
+                parsedClass.properties[0].name.should.equal('_property');
+                parsedClass.properties[0].visibility.should.equal(PropertyVisibility.Private);
+                parsedClass.properties[1].name.should.equal('protect');
+                parsedClass.properties[1].visibility.should.equal(PropertyVisibility.Protected);
+                parsedClass.properties[2].name.should.equal('pub');
+                parsedClass.properties[2].visibility.should.equal(PropertyVisibility.Public);
             });
 
         });

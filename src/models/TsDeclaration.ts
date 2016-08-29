@@ -36,11 +36,19 @@ export class PropertyDeclaration extends TsDeclaration {
     }
 }
 
-export class MethodDeclaration extends TsExportableCallableDeclaration { }
+export class MethodDeclaration extends TsExportableCallableDeclaration {
+    constructor(name: string) {
+        super(name, false);
+    }
+}
 
 export class FunctionDeclaration extends TsExportableCallableDeclaration { }
 
-export class ConstructorDeclaration extends TsExportableCallableDeclaration { }
+export class ConstructorDeclaration extends TsExportableCallableDeclaration {
+    constructor() {
+        super('constructor', false);
+    }
+}
 
 export class TypeAliasDeclaration extends TsExportableDeclaration { }
 
