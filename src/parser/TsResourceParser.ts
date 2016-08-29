@@ -243,7 +243,7 @@ export class TsResourceParser {
     }
 
     private parseVariable(parent: TsResource | TsExportableCallableDeclaration, node: VariableStatement): void {
-        let isConst = (node.flags & NodeFlags.Const) === NodeFlags.Const;
+        let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
         node.declarationList.declarations.forEach(o => {
             let declaration = new TshVariableDeclaration(o.name.getText(), this.checkExported(node), isConst);
             if (parent instanceof TsExportableCallableDeclaration) {
@@ -273,13 +273,20 @@ export class TsResourceParser {
         node.members.forEach(o => {
             if (isPropertyDeclaration(o)) {
                 let actualCount = classDeclaration.properties.length;
-                if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
-                } else if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
-                } else if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
-                }
+                o.modifiers.forEach(m => {
+                    if (m.kind === SyntaxKind.PublicKeyword) {
+                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+                        return;
+                    }
+                    if (m.kind === SyntaxKind.ProtectedKeyword) {
+                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
+                        return;
+                    }
+                    if (m.kind === SyntaxKind.PrivateKeyword) {
+                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
+                        return;
+                    }
+                });
                 if (actualCount === classDeclaration.properties.length) {
                     classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
                 }
@@ -326,13 +333,20 @@ export class TsResourceParser {
         node.parameters.forEach(o => {
             if (isIdentifier(o.name)) {
                 ctor.parameters.push(new TshParameterDeclaration((o.name as Identifier).text));
-                if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
-                } else if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
-                } else if ((o.flags & NodeFlags.Public) === NodeFlags.Public) {
-                    parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
-                }
+                o.modifiers.forEach(m => {
+                    if (m.kind === SyntaxKind.PublicKeyword) {
+                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+                        return;
+                    }
+                    if (m.kind === SyntaxKind.ProtectedKeyword) {
+                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
+                        return;
+                    }
+                    if (m.kind === SyntaxKind.PrivateKeyword) {
+                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
+                        return;
+                    }
+                });
             } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
                 let identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
                 ctor.parameters = ctor.parameters.concat(identifiers.elements.map((o: BindingElement) => {
