@@ -50,6 +50,7 @@ export class ResolveExtension extends BaseExtension {
         this.logger = loggerFactory('ResolveExtension');
 
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
+        context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.importCurrentSymbol', () => this.addImportFromCursor()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
         //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
@@ -123,7 +124,31 @@ export class ResolveExtension extends BaseExtension {
             }
         });
     }
-
+    private addImportFromCursor() {
+        if (!this.cache.cacheReady) {
+            this.showCacheWarning();
+            return;
+        }
+        console.log(vscode.window.activeTextEditor.selection);
+        let selection = vscode.window.activeTextEditor.selection;
+        let document = vscode.window.activeTextEditor.document;
+        let word = document.getWordRangeAtPosition(selection.active);
+        let searchText: string;
+        if (!word.isEmpty) {
+            searchText = document.getText(word);
+        }
+        this.pickProvider.buildQuickPickList(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText(), searchText).then(items => {
+            if (items.length > 1) {
+                this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText(), searchText).then(o => {
+                    if (o) {
+                        this.addImportToDocument(o);
+                    }
+                });
+            } else {
+                this.addImportToDocument(items[0]);
+            }
+        });
+    }
     private organizeImports(): void {
         this.parser
             .parseSource(vscode.window.activeTextEditor.document.getText())

@@ -95,6 +95,10 @@
         "command": "typescriptHero.resolve.organizeImports",
         "key": "ctrl+alt+o",
         "when": "editorTextFocus"
+      },{
+        "command":"typescriptHero.resolve.importCurrentSymbol",
+        "key":"ctrl+shift+m",
+        "when": "editorTextFocus"
       }
     ],
     "configuration": {
