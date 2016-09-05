@@ -7,7 +7,8 @@ import {injectable} from 'inversify';
 import path = require('path');
 import vscode = require('vscode');
 
-type LibExports = { [libName: string]: { declarations: ResolveItem[], exports: TsExport[] } };
+type Lib = { declarations: ResolveItem[], exports: TsExport[] };
+type LibExports = { [libName: string]: Lib };
 
 function isExportable(declaration: TsDeclaration): declaration is TsExportableDeclaration {
     return declaration instanceof TsExportableDeclaration;
@@ -41,50 +42,13 @@ export class ResolveItemFactory {
         // calculate all export statements (shovel around declarations.)
         Object
             .keys(libExports)
-            .sort((k1, k2) => k2.length - k1.length)
-            .forEach(key => {
-                let lib = libExports[key];
-                for (let ex of lib.exports) {
-                    if (ex instanceof TsFromExport) {
-                        if (!libExports[key] || !ex.from) {
-                            continue;
-                        }
-                        let fromLib = path.resolve(key, ex.from);
-                        fromLib = fromLib.substring(fromLib.indexOf(key));
-
-                        if (!libExports[fromLib]) {
-                            continue;
-                        } else if (ex instanceof TsAllFromExport) {
-                            let updateAll = (libName: string) => {
-                                if (libExports[libName]) {
-                                    let lib = libExports[libName];
-                                    lib.declarations.forEach(o => o.libraryName = key);
-                                    libExports[key].declarations.push(...libExports[libName].declarations);
-                                    lib.declarations = [];
-                                    lib.exports.forEach(ex => {
-                                        if (ex instanceof TsAllFromExport) {
-                                            let fromLib = path.resolve(path.dirname(libName), ex.from);
-                                            fromLib = fromLib.substring(fromLib.indexOf(key));
-                                            updateAll(fromLib);
-                                        }
-                                    });
-                                }
-                            };
-                            updateAll(fromLib);
-                        } else if (ex instanceof TsNamedFromExport) {
-                            libExports[fromLib].declarations
-                                .filter(o => ex.specifiers.some(s => s.specifier === (o.alias || o.declaration.name)))
-                                .forEach(o => {
-                                    o.libraryName = key;
-                                    let spec = ex.specifiers.find(s => s.specifier === (o.alias || o.declaration.name));
-                                    if (spec.alias) {
-                                        o.alias = spec.alias;
-                                    }
-                                    libExports[fromLib].declarations.splice(libExports[fromLib].declarations.indexOf(o), 1);
-                                    libExports[key].declarations.push(o);
-                                });
-                        }
-                    }
+            .sort((k1, k2) => k1.length - k2.length)
+            .forEach(libImportPath => {
+                let lib = libExports[libImportPath];
+                try {
+                    this.processLibrary(lib, libImportPath, libExports);
+                } catch (e) {
+                    console.log(e);
                 }
             });
 
@@ -104,7 +68,71 @@ export class ResolveItemFactory {
 
         return items;
     }
+    private processLibrary(lib: Lib, baseLibPath: string, allLibs: LibExports) {
+        for (let ex of lib.exports) {
+            if (ex instanceof TsFromExport) {
+                if (!allLibs[baseLibPath] || !ex.from) {
+                    continue;
+                }
+                let sourceLib = path.resolve(baseLibPath, ex.from);
+                sourceLib = sourceLib.substring(sourceLib.indexOf(baseLibPath));
 
+                if (!allLibs[sourceLib]) {
+                    continue;
+                } else if (ex instanceof TsAllFromExport) {
+                    this.processAllFromExports(sourceLib, allLibs, baseLibPath);
+                } else if (ex instanceof TsNamedFromExport) {
+                    this.processNamedFromExports(ex, sourceLib, allLibs, baseLibPath);
+                }
+            }
+        }
+    }
+    private processAllFromExports(libPath: string, allLibs: LibExports, baseLibPath: string) {
+        if (allLibs[libPath]) {
+            let lib = allLibs[libPath];
+            lib.declarations.forEach(o => o.libraryName = baseLibPath);
+            allLibs[baseLibPath].declarations.push(...allLibs[libPath].declarations);
+            lib.declarations = [];
+            lib.exports.forEach(ex => {
+                if (ex instanceof TsFromExport) {
+                    let sourceLib = path.resolve(path.dirname(libPath), ex.from);
+                    sourceLib = sourceLib.substring(sourceLib.indexOf(path.dirname(libPath)));
+                    if (ex instanceof TsAllFromExport) {
+                        this.processAllFromExports(sourceLib, allLibs, baseLibPath);
+                    } else if (ex instanceof TsNamedFromExport) {
+                        this.processNamedFromExports(ex, sourceLib, allLibs, baseLibPath);
+                    }
+                }
+            });
+        }
+    }
+    private processNamedFromExports(ex: TsNamedFromExport, libPath: string, allLibs: LibExports, baseLibPath: string) {
+        let lib = allLibs[libPath];
+        if (lib) {
+            lib.declarations
+                .filter(o => ex.specifiers.some(s => s.specifier === (o.alias || o.declaration.name)))
+                .forEach(o => {
+                    o.libraryName = baseLibPath;
+                    let spec = ex.specifiers.find(s => s.specifier === (o.alias || o.declaration.name));
+                    if (spec.alias) {
+                        o.alias = spec.alias;
+                    }
+                    allLibs[libPath].declarations.splice(allLibs[libPath].declarations.indexOf(o), 1);
+                    allLibs[baseLibPath].declarations.push(o);
+                });
+            lib.exports.forEach(ex => {
+                if (ex instanceof TsFromExport) {
+                    let sourceLib = path.resolve(path.dirname(libPath), ex.from);
+                    sourceLib = sourceLib.substring(sourceLib.indexOf(baseLibPath));
+                    if (ex instanceof TsAllFromExport) {
+                        this.processAllFromExports(sourceLib, allLibs, baseLibPath);
+                    } else if (ex instanceof TsNamedFromExport) {
+                        this.processNamedFromExports(ex, sourceLib, allLibs, baseLibPath);
+                    }
+                }
+            });
+        }
+    }
     private processLocalFile(libExports: LibExports, file: TsResolveFile, relativeDocument: path.ParsedPath): void {
         let libname = path.relative(relativeDocument.dir, path.format(file.path)).replace('.ts', '');
         if (!libname.startsWith('.')) {
