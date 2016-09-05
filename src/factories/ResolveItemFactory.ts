@@ -55,9 +55,22 @@ export class ResolveItemFactory {
                         if (!libExports[fromLib]) {
                             continue;
                         } else if (ex instanceof TsAllFromExport) {
-                            libExports[fromLib].declarations.forEach(o => o.libraryName = key);
-                            libExports[key].declarations.push(...libExports[fromLib].declarations);
-                            libExports[fromLib].declarations = [];
+                            let updateAll = (libName: string) => {
+                                if (libExports[libName]) {
+                                    let lib = libExports[libName];
+                                    lib.declarations.forEach(o => o.libraryName = key);
+                                    libExports[key].declarations.push(...libExports[libName].declarations);
+                                    lib.declarations = [];
+                                    lib.exports.forEach(ex => {
+                                        if (ex instanceof TsAllFromExport) {
+                                            let fromLib = path.resolve(path.dirname(libName), ex.from);
+                                            fromLib = fromLib.substring(fromLib.indexOf(key));
+                                            updateAll(fromLib);
+                                        }
+                                    });
+                                }
+                            };
+                            updateAll(fromLib);
                         } else if (ex instanceof TsNamedFromExport) {
                             libExports[fromLib].declarations
                                 .filter(o => ex.specifiers.some(s => s.specifier === (o.alias || o.declaration.name)))
