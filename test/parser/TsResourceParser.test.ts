@@ -409,17 +409,17 @@ describe('TsResourceParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(2);
+                parsed.resources.should.be.an('array').with.lengthOf(2);
             });
 
             it('should parse a module', () => {
-                let parsedModule = parsed.declarations[0] as TsModule;
+                let parsedModule = parsed.resources[0] as TsModule;
                 parsedModule.name.should.equal('Module');
                 parsedModule.declarations[0].name.should.equal('modFunc');
             });
 
             it('should parse a namespace', () => {
-                let parsedNamespace = parsed.declarations[1] as TsNamespace;
+                let parsedNamespace = parsed.resources[1] as TsNamespace;
                 parsedNamespace.name.should.equal('Namespace');
                 parsedNamespace.declarations[0].name.should.equal('NotExported');
                 parsedNamespace.declarations[1].name.should.equal('Exported');

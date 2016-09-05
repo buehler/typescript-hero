@@ -70,7 +70,7 @@ export class TsResourceParser {
         this.logger.info('Instantiated.');
     }
 
-    public parseSource(source: string): Promise<TsResource> {
+    public parseSource(source: string): Promise<TsFile> {
         return new Promise((resolve, reject) => {
             try {
                 let tmp = createSourceFile('inline.ts', source, ScriptTarget.ES6, true);
@@ -82,11 +82,11 @@ export class TsResourceParser {
         });
     }
 
-    public parseFile(file: Uri): Promise<TsResource> {
+    public parseFile(file: Uri): Promise<TsFile> {
         return this.parseFiles([file]).then(files => files[0]);
     }
 
-    public parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsResource[]> {
+    public parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
         return new Promise((resolve, reject) => {
             try {
                 if (cancellationToken && cancellationToken.onCancellationRequested) {
@@ -108,7 +108,7 @@ export class TsResourceParser {
         });
     }
 
-    private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsResource {
+    private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsFile {
         let tsFile = new TsFile(source.fileName);
 
         let syntaxList = source.getChildAt(0);
@@ -311,7 +311,7 @@ export class TsResourceParser {
 
     private parseModule(tsResource: TsResource, node: ModuleDeclaration): TsResource {
         let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ? new TsNamespace((node.name as Identifier).text) : new TsModule((node.name as Identifier).text);
-        tsResource.declarations.push(resource);
+        tsResource.resources.push(resource);
         return resource;
     }
 
