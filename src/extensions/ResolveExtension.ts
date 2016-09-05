@@ -130,12 +130,12 @@ export class ResolveExtension extends BaseExtension {
             return;
         }
         console.log(vscode.window.activeTextEditor.selection);
-        let selection = vscode.window.activeTextEditor.selection;
-        let document = vscode.window.activeTextEditor.document;
-        let word = document.getWordRangeAtPosition(selection.active);
-        let searchText: string;
+        let editor = vscode.window.activeTextEditor,
+            selection = editor.selection,
+            word = editor.document.getWordRangeAtPosition(selection.active),
+            searchText: string;
         if (!word.isEmpty) {
-            searchText = document.getText(word);
+            searchText = editor.document.getText(word);
         }
         this.pickProvider.buildQuickPickList(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText(), searchText).then(items => {
             if (items.length > 1) {

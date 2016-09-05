@@ -23,9 +23,7 @@ export class ResolveQuickPickProvider {
             .then(parsedSource => {
                 let resolveItems = this.resolveItemFactory.getResolvableItems(this.cache.cachedFiles, openDocument, parsedSource.imports);
                 if (search) {
-                    resolveItems = resolveItems.filter(item => {
-                        return item.declaration.name === search;
-                    });
+                    resolveItems = resolveItems.filter(item => item.declaration.name === search);
                 }
                 return resolveItems.map(o => new ResolveQuickPickItem(o));
             })
