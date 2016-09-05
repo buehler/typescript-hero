@@ -50,6 +50,7 @@ export class ResolveExtension extends BaseExtension {
         this.logger = loggerFactory('ResolveExtension');
 
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
+        context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.importCurrentSymbol', () => this.addImportFromCursor()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
         //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
@@ -123,7 +124,30 @@ export class ResolveExtension extends BaseExtension {
             }
         });
     }
-
+    private addImportFromCursor() {
+        if (!this.cache.cacheReady) {
+            this.showCacheWarning();
+            return;
+        }
+        let editor = vscode.window.activeTextEditor,
+            selection = editor.selection,
+            word = editor.document.getWordRangeAtPosition(selection.active),
+            searchText: string;
+        if (!word.isEmpty) {
+            searchText = editor.document.getText(word);
+        }
+        this.pickProvider.buildQuickPickList(editor.document.uri, editor.document.getText(), searchText).then(items => {
+            if (items.length > 1) {
+                this.pickProvider.addImportPick(editor.document.uri, editor.document.getText(), searchText).then(o => {
+                    if (o) {
+                        this.addImportToDocument(o);
+                    }
+                });
+            } else {
+                this.addImportToDocument(items[0]);
+            }
+        });
+    }
     private organizeImports(): void {
         this.parser
             .parseSource(vscode.window.activeTextEditor.document.getText())
