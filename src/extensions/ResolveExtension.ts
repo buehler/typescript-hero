@@ -129,7 +129,6 @@ export class ResolveExtension extends BaseExtension {
             this.showCacheWarning();
             return;
         }
-        console.log(vscode.window.activeTextEditor.selection);
         let editor = vscode.window.activeTextEditor,
             selection = editor.selection,
             word = editor.document.getWordRangeAtPosition(selection.active),
@@ -137,9 +136,9 @@ export class ResolveExtension extends BaseExtension {
         if (!word.isEmpty) {
             searchText = editor.document.getText(word);
         }
-        this.pickProvider.buildQuickPickList(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText(), searchText).then(items => {
+        this.pickProvider.buildQuickPickList(editor.document.uri, editor.document.getText(), searchText).then(items => {
             if (items.length > 1) {
-                this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText(), searchText).then(o => {
+                this.pickProvider.addImportPick(editor.document.uri, editor.document.getText(), searchText).then(o => {
                     if (o) {
                         this.addImportToDocument(o);
                     }
