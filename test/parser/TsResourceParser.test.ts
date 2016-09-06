@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import {ClassDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
+import {ClassDeclaration, DefaultDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsModule, TsNamespace, TsResource} from '../../src/models/TsResource';
@@ -124,8 +124,8 @@ describe('TsResourceParser', () => {
         });
 
         it('should parse default export', () => {
-            console.log('fix. this.');
-            parsed.exports[3].should.be.an.instanceOf(TsDefaultExport);
+            parsed.declarations[0].should.be.an.instanceOf(DefaultDeclaration);
+            parsed.declarations[0].name.should.equal('/resourceParser/exportsOnly');
         });
 
     });

@@ -25,8 +25,16 @@ export class ResolveIndex {
     private logger: Logger;
     private cancelToken: CancellationTokenSource;
 
-    private parsedResources: Resources = {};
-    private index: ResourceIndex = {};
+    private parsedResources: Resources;
+    private _index: ResourceIndex;
+
+    public get indexReady(): boolean {
+        return !!this._index;
+    }
+
+    public get index(): ResourceIndex {
+        return this._index;
+    }
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private parser: TsResourceParser, private config: ExtensionConfig) {
         this.logger = loggerFactory('ResolveIndex');
@@ -55,7 +63,7 @@ export class ResolveIndex {
                     throw new CancellationRequested();
                 }
 
-                return this.createIndex(parsed);
+                return this.createIndex(parsed, cancellationToken);
             })
             .then(() => {
                 this.cancelToken.dispose();
@@ -85,54 +93,70 @@ export class ResolveIndex {
         }
     }
 
-    private createIndex(files: TsFile[]): Promise<void> {
+    private createIndex(files: TsFile[], cancellationToken?: CancellationToken): Promise<void> {
+        let parsedResources: Resources = {},
+            index: ResourceIndex = {};
         return new Promise<void>(
             resolve => {
-                this.parsedResources = {};
-                this.index = {};
                 for (let file of files) {
                     if (file.filePath.indexOf('node_modules') > -1) {
                         let libname = getNodeLibraryName(file.filePath);
-                        this.parsedResources[libname] = file;
+                        parsedResources[libname] = file;
                     } else if (file.filePath.indexOf('typings') > -1) {
                         for (let resource of file.resources) {
-                            this.parsedResources[resource.getIdentifier()] = resource;
+                            parsedResources[resource.getIdentifier()] = resource;
                         }
                     } else {
-                        this.parsedResources[file.getIdentifier()] = file;
+                        parsedResources[file.getIdentifier()] = file;
                     }
+                }
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
                 }
                 resolve();
             })
             .then(() => Object
-                .keys(this.parsedResources)
+                .keys(parsedResources)
                 .sort((k1, k2) => k2.length - k1.length)
                 .forEach(key => {
-                    let resource = this.parsedResources[key];
+                    if (cancellationToken && cancellationToken.onCancellationRequested) {
+                        throw new CancellationRequested();
+                    }
+                    let resource = parsedResources[key];
                     //TODO maybe not filter all non exported?
                     resource.declarations = resource.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
-                    this.processResourceExports(resource);
+                    this.processResourceExports(parsedResources, resource);
                 })
             )
             .then(() => Object
-                .keys(this.parsedResources)
+                .keys(parsedResources)
                 .forEach(key => {
-                    let resource = this.parsedResources[key];
+                    if (cancellationToken && cancellationToken.onCancellationRequested) {
+                        throw new CancellationRequested();
+                    }
+                    let resource = parsedResources[key];
                     for (let declaration of resource.declarations) {
                         //TODO add alias?
-                        if (!this.index[declaration.name]) {
-                            this.index[declaration.name] = [];
+                        if (!index[declaration.name]) {
+                            index[declaration.name] = [];
                         }
-                        this.index[declaration.name].push({
+                        index[declaration.name].push({
                             declaration,
                             from: key
                         });
                     }
                 })
-            );
+            )
+            .then(() => {
+                if (cancellationToken && cancellationToken.onCancellationRequested) {
+                    throw new CancellationRequested();
+                }
+                this.parsedResources = parsedResources;
+                this._index = index;
+            });
     }
 
-    private processResourceExports(resource: TsResource): void {
+    private processResourceExports(parsedResources: Resources, resource: TsResource): void {
         for (let ex of resource.exports) {
             if (resource instanceof TsFile && ex instanceof TsFromExport) {
                 if (!ex.from) {
@@ -146,34 +170,34 @@ export class ResolveIndex {
                     sourceLib = workspace.asRelativePath(sourceLib).replace(/([.]d)?[.]ts/g, '');
                 }
 
-                if (!this.parsedResources[sourceLib]) {
+                if (!parsedResources[sourceLib]) {
                     return;
                 }
 
                 if (ex instanceof TsAllFromExport) {
-                    this.processAllFromExport(resource, this.parsedResources[sourceLib]);
+                    this.processAllFromExport(parsedResources, resource, parsedResources[sourceLib]);
                 } else if (ex instanceof TsNamedFromExport) {
-                    this.processNamedFromExport(ex, resource, this.parsedResources[sourceLib]);
+                    this.processNamedFromExport(parsedResources, ex, resource, parsedResources[sourceLib]);
                 }
             } else if (resource instanceof TsModule || resource instanceof TsNamespace) {
                 if (ex instanceof TsAssignedExport) {
-                    this.processAssignedExport(ex, resource);
-                } else if (ex instanceof TsNamedFromExport && ex.from && this.parsedResources[ex.from]) {
-                    this.processNamedFromExport(ex, resource, this.parsedResources[ex.from]);
+                    this.processAssignedExport(parsedResources, ex, resource);
+                } else if (ex instanceof TsNamedFromExport && ex.from && parsedResources[ex.from]) {
+                    this.processNamedFromExport(parsedResources, ex, resource, parsedResources[ex.from]);
                 }
             }
         }
     }
 
-    private processAllFromExport(exportingLib: TsResource, exportedLib: TsResource): void {
-        this.processResourceExports(exportedLib);
+    private processAllFromExport(parsedResources: Resources, exportingLib: TsResource, exportedLib: TsResource): void {
+        this.processResourceExports(parsedResources, exportedLib);
 
         exportingLib.declarations.push(...exportedLib.declarations);
         exportedLib.declarations = [];
     }
 
-    private processNamedFromExport(tsExport: TsNamedFromExport, exportingLib: TsResource, exportedLib: TsResource): void {
-        this.processResourceExports(exportedLib);
+    private processNamedFromExport(parsedResources: Resources, tsExport: TsNamedFromExport, exportingLib: TsResource, exportedLib: TsResource): void {
+        this.processResourceExports(parsedResources, exportedLib);
 
         exportedLib.declarations
             .filter(o => tsExport.specifiers.some(s => s.specifier === o.name))
@@ -184,12 +208,12 @@ export class ResolveIndex {
             });
     }
 
-    private processAssignedExport(tsExport: TsAssignedExport, exportingLib: TsResource): void {
+    private processAssignedExport(parsedResources: Resources, tsExport: TsAssignedExport, exportingLib: TsResource): void {
         tsExport.exported.forEach(exported => {
             if (exported instanceof TsExportableDeclaration) {
                 exportingLib.declarations.push(exported);
             } else {
-                this.processResourceExports(exported);
+                this.processResourceExports(parsedResources, exported);
                 exportingLib.declarations.push(...exported.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported));
                 exported.declarations = [];
             }
