@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import {ClassDeclaration, DefaultDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
-import {TsAllFromExport, TsAssignedExport, TsDefaultExport, TsNamedFromExport} from '../../src/models/TsExport';
+import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../../src/models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
 import {TsModule, TsNamespace, TsResource} from '../../src/models/TsResource';
 import {TsResourceParser} from '../../src/parser/TsResourceParser';

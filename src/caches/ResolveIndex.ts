@@ -93,6 +93,11 @@ export class ResolveIndex {
         }
     }
 
+    public reset(): void {
+        this.parsedResources = null;
+        this._index = null;
+    }
+
     private createIndex(files: TsFile[], cancellationToken?: CancellationToken): Promise<void> {
         let parsedResources: Resources = {},
             index: ResourceIndex = {};

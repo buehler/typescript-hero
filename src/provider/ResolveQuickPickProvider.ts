@@ -1,7 +1,3 @@
-import {ResolveCache} from '../caches/ResolveCache';
-import {ResolveItemFactory} from '../factories/ResolveItemFactory';
-import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
 import * as vscode from 'vscode';

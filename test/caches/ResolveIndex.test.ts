@@ -21,10 +21,10 @@ Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
 
 describe('ResolveIndex', () => {
 
-    let resolveIndex: ResolveIndex;
+    let resolveIndex: ResolveIndex = Injector.get(ResolveIndex);
 
     beforeEach(() => {
-        resolveIndex = Injector.get(ResolveIndex);
+        resolveIndex.reset();
     });
 
     it('should resolve the build process', done => {

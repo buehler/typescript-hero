@@ -15,12 +15,10 @@ export class RestartDebuggerExtension extends BaseExtension {
     private restartCall: number;
     private active: boolean;
 
-    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, @inject('context') context: ExtensionContext, private config: ExtensionConfig) {
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private config: ExtensionConfig) {
         super();
         this.logger = loggerFactory('RestartDebuggerExtension');
         this.active = this.config.restartDebugger.active;
-        this.configure();
-
         this.logger.info('Extension instantiated.');
     }
 
@@ -38,6 +36,11 @@ export class RestartDebuggerExtension extends BaseExtension {
         ];
     }
 
+    public initialize(context: ExtensionContext): void {
+        this.configure();
+        this.logger.info('Initialized.');
+    }
+
     public dispose(): void {
         this.logger.info('Dispose called.');
         if (this.fileWatcher) {
@@ -49,7 +52,7 @@ export class RestartDebuggerExtension extends BaseExtension {
     private configure(): void {
         if (this.active && !this.fileWatcher) {
             let watcherGlob = this.config.restartDebugger.watchFolders.map(o => `**/${o}/**/*.*`).join(',');
-            this.logger.info(`Activated for glob: ${watcherGlob}`);
+            this.logger.info(`Activated for glob: ${watcherGlob}.`);
             this.fileWatcher = workspace.createFileSystemWatcher(`{${watcherGlob}}`);
             this.fileWatcher.onDidChange(() => this.restartDebugger());
             this.fileWatcher.onDidCreate(() => this.restartDebugger());
@@ -57,7 +60,7 @@ export class RestartDebuggerExtension extends BaseExtension {
         } else if (!this.active && this.fileWatcher) {
             this.fileWatcher.dispose();
             this.fileWatcher = null;
-            this.logger.info(`Deactivated`);
+            this.logger.info(`Deactivated.`);
         }
     }
 
