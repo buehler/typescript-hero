@@ -124,6 +124,7 @@ describe('TsResourceParser', () => {
         });
 
         it('should parse default export', () => {
+            console.log('fix. this.');
             parsed.exports[3].should.be.an.instanceOf(TsDefaultExport);
         });
 

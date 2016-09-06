@@ -1,10 +1,11 @@
 import {ResolveCache} from '../caches/ResolveCache';
+import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
 import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsOldDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsOldDeclaration';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResolveFileParser} from '../parser/TsResolveFileParser';
 import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
@@ -44,7 +45,8 @@ export class ResolveExtension extends BaseExtension {
         private pickProvider: ResolveQuickPickProvider,
         private config: ExtensionConfig,
         private parser: TsResolveFileParser,
-        completionProvider: ResolveCompletionItemProvider) {
+        completionProvider: ResolveCompletionItemProvider,
+        index: ResolveIndex) {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
@@ -52,7 +54,7 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.importCurrentSymbol', () => this.addImportFromCursor()));
         context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => index.buildIndex()));
         //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);

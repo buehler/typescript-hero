@@ -1,7 +1,8 @@
 import {TsDeclaration} from './TsDeclaration';
 import {TsExport} from './TsExport';
 import {TsImport} from './TsImport';
-import {ParsedPath, parse} from 'path';
+import {parse, ParsedPath} from 'path';
+import {workspace} from 'vscode';
 
 // TsSource can be: File, Module, Namespace
 // module contains declarations, imports, exports, submodules
@@ -12,6 +13,7 @@ export abstract class TsResource {
     public exports: TsExport[] = [];
     public resources: TsResource[] = [];
     public usages: string[] = [];
+    public abstract getIdentifier(): string;
 }
 
 export class TsFile extends TsResource {
@@ -22,16 +24,28 @@ export class TsFile extends TsResource {
     constructor(public filePath: string) {
         super();
     }
+
+    public getIdentifier(): string {
+        return workspace.asRelativePath(this.filePath).replace(/([.]d)?[.]ts/g, '');
+    }
 }
 
 export class TsModule extends TsResource {
     constructor(public name: string) {
         super();
     }
+
+    public getIdentifier(): string {
+        return this.name;
+    }
 }
 
 export class TsNamespace extends TsResource {
     constructor(public name: string) {
         super();
+    }
+
+    public getIdentifier(): string {
+        return this.name;
     }
 }

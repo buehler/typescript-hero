@@ -1,5 +1,6 @@
-import {TsResolveSpecifier} from './TsResolveSpecifier';
 import {TsDeclaration} from './TsDeclaration';
+import {TsResolveSpecifier} from './TsResolveSpecifier';
+import {TsModule, TsNamespace, TsResource} from './TsResource';
 
 export abstract class TsExport {
 }
@@ -16,14 +17,18 @@ export class TsNamedFromExport extends TsFromExport {
 }
 
 export class TsAssignedExport extends TsExport {
-    public get declarations(): TsDeclaration[] {
-        return this._declarations.filter(o => o.name === this.declarationIdentifier);
+    public get exported(): (TsDeclaration|TsResource)[] {
+        return [
+            ...this._resource.declarations.filter(o => o.name === this.declarationIdentifier),
+            ...this._resource.resources.filter(o => (o instanceof TsNamespace || o instanceof TsModule) && o.name === this.declarationIdentifier)
+        ];
     }
 
-    constructor(public declarationIdentifier: string, private _declarations: TsDeclaration[]) {
+    constructor(public declarationIdentifier: string, private _resource: TsResource) {
         super();
     }
 }
 
+//TODO delete this.
 export class TsDefaultExport extends TsExport {
 }
