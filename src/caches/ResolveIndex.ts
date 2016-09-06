@@ -1,7 +1,7 @@
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CancellationRequested} from '../models/CancellationRequested';
 import {TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
-import {TsAllFromExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
+import {TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
 import {TsFile, TsModule, TsNamespace, TsResource} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
@@ -141,6 +141,12 @@ export class ResolveIndex {
                 } else if (ex instanceof TsNamedFromExport) {
                     this.processNamedFromExport(ex, resource, this.parsedResources[sourceLib]);
                 }
+            } else if (resource instanceof TsModule || resource instanceof TsNamespace) {
+                if (ex instanceof TsAssignedExport) {
+                    this.processAssignedExport(ex, resource);
+                } else if (ex instanceof TsNamedFromExport && ex.from && this.parsedResources[ex.from]) {
+                    this.processNamedFromExport(ex, resource, this.parsedResources[ex.from]);
+                }
             }
         }
     }
@@ -162,6 +168,18 @@ export class ResolveIndex {
                 exportedLib.declarations.splice(exportedLib.declarations.indexOf(o), 1);
                 exportingLib.declarations.push(o);
             });
+    }
+
+    private processAssignedExport(tsExport: TsAssignedExport, exportingLib: TsResource): void {
+        tsExport.exported.forEach(exported => {
+            if (exported instanceof TsExportableDeclaration) {
+                exportingLib.declarations.push(exported);
+            } else {
+                this.processResourceExports(exported);
+                exportingLib.declarations.push(...exported.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported));
+                exported.declarations = [];
+            }
+        });
     }
 
     private findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
