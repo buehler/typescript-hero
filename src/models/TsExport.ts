@@ -28,7 +28,3 @@ export class TsAssignedExport extends TsExport {
         super();
     }
 }
-
-//TODO delete this.
-export class TsDefaultExport extends TsExport {
-}
