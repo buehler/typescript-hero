@@ -1,8 +1,8 @@
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CancellationRequested} from '../models/CancellationRequested';
-import {TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
+import {ModuleDeclaration, TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
-import {TsFile, TsModule, TsNamespace, TsResource} from '../models/TsResource';
+import {TsFile, TsModule, TsNamedResource, TsNamespace, TsResource} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {existsSync} from 'fs';
@@ -10,8 +10,8 @@ import {inject, injectable} from 'inversify';
 import {join, resolve, sep} from 'path';
 import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
 
-type DeclarationInfo = { declaration: TsDeclaration, from: string };
-type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
+export type DeclarationInfo = { declaration: TsDeclaration, from: string };
+export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
 type Resources = { [name: string]: TsResource };
 
 function getNodeLibraryName(path: string): string {
@@ -140,6 +140,15 @@ export class ResolveIndex {
                         throw new CancellationRequested();
                     }
                     let resource = parsedResources[key];
+                    if (resource instanceof TsNamedResource) {
+                        if (!index[resource.name]) {
+                            index[resource.name] = [];
+                        }
+                        index[resource.name].push({
+                            declaration: new ModuleDeclaration(resource.getNamespaceAlias()),
+                            from: resource.name
+                        });
+                    }
                     for (let declaration of resource.declarations) {
                         //TODO add alias?
                         if (!index[declaration.name]) {

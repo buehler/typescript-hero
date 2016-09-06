@@ -1,6 +1,6 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
+import {CommandQuickPickItem} from '../models/QuickPickItems';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
@@ -114,7 +114,7 @@ export class ResolveExtension extends BaseExtension {
             this.showCacheWarning();
             return;
         }
-        this.pickProvider.addImportPick(window.activeTextEditor.document.uri, window.activeTextEditor.document.getText()).then(o => {
+        this.pickProvider.addImportPick(window.activeTextEditor).then(o => {
             if (o) {
                 this.addImportToDocument(o);
             }

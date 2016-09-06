@@ -8,7 +8,7 @@ import {Disposable, ExtensionContext} from 'vscode';
 export class TypeScriptHero implements Disposable {
     private logger: Logger;
 
-    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private guiProvider: GuiProvider, @multiInject('Extension') private extensions: BaseExtension[], context: ExtensionContext) {
+    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private guiProvider: GuiProvider, @multiInject('Extension') private extensions: BaseExtension[], @inject('context') context: ExtensionContext) {
         this.logger = loggerFactory('TypescriptHero');
         this.logger.info('Activation event called. TypeScriptHero instantiated.');
 

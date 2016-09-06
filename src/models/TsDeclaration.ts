@@ -65,3 +65,5 @@ export class VariableDeclaration extends TsExportableDeclaration {
 export class ParameterDeclaration extends TsDeclaration { }
 
 export class DefaultDeclaration extends TsDeclaration { }
+
+export class ModuleDeclaration extends TsDeclaration { }

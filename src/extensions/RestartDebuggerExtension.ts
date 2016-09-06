@@ -1,5 +1,5 @@
 import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
+import {CommandQuickPickItem} from '../models/QuickPickItems';
 import {TshCommand} from '../models/TshCommand';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';

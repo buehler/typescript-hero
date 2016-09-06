@@ -1,4 +1,4 @@
-import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
+import {CommandQuickPickItem} from '../models/QuickPickItems';
 import {injectable} from 'inversify';
 import {Disposable, ExtensionContext} from 'vscode';
 

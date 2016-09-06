@@ -30,9 +30,19 @@ export class TsFile extends TsResource {
     }
 }
 
-export class TsModule extends TsResource {
+export abstract class TsNamedResource extends TsResource {
     constructor(public name: string) {
         super();
+    }
+
+    public getNamespaceAlias(): string {
+        return this.name.split(/[-_]/).reduce((all, cur, idx) => {
+            if (idx === 0) {
+                return all + cur.toLowerCase();
+            } else {
+                return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
+            }
+        }, '');
     }
 
     public getIdentifier(): string {
@@ -40,12 +50,6 @@ export class TsModule extends TsResource {
     }
 }
 
-export class TsNamespace extends TsResource {
-    constructor(public name: string) {
-        super();
-    }
+export class TsModule extends TsNamedResource { }
 
-    public getIdentifier(): string {
-        return this.name;
-    }
-}
+export class TsNamespace extends TsNamedResource { }

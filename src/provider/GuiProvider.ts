@@ -1,5 +1,5 @@
 import {BaseExtension} from '../extensions/BaseExtension';
-import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
+import {CommandQuickPickItem} from '../models/QuickPickItems';
 import {inject, injectable, multiInject} from 'inversify';
 import {commands, ExtensionContext, window} from 'vscode';
 
