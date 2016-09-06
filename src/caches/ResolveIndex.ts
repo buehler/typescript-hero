@@ -89,6 +89,7 @@ export class ResolveIndex {
         return new Promise<void>(
             resolve => {
                 this.parsedResources = {};
+                this.index = {};
                 for (let file of files) {
                     if (file.filePath.indexOf('node_modules') > -1) {
                         let libname = getNodeLibraryName(file.filePath);
@@ -113,9 +114,22 @@ export class ResolveIndex {
                     this.processResourceExports(resource);
                 })
             )
-            .then(() => {
-                console.log(this.parsedResources);
-            });
+            .then(() => Object
+                .keys(this.parsedResources)
+                .forEach(key => {
+                    let resource = this.parsedResources[key];
+                    for (let declaration of resource.declarations) {
+                        //TODO add alias?
+                        if (!this.index[declaration.name]) {
+                            this.index[declaration.name] = [];
+                        }
+                        this.index[declaration.name].push({
+                            declaration,
+                            from: key
+                        });
+                    }
+                })
+            );
     }
 
     private processResourceExports(resource: TsResource): void {
