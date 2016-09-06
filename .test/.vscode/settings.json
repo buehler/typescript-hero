@@ -1,0 +1,10 @@
+{
+    "typescriptHero.resolver.ignorePatterns": [
+        "typescript",
+        "tslint",
+        "node_modules/typings",
+        "node_modules/typings-core",
+        "resourceParser"
+    ],
+    "typescriptHero.verbosity": "All"
+}
