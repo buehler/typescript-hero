@@ -7,7 +7,7 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {existsSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {join, resolve, sep} from 'path';
+import {join, resolve, sep, normalize} from 'path';
 import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
 
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
@@ -63,9 +63,14 @@ export class ResolveIndex {
                     throw new CancellationRequested();
                 }
 
-                return this.createIndex(parsed, cancellationToken);
+                return this.parseResources(parsed, cancellationToken);
             })
-            .then(() => {
+            .then(resources => {
+                this.parsedResources = resources;
+                return this.createIndex(resources, cancellationToken);
+            })
+            .then(index => {
+                this._index = index;
                 this.cancelToken.dispose();
                 this.cancelToken = null;
             })
@@ -78,10 +83,37 @@ export class ResolveIndex {
     }
 
     public rebuildForFile(filePath: string): Promise<void> {
-        return null;
+        let rebuildResource = workspace.asRelativePath(filePath).replace('.ts', ''),
+            rebuildFiles = [rebuildResource];
+        Object
+            .keys(this.parsedResources)
+            .filter(o => o.startsWith('/'))
+            .forEach(key => {
+                let resource = this.parsedResources[key] as TsFile;
+                if (this.doesExportResource(resource, rebuildResource)) {
+                    rebuildFiles.push(key);
+                }
+            });
+
+        return this.parser
+            .parseFiles(rebuildFiles.map(o => this.parsedResources[o] as TsFile).map(o => {
+                return <Uri>{ fsPath: o.filePath };
+            }))
+            .then(parsed => this.parseResources(parsed))
+            .then(resources => {
+                console.log(resources);
+                for (let key in resources) {
+                    this.parsedResources[key] = resources[key];
+                }
+                return this.createIndex(this.parsedResources);
+            })
+            .then(index => {
+                this._index = index;
+            });
     }
 
     public removeForFile(filePath: string): Promise<void> {
+        //search all files that export this file, remove all declarations from that particular file.
         return null;
     }
 
@@ -98,9 +130,8 @@ export class ResolveIndex {
         this._index = null;
     }
 
-    private createIndex(files: TsFile[], cancellationToken?: CancellationToken): Promise<void> {
-        let parsedResources: Resources = {},
-            index: ResourceIndex = {};
+    private parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
+        let parsedResources: Resources = {};
         return new Promise<void>(
             resolve => {
                 for (let file of files) {
@@ -133,13 +164,19 @@ export class ResolveIndex {
                     this.processResourceExports(parsedResources, resource);
                 })
             )
-            .then(() => Object
-                .keys(parsedResources)
+            .then(() => parsedResources);
+    }
+
+    private createIndex(resources: Resources, cancellationToken?: CancellationToken): Promise<ResourceIndex> {
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            throw new CancellationRequested();
+        }
+        let index: ResourceIndex = {};
+        return new Promise(resolve => {
+            Object
+                .keys(resources)
                 .forEach(key => {
-                    if (cancellationToken && cancellationToken.onCancellationRequested) {
-                        throw new CancellationRequested();
-                    }
-                    let resource = parsedResources[key];
+                    let resource = resources[key];
                     if (resource instanceof TsNamedResource) {
                         if (!index[resource.name]) {
                             index[resource.name] = [];
@@ -159,15 +196,9 @@ export class ResolveIndex {
                             from: key
                         });
                     }
-                })
-            )
-            .then(() => {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                this.parsedResources = parsedResources;
-                this._index = index;
-            });
+                });
+            resolve(index);
+        });
     }
 
     private processResourceExports(parsedResources: Resources, resource: TsResource): void {
@@ -268,5 +299,21 @@ export class ResolveIndex {
                 this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
                 return uris.reduce((all, cur) => all.concat(cur), []);
             });
+    }
+
+    private doesExportResource(resource: TsFile, resourcePath: string): boolean {
+        let exportsResource = false;
+
+        for (let ex of resource.exports) {
+            if (exportsResource) {
+                break;
+            }
+            if (ex instanceof TsAllFromExport || ex instanceof TsNamedFromExport) {
+                let exported = workspace.asRelativePath(normalize(join(resource.parsedPath.dir, ex.from)));
+                exportsResource = exported === resourcePath;
+            }
+        }
+
+        return exportsResource;
     }
 }

@@ -1,6 +1,6 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem} from '../models/QuickPickItems';
+import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
@@ -120,7 +120,7 @@ export class ResolveExtension extends BaseExtension {
             }
         });
     }
-    private addImportFromCursor() {
+    private addImportFromCursor(): void {
         // if (!this.index.cacheReady) {
         //     this.showCacheWarning();
         //     return;
@@ -184,7 +184,7 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
-    private addImportToDocument(item: any): Promise<void> {
+    private addImportToDocument(item: ResolveQuickPickItem): Promise<void> {
         return null;
         // return this.parser.parseSource(window.activeTextEditor.document.getText()).then(docResolve => {
         //     let imports = [...docResolve.imports];
