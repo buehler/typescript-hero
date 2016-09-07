@@ -101,7 +101,6 @@ export class ResolveIndex {
             }))
             .then(parsed => this.parseResources(parsed))
             .then(resources => {
-                console.log(resources);
                 for (let key in resources) {
                     this.parsedResources[key] = resources[key];
                 }
@@ -113,8 +112,34 @@ export class ResolveIndex {
     }
 
     public removeForFile(filePath: string): Promise<void> {
-        //search all files that export this file, remove all declarations from that particular file.
-        return null;
+        let removeResource = workspace.asRelativePath(filePath).replace('.ts', ''),
+            rebuildFiles = [];
+        Object
+            .keys(this.parsedResources)
+            .filter(o => o.startsWith('/'))
+            .forEach(key => {
+                let resource = this.parsedResources[key] as TsFile;
+                if (this.doesExportResource(resource, removeResource)) {
+                    rebuildFiles.push(key);
+                }
+            });
+        
+        return this.parser
+            .parseFiles(rebuildFiles.map(o => this.parsedResources[o] as TsFile).map(o => {
+                return <Uri>{ fsPath: o.filePath };
+            }))
+            .then(parsed => this.parseResources(parsed))
+            .then(resources => {
+                console.log(resources);
+                delete this.parsedResources[removeResource];
+                for (let key in resources) {
+                    this.parsedResources[key] = resources[key];
+                }
+                return this.createIndex(this.parsedResources);
+            })
+            .then(index => {
+                this._index = index;
+            });
     }
 
     public cancelRefresh(): void {

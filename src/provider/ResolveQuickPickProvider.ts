@@ -62,7 +62,7 @@ export class ResolveQuickPickProvider {
             } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
                 declarations = declarations.filter(o => o.from !== tsImport.libraryName);
             } else if (tsImport instanceof TsDefaultImport) {
-                declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || tsImport.libraryName !== o.libraryName));
+                declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || tsImport.libraryName !== o.from));
             }
         }
 
