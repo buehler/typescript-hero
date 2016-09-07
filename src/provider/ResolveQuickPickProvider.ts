@@ -41,7 +41,8 @@ export class ResolveQuickPickProvider {
                 if (cursorSymbol) {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }
-                return declarations.map(o => new ResolveQuickPickItem(o));
+                let activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
+                return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
             })
             .catch(error => {
                 this.logger.error('Error during quick list building.', { error });
