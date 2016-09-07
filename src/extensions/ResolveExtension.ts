@@ -100,6 +100,7 @@ export class ResolveExtension extends BaseExtension {
             if (uri.fsPath.endsWith('.d.ts')) {
                 return;
             }
+            this.logger.info(`File "${uri.fsPath}" deleted. Removing file.`);
             this.index.removeForFile(uri.fsPath);
         });
         this.logger.info('Initialized.');

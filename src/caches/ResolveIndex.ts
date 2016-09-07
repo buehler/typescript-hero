@@ -123,7 +123,7 @@ export class ResolveIndex {
                     rebuildFiles.push(key);
                 }
             });
-        
+
         return this.parser
             .parseFiles(rebuildFiles.map(o => this.parsedResources[o] as TsFile).map(o => {
                 return <Uri>{ fsPath: o.filePath };
