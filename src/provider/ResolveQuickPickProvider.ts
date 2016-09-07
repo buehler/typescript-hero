@@ -1,11 +1,11 @@
-import {DeclarationInfo, ResolveIndex, ResourceIndex} from '../caches/ResolveIndex';
+import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
 import {ResolveQuickPickItem} from '../models/QuickPickItems';
 import {DefaultDeclaration} from '../models/TsDeclaration';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
-import {join, normalize, parse, resolve} from 'path';
+import {join, normalize, parse} from 'path';
 import {TextEditor, window, workspace} from 'vscode';
 
 @injectable()
