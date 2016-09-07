@@ -20,14 +20,27 @@ export class ResolveQuickPickProvider {
         return window.showQuickPick(this.buildQuickPickList(activeDocument));
     }
 
-    public addImportFromCursorPick(): void {
-
+    public addImportUnderCursorPick(activeDocument: TextEditor, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
+        return this.buildQuickPickList(activeDocument, cursorSymbol)
+            .then(resolveItems => {
+                if (resolveItems.length < 1) {
+                    window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index.`);
+                    return;
+                } else if (resolveItems.length === 1) {
+                    return resolveItems[0];
+                } else {
+                    return window.showQuickPick(resolveItems, {placeHolder: 'Multiple declarations found:'});
+                }
+            });
     }
 
     public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Thenable<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.document.getText())
             .then(parsedSource => {
                 let declarations = this.prepareDeclarations(activeDocument.document.fileName, parsedSource.imports);
+                if (cursorSymbol) {
+                    declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
+                }
                 return declarations.map(o => new ResolveQuickPickItem(o));
             })
             .catch(error => {

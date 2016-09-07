@@ -54,6 +54,12 @@ export class ResolveExtension extends BaseExtension {
                 new TshCommand(() => this.addImport())
             ),
             new CommandQuickPickItem(
+                'Import resolver: Add import under cursor',
+                `right now: '${this.getSymbolUnderCursor()}'`,
+                'Adds the symbol under the cursor and opens a list if multiple are possible.',
+                new TshCommand(() => this.addImportUnderCursor())
+            ),
+            new CommandQuickPickItem(
                 'Import resolver: Organize imports',
                 '',
                 'Sorts imports and removes unused imports.',
@@ -70,7 +76,7 @@ export class ResolveExtension extends BaseExtension {
 
     public initialize(context: ExtensionContext): void {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
-        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.importCurrentSymbol', () => this.addImportFromCursor()));
+        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
         //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
@@ -121,29 +127,20 @@ export class ResolveExtension extends BaseExtension {
             }
         });
     }
-    private addImportFromCursor(): void {
-        // if (!this.index.cacheReady) {
-        //     this.showCacheWarning();
-        //     return;
-        // }
-        // let editor = window.activeTextEditor,
-        //     selection = editor.selection,
-        //     word = editor.document.getWordRangeAtPosition(selection.active),
-        //     searchText: string;
-        // if (!word.isEmpty) {
-        //     searchText = editor.document.getText(word);
-        // }
-        // this.pickProvider.buildQuickPickList(editor.document.uri, editor.document.getText(), searchText).then(items => {
-        //     if (items.length > 1) {
-        //         this.pickProvider.addImportPick(editor.document.uri, editor.document.getText(), searchText).then(o => {
-        //             if (o) {
-        //                 this.addImportToDocument(o);
-        //             }
-        //         });
-        //     } else {
-        //         this.addImportToDocument(items[0]);
-        //     }
-        // });
+    private addImportUnderCursor(): void {
+        if (!this.index.indexReady) {
+            this.showCacheWarning();
+            return;
+        }
+        let selectedSymbol = this.getSymbolUnderCursor();
+        if (!!!selectedSymbol) {
+            return;
+        }
+        this.pickProvider.addImportUnderCursorPick(window.activeTextEditor, selectedSymbol).then(o => {
+            if (o) {
+                this.addImportToDocument(o);
+            }
+        });
     }
     private organizeImports(): void {
         // this.parser
@@ -245,5 +242,15 @@ export class ResolveExtension extends BaseExtension {
 
     private showCacheWarning(): void {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
+    }
+
+    private getSymbolUnderCursor(): string {
+        let editor = window.activeTextEditor;
+        if (!editor) {
+            return '';
+        }
+        let selection = editor.selection,
+            word = editor.document.getWordRangeAtPosition(selection.active);
+        return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
 }
