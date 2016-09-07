@@ -1,13 +1,16 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
+import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
+import {TsResourceParser} from '../parser/TsResourceParser';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
+import {join, normalize, parse, relative} from 'path';
 import {commands, ExtensionContext, FileSystemWatcher, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
 const importMatcher = /^import\s.*;$/,
@@ -36,6 +39,7 @@ export class ResolveExtension extends BaseExtension {
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private pickProvider: ResolveQuickPickProvider,
+        private parser: TsResourceParser,
         private config: ExtensionConfig,
         private index: ResolveIndex) {
         super();
@@ -123,10 +127,12 @@ export class ResolveExtension extends BaseExtension {
         }
         this.pickProvider.addImportPick(window.activeTextEditor).then(o => {
             if (o) {
+                this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
         });
     }
+
     private addImportUnderCursor(): void {
         if (!this.index.indexReady) {
             this.showCacheWarning();
@@ -138,10 +144,12 @@ export class ResolveExtension extends BaseExtension {
         }
         this.pickProvider.addImportUnderCursorPick(window.activeTextEditor, selectedSymbol).then(o => {
             if (o) {
+                this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
         });
     }
+
     private organizeImports(): void {
         // this.parser
         //     .parseSource(window.activeTextEditor.document.getText())
@@ -183,44 +191,57 @@ export class ResolveExtension extends BaseExtension {
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): Promise<void> {
-        return null;
-        // return this.parser.parseSource(window.activeTextEditor.document.getText()).then(docResolve => {
-        //     let imports = [...docResolve.imports];
-        //     let declaration = item.resolveItem.declaration;
+        return this.parser
+            .parseSource(window.activeTextEditor.document.getText())
+            .then(parsedDocument => {
+                let imports = parsedDocument.imports;
+                let declaration = item.declarationInfo.declaration;
 
-        //     let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName && !(o instanceof TsDefaultImport)),
-        //         promise = Promise.resolve(imports),
-        //         defaultImportAlias = () => {
-        //             promise = promise.then(imports => window.showInputBox({
-        //                 prompt: 'Please enter a variable name for the default export..',
-        //                 placeHolder: 'Default export name',
-        //                 validateInput: s => !!s ? '' : 'Please enter a variable name'
-        //             }).then(defaultAlias => {
-        //                 if (defaultAlias) {
-        //                     imports.push(new TsDefaultImport(item.label, defaultAlias));
-        //                 }
-        //                 return imports;
-        //             }));
-        //         };
+                let imported = imports.find(o => {
+                    let lib = o.libraryName;
+                    if (lib.startsWith('.')) {
+                        lib = workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
+                    }
+                    return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
+                });
+                let promise = Promise.resolve(imports),
+                    defaultImportAlias = () => {
+                        promise = promise.then(imports => window.showInputBox({
+                            prompt: 'Please enter a variable name for the default export..',
+                            placeHolder: 'Default export name',
+                            validateInput: s => !!s ? '' : 'Please enter a variable name'
+                        }).then(defaultAlias => {
+                            if (defaultAlias) {
+                                imports.push(new TsDefaultImport(item.label, defaultAlias));
+                            }
+                            return imports;
+                        }));
+                    };
 
-        //     if (!imported) {
-        //         if (declaration instanceof TsModuleDeclaration) {
-        //             imports.push(new TsNamespaceImport(item.description, item.label));
-        //         } else if (declaration instanceof TsDefaultDeclaration) {
-        //             defaultImportAlias();
-        //         } else {
-        //             let named = new TsNamedImport(item.resolveItem.libraryName);
-        //             named.specifiers.push(new TsResolveSpecifier(item.label));
-        //             imports.push(named);
-        //         }
-        //     } else if (declaration instanceof TsDefaultDeclaration) {
-        //         defaultImportAlias();
-        //     } else if (imported instanceof TsNamedImport) {
-        //         imported.specifiers.push(new TsResolveSpecifier(item.label));
-        //     }
+                if (!imported) {
+                    if (declaration instanceof ModuleDeclaration) {
+                        imports.push(new TsNamespaceImport(item.description, item.label));
+                    } else if (declaration instanceof DefaultDeclaration) {
+                        defaultImportAlias();
+                    } else {
+                        let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
+                        let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
+                        if (!relativePath.startsWith('.')) {
+                            relativePath = './' + relativePath;
+                        }
+                        let named = new TsNamedImport(relativePath);
+                        named.specifiers.push(new TsResolveSpecifier(item.label));
+                        imports.push(named);
+                    }
+                } else if (declaration instanceof DefaultDeclaration) {
+                    defaultImportAlias();
+                } else if (imported instanceof TsNamedImport) {
+                    imported.specifiers.push(new TsResolveSpecifier(item.label));
+                }
 
-        //     return promise.then(imports => this.commitDocumentImports(imports));
-        // });
+                console.log(imports);
+                //return promise.then(imports => this.commitDocumentImports(imports));
+            });
     }
 
     private commitDocumentImports(imports: TsImport[]): void {
