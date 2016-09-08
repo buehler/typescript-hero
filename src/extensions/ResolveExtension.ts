@@ -13,8 +13,9 @@ import {inject, injectable} from 'inversify';
 import {join, normalize, parse, relative} from 'path';
 import {commands, ExtensionContext, FileSystemWatcher, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
-const importMatcher = /^import\s.*;$/,
-    resolverOk = 'Resolver $(check)',
+type ImportInformation = {};
+
+const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
     resolverErr = 'Resolver $(flame)'; //,
 //TYPESCRIPT = { language: 'typescript' };
@@ -190,7 +191,7 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
-    private addImportToDocument(item: ResolveQuickPickItem): Promise<void> {
+    private addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
         return this.parser
             .parseSource(window.activeTextEditor.document.getText())
             .then(parsedDocument => {
@@ -202,7 +203,7 @@ export class ResolveExtension extends BaseExtension {
                     if (lib.startsWith('.')) {
                         lib = workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
                     }
-                    return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
+                    return lib === item.declarationInfo.from.replace(/[/]?index$/, '') && !(o instanceof TsDefaultImport);
                 });
                 let promise = Promise.resolve(imports),
                     defaultImportAlias = () => {
@@ -224,12 +225,16 @@ export class ResolveExtension extends BaseExtension {
                     } else if (declaration instanceof DefaultDeclaration) {
                         defaultImportAlias();
                     } else {
-                        let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
-                        let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
-                        if (!relativePath.startsWith('.')) {
-                            relativePath = './' + relativePath;
+                        let library = item.declarationInfo.from;
+                        if (item.declarationInfo.from.startsWith('/')) {
+                            let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
+                            let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
+                            if (!relativePath.startsWith('.')) {
+                                relativePath = './' + relativePath;
+                            }
+                            library = relativePath;
                         }
-                        let named = new TsNamedImport(relativePath);
+                        let named = new TsNamedImport(library);
                         named.specifiers.push(new TsResolveSpecifier(item.label));
                         imports.push(named);
                     }
@@ -238,27 +243,38 @@ export class ResolveExtension extends BaseExtension {
                 } else if (imported instanceof TsNamedImport) {
                     imported.specifiers.push(new TsResolveSpecifier(item.label));
                 }
-
-                console.log(imports);
-                //return promise.then(imports => this.commitDocumentImports(imports));
+                return promise.then(imports => this.commitDocumentImports(imports));
             });
     }
 
-    private commitDocumentImports(imports: TsImport[]): void {
-        // imports = [
-        //     ...imports.filter(o => o instanceof TsStringImport).sort(importSort),
-        //     ...imports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-        // ];
-        // let editor = window.activeTextEditor;
-        // editor.edit(builder => {
-        //     for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {
-        //         let line = editor.document.lineAt(lineNr);
-        //         if (line.text.match(importMatcher)) {
-        //             builder.delete(line.rangeIncludingLineBreak);
-        //         }
-        //     }
-        //     builder.insert(new Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
-        // });
+    private commitDocumentImports(newImports: TsImport[]): Promise<boolean> {
+        let doc = window.activeTextEditor.document,
+            parsings = [];
+
+        for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
+            let line = doc.lineAt(lineNr);
+            if (line.text.match(/import .*;/g)) {
+                parsings.push(this.parser.parseSource(line.text).then(parsed => {
+                    return {
+                        import: parsed.imports[0],
+                        lineNr
+                    };
+                }));
+            }
+        }
+
+        return Promise
+            .all(parsings)
+            .then(documentImports => window.activeTextEditor.edit(builder => {
+                for (let imp of newImports) {
+                    let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
+                    if (existingImport) {
+                        builder.replace(window.activeTextEditor.document.lineAt(existingImport.lineNr).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions));
+                    } else {
+                        builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
+                    }
+                }
+            }));
     }
 
     private showCacheWarning(): void {
