@@ -33,7 +33,7 @@
   "bugs": {
     "url": "https://github.com/buehler/typescript-hero/issues"
   },
-  "homepage": "https://github.com/buehler/typescript-hero#readme",
+  "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "bootstrap": "npm install && typings install",
     "vscode:prepublish": "npm run build && npm prune --production",
