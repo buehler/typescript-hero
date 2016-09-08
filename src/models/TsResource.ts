@@ -13,6 +13,11 @@ export abstract class TsResource {
     public exports: TsExport[] = [];
     public resources: TsResource[] = [];
     public usages: string[] = [];
+
+    public get nonLocalUsages(): string[] {
+        return this.usages.filter(usage => !this.declarations.some(o => o.name === usage) && !this.resources.some(o => o instanceof TsNamedResource && o.name === usage));
+    }
+
     public abstract getIdentifier(): string;
 }
 

@@ -20,16 +20,24 @@ const resolverOk = 'Resolver $(check)',
     resolverErr = 'Resolver $(flame)'; //,
 //TYPESCRIPT = { language: 'typescript' };
 
-function importSort(i1: TsImport, i2: TsImport): number {
-    let strA = i1.libraryName.toLowerCase(),
-        strB = i2.libraryName.toLowerCase();
-
+function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
         return -1;
     } else if (strA > strB) {
         return 1;
     }
     return 0;
+}
+
+function importSort(i1: TsImport, i2: TsImport): number {
+    let strA = i1.libraryName.toLowerCase(),
+        strB = i2.libraryName.toLowerCase();
+
+    return stringSort(strA, strB);
+}
+
+function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
+    return stringSort(i1.specifier, i2.specifier);
 }
 
 @injectable()
@@ -151,30 +159,30 @@ export class ResolveExtension extends BaseExtension {
         });
     }
 
-    private organizeImports(): void {
-        // this.parser
-        //     .parseSource(window.activeTextEditor.document.getText())
-        //     .then(parsed => {
-        //         let keep: TsImport[] = [];
-        //         for (let actImport of parsed.imports) {
-        //             if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
-        //                 if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
-        //                     keep.push(actImport);
-        //                 }
-        //             } else if (actImport instanceof TsNamedImport) {
-        //                 actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1);
-        //                 if (actImport.specifiers.length) {
-        //                     keep.push(actImport);
-        //                 }
-        //             } else if (actImport instanceof TsStringImport) {
-        //                 keep.push(actImport);
-        //             }
-        //         }
-        //         this.commitDocumentImports(keep);
-        //     })
-        //     .catch(e => {
-        //         this.logger.error('An error happend during "organize imports".', { error: e });
-        //     });
+    private organizeImports(): Promise<boolean> {
+        return this.parser
+            .parseSource(window.activeTextEditor.document.getText())
+            .then(parsed => {
+                let keep: TsImport[] = [];
+                for (let actImport of parsed.imports) {
+                    if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
+                        if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                            keep.push(actImport);
+                        }
+                    } else if (actImport instanceof TsNamedImport) {
+                        actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1).sort(specifierSort);
+                        if (actImport.specifiers.length) {
+                            keep.push(actImport);
+                        }
+                    } else if (actImport instanceof TsStringImport) {
+                        keep.push(actImport);
+                    }
+                }
+                return this.commitDocumentImports(keep, true);
+            })
+            .catch(e => {
+                this.logger.error('An error happend during "organize imports".', { error: e });
+            });
     }
 
     private refreshCache(file?: Uri): void {
@@ -247,7 +255,7 @@ export class ResolveExtension extends BaseExtension {
             });
     }
 
-    private commitDocumentImports(newImports: TsImport[]): Promise<boolean> {
+    private commitDocumentImports(newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
         let doc = window.activeTextEditor.document,
             parsings = [];
 
@@ -266,12 +274,28 @@ export class ResolveExtension extends BaseExtension {
         return Promise
             .all(parsings)
             .then(documentImports => window.activeTextEditor.edit(builder => {
-                for (let imp of newImports) {
-                    let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
-                    if (existingImport) {
-                        builder.replace(window.activeTextEditor.document.lineAt(existingImport.lineNr).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions));
-                    } else {
-                        builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
+                if (sortAndReorder) {
+                    for (let imp of documentImports) {
+                        builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                    }
+                    newImports = [
+                        ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
+                        ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+                    ];
+                    builder.insert(new Position(0, 0), newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
+                } else {
+                    for (let imp of documentImports) {
+                        if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
+                            builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                        }
+                    }
+                    for (let imp of newImports) {
+                        let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
+                        if (existingImport) {
+                            builder.replace(window.activeTextEditor.document.lineAt(existingImport.lineNr).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions));
+                        } else {
+                            builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
+                        }
                     }
                 }
             }));
