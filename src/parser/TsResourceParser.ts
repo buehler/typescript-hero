@@ -25,8 +25,7 @@ const usageNotAllowedParents = [
     SyntaxKind.FunctionDeclaration,
     SyntaxKind.EnumDeclaration,
     SyntaxKind.TypeAliasDeclaration,
-    SyntaxKind.MethodDeclaration,
-    SyntaxKind.PropertyAssignment
+    SyntaxKind.MethodDeclaration
 ];
 
 const usageAllowedIfLast = [
