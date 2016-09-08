@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- Command to add an import from a symbol under the current cursor ([#22](https://github.com/buehler/typescript-hero/issues/22))
+
+#### Changed
+- Complete indexing / parsing engine was rewritten
+- Adding an import does not automatically organize the imports afterwards ([#22](https://github.com/buehler/typescript-hero/issues/22), [#23](https://github.com/buehler/typescript-hero/issues/23))
+
+#### Fixed
+- Exports were not recursively merged ([#25](https://github.com/buehler/typescript-hero/issues/25))
+- Imports should be added with forwardslashes ([#19](https://github.com/buehler/typescript-hero/issues/19))
 
 ## [0.5.4]
 #### Added
