@@ -243,67 +243,75 @@ export class TsResourceParser {
 
     private parseVariable(parent: TsResource | TsExportableCallableDeclaration, node: VariableStatement): void {
         let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
-        node.declarationList.declarations.forEach(o => {
-            let declaration = new TshVariableDeclaration(o.name.getText(), this.checkExported(node), isConst);
-            if (parent instanceof TsExportableCallableDeclaration) {
-                parent.variables.push(declaration);
-            } else {
-                parent.declarations.push(declaration);
-            }
-        });
+        if (node.declarationList && node.declarationList.declarations) {
+            node.declarationList.declarations.forEach(o => {
+                let declaration = new TshVariableDeclaration(o.name.getText(), this.checkExported(node), isConst);
+                if (parent instanceof TsExportableCallableDeclaration) {
+                    parent.variables.push(declaration);
+                } else {
+                    parent.declarations.push(declaration);
+                }
+            });
+        }
     }
 
     private parseInterface(tsResource: TsResource, node: InterfaceDeclaration): void {
         let interfaceDeclaration = new TshInterfaceDeclaration(node.name.text, this.checkExported(node));
-        node.members.forEach(o => {
-            if (isPropertySignature(o)) {
-                interfaceDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
-            } else if (isMethodSignature(o)) {
-                let method = new TshMethodDeclaration((o.name as Identifier).text);
-                method.parameters = this.parseMethodParams(o);
-                interfaceDeclaration.methods.push(method);
-            }
-        });
+        if (node.members) {
+            node.members.forEach(o => {
+                if (isPropertySignature(o)) {
+                    interfaceDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+                } else if (isMethodSignature(o)) {
+                    let method = new TshMethodDeclaration((o.name as Identifier).text);
+                    method.parameters = this.parseMethodParams(o);
+                    interfaceDeclaration.methods.push(method);
+                }
+            });
+        }
         tsResource.declarations.push(interfaceDeclaration);
     }
 
     private parseClass(tsResource: TsResource, node: ClassDeclaration): void {
         let classDeclaration = new TshClassDeclaration(node.name.text, this.checkExported(node));
-        node.members.forEach(o => {
-            if (isPropertyDeclaration(o)) {
-                let actualCount = classDeclaration.properties.length;
-                o.modifiers.forEach(m => {
-                    if (m.kind === SyntaxKind.PublicKeyword) {
+        if (node.members) {
+            node.members.forEach(o => {
+                if (isPropertyDeclaration(o)) {
+                    let actualCount = classDeclaration.properties.length;
+                    if (o.modifiers) {
+                        o.modifiers.forEach(m => {
+                            if (m.kind === SyntaxKind.PublicKeyword) {
+                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+                                return;
+                            }
+                            if (m.kind === SyntaxKind.ProtectedKeyword) {
+                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
+                                return;
+                            }
+                            if (m.kind === SyntaxKind.PrivateKeyword) {
+                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
+                                return;
+                            }
+                        });
+                    }
+                    if (actualCount === classDeclaration.properties.length) {
                         classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
-                        return;
                     }
-                    if (m.kind === SyntaxKind.ProtectedKeyword) {
-                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Protected));
-                        return;
-                    }
-                    if (m.kind === SyntaxKind.PrivateKeyword) {
-                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Private));
-                        return;
-                    }
-                });
-                if (actualCount === classDeclaration.properties.length) {
-                    classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
+                    return;
                 }
-                return;
-            }
 
-            if (isConstructorDeclaration(o)) {
-                let ctor = new TshConstructorDeclaration();
-                this.parseCtorParams(classDeclaration, ctor, o);
-                classDeclaration.ctor = ctor;
-                this.parseFunctionParts(tsResource, ctor, o);
-            } else if (isMethodDeclaration(o)) {
-                let method = new TshMethodDeclaration((o.name as Identifier).text);
-                method.parameters = this.parseMethodParams(o);
-                classDeclaration.methods.push(method);
-                this.parseFunctionParts(tsResource, method, o);
-            }
-        });
+                if (isConstructorDeclaration(o)) {
+                    let ctor = new TshConstructorDeclaration();
+                    this.parseCtorParams(classDeclaration, ctor, o);
+                    classDeclaration.ctor = ctor;
+                    this.parseFunctionParts(tsResource, ctor, o);
+                } else if (isMethodDeclaration(o)) {
+                    let method = new TshMethodDeclaration((o.name as Identifier).text);
+                    method.parameters = this.parseMethodParams(o);
+                    classDeclaration.methods.push(method);
+                    this.parseFunctionParts(tsResource, method, o);
+                }
+            });
+        }
 
         tsResource.declarations.push(classDeclaration);
     }
@@ -329,9 +337,15 @@ export class TsResourceParser {
     }
 
     private parseCtorParams(parent: TshClassDeclaration, ctor: TshConstructorDeclaration, node: ConstructorDeclaration): void {
+        if (!node.parameters) {
+            return;
+        }
         node.parameters.forEach(o => {
             if (isIdentifier(o.name)) {
                 ctor.parameters.push(new TshParameterDeclaration((o.name as Identifier).text));
+                if (!o.modifiers) {
+                    return;
+                }
                 o.modifiers.forEach(m => {
                     if (m.kind === SyntaxKind.PublicKeyword) {
                         parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, PropertyVisibility.Public));
