@@ -73,6 +73,10 @@
         "title": "Typescript: Add import to current file"
       },
       {
+        "command": "typescriptHero.resolve.addImportUnderCursor",
+        "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
+      },
+      {
         "command": "typescriptHero.resolve.organizeImports",
         "title": "Typescript: Organize imports (sort and remove unused)"
       },
@@ -92,12 +96,13 @@
         "when": "editorTextFocus"
       },
       {
+        "command": "typescriptHero.resolve.addImportUnderCursor",
+        "key": "ctrl+alt+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
         "command": "typescriptHero.resolve.organizeImports",
         "key": "ctrl+alt+o",
-        "when": "editorTextFocus"
-      },{
-        "command":"typescriptHero.resolve.importCurrentSymbol",
-        "key":"ctrl+shift+m",
         "when": "editorTextFocus"
       }
     ],

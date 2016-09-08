@@ -1,29 +1,26 @@
-import {ResolveCache} from '../caches/ResolveCache';
+import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem} from '../models/CommandQuickPickItem';
-import {ResolveQuickPickItem} from '../models/ResolveQuickPickItem';
-import {TsDefaultDeclaration, TsModuleDeclaration} from '../models/TsDeclaration';
+import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
+import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsResolveFileParser} from '../parser/TsResolveFileParser';
-import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
+import {TsResourceParser} from '../parser/TsResourceParser';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import * as vscode from 'vscode';
+import {join, normalize, parse, relative} from 'path';
+import {commands, ExtensionContext, FileSystemWatcher, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
-const importMatcher = /^import\s.*;$/,
-    resolverOk = 'Resolver $(check)',
+type ImportInformation = {};
+
+const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
     resolverErr = 'Resolver $(flame)'; //,
 //TYPESCRIPT = { language: 'typescript' };
 
-function importSort(i1: TsImport, i2: TsImport): number {
-    let strA = i1.libraryName.toLowerCase(),
-        strB = i2.libraryName.toLowerCase();
-
+function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
         return -1;
     } else if (strA > strB) {
@@ -32,28 +29,70 @@ function importSort(i1: TsImport, i2: TsImport): number {
     return 0;
 }
 
+function importSort(i1: TsImport, i2: TsImport): number {
+    let strA = i1.libraryName.toLowerCase(),
+        strB = i2.libraryName.toLowerCase();
+
+    return stringSort(strA, strB);
+}
+
+function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
+    return stringSort(i1.specifier, i2.specifier);
+}
+
 @injectable()
 export class ResolveExtension extends BaseExtension {
     private logger: Logger;
-    private statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4);
-    private fileWatcher: vscode.FileSystemWatcher = vscode.workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
+    private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
+    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
-        @inject('context') context: vscode.ExtensionContext,
-        private cache: ResolveCache,
         private pickProvider: ResolveQuickPickProvider,
+        private parser: TsResourceParser,
         private config: ExtensionConfig,
-        private parser: TsResolveFileParser,
-        completionProvider: ResolveCompletionItemProvider) {
+        private index: ResolveIndex) {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
 
-        context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
-        context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.importCurrentSymbol', () => this.addImportFromCursor()));
-        context.subscriptions.push(vscode.commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(vscode.commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
-        //context.subscriptions.push(vscode.languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
+        this.logger.info('Extension instantiated.');
+    }
+
+    public getGuiCommands(): CommandQuickPickItem[] {
+        return [
+            new CommandQuickPickItem(
+                'Import resolver: Add import',
+                '',
+                'Does open the list of unimported symbols.',
+                new TshCommand(() => this.addImport())
+            ),
+            new CommandQuickPickItem(
+                'Import resolver: Add import under cursor',
+                `right now: '${this.getSymbolUnderCursor()}'`,
+                'Adds the symbol under the cursor and opens a list if multiple are possible.',
+                new TshCommand(() => this.addImportUnderCursor())
+            ),
+            new CommandQuickPickItem(
+                'Import resolver: Organize imports',
+                '',
+                'Sorts imports and removes unused imports.',
+                new TshCommand(() => this.organizeImports())
+            ),
+            new CommandQuickPickItem(
+                'Import resolver: Rebuild cache',
+                `currently: ${Object.keys(this.index.index).length} symbols`,
+                'Does rebuild the whole symbol index.',
+                new TshCommand(() => this.refreshCache())
+            )
+        ];
+    }
+
+    public initialize(context: ExtensionContext): void {
+        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
+        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
+        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
+        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
@@ -80,33 +119,10 @@ export class ResolveExtension extends BaseExtension {
             if (uri.fsPath.endsWith('.d.ts')) {
                 return;
             }
-            this.cache.removeForFile(uri);
+            this.logger.info(`File "${uri.fsPath}" deleted. Removing file.`);
+            this.index.removeForFile(uri.fsPath);
         });
-
-        this.logger.info('Extension instantiated.');
-    }
-
-    public getGuiCommands(): CommandQuickPickItem[] {
-        return [
-            new CommandQuickPickItem(
-                'Import resolver: Add import',
-                '',
-                'Does open the list of unimported symbols.',
-                new TshCommand(() => this.addImport())
-            ),
-            new CommandQuickPickItem(
-                'Import resolver: Organize imports',
-                '',
-                'Sorts imports and removes unused imports.',
-                new TshCommand(() => this.organizeImports())
-            ),
-            new CommandQuickPickItem(
-                'Import resolver: Rebuild cache',
-                `currently: ${this.cache.cachedCount} symbols`,
-                'Does rebuild the whole symbol index.',
-                new TshCommand(() => this.refreshCache())
-            )
-        ];
+        this.logger.info('Initialized.');
     }
 
     public dispose(): void {
@@ -114,43 +130,38 @@ export class ResolveExtension extends BaseExtension {
     }
 
     private addImport(): void {
-        if (!this.cache.cacheReady) {
+        if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
         }
-        this.pickProvider.addImportPick(vscode.window.activeTextEditor.document.uri, vscode.window.activeTextEditor.document.getText()).then(o => {
+        this.pickProvider.addImportPick(window.activeTextEditor).then(o => {
             if (o) {
+                this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
         });
     }
-    private addImportFromCursor() {
-        if (!this.cache.cacheReady) {
+
+    private addImportUnderCursor(): void {
+        if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
         }
-        let editor = vscode.window.activeTextEditor,
-            selection = editor.selection,
-            word = editor.document.getWordRangeAtPosition(selection.active),
-            searchText: string;
-        if (!word.isEmpty) {
-            searchText = editor.document.getText(word);
+        let selectedSymbol = this.getSymbolUnderCursor();
+        if (!!!selectedSymbol) {
+            return;
         }
-        this.pickProvider.buildQuickPickList(editor.document.uri, editor.document.getText(), searchText).then(items => {
-            if (items.length > 1) {
-                this.pickProvider.addImportPick(editor.document.uri, editor.document.getText(), searchText).then(o => {
-                    if (o) {
-                        this.addImportToDocument(o);
-                    }
-                });
-            } else {
-                this.addImportToDocument(items[0]);
+        this.pickProvider.addImportUnderCursorPick(window.activeTextEditor, selectedSymbol).then(o => {
+            if (o) {
+                this.logger.info('Add import to document', { resolveItem: o });
+                this.addImportToDocument(o);
             }
         });
     }
-    private organizeImports(): void {
-        this.parser
-            .parseSource(vscode.window.activeTextEditor.document.getText())
+
+    private organizeImports(): Promise<boolean> {
+        return this.parser
+            .parseSource(window.activeTextEditor.document.getText())
             .then(parsed => {
                 let keep: TsImport[] = [];
                 for (let actImport of parsed.imports) {
@@ -159,7 +170,7 @@ export class ResolveExtension extends BaseExtension {
                             keep.push(actImport);
                         }
                     } else if (actImport instanceof TsNamedImport) {
-                        actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1);
+                        actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1).sort(specifierSort);
                         if (actImport.specifiers.length) {
                             keep.push(actImport);
                         }
@@ -167,85 +178,140 @@ export class ResolveExtension extends BaseExtension {
                         keep.push(actImport);
                     }
                 }
-                this.commitDocumentImports(keep);
+                return this.commitDocumentImports(keep, true);
             })
             .catch(e => {
                 this.logger.error('An error happend during "organize imports".', { error: e });
             });
     }
 
-    private refreshCache(file?: vscode.Uri): void {
+    private refreshCache(file?: Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
         if (file) {
-            this.cache.rebuildForFile(file)
+            this.index.rebuildForFile(file.fsPath)
                 .then(() => this.statusBarItem.text = resolverOk)
                 .catch(() => this.statusBarItem.text = resolverErr);
         } else {
-            this.cache.buildCache()
+            this.index.buildIndex()
                 .then(() => this.statusBarItem.text = resolverOk)
                 .catch(() => this.statusBarItem.text = resolverErr);
         }
     }
 
-    private addImportToDocument(item: ResolveQuickPickItem): Promise<void> {
-        return this.parser.parseSource(vscode.window.activeTextEditor.document.getText()).then(docResolve => {
-            let imports = [...docResolve.imports];
-            let declaration = item.resolveItem.declaration;
+    private addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
+        return this.parser
+            .parseSource(window.activeTextEditor.document.getText())
+            .then(parsedDocument => {
+                let imports = parsedDocument.imports;
+                let declaration = item.declarationInfo.declaration;
 
-            let imported = imports.find(o => o.libraryName === item.resolveItem.libraryName && !(o instanceof TsDefaultImport)),
-                promise = Promise.resolve(imports),
-                defaultImportAlias = () => {
-                    promise = promise.then(imports => vscode.window.showInputBox({
-                        prompt: 'Please enter a variable name for the default export..',
-                        placeHolder: 'Default export name',
-                        validateInput: s => !!s ? '' : 'Please enter a variable name'
-                    }).then(defaultAlias => {
-                        if (defaultAlias) {
-                            imports.push(new TsDefaultImport(item.label, defaultAlias));
+                let imported = imports.find(o => {
+                    let lib = o.libraryName;
+                    if (lib.startsWith('.')) {
+                        lib = workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
+                    }
+                    return lib === item.declarationInfo.from.replace(/[/]?index$/, '') && !(o instanceof TsDefaultImport);
+                });
+                let promise = Promise.resolve(imports),
+                    defaultImportAlias = () => {
+                        promise = promise.then(imports => window.showInputBox({
+                            prompt: 'Please enter a variable name for the default export..',
+                            placeHolder: 'Default export name',
+                            validateInput: s => !!s ? '' : 'Please enter a variable name'
+                        }).then(defaultAlias => {
+                            if (defaultAlias) {
+                                imports.push(new TsDefaultImport(item.label, defaultAlias));
+                            }
+                            return imports;
+                        }));
+                    };
+
+                if (!imported) {
+                    if (declaration instanceof ModuleDeclaration) {
+                        imports.push(new TsNamespaceImport(item.description, item.label));
+                    } else if (declaration instanceof DefaultDeclaration) {
+                        defaultImportAlias();
+                    } else {
+                        let library = item.declarationInfo.from;
+                        if (item.declarationInfo.from.startsWith('/')) {
+                            let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
+                            let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
+                            if (!relativePath.startsWith('.')) {
+                                relativePath = './' + relativePath;
+                            }
+                            library = relativePath;
                         }
-                        return imports;
-                    }));
-                };
-
-            if (!imported) {
-                if (declaration instanceof TsModuleDeclaration) {
-                    imports.push(new TsNamespaceImport(item.description, item.label));
-                } else if (declaration instanceof TsDefaultDeclaration) {
+                        let named = new TsNamedImport(library);
+                        named.specifiers.push(new TsResolveSpecifier(item.label));
+                        imports.push(named);
+                    }
+                } else if (declaration instanceof DefaultDeclaration) {
                     defaultImportAlias();
-                } else {
-                    let named = new TsNamedImport(item.resolveItem.libraryName);
-                    named.specifiers.push(new TsResolveSpecifier(item.label));
-                    imports.push(named);
+                } else if (imported instanceof TsNamedImport) {
+                    imported.specifiers.push(new TsResolveSpecifier(item.label));
                 }
-            } else if (declaration instanceof TsDefaultDeclaration) {
-                defaultImportAlias();
-            } else if (imported instanceof TsNamedImport) {
-                imported.specifiers.push(new TsResolveSpecifier(item.label));
-            }
-
-            return promise.then(imports => this.commitDocumentImports(imports));
-        });
+                return promise.then(imports => this.commitDocumentImports(imports));
+            });
     }
 
-    private commitDocumentImports(imports: TsImport[]): void {
-        imports = [
-            ...imports.filter(o => o instanceof TsStringImport).sort(importSort),
-            ...imports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-        ];
-        let editor = vscode.window.activeTextEditor;
-        editor.edit(builder => {
-            for (let lineNr = 0; lineNr < editor.document.lineCount; lineNr++) {
-                let line = editor.document.lineAt(lineNr);
-                if (line.text.match(importMatcher)) {
-                    builder.delete(line.rangeIncludingLineBreak);
-                }
+    private commitDocumentImports(newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
+        let doc = window.activeTextEditor.document,
+            parsings = [];
+
+        for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
+            let line = doc.lineAt(lineNr);
+            if (line.text.match(/import .*;/g)) {
+                parsings.push(this.parser.parseSource(line.text).then(parsed => {
+                    return {
+                        import: parsed.imports[0],
+                        lineNr
+                    };
+                }));
             }
-            builder.insert(new vscode.Position(0, 0), imports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
-        });
+        }
+
+        return Promise
+            .all(parsings)
+            .then(documentImports => window.activeTextEditor.edit(builder => {
+                if (sortAndReorder) {
+                    for (let imp of documentImports) {
+                        builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                    }
+                    newImports = [
+                        ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
+                        ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+                    ];
+                    builder.insert(new Position(0, 0), newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
+                } else {
+                    for (let imp of documentImports) {
+                        if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
+                            builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                        }
+                    }
+                    for (let imp of newImports) {
+                        let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
+                        if (existingImport) {
+                            builder.replace(window.activeTextEditor.document.lineAt(existingImport.lineNr).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions));
+                        } else {
+                            builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
+                        }
+                    }
+                }
+            }));
     }
 
     private showCacheWarning(): void {
-        vscode.window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
+        window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
+    }
+
+    private getSymbolUnderCursor(): string {
+        let editor = window.activeTextEditor;
+        if (!editor) {
+            return '';
+        }
+        let selection = editor.selection,
+            word = editor.document.getWordRangeAtPosition(selection.active);
+        return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
 }

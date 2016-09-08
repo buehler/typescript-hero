@@ -14,16 +14,16 @@ export abstract class TsAliasedImport extends TsImport {
 }
 
 export class TsStringImport extends TsImport {
-    public toImport(options: TsImportOptions): string {
-        return `import ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
+    public toImport({pathDelimiter}: TsImportOptions): string {
+        return `import ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 }
 
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
-    public toImport(options: TsImportOptions): string {
-        return `import {${options.spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${options.spaceBraces ? ' ' : ''}} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
+    public toImport({pathDelimiter, spaceBraces}: TsImportOptions): string {
+        return `import {${spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${spaceBraces ? ' ' : ''}} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 
     private specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
@@ -40,19 +40,19 @@ export class TsNamedImport extends TsImport {
 }
 
 export class TsNamespaceImport extends TsAliasedImport {
-    public toImport(options: TsImportOptions): string {
-        return `import * as ${this.alias} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
+    public toImport({pathDelimiter}: TsImportOptions): string {
+        return `import * as ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 }
 
 export class TsExternalModuleImport extends TsAliasedImport {
-    public toImport(options: TsImportOptions): string {
-        return `import ${this.alias} = require(${options.pathDelimiter}${this.libraryName}${options.pathDelimiter});\n`;
+    public toImport({pathDelimiter}: TsImportOptions): string {
+        return `import ${this.alias} = require(${pathDelimiter}${this.libraryName}${pathDelimiter});\n`;
     }
 }
 
 export class TsDefaultImport extends TsAliasedImport {
-    public toImport(options: TsImportOptions): string {
-        return `import ${this.alias} from ${options.pathDelimiter}${this.libraryName}${options.pathDelimiter};\n`;
+    public toImport({pathDelimiter}: TsImportOptions): string {
+        return `import ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 }

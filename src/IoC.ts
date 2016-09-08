@@ -1,12 +1,10 @@
-import {ResolveCache} from './caches/ResolveCache';
+import {ResolveIndex} from './caches/ResolveIndex';
 import {ExtensionConfig} from './ExtensionConfig';
 import {BaseExtension} from './extensions/BaseExtension';
 import {ResolveExtension} from './extensions/ResolveExtension';
 import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
-import {ResolveItemFactory} from './factories/ResolveItemFactory';
-import {TsResolveFileParser} from './parser/TsResolveFileParser';
+import {TsResourceParser} from './parser/TsResourceParser';
 import {GuiProvider} from './provider/GuiProvider';
-import {ResolveCompletionItemProvider} from './provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from './provider/ResolveQuickPickProvider';
 import {TypeScriptHero} from './TypeScriptHero';
 import {Logger} from './utilities/Logger';
@@ -18,14 +16,15 @@ let injector = new Kernel();
 injector.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 injector.bind(ExtensionConfig).to(ExtensionConfig).inSingletonScope();
 
-injector.bind(ResolveQuickPickProvider).to(ResolveQuickPickProvider).inSingletonScope();
-injector.bind(ResolveCompletionItemProvider).to(ResolveCompletionItemProvider).inSingletonScope();
+// Providers
 injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
+injector.bind(ResolveQuickPickProvider).to(ResolveQuickPickProvider).inSingletonScope();
 
-injector.bind(ResolveCache).to(ResolveCache).inSingletonScope();
-injector.bind(TsResolveFileParser).to(TsResolveFileParser);
-injector.bind(ResolveItemFactory).to(ResolveItemFactory);
+// Symbol resolving
+injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
+injector.bind(TsResourceParser).to(TsResourceParser);
 
+// Extensions
 injector.bind<BaseExtension>('Extension').to(ResolveExtension).inSingletonScope();
 injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 
