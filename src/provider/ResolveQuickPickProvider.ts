@@ -17,7 +17,10 @@ export class ResolveQuickPickProvider {
     }
 
     public addImportPick(activeDocument: TextEditor): Thenable<ResolveQuickPickItem> {
-        return window.showQuickPick(this.buildQuickPickList(activeDocument));
+        return this.buildQuickPickList(activeDocument)
+            .then(resolveItems => {
+                return window.showQuickPick(resolveItems);
+            });
     }
 
     public addImportUnderCursorPick(activeDocument: TextEditor, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
@@ -29,12 +32,12 @@ export class ResolveQuickPickProvider {
                 } else if (resolveItems.length === 1) {
                     return resolveItems[0];
                 } else {
-                    return window.showQuickPick(resolveItems, {placeHolder: 'Multiple declarations found:'});
+                    return window.showQuickPick(resolveItems, { placeHolder: 'Multiple declarations found:' });
                 }
             });
     }
 
-    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Thenable<ResolveQuickPickItem[]> {
+    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.document.getText())
             .then(parsedSource => {
                 let declarations = this.prepareDeclarations(activeDocument.document.fileName, parsedSource.imports);
@@ -43,10 +46,6 @@ export class ResolveQuickPickProvider {
                 }
                 let activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
                 return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
-            })
-            .catch(error => {
-                this.logger.error('Error during quick list building.', { error });
-                return [];
             });
     }
 
