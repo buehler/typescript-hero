@@ -12,6 +12,7 @@ class ContextMock implements ExtensionContext {
     workspaceState: Memento;
     globalState: Memento;
     extensionPath: string = '';
+    storagePath: string = '';
     asAbsolutePath(relativePath: string): string {
         return '';
     }
