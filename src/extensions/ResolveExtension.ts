@@ -139,6 +139,9 @@ export class ResolveExtension extends BaseExtension {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
+        }, err => {
+            this.logger.error('An error happend during import picking', { error: err });
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         });
     }
 
@@ -156,6 +159,9 @@ export class ResolveExtension extends BaseExtension {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
+        }, err => {
+            this.logger.error('An error happend during import picking', { error: err });
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         });
     }
 
