@@ -29,7 +29,7 @@ export class ResolveQuickPickProvider {
                 if (resolveItems.length < 1) {
                     window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index or is already imported.`);
                     return;
-                } else if (resolveItems.length === 1) {
+                } else if (resolveItems.length === 1 && resolveItems[0].label === cursorSymbol) {
                     return resolveItems[0];
                 } else {
                     return window.showQuickPick(resolveItems, { placeHolder: 'Multiple declarations found:' });
