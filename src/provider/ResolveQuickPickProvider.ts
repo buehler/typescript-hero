@@ -17,24 +17,27 @@ export class ResolveQuickPickProvider {
     }
 
     public addImportPick(activeDocument: TextEditor): Thenable<ResolveQuickPickItem> {
-        return window.showQuickPick(this.buildQuickPickList(activeDocument));
+        return this.buildQuickPickList(activeDocument)
+            .then(resolveItems => {
+                return window.showQuickPick(resolveItems);
+            });
     }
 
     public addImportUnderCursorPick(activeDocument: TextEditor, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
         return this.buildQuickPickList(activeDocument, cursorSymbol)
             .then(resolveItems => {
                 if (resolveItems.length < 1) {
-                    window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index.`);
+                    window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index or is already imported.`);
                     return;
                 } else if (resolveItems.length === 1) {
                     return resolveItems[0];
                 } else {
-                    return window.showQuickPick(resolveItems, {placeHolder: 'Multiple declarations found:'});
+                    return window.showQuickPick(resolveItems, { placeHolder: 'Multiple declarations found:' });
                 }
             });
     }
 
-    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Thenable<ResolveQuickPickItem[]> {
+    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.document.getText())
             .then(parsedSource => {
                 let declarations = this.prepareDeclarations(activeDocument.document.fileName, parsedSource.imports);
@@ -43,10 +46,6 @@ export class ResolveQuickPickProvider {
                 }
                 let activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
                 return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
-            })
-            .catch(error => {
-                this.logger.error('Error during quick list building.', { error });
-                return [];
             });
     }
 
@@ -70,7 +69,7 @@ export class ResolveQuickPickProvider {
                 let importedLib = tsImport.libraryName;
                 if (importedLib.startsWith('.')) {
                     let parsed = parse(documentPath);
-                    importedLib = workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
+                    importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
                 }
                 declarations = declarations.filter(o => o.from.replace(/[/]?index$/, '') !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.key));
             } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {

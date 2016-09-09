@@ -10,7 +10,7 @@
   "version": "0.5.4",
   "publisher": "rbbit",
   "engines": {
-    "vscode": "^1.0.0",
+    "vscode": "^1.5.0",
     "node": ">=6.0.0",
     "npm": ">=3.9.5"
   },
@@ -33,7 +33,7 @@
   "bugs": {
     "url": "https://github.com/buehler/typescript-hero/issues"
   },
-  "homepage": "https://github.com/buehler/typescript-hero#readme",
+  "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "bootstrap": "npm install && typings install",
     "vscode:prepublish": "npm run build && npm prune --production",
@@ -47,13 +47,13 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "del-cli": "^0.2.0",
-    "tslint": "^3.13.0",
-    "typings": "^1.3.2",
-    "vscode": "^0.11.0"
+    "tslint": "^3.15.1",
+    "typings": "^1.3.3",
+    "vscode": "^0.11.18"
   },
   "dependencies": {
-    "inversify": "^2.0.0-rc.1",
-    "reflect-metadata": "^0.1.3",
+    "inversify": "^2.0.0-rc.13",
+    "reflect-metadata": "^0.1.8",
     "typescript": "^1.8.10"
   },
   "activationEvents": [

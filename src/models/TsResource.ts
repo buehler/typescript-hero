@@ -31,7 +31,7 @@ export class TsFile extends TsResource {
     }
 
     public getIdentifier(): string {
-        return workspace.asRelativePath(this.filePath).replace(/([.]d)?[.]ts/g, '');
+        return '/' + workspace.asRelativePath(this.filePath).replace(/([.]d)?[.]ts/g, '');
     }
 }
 

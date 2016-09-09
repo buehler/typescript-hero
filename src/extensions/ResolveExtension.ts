@@ -82,7 +82,7 @@ export class ResolveExtension extends BaseExtension {
                 'Import resolver: Rebuild cache',
                 `currently: ${Object.keys(this.index.index).length} symbols`,
                 'Does rebuild the whole symbol index.',
-                new TshCommand(() => this.refreshCache())
+                new TshCommand(() => this.refreshIndex())
             )
         ];
     }
@@ -91,7 +91,7 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
         //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
@@ -101,18 +101,18 @@ export class ResolveExtension extends BaseExtension {
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
-        this.refreshCache();
+        this.refreshIndex();
 
         this.fileWatcher.onDidChange(uri => {
             if (uri.fsPath.endsWith('.d.ts')) {
                 return;
             }
             if (uri.fsPath.endsWith('package.json') || uri.fsPath.endsWith('typings.json')) {
-                this.logger.info('package.json or typings.json modified. Refreshing cache.');
-                this.refreshCache();
+                this.logger.info('package.json or typings.json modified. Refreshing index.');
+                this.refreshIndex();
             } else {
                 this.logger.info(`File "${uri.fsPath}" changed. Reindexing file.`);
-                this.refreshCache(uri);
+                this.refreshIndex(uri);
             }
         });
         this.fileWatcher.onDidDelete(uri => {
@@ -139,6 +139,9 @@ export class ResolveExtension extends BaseExtension {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
+        }, err => {
+            this.logger.error('An error happend during import picking', { error: err });
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         });
     }
 
@@ -156,6 +159,9 @@ export class ResolveExtension extends BaseExtension {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
             }
+        }, err => {
+            this.logger.error('An error happend during import picking', { error: err });
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         });
     }
 
@@ -185,7 +191,7 @@ export class ResolveExtension extends BaseExtension {
             });
     }
 
-    private refreshCache(file?: Uri): void {
+    private refreshIndex(file?: Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
         if (file) {
@@ -209,7 +215,7 @@ export class ResolveExtension extends BaseExtension {
                 let imported = imports.find(o => {
                     let lib = o.libraryName;
                     if (lib.startsWith('.')) {
-                        lib = workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
+                        lib = '/' + workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
                     }
                     return lib === item.declarationInfo.from.replace(/[/]?index$/, '') && !(o instanceof TsDefaultImport);
                 });
@@ -235,7 +241,7 @@ export class ResolveExtension extends BaseExtension {
                     } else {
                         let library = item.declarationInfo.from;
                         if (item.declarationInfo.from.startsWith('/')) {
-                            let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
+                            let activeFile = parse('/' + workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
                             let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
                             if (!relativePath.startsWith('.')) {
                                 relativePath = './' + relativePath;
@@ -261,7 +267,7 @@ export class ResolveExtension extends BaseExtension {
 
         for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
             let line = doc.lineAt(lineNr);
-            if (line.text.match(/import .*;/g)) {
+            if (line.text.match(/^import .*;$/g)) {
                 parsings.push(this.parser.parseSource(line.text).then(parsed => {
                     return {
                         import: parsed.imports[0],

@@ -81,6 +81,6 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 ## Release Notes
 
 This section will cover the newest release, for the rest of the changelog,
-please visit the [CHANGELOG.md](CHANGELOG.md)
+please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
 TODO.
