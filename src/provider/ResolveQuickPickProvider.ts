@@ -24,7 +24,7 @@ export class ResolveQuickPickProvider {
         return this.buildQuickPickList(activeDocument, cursorSymbol)
             .then(resolveItems => {
                 if (resolveItems.length < 1) {
-                    window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index.`);
+                    window.showInformationMessage(`The symbol '${cursorSymbol}' was not found in the index or is already imported.`);
                     return;
                 } else if (resolveItems.length === 1) {
                     return resolveItems[0];

@@ -82,7 +82,7 @@ export class ResolveExtension extends BaseExtension {
                 'Import resolver: Rebuild cache',
                 `currently: ${Object.keys(this.index.index).length} symbols`,
                 'Does rebuild the whole symbol index.',
-                new TshCommand(() => this.refreshCache())
+                new TshCommand(() => this.refreshIndex())
             )
         ];
     }
@@ -91,7 +91,7 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshCache()));
+        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
         //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
@@ -101,18 +101,18 @@ export class ResolveExtension extends BaseExtension {
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
-        this.refreshCache();
+        this.refreshIndex();
 
         this.fileWatcher.onDidChange(uri => {
             if (uri.fsPath.endsWith('.d.ts')) {
                 return;
             }
             if (uri.fsPath.endsWith('package.json') || uri.fsPath.endsWith('typings.json')) {
-                this.logger.info('package.json or typings.json modified. Refreshing cache.');
-                this.refreshCache();
+                this.logger.info('package.json or typings.json modified. Refreshing index.');
+                this.refreshIndex();
             } else {
                 this.logger.info(`File "${uri.fsPath}" changed. Reindexing file.`);
-                this.refreshCache(uri);
+                this.refreshIndex(uri);
             }
         });
         this.fileWatcher.onDidDelete(uri => {
@@ -185,7 +185,7 @@ export class ResolveExtension extends BaseExtension {
             });
     }
 
-    private refreshCache(file?: Uri): void {
+    private refreshIndex(file?: Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
         if (file) {
