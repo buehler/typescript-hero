@@ -48,7 +48,7 @@ function allowedIfLastIdentifier(node: Node): boolean {
     }
 
     let children = node.parent.getChildren().filter(o => o.kind === SyntaxKind.Identifier);
-    return children.indexOf(node) === 1;
+    return children.length === 1 || children.indexOf(node) === 1;
 }
 
 function allowedIfPropertyAccessFirst(node: Node): boolean {
