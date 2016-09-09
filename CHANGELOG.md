@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Fixed
 - Exports were not recursively merged ([#25](https://github.com/buehler/typescript-hero/issues/25))
 - Imports should be added with forwardslashes ([#19](https://github.com/buehler/typescript-hero/issues/19))
+- Imports are vanishing when usings are PropertyAssignments ([#27](https://github.com/buehler/typescript-hero/issues/27))
 
 ## [0.5.4]
 #### Added
