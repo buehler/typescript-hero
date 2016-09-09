@@ -6,19 +6,20 @@ import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
+import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {join, normalize, parse, relative} from 'path';
-import {commands, ExtensionContext, FileSystemWatcher, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
+import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
 type ImportInformation = {};
 
 const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
-    resolverErr = 'Resolver $(flame)'; //,
-//TYPESCRIPT = { language: 'typescript' };
+    resolverErr = 'Resolver $(flame)',
+    TYPESCRIPT = { language: 'typescript' };
 
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
@@ -50,7 +51,8 @@ export class ResolveExtension extends BaseExtension {
         private pickProvider: ResolveQuickPickProvider,
         private parser: TsResourceParser,
         private config: ExtensionConfig,
-        private index: ResolveIndex) {
+        private index: ResolveIndex,
+        private completionProvider: ResolveCompletionItemProvider) {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
@@ -92,7 +94,7 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
-        //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
+        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
