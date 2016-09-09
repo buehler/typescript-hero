@@ -261,7 +261,7 @@ export class ResolveExtension extends BaseExtension {
 
         for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
             let line = doc.lineAt(lineNr);
-            if (line.text.match(/import .*;/g)) {
+            if (line.text.match(/^import .*;$/g)) {
                 parsings.push(this.parser.parseSource(line.text).then(parsed => {
                     return {
                         import: parsed.imports[0],
