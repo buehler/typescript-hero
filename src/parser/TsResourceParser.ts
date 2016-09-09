@@ -1,5 +1,4 @@
 import {CancellationRequested} from '../models/CancellationRequested';
-import {ClassDeclaration as TshClassDeclaration, ConstructorDeclaration as TshConstructorDeclaration, DefaultDeclaration, EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, InterfaceDeclaration as TshInterfaceDeclaration, MethodDeclaration as TshMethodDeclaration, ParameterDeclaration as TshParameterDeclaration, PropertyDeclaration as TshPropertyDeclaration, PropertyVisibility, TsExportableCallableDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../models/TsExport';
 import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
@@ -9,6 +8,7 @@ import {isArrayBindingPattern, isConstructorDeclaration, isExportDeclaration, is
 import {readFileSync} from 'fs';
 import {inject, injectable} from 'inversify';
 import {ArrayBindingPattern, BindingElement, ClassDeclaration, ConstructorDeclaration, createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, InterfaceDeclaration, MethodDeclaration, MethodSignature, ModuleDeclaration, NamedImports, NamespaceImport, Node, NodeFlags, ObjectBindingPattern, ParameterDeclaration, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, TypeAliasDeclaration, VariableStatement} from 'typescript';
+import {ClassDeclaration as TshClassDeclaration, ConstructorDeclaration as TshConstructorDeclaration, DefaultDeclaration, EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, InterfaceDeclaration as TshInterfaceDeclaration, MethodDeclaration as TshMethodDeclaration, ParameterDeclaration as TshParameterDeclaration, PropertyDeclaration as TshPropertyDeclaration, PropertyVisibility, TsExportableCallableDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
 import {CancellationToken, Uri} from 'vscode';
 
 
@@ -313,7 +313,20 @@ export class TsResourceParser {
             });
         }
 
+        this.parseClassIdentifiers(tsResource, node);
+
         tsResource.declarations.push(classDeclaration);
+    }
+
+    private parseClassIdentifiers(tsResource: TsResource, node: Node): void {
+        for (let child of node.getChildren()) {
+            switch (child.kind) {
+                case SyntaxKind.Identifier:
+                    this.parseIdentifier(tsResource, <Identifier>child);
+                    break;
+            }
+            this.parseClassIdentifiers(tsResource, child);
+        }
     }
 
     private parseModule(tsResource: TsResource, node: ModuleDeclaration): TsResource {
