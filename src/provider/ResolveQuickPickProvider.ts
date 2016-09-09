@@ -1,12 +1,10 @@
-import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
+import {ResolveIndex} from '../caches/ResolveIndex';
 import {ResolveQuickPickItem} from '../models/QuickPickItems';
-import {DefaultDeclaration} from '../models/TsDeclaration';
-import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
+import {getDeclarationsFilteredByImports} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
-import {join, normalize, parse} from 'path';
-import {TextDocument, window, workspace} from 'vscode';
+import {TextEditor, window} from 'vscode';
 
 @injectable()
 export class ResolveQuickPickProvider {
@@ -37,7 +35,7 @@ export class ResolveQuickPickProvider {
     private buildQuickPickList(activeDocument: TextDocument, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.getText())
             .then(parsedSource => {
-                let declarations = this.prepareDeclarations(activeDocument.fileName, parsedSource.imports);
+                let declarations = getDeclarationsFilteredByImports(this.resolveIndex, activeDocument.document.fileName, parsedSource.imports);
                 if (cursorSymbol) {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }
@@ -48,38 +46,5 @@ export class ResolveQuickPickProvider {
                 ];
                 return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
             });
-    }
-
-    private prepareDeclarations(documentPath: string, imports: TsImport[]): DeclarationInfo[] {
-        let declarations = Object
-            .keys(this.resolveIndex.index)
-            .sort()
-            .reduce((all, key) => {
-                for (let declaration of this.resolveIndex.index[key]) {
-                    all.push({
-                        declaration: declaration.declaration,
-                        from: declaration.from,
-                        key: key
-                    });
-                }
-                return all;
-            }, []);
-
-        for (let tsImport of imports) {
-            if (tsImport instanceof TsNamedImport) {
-                let importedLib = tsImport.libraryName;
-                if (importedLib.startsWith('.')) {
-                    let parsed = parse(documentPath);
-                    importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
-                }
-                declarations = declarations.filter(o => o.from.replace(/[/]?index$/, '') !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.key));
-            } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
-                declarations = declarations.filter(o => o.from !== tsImport.libraryName);
-            } else if (tsImport instanceof TsDefaultImport) {
-                declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || tsImport.libraryName !== o.from.replace(/[/]?index$/, '')));
-            }
-        }
-
-        return declarations;
     }
 }
