@@ -83,7 +83,7 @@ export class ResolveIndex {
     }
 
     public rebuildForFile(filePath: string): Promise<void> {
-        let rebuildResource = workspace.asRelativePath(filePath).replace('.ts', ''),
+        let rebuildResource = '/' + workspace.asRelativePath(filePath).replace('.ts', ''),
             rebuildFiles = [rebuildResource];
         Object
             .keys(this.parsedResources)
@@ -112,7 +112,7 @@ export class ResolveIndex {
     }
 
     public removeForFile(filePath: string): Promise<void> {
-        let removeResource = workspace.asRelativePath(filePath).replace('.ts', ''),
+        let removeResource = '/' + workspace.asRelativePath(filePath).replace('.ts', ''),
             rebuildFiles = [];
         Object
             .keys(this.parsedResources)
@@ -237,7 +237,7 @@ export class ResolveIndex {
                 if (sourceLib.indexOf('node_modules') > -1) {
                     sourceLib = getNodeLibraryName(sourceLib);
                 } else {
-                    sourceLib = workspace.asRelativePath(sourceLib).replace(/([.]d)?[.]ts/g, '');
+                    sourceLib = '/' + workspace.asRelativePath(sourceLib).replace(/([.]d)?[.]ts/g, '');
                 }
 
                 if (!parsedResources[sourceLib]) {
@@ -334,7 +334,7 @@ export class ResolveIndex {
                 break;
             }
             if (ex instanceof TsAllFromExport || ex instanceof TsNamedFromExport) {
-                let exported = workspace.asRelativePath(normalize(join(resource.parsedPath.dir, ex.from)));
+                let exported = '/' + workspace.asRelativePath(normalize(join(resource.parsedPath.dir, ex.from)));
                 exportsResource = exported === resourcePath;
             }
         }

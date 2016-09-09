@@ -215,7 +215,7 @@ export class ResolveExtension extends BaseExtension {
                 let imported = imports.find(o => {
                     let lib = o.libraryName;
                     if (lib.startsWith('.')) {
-                        lib = workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
+                        lib = '/' + workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
                     }
                     return lib === item.declarationInfo.from.replace(/[/]?index$/, '') && !(o instanceof TsDefaultImport);
                 });
@@ -241,7 +241,7 @@ export class ResolveExtension extends BaseExtension {
                     } else {
                         let library = item.declarationInfo.from;
                         if (item.declarationInfo.from.startsWith('/')) {
-                            let activeFile = parse(workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
+                            let activeFile = parse('/' + workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
                             let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
                             if (!relativePath.startsWith('.')) {
                                 relativePath = './' + relativePath;
