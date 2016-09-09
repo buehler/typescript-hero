@@ -83,4 +83,16 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
-TODO.
+### [0.6.0]
+#### Added
+- Command to add an import from a symbol under the current cursor ([#22](https://github.com/buehler/typescript-hero/issues/22))
+
+#### Changed
+- Complete indexing / parsing engine was rewritten
+- Adding an import does not automatically organize the imports afterwards ([#22](https://github.com/buehler/typescript-hero/issues/22), [#23](https://github.com/buehler/typescript-hero/issues/23))
+
+#### Fixed
+- Exports were not recursively merged ([#25](https://github.com/buehler/typescript-hero/issues/25))
+- Imports should be added with forwardslashes ([#19](https://github.com/buehler/typescript-hero/issues/19))
+- Imports are vanishing when usings are PropertyAssignments ([#27](https://github.com/buehler/typescript-hero/issues/27))
+- Imports are vanishing on organize imports ([#30](https://github.com/buehler/typescript-hero/issues/30))

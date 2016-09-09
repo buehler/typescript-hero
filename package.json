@@ -7,7 +7,7 @@
     "color": "#7E7865",
     "theme": "dark"
   },
-  "version": "0.5.4",
+  "version": "0.6.0",
   "publisher": "rbbit",
   "engines": {
     "vscode": "^1.5.0",
