@@ -26,6 +26,10 @@ export class TsFile extends TsResource {
         return parse(this.filePath);
     }
 
+    public get isWorkspaceFile(): boolean {
+        return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);
+    }
+
     constructor(public filePath: string) {
         super();
     }
