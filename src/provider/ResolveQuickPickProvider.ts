@@ -8,6 +8,8 @@ import {inject, injectable} from 'inversify';
 import {join, normalize, parse} from 'path';
 import {TextEditor, window, workspace} from 'vscode';
 
+const firstBy = require('thenby');
+
 @injectable()
 export class ResolveQuickPickProvider {
     private logger: Logger;
@@ -45,6 +47,10 @@ export class ResolveQuickPickProvider {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }
                 let activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
+                declarations = [
+                    ...declarations.filter(o => o.from.startsWith('/')),
+                    ...declarations.filter(o => !o.from.startsWith('/'))
+                ];
                 return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
             });
     }
