@@ -8,8 +8,6 @@ import {inject, injectable} from 'inversify';
 import {join, normalize, parse} from 'path';
 import {TextEditor, window, workspace} from 'vscode';
 
-const firstBy = require('thenby');
-
 @injectable()
 export class ResolveQuickPickProvider {
     private logger: Logger;
