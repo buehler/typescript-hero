@@ -1,3 +1,4 @@
+import {getDeclarationsFilteredByImports} from '../utilities/ResolveIndexExtensions';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
@@ -17,51 +18,54 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         this.logger.info('Instantiated.');
     }
 
-    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
-        let wordAtPosition = document.getWordRangeAtPosition(position),
-            lineText = document.lineAt(position.line).text,
-            searchWord = '';
+    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): CompletionItem[] {
+        // let wordAtPosition = document.getWordRangeAtPosition(position),
+        //     lineText = document.lineAt(position.line).text,
+        //     searchWord = '';
 
-        if (wordAtPosition && wordAtPosition.start.character < position.character) {
-            let word = document.getText(wordAtPosition);
-            searchWord = word.substr(0, position.character - wordAtPosition.start.character);
-        }
+        // if (wordAtPosition && wordAtPosition.start.character < position.character) {
+        //     let word = document.getText(wordAtPosition);
+        //     searchWord = word.substr(0, position.character - wordAtPosition.start.character);
+        // }
 
-        if (!searchWord ||
-            token.isCancellationRequested ||
-            !this.index.indexReady ||
-            searchWord.length < this.config.resolver.minCharactersForCompletion ||
-            (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
-            lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
-            lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
-            return Promise.resolve(null);
-        }
+        // if (!searchWord ||
+        //     token.isCancellationRequested ||
+        //     !this.index.indexReady ||
+        //     searchWord.length < this.config.resolver.minCharactersForCompletion ||
+        //     (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
+        //     lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
+        //     lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
+        //     return [];
+        //     //return Promise.resolve(null);
+        // }
 
-        this.logger.info('Search completion for word.', { searchWord });
+        //this.logger.info('Search completion for word.', { searchWord });
 
-        return Promise.resolve()
-            .then(() => {
-                if (token.isCancellationRequested) {
-                    return [];
-                }
-                let items = this.itemFactory.getResolvableItems(this.index.cachedFiles, document.uri);
-                if (token.isCancellationRequested) {
-                    return [];
-                }
+        // return this.parser.parseSource(document.getText())
+        //     .then(parsed => {
+        //         if (token.isCancellationRequested) {
+        //             return [];
+        //         }
+        //        // let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports);
+        //         if (token.isCancellationRequested) {
+        //             return [];
+        //         }
 
-                let filtered = items.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
-                    let item = new CompletionItem(o.alias || o.declaration.name);
-                    item.detail = o.libraryName;
-                    item.kind = o.declaration.getItemKind();
-                    return item;
-                });
+        //         // let filtered = declarations.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
+        //         //     let item = new CompletionItem(o.declaration.name);
+        //         //     item.label = o.declaration.name;
 
-                if (token.isCancellationRequested) {
-                    return [];
-                }
+        //         //     //item.kind = o.declaration.getItemKind();
+        //         //     return item;
+        //         // });
 
-                return filtered;
-            });
+        //         if (token.isCancellationRequested) {
+        //             return [];
+        //         }
+
+
+        //     });
+        return [new CompletionItem('testlable'), new CompletionItem('test2')];
     }
 }
 

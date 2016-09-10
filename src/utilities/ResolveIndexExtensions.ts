@@ -4,12 +4,12 @@ import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsName
 import {join, normalize, parse} from 'path';
 import {workspace} from 'vscode';
 
-export function getDeclarationsFilteredByImports(index: ResolveIndex, documentPath: string, imports: TsImport[]): DeclarationInfo[] {
+export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, documentPath: string, imports: TsImport[]): DeclarationInfo[] {
     let declarations = Object
-            .keys(this.resolveIndex.index)
+            .keys(resolveIndex.index)
             .sort()
             .reduce((all, key) => {
-                for (let declaration of this.resolveIndex.index[key]) {
+                for (let declaration of resolveIndex.index[key]) {
                     all.push({
                         declaration: declaration.declaration,
                         from: declaration.from,

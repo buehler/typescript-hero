@@ -19,7 +19,7 @@ type ImportInformation = {};
 const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
     resolverErr = 'Resolver $(flame)',
-    TYPESCRIPT = { language: 'typescript' };
+    TYPESCRIPT = 'typescript';
 
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
