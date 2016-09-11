@@ -1,7 +1,7 @@
 import {TsDeclaration} from './TsDeclaration';
 import {TsExport} from './TsExport';
 import {TsImport} from './TsImport';
-import {parse, ParsedPath, sep} from 'path';
+import {parse, ParsedPath} from 'path';
 import {workspace} from 'vscode';
 
 // TsSource can be: File, Module, Namespace
