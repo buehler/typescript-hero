@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Changed
 - Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
 
+#### Fixed
+- On Windows, forwardslashes will be used instead of backslashes ([19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)
+
 ## [0.6.0]
 #### Added
 - Command to add an import from a symbol under the current cursor ([#22](https://github.com/buehler/typescript-hero/issues/22))
