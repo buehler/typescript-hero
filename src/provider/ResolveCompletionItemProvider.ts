@@ -134,8 +134,6 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 ];
             }
         }
-
-        return [];
     }
 }
 
