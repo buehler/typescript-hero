@@ -45,6 +45,10 @@ export class ResolveQuickPickProvider {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }
                 let activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
+                declarations = [
+                    ...declarations.filter(o => o.from.startsWith('/')),
+                    ...declarations.filter(o => !o.from.startsWith('/'))
+                ];
                 return declarations.filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1).map(o => new ResolveQuickPickItem(o));
             });
     }
