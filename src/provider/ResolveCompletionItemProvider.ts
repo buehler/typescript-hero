@@ -4,7 +4,7 @@ import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
-import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument} from 'vscode';
+import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit, Range} from 'vscode';
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
@@ -53,8 +53,10 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 let filtered = declarations.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
                     let item = new CompletionItem(o.declaration.name);
                     item.label = o.declaration.name;
-
-                    //item.kind = o.declaration.getItemKind();
+                    item.kind = o.declaration.getItemKind();
+                    item.additionalTextEdits = [
+                        new TextEdit(new Range(0, 0, 0, 0), 'foo')
+                    ];
                     return item;
                 });
 
