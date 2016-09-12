@@ -246,6 +246,7 @@ export class ResolveExtension extends BaseExtension {
                             if (!relativePath.startsWith('.')) {
                                 relativePath = './' + relativePath;
                             }
+                            relativePath = relativePath.replace(/\\/g, '/');
                             library = relativePath;
                         }
                         let named = new TsNamedImport(library);
