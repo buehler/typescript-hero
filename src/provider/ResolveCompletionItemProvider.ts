@@ -6,7 +6,7 @@ import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../model
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getDeclarationsFilteredByImports} from '../utilities/ResolveIndexExtensions';
+import {getDeclarationsFilteredByImports, getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
 import {join, normalize, parse, relative} from 'path';
 import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit, workspace} from 'vscode';
@@ -39,6 +39,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             searchWord.length < this.config.resolver.minCharactersForCompletion ||
             (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
+            lineText.match(/^import .*;$/g) ||
             lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
             return Promise.resolve(null);
         }
@@ -76,11 +77,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             if (o instanceof TsNamespaceImport || o instanceof TsExternalModuleImport) {
                 return declaration.from === o.libraryName;
             } else if (o instanceof TsNamedImport) {
-                let importedLib = o.libraryName;
-                if (importedLib.startsWith('.')) {
-                    let parsed = parse(document.fileName);
-                    importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
-                }
+                let importedLib = getRelativeLibraryName(o.libraryName, document.fileName);
                 return importedLib === declaration.from && o.specifiers.some(s => s.specifier === declaration.declaration.name);
             }
             return false;
@@ -90,11 +87,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         let imp = parsedSource.imports.find(o => {
             if (o instanceof TsNamedImport) {
-                let importedLib = o.libraryName;
-                if (importedLib.startsWith('.')) {
-                    let parsed = parse(document.fileName);
-                    importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
-                }
+                let importedLib = getRelativeLibraryName(o.libraryName, document.fileName);
                 return importedLib === declaration.from;
             }
             return false;
@@ -107,8 +100,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             }
             imp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [
-                TextEdit.delete(document.lineAt(line).range),
-                TextEdit.insert(new Position(line, 0), imp.toImport(this.config.resolver.importOptions).replace('\n', ''))
+                TextEdit.replace(document.lineAt(line).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
@@ -116,16 +108,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
             ];
         } else {
-            let library = declaration.from;
-            if (declaration.from.startsWith('/')) {
-                let activeFile = parse('/' + workspace.asRelativePath(document.fileName)).dir;
-                let relativePath = relative(activeFile, declaration.from);
-                if (!relativePath.startsWith('.')) {
-                    relativePath = './' + relativePath;
-                }
-                relativePath = relativePath.replace(/\\/g, '/');
-                library = relativePath;
-            }
+            let library = getRelativeImportPath(declaration.from, document.fileName);
             let named = new TsNamedImport(library);
             named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [
@@ -133,7 +116,6 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             ];
         }
     }
-}
 }
 
 export const RESOLVE_TRIGGER_CHARACTERS = [
