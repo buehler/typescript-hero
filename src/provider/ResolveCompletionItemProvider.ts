@@ -55,7 +55,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                     return [];
                 }
 
-                let filtered = declarations.filter(o => o.declaration.name.startsWith(searchWord)).map(o => {
+                let filtered = declarations.filter(o => o.declaration.name.indexOf(searchWord) >= 0).map(o => {
                     let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
                     item.detail = o.from;
                     item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
@@ -110,31 +110,30 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 TextEdit.delete(document.lineAt(line).range),
                 TextEdit.insert(new Position(line, 0), imp.toImport(this.config.resolver.importOptions).replace('\n', ''))
             ];
+        } else if (declaration.declaration instanceof ModuleDeclaration) {
+            let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
+            return [
+                TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
+            ];
         } else {
-            if (declaration.declaration instanceof ModuleDeclaration) {
-                let mod = new TsNamespaceImport(declaration.declaration.name, declaration.from);
-                return [
-                    TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
-                ];
-            } else {
-                let library = declaration.from;
-                if (declaration.from.startsWith('/')) {
-                    let activeFile = parse('/' + workspace.asRelativePath(document.fileName)).dir;
-                    let relativePath = relative(activeFile, declaration.from).replace(/[/]?index$/, '');
-                    if (!relativePath.startsWith('.')) {
-                        relativePath = './' + relativePath;
-                    }
-                    relativePath = relativePath.replace(/\\/g, '/');
-                    library = relativePath;
+            let library = declaration.from;
+            if (declaration.from.startsWith('/')) {
+                let activeFile = parse('/' + workspace.asRelativePath(document.fileName)).dir;
+                let relativePath = relative(activeFile, declaration.from).replace(/[/]?index$/, '');
+                if (!relativePath.startsWith('.')) {
+                    relativePath = './' + relativePath;
                 }
-                let named = new TsNamedImport(library);
-                named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
-                return [
-                    TextEdit.insert(new Position(0, 0), named.toImport(this.config.resolver.importOptions))
-                ];
+                relativePath = relativePath.replace(/\\/g, '/');
+                library = relativePath;
             }
+            let named = new TsNamedImport(library);
+            named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
+            return [
+                TextEdit.insert(new Position(0, 0), named.toImport(this.config.resolver.importOptions))
+            ];
         }
     }
+}
 }
 
 export const RESOLVE_TRIGGER_CHARACTERS = [
