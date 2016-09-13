@@ -130,7 +130,6 @@ export class ResolveIndex {
             }))
             .then(parsed => this.parseResources(parsed))
             .then(resources => {
-                console.log(resources);
                 delete this.parsedResources[removeResource];
                 for (let key in resources) {
                     this.parsedResources[key] = resources[key];
@@ -216,7 +215,7 @@ export class ResolveIndex {
                         }
                         index[declaration.name].push({
                             declaration,
-                            from: key
+                            from: key.replace(/[/]?index$/, '')
                         });
                     }
                 });
