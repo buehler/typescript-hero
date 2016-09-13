@@ -63,6 +63,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | `pathStringDelimiter`                   | The string delimiter to use for the imports                                          |
 | `ignorePatterns`                        | If any of these strings is part of a file path, the file is ignored                  |
 | `insertSpaceBeforeAndAfterImportBraces` | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`) |
+| `minCharactersForCompletion`            | The minimum character count for the completion provider to get active                |
 
 ### Debug session restarter
 
