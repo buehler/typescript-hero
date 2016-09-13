@@ -81,7 +81,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                     let parsed = parse(document.fileName);
                     importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
                 }
-                return importedLib === declaration.from.replace(/[/]?index$/, '') && o.specifiers.some(s => s.specifier === declaration.declaration.name);
+                return importedLib === declaration.from && o.specifiers.some(s => s.specifier === declaration.declaration.name);
             }
             return false;
         })) {
@@ -95,7 +95,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                     let parsed = parse(document.fileName);
                     importedLib = '/' + workspace.asRelativePath(normalize(join(parsed.dir, importedLib)));
                 }
-                return importedLib === declaration.from.replace(/[/]?index$/, '');
+                return importedLib === declaration.from;
             }
             return false;
         });
@@ -119,7 +119,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             let library = declaration.from;
             if (declaration.from.startsWith('/')) {
                 let activeFile = parse('/' + workspace.asRelativePath(document.fileName)).dir;
-                let relativePath = relative(activeFile, declaration.from).replace(/[/]?index$/, '');
+                let relativePath = relative(activeFile, declaration.from);
                 if (!relativePath.startsWith('.')) {
                     relativePath = './' + relativePath;
                 }

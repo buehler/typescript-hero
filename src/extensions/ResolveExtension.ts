@@ -219,7 +219,7 @@ export class ResolveExtension extends BaseExtension {
                     if (lib.startsWith('.')) {
                         lib = '/' + workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
                     }
-                    return lib === item.declarationInfo.from.replace(/[/]?index$/, '') && !(o instanceof TsDefaultImport);
+                    return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
                 });
                 let promise = Promise.resolve(imports),
                     defaultImportAlias = () => {
@@ -244,7 +244,7 @@ export class ResolveExtension extends BaseExtension {
                         let library = item.declarationInfo.from;
                         if (item.declarationInfo.from.startsWith('/')) {
                             let activeFile = parse('/' + workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
-                            let relativePath = relative(activeFile, item.declarationInfo.from).replace(/[/]?index$/, '');
+                            let relativePath = relative(activeFile, item.declarationInfo.from);
                             if (!relativePath.startsWith('.')) {
                                 relativePath = './' + relativePath;
                             }
