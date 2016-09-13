@@ -36,8 +36,3 @@ export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, doc
 
         return declarations;
 }
-
-export function getRelativeLibraryName(library: string, actualFilePath: string): string {
-
-    return '';
-}
