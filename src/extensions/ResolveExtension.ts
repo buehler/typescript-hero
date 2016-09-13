@@ -1,3 +1,4 @@
+import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
@@ -215,10 +216,7 @@ export class ResolveExtension extends BaseExtension {
                 let declaration = item.declarationInfo.declaration;
 
                 let imported = imports.find(o => {
-                    let lib = o.libraryName;
-                    if (lib.startsWith('.')) {
-                        lib = '/' + workspace.asRelativePath(normalize(join(parse(window.activeTextEditor.document.fileName).dir, o.libraryName)));
-                    }
+                    let lib = getRelativeLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
                     return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
                 });
                 let promise = Promise.resolve(imports),
@@ -241,16 +239,7 @@ export class ResolveExtension extends BaseExtension {
                     } else if (declaration instanceof DefaultDeclaration) {
                         defaultImportAlias();
                     } else {
-                        let library = item.declarationInfo.from;
-                        if (item.declarationInfo.from.startsWith('/')) {
-                            let activeFile = parse('/' + workspace.asRelativePath(window.activeTextEditor.document.fileName)).dir;
-                            let relativePath = relative(activeFile, item.declarationInfo.from);
-                            if (!relativePath.startsWith('.')) {
-                                relativePath = './' + relativePath;
-                            }
-                            relativePath = relativePath.replace(/\\/g, '/');
-                            library = relativePath;
-                        }
+                        let library = getRelativeImportPath(item.declarationInfo.from, window.activeTextEditor.document.fileName);
                         let named = new TsNamedImport(library);
                         named.specifiers.push(new TsResolveSpecifier(item.label));
                         imports.push(named);
