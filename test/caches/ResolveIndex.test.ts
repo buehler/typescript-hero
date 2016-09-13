@@ -76,6 +76,21 @@ describe('ResolveIndex', () => {
             list[1].declaration.should.be.an.instanceof(ClassDeclaration);
         });
 
+        it('should export * as correctly', () => {
+            let idx: any = resolveIndex,
+                resources = idx.parsedResources;
+            resources['/resourceIndex/MyClass'].declarations.length.should.equal(0);
+            resources['/resourceIndex/index'].declarations[0].name.should.equal('MyClass');
+            resources['/resourceIndex/index'].declarations[1].name.should.equal('FancierLibraryClass');
+        });
+
+        it('should export an alias correctly', () => {
+            let idx: any = resolveIndex,
+                resources = idx.parsedResources;
+            resources['/resourceIndex/SpecialExports'].declarations.length.should.equal(0);
+            resources['/resourceIndex/index'].declarations[2].name.should.equal('ExportAlias');
+        });
+
     });
 
 });
