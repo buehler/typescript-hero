@@ -117,6 +117,17 @@ describe('TsResourceParser', () => {
                 .that.equals('./AnotherFile');
         });
 
+        it('should parse aliased export named from another file', () => {
+            parsed.exports[1].should.be.an.instanceOf(TsNamedFromExport);
+            let exp = parsed.exports[1] as TsNamedFromExport;
+
+            exp.specifiers.should.be.an('array').with.lengthOf(2);
+
+            let spec = exp.specifiers[1];
+            spec.specifier.should.equal('Specifier');
+            spec.alias.should.equal('Alias');
+        });
+
         it('should parse export assignment', () => {
             parsed.exports[2].should.be.an.instanceOf(TsAssignedExport)
                 .with.property('declarationIdentifier')
