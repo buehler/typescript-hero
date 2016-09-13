@@ -5,24 +5,12 @@ import {join, normalize, parse, relative} from 'path';
 import {workspace} from 'vscode';
 
 export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, documentPath: string, imports: TsImport[]): DeclarationInfo[] {
-    let declarations = Object
-        .keys(resolveIndex.index)
-        .sort()
-        .reduce((all, key) => {
-            for (let declaration of resolveIndex.index[key]) {
-                all.push({
-                    declaration: declaration.declaration,
-                    from: declaration.from,
-                    key: key
-                });
-            }
-            return all;
-        }, []);
+    let declarations = resolveIndex.declarationInfos;
 
     for (let tsImport of imports) {
         if (tsImport instanceof TsNamedImport) {
             let importedLib = getRelativeLibraryName(tsImport.libraryName, documentPath);
-            declarations = declarations.filter(o => o.from !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.key));
+            declarations = declarations.filter(o => o.from !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.declaration.name));
         } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         } else if (tsImport instanceof TsDefaultImport) {

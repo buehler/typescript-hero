@@ -36,6 +36,13 @@ export class ResolveIndex {
         return this._index;
     }
 
+    public get declarationInfos(): DeclarationInfo[] {
+        return Object
+            .keys(this.index)
+            .sort()
+            .reduce((all, key) => all.concat(this.index[key]), []);
+    }
+
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private parser: TsResourceParser, private config: ExtensionConfig) {
         this.logger = loggerFactory('ResolveIndex');
     }

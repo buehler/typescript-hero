@@ -51,7 +51,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 if (token.isCancellationRequested) {
                     return [];
                 }
-                let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports);
+                let declarations = this.index.declarationInfos;
                 if (token.isCancellationRequested) {
                     return [];
                 }
@@ -72,7 +72,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
     }
 
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: TsFile): TextEdit[] {
-        // TODO: Review / refactor.
+        // TODO: Default import / export (#40)
         if (parsedSource.imports.some(o => {
             if (o instanceof TsNamespaceImport || o instanceof TsExternalModuleImport) {
                 return declaration.from === o.libraryName;
