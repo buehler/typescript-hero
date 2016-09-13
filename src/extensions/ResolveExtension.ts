@@ -1,4 +1,3 @@
-import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
@@ -10,9 +9,9 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
+import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import {join, normalize, parse, relative} from 'path';
 import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
 type ImportInformation = {};

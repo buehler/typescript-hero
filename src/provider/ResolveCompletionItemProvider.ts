@@ -1,15 +1,14 @@
-import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {ModuleDeclaration} from '../models/TsDeclaration';
 import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
+import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getDeclarationsFilteredByImports, getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
-import {join, normalize, parse, relative} from 'path';
-import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit, workspace} from 'vscode';
+import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit} from 'vscode';
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
