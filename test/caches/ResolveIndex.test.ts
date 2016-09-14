@@ -81,6 +81,12 @@ describe('ResolveIndex', () => {
             resources['/resourceIndex/index'].declarations[2].name.should.equal('ExportAlias');
         });
 
+        it('should not contain items from the build directory', () => {
+            let idx: any = resolveIndex,
+                resources = idx.parsedResources;
+            resources.should.not.contain.any.key('/build/app');
+        });
+
     });
 
 });
