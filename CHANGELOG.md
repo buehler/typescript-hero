@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- More tests! :-) ([#8](https://github.com/buehler/typescript-hero/issues/8))
+
 #### Changed
 - Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
 - Own imports (workspace) are sorted to the top ([#37](https://github.com/buehler/typescript-hero/issues/37))

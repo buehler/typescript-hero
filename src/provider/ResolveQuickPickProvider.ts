@@ -6,7 +6,7 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {inject, injectable} from 'inversify';
 import {join, normalize, parse} from 'path';
-import {TextEditor, window, workspace} from 'vscode';
+import {TextDocument, window, workspace} from 'vscode';
 
 @injectable()
 export class ResolveQuickPickProvider {
@@ -16,14 +16,11 @@ export class ResolveQuickPickProvider {
         this.logger = loggerFactory('ResolveQuickPickProvider');
     }
 
-    public addImportPick(activeDocument: TextEditor): Thenable<ResolveQuickPickItem> {
-        return this.buildQuickPickList(activeDocument)
-            .then(resolveItems => {
-                return window.showQuickPick(resolveItems);
-            });
+    public addImportPick(activeDocument: TextDocument): Thenable<ResolveQuickPickItem> {
+        return window.showQuickPick(this.buildQuickPickList(activeDocument));
     }
 
-    public addImportUnderCursorPick(activeDocument: TextEditor, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
+    public addImportUnderCursorPick(activeDocument: TextDocument, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
         return this.buildQuickPickList(activeDocument, cursorSymbol)
             .then(resolveItems => {
                 if (resolveItems.length < 1) {
@@ -37,10 +34,10 @@ export class ResolveQuickPickProvider {
             });
     }
 
-    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
-        return this.parser.parseSource(activeDocument.document.getText())
+    private buildQuickPickList(activeDocument: TextDocument, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
+        return this.parser.parseSource(activeDocument.getText())
             .then(parsedSource => {
-                let declarations = this.prepareDeclarations(activeDocument.document.fileName, parsedSource.imports);
+                let declarations = this.prepareDeclarations(activeDocument.fileName, parsedSource.imports);
                 if (cursorSymbol) {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }

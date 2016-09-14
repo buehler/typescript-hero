@@ -134,7 +134,7 @@ export class ResolveExtension extends BaseExtension {
             this.showCacheWarning();
             return;
         }
-        this.pickProvider.addImportPick(window.activeTextEditor).then(o => {
+        this.pickProvider.addImportPick(window.activeTextEditor.document).then(o => {
             if (o) {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
@@ -154,7 +154,7 @@ export class ResolveExtension extends BaseExtension {
         if (!!!selectedSymbol) {
             return;
         }
-        this.pickProvider.addImportUnderCursorPick(window.activeTextEditor, selectedSymbol).then(o => {
+        this.pickProvider.addImportUnderCursorPick(window.activeTextEditor.document, selectedSymbol).then(o => {
             if (o) {
                 this.logger.info('Add import to document', { resolveItem: o });
                 this.addImportToDocument(o);
