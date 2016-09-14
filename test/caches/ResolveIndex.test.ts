@@ -3,26 +3,16 @@ import {ResolveIndex} from '../../src/caches/ResolveIndex';
 import {Injector} from '../../src/IoC';
 import {ClassDeclaration, FunctionDeclaration} from '../../src/models/TsDeclaration';
 import * as chai from 'chai';
-import {ExtensionContext, Memento} from 'vscode';
 
 chai.should();
 
-class ContextMock implements ExtensionContext {
-    subscriptions: { dispose(): any }[] = [];
-    workspaceState: Memento;
-    globalState: Memento;
-    extensionPath: string = '';
-    storagePath: string = '';
-    asAbsolutePath(relativePath: string): string {
-        return '';
-    }
-}
-
-Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
-
 describe('ResolveIndex', () => {
 
-    let resolveIndex: ResolveIndex = Injector.get(ResolveIndex);
+    let resolveIndex: ResolveIndex;
+
+    before(() => {
+        resolveIndex = Injector.get(ResolveIndex);
+    });
 
     beforeEach(() => {
         resolveIndex.reset();

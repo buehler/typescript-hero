@@ -1,10 +1,37 @@
+import {ResolveQuickPickItem} from '../../src/models/QuickPickItems';
+import {Injector} from '../../src/IoC';
+import {ResolveQuickPickProvider} from '../../src/provider/ResolveQuickPickProvider';
 import * as chai from 'chai';
+import {join} from 'path';
+import * as vscode from 'vscode';
 
 chai.should();
 
+type ProviderMock = ResolveQuickPickProvider & { buildQuickPickList: (activeDocument: vscode.TextDocument, cursorSymbol?: string) => Promise<ResolveQuickPickItem[]> }
+
 describe('ResolveQuickPickProvider', () => {
 
-    it('shoud show all possible declarations');
+    let provider: ProviderMock;
+
+    before(() => {
+        provider = Injector.get(ResolveQuickPickProvider) as ProviderMock;
+    });
+
+    it('shoud show all possible declarations', done => {
+        let file = join(process.cwd(), '.test/foobar.ts');
+        vscode.workspace
+            .openTextDocument(file)
+            .then(openDocument => provider.buildQuickPickList(openDocument))
+            .then(items => {
+                try {
+                    items.should.be.an('array').with.length.of.at.least(5);
+                    ['ExportAlias', 'MyClass', 'isString', 'FancyLibraryClass', 'raw'].every(label => items.some(item => item.label === label)).should.be.true;
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            });
+    });
 
     it('shoud order own files before typings / node modules');
 
