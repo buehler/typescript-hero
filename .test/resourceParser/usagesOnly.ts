@@ -24,6 +24,8 @@ class Class {
         console.log(a);
         console.log(b);
 
+        () => () => () => NestedBinaryAssignment === true;
+
         return null;
     }
 }

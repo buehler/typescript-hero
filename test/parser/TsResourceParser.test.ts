@@ -117,6 +117,17 @@ describe('TsResourceParser', () => {
                 .that.equals('./AnotherFile');
         });
 
+        it('should parse aliased export named from another file', () => {
+            parsed.exports[1].should.be.an.instanceOf(TsNamedFromExport);
+            let exp = parsed.exports[1] as TsNamedFromExport;
+
+            exp.specifiers.should.be.an('array').with.lengthOf(2);
+
+            let spec = exp.specifiers[1];
+            spec.specifier.should.equal('Specifier');
+            spec.alias.should.equal('Alias');
+        });
+
         it('should parse export assignment', () => {
             parsed.exports[2].should.be.an.instanceOf(TsAssignedExport)
                 .with.property('declarationIdentifier')
@@ -426,6 +437,86 @@ describe('TsResourceParser', () => {
                 parsedNamespace.declarations[1].name.should.equal('Exported');
             });
 
+        });
+
+    });
+
+    describe('Usages', () => {
+        const file = join(process.cwd(), '.test/resourceParser/usagesOnly.ts');
+
+        beforeEach(() => {
+            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+        });
+
+        it('should parse decorator usages', () => {
+            let usages = parsed.usages;
+            usages.should.contain('ClassDecorator');
+            usages.should.contain('PropertyDecorator');
+            usages.should.contain('FunctionDecorator');
+        });
+
+        it('should parse class member', () => {
+            let usages = parsed.usages;
+            usages.should.contain('notInitializedProperty');
+            usages.should.contain('typedProperty');
+        });
+
+        it('should parse class member types', () => {
+            let usages = parsed.usages;
+            usages.should.contain('TypedPropertyRef');
+        });
+
+        it('should parse class member assignment', () => {
+            let usages = parsed.usages;
+            usages.should.contain('AssignedProperty');
+        });
+
+        it('should parse params', () => {
+            let usages = parsed.usages;
+            usages.should.contain('param');
+        });
+
+        it('should parse param default assignment', () => {
+            let usages = parsed.usages;
+            usages.should.contain('DefaultParam');
+        });
+
+        it('should parse return value', () => {
+            let usages = parsed.usages;
+            usages.should.contain('ReturnValue');
+        });
+
+        it('should parse property access', () => {
+            let usages = parsed.usages;
+            usages.should.contain('PropertyAccess');
+        });
+
+        it('should not parse sub properties of accessed properties', () => {
+            let usages = parsed.usages;
+            usages.should.not.contain('To');
+            usages.should.not.contain('My');
+            usages.should.not.contain('Foobar');
+        });
+
+        it('should parse function call', () => {
+            let usages = parsed.usages;
+            usages.should.contain('functionCall');
+            usages.should.contain('MyProperty');
+        });
+        
+        it('should parse indexer access', () => {
+            let usages = parsed.usages;
+            usages.should.contain('Indexing');
+        });
+
+        it('should parse variable assignment', () => {
+            let usages = parsed.usages;
+            usages.should.contain('AssignmentToVariable');
+        });
+
+        it('should parse nested identifier', () => {
+            let usages = parsed.usages;
+            usages.should.contain('NestedBinaryAssignment');
         });
 
     });

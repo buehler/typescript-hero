@@ -184,7 +184,6 @@ export class ResolveIndex {
                         throw new CancellationRequested();
                     }
                     let resource = parsedResources[key];
-                    //TODO maybe not filter all non exported?
                     resource.declarations = resource.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
                     this.processResourceExports(parsedResources, resource);
                 })
@@ -212,7 +211,6 @@ export class ResolveIndex {
                         });
                     }
                     for (let declaration of resource.declarations) {
-                        //TODO add alias?
                         if (!index[declaration.name]) {
                             index[declaration.name] = [];
                         }
@@ -270,10 +268,15 @@ export class ResolveIndex {
         this.processResourceExports(parsedResources, exportedLib);
 
         exportedLib.declarations
-            .filter(o => tsExport.specifiers.some(s => s.specifier === o.name))
             .forEach(o => {
-                //TODO export ... as ... from ...;
+                let ex = tsExport.specifiers.find(s => s.specifier === o.name);
+                if (!ex) {
+                    return;
+                }
                 exportedLib.declarations.splice(exportedLib.declarations.indexOf(o), 1);
+                if (ex.alias) {
+                    o.name = ex.alias;
+                }
                 exportingLib.declarations.push(o);
             });
     }
