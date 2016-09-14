@@ -1,0 +1,1 @@
+import {MyClass} from '../resourceIndex';
