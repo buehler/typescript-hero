@@ -2,24 +2,26 @@ import * as chai from 'chai';
 
 chai.should();
 
-describe('ResolveCompletionItemProvider', () => {
+// TODO: add when completion item provider is ready.
 
-    it('shoud resolve to null when less then 2 characters');
+// describe('ResolveCompletionItemProvider', () => {
 
-    it('shoud resolve to null if typing in a string');
+//     it('shoud resolve to null when less then 2 characters');
 
-    it('shoud resolve to null if after a "." (PropertyAccess)');
+//     it('shoud resolve to null if typing in a string');
 
-    it('shoud resolve to null if in a comment');
+//     it('shoud resolve to null if after a "." (PropertyAccess)');
 
-    it('shoud resolve to null if writing an import');
+//     it('shoud resolve to null if in a comment');
 
-    it('shoud create a completion list');
+//     it('shoud resolve to null if writing an import');
 
-    it('shoud add an insert text edit if import would be new');
+//     it('shoud create a completion list');
 
-    it('shoud add a replace text edit if import will be updated with new specifier');
+//     it('shoud add an insert text edit if import would be new');
 
-    it('shoud add no text edit if import is already imported');
+//     it('shoud add a replace text edit if import will be updated with new specifier');
 
-});
+//     it('shoud add no text edit if import is already imported');
+
+// });
