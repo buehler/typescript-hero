@@ -17,10 +17,7 @@ export class ResolveQuickPickProvider {
     }
 
     public addImportPick(activeDocument: TextEditor): Thenable<ResolveQuickPickItem> {
-        return this.buildQuickPickList(activeDocument)
-            .then(resolveItems => {
-                return window.showQuickPick(resolveItems);
-            });
+        return window.showQuickPick(this.buildQuickPickList(activeDocument));
     }
 
     public addImportUnderCursorPick(activeDocument: TextEditor, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
@@ -37,7 +34,7 @@ export class ResolveQuickPickProvider {
             });
     }
 
-    public buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
+    private buildQuickPickList(activeDocument: TextEditor, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.document.getText())
             .then(parsedSource => {
                 let declarations = this.prepareDeclarations(activeDocument.document.fileName, parsedSource.imports);
