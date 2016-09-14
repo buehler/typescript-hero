@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+import {Injector} from '../src/IoC';
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
 //
@@ -9,6 +11,21 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
+
+import {ExtensionContext, Memento} from 'vscode';
+
+class ContextMock implements ExtensionContext {
+    subscriptions: { dispose(): any }[] = [];
+    workspaceState: Memento;
+    globalState: Memento;
+    extensionPath: string = '';
+    storagePath: string = '';
+    asAbsolutePath(relativePath: string): string {
+        return '';
+    }
+}
+
+Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
 
 const testRunner = require('vscode/lib/testrunner');
 
