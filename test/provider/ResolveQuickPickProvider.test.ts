@@ -128,11 +128,51 @@ describe('ResolveQuickPickProvider', () => {
 
     describe('addImportUnderCursor', () => {
 
-        it('shoud resolve to 0 items for non found symbol');
+        const file = join(process.cwd(), '.test/quickPickProvider/importUnderTheCursor.ts');
+        let document: vscode.TextDocument;
 
-        it('shoud find a declaration for a symbol');
+        before(() => vscode.workspace.openTextDocument(file).then(doc => document = doc));
 
-        it('shoud possibly find multiple declarations for a symbol');
+        it('shoud resolve to 0 items for non found symbol', done => {
+            provider.buildQuickPickList(document, 'Fooo')
+                .then(items => {
+                    try {
+                        items.should.be.an('array').with.lengthOf(0);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+                .catch(done);
+        });
+
+        it('shoud find a declaration for a symbol', done => {
+            provider.buildQuickPickList(document, 'MyCla')
+                .then(items => {
+                    try {
+                        items.should.be.an('array').with.lengthOf(1);
+                        items[0].label.should.equal('MyClass');
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+                .catch(done);
+        });
+
+        it('shoud possibly find multiple declarations for a symbol', done => {
+            provider.buildQuickPickList(document, 'Fancier')
+                .then(items => {
+                    try {
+                        items.should.be.an('array').with.lengthOf(2);
+                        (items.every(o => o.label === 'FancierLibraryClass')).should.be.true;
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                })
+                .catch(done);
+        });
 
     });
 
