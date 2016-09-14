@@ -6,6 +6,9 @@ import {Injector} from './IoC';
 let extension: Disposable;
 
 export function activate(context: ExtensionContext) {
+    if (Injector.isBound('context')) {
+        Injector.unbind('context');
+    }
     Injector.bind<ExtensionContext>('context').toConstantValue(context);
     extension = Injector.get(TypeScriptHero);
 }
