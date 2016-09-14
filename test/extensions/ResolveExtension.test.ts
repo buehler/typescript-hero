@@ -1,37 +1,65 @@
+import {Injector} from '../../src/IoC';
+import {ResolveExtension} from '../../src/extensions/ResolveExtension';
 import * as chai from 'chai';
+import * as vscode from 'vscode';
+import {join} from 'path';
 
 chai.should();
 
-describe('ResolveExtension', () => {
+// TODO: refactor extension code, so it can be tested (vscode.window.activeTextEditor is null!)
 
-    describe('addImportToDocument', () => {
+// describe('ResolveExtension', () => {
 
-        it('shoud write a module / namespace import correctly');
+//     let extension: ResolveExtension;
 
-        it('shoud write a named import correctly');
+//     before(() => {
+//         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
+//     });
 
-        it('shoud update a named import correcty');
+//     describe('addImportToDocument', () => {
 
-        it('shoud use the correct relative path');
+//         const file = join(process.cwd(), '.test/resolveExtension/addImportToDocument.ts');
+//         let document: vscode.TextDocument;
 
-        it('shoud only use forward slashes');
+//         before(() => vscode.workspace.openTextDocument(file).then(doc => document = doc));
 
-        it('shoud use ./ for same directory files');
+//         afterEach(() => {
+//             console.log(vscode.window.activeTextEditor);
+//         });
 
-        it('shoud remove /index from ../index.ts files');
+//         it('shoud write a module / namespace import correctly', done => {
+//             let ext: any = extension;
+//             ext.pickProvider.buildQuickPickList(document, 'bodyParser')
+//                 .then(items => {
+//                     console.log(items);
+//                 })
+//                 .catch(done);
+//         });
 
-    });
+//         it('shoud write a named import correctly');
 
-    describe('organizeImports', () => {
+//         it('shoud update a named import correcty');
 
-        it('shoud remove unused imports');
+//         it('shoud use the correct relative path');
 
-        it('shoud order string imports to the top');
+//         it('shoud only use forward slashes');
 
-        it('shoud order libraries by name');
+//         it('shoud use ./ for same directory files');
 
-        it('shoud order specifiers by name');
+//         it('shoud remove /index from ../index.ts files');
 
-    });
+//     });
 
-});
+//     describe('organizeImports', () => {
+
+//         it('shoud remove unused imports');
+
+//         it('shoud order string imports to the top');
+
+//         it('shoud order libraries by name');
+
+//         it('shoud order specifiers by name');
+
+//     });
+
+// });
