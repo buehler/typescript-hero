@@ -17,6 +17,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - On Windows, forwardslashes will be used instead of backslashes ([#19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)
 - `export xxx as yyy` does now correctly use the alias of the declaration ([#36](https://github.com/buehler/typescript-hero/issues/36))
 - Build directories are ignored by default (for indexing) ([#48](https://github.com/buehler/typescript-hero/issues/48))
+- Substructures import parent index.ts files correctly now ([#49](https://github.com/buehler/typescript-hero/issues/49))
 
 ## [0.6.0]
 #### Added
