@@ -17,7 +17,7 @@ type Resources = { [name: string]: TsResource };
 function getNodeLibraryName(path: string): string {
     let dirs = path.split(sep),
         nodeIndex = dirs.indexOf('node_modules');
-    return dirs.slice(nodeIndex + 1).join('/').replace(/([.]d)?([.]ts)?/g, '').replace('/index', '');
+    return dirs.slice(nodeIndex + 1).join('/').replace(/([.]d)?([.]tsx?)?/g, '').replace('/index', '');
 }
 
 @injectable()
@@ -90,7 +90,7 @@ export class ResolveIndex {
     }
 
     public rebuildForFile(filePath: string): Promise<void> {
-        let rebuildResource = '/' + workspace.asRelativePath(filePath).replace('.ts', ''),
+        let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = [rebuildResource];
         Object
             .keys(this.parsedResources)
@@ -119,7 +119,7 @@ export class ResolveIndex {
     }
 
     public removeForFile(filePath: string): Promise<void> {
-        let removeResource = '/' + workspace.asRelativePath(filePath).replace('.ts', ''),
+        let removeResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = [];
         Object
             .keys(this.parsedResources)
@@ -241,7 +241,7 @@ export class ResolveIndex {
                 if (sourceLib.indexOf('node_modules') > -1) {
                     sourceLib = getNodeLibraryName(sourceLib);
                 } else {
-                    sourceLib = '/' + workspace.asRelativePath(sourceLib).replace(/([.]d)?[.]ts/g, '');
+                    sourceLib = '/' + workspace.asRelativePath(sourceLib).replace(/([.]d)?[.]tsx?/g, '');
                 }
 
                 if (!parsedResources[sourceLib]) {
@@ -300,7 +300,7 @@ export class ResolveIndex {
     }
 
     private findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
-        let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('**/*.ts', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
+        let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
 
         let globs = [],
             ignores = ['**/typings/**'];

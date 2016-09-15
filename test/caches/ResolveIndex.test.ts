@@ -87,6 +87,13 @@ describe('ResolveIndex', () => {
             resources.should.not.contain.any.key('/build/app');
         });
 
+        it('should contain declaration from *.tsx file', () => {
+            let idx: any = resolveIndex,
+                resources = idx.parsedResources;
+            resources['/MyReactTemplate'].declarations.length.should.equal(1);
+            resources['/MyReactTemplate'].declarations[0].name.should.equal('myComponent');
+        });
+
     });
 
 });

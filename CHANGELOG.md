@@ -6,10 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Added
 - More tests! :-) ([#8](https://github.com/buehler/typescript-hero/issues/8))
 - CodeCompletionProvider that autocompletes your symbols and adds the imports if necessary ([#5](https://github.com/buehler/typescript-hero/issues/5))
+- Support for `*.tsx` files ([#42](https://github.com/buehler/typescript-hero/issues/42))
 
 #### Changed
 - Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
 - Own imports (workspace) are sorted to the top ([#37](https://github.com/buehler/typescript-hero/issues/37))
+- Updated inversify to v2
 
 #### Fixed
 - On Windows, forwardslashes will be used instead of backslashes ([#19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)

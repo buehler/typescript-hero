@@ -94,7 +94,7 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
-        //context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider, ...RESOLVE_TRIGGER_CHARACTERS));
+        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider)); //without trigger chars
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
