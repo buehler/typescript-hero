@@ -48,6 +48,8 @@ chai.should();
 
 //         it('shoud remove /index from ../index.ts files');
 
+//         it('should correctly use ../ for parent index files');
+
 //     });
 
 //     describe('organizeImports', () => {

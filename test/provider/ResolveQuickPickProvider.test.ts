@@ -43,7 +43,7 @@ describe('ResolveQuickPickProvider', () => {
                 .then(items => {
                     try {
                         for (let x = 0; x < 5; x++) {
-                            items[x].description.indexOf('resourceIndex').should.not.equal(-1);
+                            items[x].description.startsWith('/').should.be.true;
                         }
                         done();
                     } catch (e) {
@@ -62,8 +62,8 @@ describe('ResolveQuickPickProvider', () => {
                         (items[0].label < items[1].label).should.be.true;
                         (items[1].label < items[2].label).should.be.true;
 
-                        (items[6].label < items[7].label).should.be.true;
-                        (items[7].label < items[8].label).should.be.true;
+                        (items[13].label < items[14].label).should.be.true;
+                        (items[14].label < items[15].label).should.be.true;
                         done();
                     } catch (e) {
                         done(e);
