@@ -85,16 +85,19 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
-### [0.6.0]
+### 0.7.0
 #### Added
-- Command to add an import from a symbol under the current cursor ([#22](https://github.com/buehler/typescript-hero/issues/22))
+- More tests! :-) ([#8](https://github.com/buehler/typescript-hero/issues/8))
+- CodeCompletionProvider that autocompletes your symbols and adds the imports if necessary ([#5](https://github.com/buehler/typescript-hero/issues/5))
+- Support for `*.tsx` files ([#42](https://github.com/buehler/typescript-hero/issues/42))
 
 #### Changed
-- Complete indexing / parsing engine was rewritten
-- Adding an import does not automatically organize the imports afterwards ([#22](https://github.com/buehler/typescript-hero/issues/22), [#23](https://github.com/buehler/typescript-hero/issues/23))
+- Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
+- Own imports (workspace) are sorted to the top ([#37](https://github.com/buehler/typescript-hero/issues/37))
+- Updated inversify to v2
 
 #### Fixed
-- Exports were not recursively merged ([#25](https://github.com/buehler/typescript-hero/issues/25))
-- Imports should be added with forwardslashes ([#19](https://github.com/buehler/typescript-hero/issues/19))
-- Imports are vanishing when usings are PropertyAssignments ([#27](https://github.com/buehler/typescript-hero/issues/27))
-- Imports are vanishing on organize imports ([#30](https://github.com/buehler/typescript-hero/issues/30))
+- On Windows, forwardslashes will be used instead of backslashes ([#19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)
+- `export xxx as yyy` does now correctly use the alias of the declaration ([#36](https://github.com/buehler/typescript-hero/issues/36))
+- Build directories are ignored by default (for indexing) ([#48](https://github.com/buehler/typescript-hero/issues/48))
+- Substructures import parent index.ts files correctly now ([#49](https://github.com/buehler/typescript-hero/issues/49))
