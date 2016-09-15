@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Changed
 - Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
 - Own imports (workspace) are sorted to the top ([#37](https://github.com/buehler/typescript-hero/issues/37))
+- Updated inversify to v2
 
 #### Fixed
 - On Windows, forwardslashes will be used instead of backslashes ([#19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)
