@@ -52,7 +52,7 @@
     "vscode": "^0.11.18"
   },
   "dependencies": {
-    "inversify": "^2.0.0-rc.13",
+    "inversify": "^2.0.0",
     "reflect-metadata": "^0.1.8",
     "typescript": "^1.8.10"
   },
