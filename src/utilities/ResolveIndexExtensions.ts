@@ -25,7 +25,8 @@ export function getRelativeLibraryName(library: string, actualFilePath: string):
     if (!library.startsWith('.')) {
         return library;
     }
-    return '/' + workspace.asRelativePath(normalize(join(parse(actualFilePath).dir, library)));
+    let relative = '/' + workspace.asRelativePath(normalize(join(parse(actualFilePath).dir, library))).replace(/[/]$/g, '');
+    return relative;
 }
 
 export function getRelativeImportPath(library: string, actualFilePath: string): string {
