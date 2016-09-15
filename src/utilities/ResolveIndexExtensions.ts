@@ -36,6 +36,8 @@ export function getRelativeImportPath(library: string, actualFilePath: string): 
         relativePath = relative(actualDir, library);
     if (!relativePath.startsWith('.')) {
         relativePath = './' + relativePath;
+    } else if (relativePath === '..') {
+        relativePath += '/';
     }
     relativePath = relativePath.replace(/\\/g, '/');
     return relativePath;
