@@ -7,7 +7,7 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {existsSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {join, resolve, sep, normalize} from 'path';
+import {join, normalize, resolve, sep} from 'path';
 import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
 
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
@@ -34,6 +34,13 @@ export class ResolveIndex {
 
     public get index(): ResourceIndex {
         return this._index;
+    }
+
+    public get declarationInfos(): DeclarationInfo[] {
+        return Object
+            .keys(this.index)
+            .sort()
+            .reduce((all, key) => all.concat(this.index[key]), []);
     }
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private parser: TsResourceParser, private config: ExtensionConfig) {
@@ -130,7 +137,6 @@ export class ResolveIndex {
             }))
             .then(parsed => this.parseResources(parsed))
             .then(resources => {
-                console.log(resources);
                 delete this.parsedResources[removeResource];
                 for (let key in resources) {
                     this.parsedResources[key] = resources[key];
@@ -216,7 +222,7 @@ export class ResolveIndex {
                         }
                         index[declaration.name].push({
                             declaration,
-                            from: key
+                            from: key.replace(/[/]?index$/, '')
                         });
                     }
                 });

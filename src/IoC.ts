@@ -1,3 +1,4 @@
+import {ResolveCompletionItemProvider} from './provider/ResolveCompletionItemProvider';
 import {ResolveIndex} from './caches/ResolveIndex';
 import {ExtensionConfig} from './ExtensionConfig';
 import {BaseExtension} from './extensions/BaseExtension';
@@ -24,10 +25,14 @@ injector.bind(ResolveQuickPickProvider).to(ResolveQuickPickProvider).inSingleton
 injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
 injector.bind(TsResourceParser).to(TsResourceParser);
 
+// Completion provider
+injector.bind(ResolveCompletionItemProvider).to(ResolveCompletionItemProvider).inSingletonScope();
+
 // Extensions
 injector.bind<BaseExtension>('Extension').to(ResolveExtension).inSingletonScope();
 injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 
+// Logging
 injector.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((context: interfaces.Context) => {
     return (prefix?: string) => {
         let extContext = context.kernel.get<ExtensionContext>('context'),

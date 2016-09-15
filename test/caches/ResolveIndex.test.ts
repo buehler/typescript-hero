@@ -60,7 +60,7 @@ describe('ResolveIndex', () => {
             let list = resolveIndex.index['FancierLibraryClass'];
             list.should.be.an('array').with.lengthOf(2);
 
-            list[0].from.should.equal('/resourceIndex/index');
+            list[0].from.should.equal('/resourceIndex');
             list[0].declaration.should.be.an.instanceof(ClassDeclaration);
             list[1].from.should.equal('fancy-library/FancierLibraryClass');
             list[1].declaration.should.be.an.instanceof(ClassDeclaration);
