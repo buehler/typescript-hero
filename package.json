@@ -142,7 +142,10 @@
             "typescript",
             "tslint",
             "node_modules/typings",
-            "node_modules/typings-core"
+            "node_modules/typings-core",
+            "build",
+            "out",
+            "dist"
           ],
           "description": "Defines partial pathes that are ignored during indexing (e.g. 'node_modules' would exclude all modules)."
         },

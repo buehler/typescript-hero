@@ -4,6 +4,9 @@
         "tslint",
         "node_modules/typings",
         "node_modules/typings-core",
+        "build",
+        "out",
+        "dist",
         "resourceParser"
     ],
     "typescriptHero.verbosity": "All"
