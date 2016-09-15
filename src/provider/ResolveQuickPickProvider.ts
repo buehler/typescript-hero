@@ -4,7 +4,7 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
 import {getDeclarationsFilteredByImports} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
-import {TextEditor, window} from 'vscode';
+import {TextDocument, window} from 'vscode';
 
 @injectable()
 export class ResolveQuickPickProvider {
@@ -35,7 +35,7 @@ export class ResolveQuickPickProvider {
     private buildQuickPickList(activeDocument: TextDocument, cursorSymbol?: string): Promise<ResolveQuickPickItem[]> {
         return this.parser.parseSource(activeDocument.getText())
             .then(parsedSource => {
-                let declarations = getDeclarationsFilteredByImports(this.resolveIndex, activeDocument.document.fileName, parsedSource.imports);
+                let declarations = getDeclarationsFilteredByImports(this.resolveIndex, activeDocument.fileName, parsedSource.imports);
                 if (cursorSymbol) {
                     declarations = declarations.filter(o => o.declaration.name.startsWith(cursorSymbol));
                 }
