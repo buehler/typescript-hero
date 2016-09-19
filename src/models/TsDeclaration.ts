@@ -1,3 +1,4 @@
+import {TsResource} from './TsResource';
 import {CompletionItemKind} from 'vscode';
 
 export abstract class TsDeclaration {
@@ -107,6 +108,20 @@ export class ParameterDeclaration extends TsDeclaration {
 }
 
 export class DefaultDeclaration extends TsDeclaration {
+    private exported: TsDeclaration;
+
+    public get exportedDeclaration(): TsDeclaration {
+        if (!this.exported) {
+            this.exported = this.resource.declarations.find(o => o.name === this.name);
+        }
+
+        return this.exported;
+    }
+
+    constructor(name: string, private resource: TsResource) {
+        super(name);
+    }
+
     public getItemKind(): CompletionItemKind {
         return CompletionItemKind.File;
     }
