@@ -207,11 +207,10 @@ export class TsResourceParser {
                 tsResource.exports.push(ex);
             }
         } else {
+            let literal = node.expression as Identifier;
             if (node.isExportEquals) {
-                let literal = node.expression as Identifier;
                 tsResource.exports.push(new TsAssignedExport(literal.text, tsResource));
             } else {
-                let literal = node.expression as Identifier;
                 tsResource.declarations.push(new DefaultDeclaration(literal.text, tsResource));
             }
         }
