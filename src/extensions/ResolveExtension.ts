@@ -219,14 +219,15 @@ export class ResolveExtension extends BaseExtension {
                     return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
                 });
                 let promise = Promise.resolve(imports),
-                    defaultImportAlias = () => {
+                    defaultImportAlias = (declaration: DefaultDeclaration) => {
                         promise = promise.then(imports => window.showInputBox({
                             prompt: 'Please enter a variable name for the default export..',
                             placeHolder: 'Default export name',
+                            //TODO: wait for bugfix of vscode ... code: value: declaration.name,
                             validateInput: s => !!s ? '' : 'Please enter a variable name'
                         }).then(defaultAlias => {
                             if (defaultAlias) {
-                                imports.push(new TsDefaultImport(item.label, defaultAlias));
+                                imports.push(new TsDefaultImport(getRelativeImportPath(item.description, window.activeTextEditor.document.fileName), defaultAlias));
                             }
                             return imports;
                         }));
@@ -236,7 +237,7 @@ export class ResolveExtension extends BaseExtension {
                     if (declaration instanceof ModuleDeclaration) {
                         imports.push(new TsNamespaceImport(item.description, item.label));
                     } else if (declaration instanceof DefaultDeclaration) {
-                        defaultImportAlias();
+                        defaultImportAlias(declaration);
                     } else {
                         let library = getRelativeImportPath(item.declarationInfo.from, window.activeTextEditor.document.fileName);
                         let named = new TsNamedImport(library);
@@ -244,7 +245,7 @@ export class ResolveExtension extends BaseExtension {
                         imports.push(named);
                     }
                 } else if (declaration instanceof DefaultDeclaration) {
-                    defaultImportAlias();
+                    defaultImportAlias(declaration);
                 } else if (imported instanceof TsNamedImport) {
                     imported.specifiers.push(new TsResolveSpecifier(item.label));
                 }

@@ -107,7 +107,7 @@ export class ParameterDeclaration extends TsDeclaration {
     }
 }
 
-export class DefaultDeclaration extends TsDeclaration {
+export class DefaultDeclaration extends TsExportableDeclaration {
     private exported: TsDeclaration;
 
     public get exportedDeclaration(): TsDeclaration {
@@ -119,7 +119,7 @@ export class DefaultDeclaration extends TsDeclaration {
     }
 
     constructor(name: string, private resource: TsResource) {
-        super(name);
+        super(name, true);
     }
 
     public getItemKind(): CompletionItemKind {
