@@ -46,10 +46,6 @@ class ResolverConfig {
         return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
     }
 
-    public get minCharactersForCompletion(): number {
-        return workspace.getConfiguration(sectionKey).get<number>('resolver.minCharactersForCompletion');
-    }
-
     public get importOptions(): TsImportOptions {
         return {
             pathDelimiter: this.pathStringDelimiter,
