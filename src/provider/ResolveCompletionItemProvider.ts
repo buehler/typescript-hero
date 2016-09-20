@@ -35,7 +35,6 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         if (!searchWord ||
             token.isCancellationRequested ||
             !this.index.indexReady ||
-            searchWord.length < this.config.resolver.minCharactersForCompletion ||
             (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
             lineText.match(/^import .*;$/g) ||
