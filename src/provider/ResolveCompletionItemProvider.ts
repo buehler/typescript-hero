@@ -37,7 +37,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             !this.index.indexReady ||
             (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
-            lineText.match(/^import .*;$/g) ||
+            lineText.match(/^import .*$/g) ||
             lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
             return Promise.resolve(null);
         }

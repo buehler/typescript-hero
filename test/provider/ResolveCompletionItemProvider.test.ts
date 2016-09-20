@@ -1,27 +1,142 @@
+import {Injector} from '../../src/IoC';
+import {ResolveCompletionItemProvider} from '../../src/provider/ResolveCompletionItemProvider';
 import * as chai from 'chai';
+import * as vscode from 'vscode';
+import {join} from 'path';
 
-chai.should();
+let should = chai.should();
 
-// TODO: add when completion item provider is ready.
+describe('ResolveCompletionItemProvider', () => {
 
-// describe('ResolveCompletionItemProvider', () => {
+    let document: vscode.TextDocument,
+        provider: ResolveCompletionItemProvider,
+        token = new vscode.CancellationTokenSource().token;
 
-//     it('shoud resolve to null when less then 2 characters');
+    before(() => {
+        provider = Injector.get(ResolveCompletionItemProvider);
+        let file = join(process.cwd(), '.test/completionProvider/codeCompletionFile.ts');
+        return vscode.workspace
+            .openTextDocument(file)
+            .then(doc => document = doc);
+    });
 
-//     it('shoud resolve to null if typing in a string');
+    it('shoud resolve to null if typing in a string', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(0, 2), token)
+            .then(result => {
+                try {
+                    should.not.exist(result);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud resolve to null if after a "." (PropertyAccess)');
+    it('shoud resolve to null if after a "." (PropertyAccess)', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(1, 9), token)
+            .then(result => {
+                try {
+                    should.not.exist(result);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud resolve to null if in a comment');
+    it('shoud resolve to null if in a comment', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(2, 4), token)
+            .then(result => {
+                try {
+                    should.not.exist(result);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud resolve to null if writing an import');
+    it('shoud resolve to null if writing an import', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(3, 10), token)
+            .then(result => {
+                try {
+                    should.not.exist(result);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud create a completion list');
+    it('shoud create a completion list', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(6, 4), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result[0].label.should.equal('MyClass');
+                    result[0].detail.should.equal('/resourceIndex');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud add an insert text edit if import would be new');
+    it('shoud add an insert text edit if import would be new', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(6, 4), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result[0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
+                    result[0].additionalTextEdits[0].newText.should.equal('import {MyClass} from \'../resourceIndex\';\n');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud add a replace text edit if import will be updated with new specifier');
+    it('shoud add a replace text edit if import will be updated with new specifier', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(9, 10), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result[0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
+                    result[0].additionalTextEdits[0].newText.should.equal("import {AlreadyImported, ShouldBeImported} from './codeCompletionImports';\n");
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-//     it('shoud add no text edit if import is already imported');
+    it('shoud add no text edit if import is already imported', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(11, 9), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result[0].additionalTextEdits.should.be.an('array').with.lengthOf(0);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
 
-// });
+});
