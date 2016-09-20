@@ -1,8 +1,8 @@
 import {Injector} from '../../src/IoC';
 import {ResolveCompletionItemProvider} from '../../src/provider/ResolveCompletionItemProvider';
 import * as chai from 'chai';
-import * as vscode from 'vscode';
 import {join} from 'path';
+import * as vscode from 'vscode';
 
 let should = chai.should();
 
