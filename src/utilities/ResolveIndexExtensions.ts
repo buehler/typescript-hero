@@ -8,13 +8,13 @@ export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, doc
     let declarations = resolveIndex.declarationInfos;
 
     for (let tsImport of imports) {
-        if (tsImport instanceof TsNamedImport) {
             let importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath);
+        if (tsImport instanceof TsNamedImport) {
             declarations = declarations.filter(o => o.from !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.declaration.name));
         } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         } else if (tsImport instanceof TsDefaultImport) {
-            declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || tsImport.libraryName !== o.from));
+            declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
         }
     }
 

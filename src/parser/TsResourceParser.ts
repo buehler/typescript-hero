@@ -11,7 +11,6 @@ import {ArrayBindingPattern, BindingElement, ClassDeclaration, ConstructorDeclar
 import {ClassDeclaration as TshClassDeclaration, ConstructorDeclaration as TshConstructorDeclaration, DefaultDeclaration, EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, InterfaceDeclaration as TshInterfaceDeclaration, MethodDeclaration as TshMethodDeclaration, ParameterDeclaration as TshParameterDeclaration, PropertyDeclaration as TshPropertyDeclaration, PropertyVisibility, TsExportableCallableDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
 import {CancellationToken, Uri} from 'vscode';
 
-
 const usageNotAllowedParents = [
     SyntaxKind.ImportEqualsDeclaration,
     SyntaxKind.ImportSpecifier,
@@ -58,6 +57,13 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
 
     let children = node.parent.getChildren();
     return children.indexOf(node) === 0;
+}
+
+function getDefaultResourceIdentifier(resource: TsResource): string {
+    if (resource instanceof TsFile && resource.isWorkspaceFile) {
+        return resource.parsedPath.name;
+    }
+    return resource.getIdentifier();
 }
 
 @injectable()
@@ -211,7 +217,8 @@ export class TsResourceParser {
             if (node.isExportEquals) {
                 tsResource.exports.push(new TsAssignedExport(literal.text, tsResource));
             } else {
-                tsResource.declarations.push(new DefaultDeclaration(literal.text, tsResource));
+                let name = (literal && literal.text) ? literal.text : getDefaultResourceIdentifier(tsResource);
+                tsResource.declarations.push(new DefaultDeclaration(name, tsResource));
             }
         }
     }
