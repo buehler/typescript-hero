@@ -9,7 +9,7 @@ import {TsResourceParser} from '../parser/TsResourceParser';
 import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {getRelativeLibraryName, getAbsolutLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
@@ -215,7 +215,7 @@ export class ResolveExtension extends BaseExtension {
                 let declaration = item.declarationInfo.declaration;
 
                 let imported = imports.find(o => {
-                    let lib = getRelativeLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
+                    let lib = getAbsolutLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
                     return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
                 });
                 let promise = Promise.resolve(imports),
@@ -227,7 +227,7 @@ export class ResolveExtension extends BaseExtension {
                             validateInput: s => !!s ? '' : 'Please enter a variable name'
                         }).then(defaultAlias => {
                             if (defaultAlias) {
-                                imports.push(new TsDefaultImport(getRelativeImportPath(item.description, window.activeTextEditor.document.fileName), defaultAlias));
+                                imports.push(new TsDefaultImport(getRelativeLibraryName(item.description, window.activeTextEditor.document.fileName), defaultAlias));
                             }
                             return imports;
                         }));
@@ -239,7 +239,7 @@ export class ResolveExtension extends BaseExtension {
                     } else if (declaration instanceof DefaultDeclaration) {
                         defaultImportAlias(declaration);
                     } else {
-                        let library = getRelativeImportPath(item.declarationInfo.from, window.activeTextEditor.document.fileName);
+                        let library = getRelativeLibraryName(item.declarationInfo.from, window.activeTextEditor.document.fileName);
                         let named = new TsNamedImport(library);
                         named.specifiers.push(new TsResolveSpecifier(item.label));
                         imports.push(named);
