@@ -1,6 +1,6 @@
 # Typescript Hero
 
-`typescript hero` is a vscode extension that makes your live easier.
+TypeScript Hero is a vscode extension that makes your live easier.
 When you are coding a lot of `TypeScript` you may want vscode to automatically
 include your imports.
 
@@ -84,19 +84,8 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
-### 0.7.0
-#### Added
-- More tests! :-) ([#8](https://github.com/buehler/typescript-hero/issues/8))
-- CodeCompletionProvider that autocompletes your symbols and adds the imports if necessary ([#5](https://github.com/buehler/typescript-hero/issues/5))
-- Support for `*.tsx` files ([#42](https://github.com/buehler/typescript-hero/issues/42))
-
-#### Changed
-- Import under cursor does only import if it's an exact match (PR [#35](https://github.com/buehler/typescript-hero/pull/35))
-- Own imports (workspace) are sorted to the top ([#37](https://github.com/buehler/typescript-hero/issues/37))
-- Updated inversify to v2
-
+### 0.7.1
 #### Fixed
-- On Windows, forwardslashes will be used instead of backslashes ([#19](https://github.com/buehler/typescript-hero/issues/19)) (definitly this time)
-- `export xxx as yyy` does now correctly use the alias of the declaration ([#36](https://github.com/buehler/typescript-hero/issues/36))
-- Build directories are ignored by default (for indexing) ([#48](https://github.com/buehler/typescript-hero/issues/48))
-- Substructures import parent index.ts files correctly now ([#49](https://github.com/buehler/typescript-hero/issues/49))
+- Code completions does show when user types ([#55](https://github.com/buehler/typescript-hero/issues/55))
+- Default exports and imports are working ([#40](https://github.com/buehler/typescript-hero/issues/40))
+- New created files are correctly indexed now ([#46](https://github.com/buehler/typescript-hero/issues/46))
