@@ -4,7 +4,7 @@
         "target": "es5",
         "outDir": "out",
         "noLib": true,
-        "sourceMap": true,
+        "sourceMap": false,
         "rootDir": ".",
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true

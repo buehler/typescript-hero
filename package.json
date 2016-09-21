@@ -36,9 +36,9 @@
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "bootstrap": "npm install && typings install",
-    "vscode:prepublish": "npm run build && npm prune --production",
+    "vscode:prepublish": "npm run bootstrap && npm run build && npm prune --production",
     "precompile": "del ./out",
-    "compile": "tsc -w",
+    "compile": "tsc -w --sourceMap",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test",
     "build": "del ./out && tsc",
