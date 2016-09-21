@@ -91,21 +91,19 @@ export class ResolveIndex {
 
     public rebuildForFile(filePath: string): Promise<void> {
         let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
-            rebuildFiles = [rebuildResource];
+            rebuildFiles = [<Uri>{ fsPath: filePath }];
         Object
             .keys(this.parsedResources)
             .filter(o => o.startsWith('/'))
             .forEach(key => {
                 let resource = this.parsedResources[key] as TsFile;
                 if (this.doesExportResource(resource, rebuildResource)) {
-                    rebuildFiles.push(key);
+                    rebuildFiles.push(<Uri>{fsPath: resource.filePath});
                 }
             });
 
         return this.parser
-            .parseFiles(rebuildFiles.map(o => this.parsedResources[o] as TsFile).map(o => {
-                return <Uri>{ fsPath: o.filePath };
-            }))
+            .parseFiles(rebuildFiles)
             .then(parsed => this.parseResources(parsed))
             .then(resources => {
                 for (let key in resources) {
@@ -127,14 +125,12 @@ export class ResolveIndex {
             .forEach(key => {
                 let resource = this.parsedResources[key] as TsFile;
                 if (this.doesExportResource(resource, removeResource)) {
-                    rebuildFiles.push(key);
+                    rebuildFiles.push(<Uri>{fsPath: resource.filePath});
                 }
             });
 
         return this.parser
-            .parseFiles(rebuildFiles.map(o => this.parsedResources[o] as TsFile).map(o => {
-                return <Uri>{ fsPath: o.filePath };
-            }))
+            .parseFiles(rebuildFiles)
             .then(parsed => this.parseResources(parsed))
             .then(resources => {
                 delete this.parsedResources[removeResource];
