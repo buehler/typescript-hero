@@ -6,7 +6,7 @@ import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getRelativeImportPath, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {getRelativeLibraryName, getAbsolutLibraryName} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
 import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit} from 'vscode';
 
@@ -75,7 +75,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             if (o instanceof TsNamespaceImport || o instanceof TsExternalModuleImport) {
                 return declaration.from === o.libraryName;
             } else if (o instanceof TsNamedImport) {
-                let importedLib = getRelativeLibraryName(o.libraryName, document.fileName);
+                let importedLib = getAbsolutLibraryName(o.libraryName, document.fileName);
                 return importedLib === declaration.from && o.specifiers.some(s => s.specifier === declaration.declaration.name);
             }
             return false;
@@ -85,7 +85,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         let imp = parsedSource.imports.find(o => {
             if (o instanceof TsNamedImport) {
-                let importedLib = getRelativeLibraryName(o.libraryName, document.fileName);
+                let importedLib = getAbsolutLibraryName(o.libraryName, document.fileName);
                 return importedLib === declaration.from;
             }
             return false;
@@ -106,7 +106,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
             ];
         } else {
-            let library = getRelativeImportPath(declaration.from, document.fileName);
+            let library = getRelativeLibraryName(declaration.from, document.fileName);
             let named = new TsNamedImport(library);
             named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [

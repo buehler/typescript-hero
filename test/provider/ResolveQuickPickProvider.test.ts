@@ -122,7 +122,20 @@ describe('ResolveQuickPickProvider', () => {
                 });
         });
 
-        it('shoud filter already imported default imports');
+        it('shoud filter already imported default imports', done => {
+            let file = join(process.cwd(), '.test/defaultExport/codefile.ts');
+            vscode.workspace
+                .openTextDocument(file)
+                .then(openDocument => provider.buildQuickPickList(openDocument))
+                .then(items => {
+                    try {
+                        (items.some(o => o.label === 'myDefaultExportedFunction')).should.be.false;
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                });
+        });
 
     });
 

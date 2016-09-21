@@ -136,7 +136,7 @@ describe('TsResourceParser', () => {
 
         it('should parse default export', () => {
             parsed.declarations[0].should.be.an.instanceOf(DefaultDeclaration);
-            parsed.declarations[0].name.should.equal('/resourceParser/exportsOnly');
+            parsed.declarations[0].name.should.equal('DefaultExport');
         });
 
     });

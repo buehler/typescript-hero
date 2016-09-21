@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Fixed
 - Code completions does show when user types ([#55](https://github.com/buehler/typescript-hero/issues/55))
+- Default exports and imports are working ([#40](https://github.com/buehler/typescript-hero/issues/40))
 
 ## [0.7.0]
 #### Added
