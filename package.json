@@ -4,10 +4,10 @@
   "description": "Additional tooling for the typescript language",
   "icon": "etc/icon.png",
   "galleryBanner": {
-    "color": "#7E7865",
+    "color": "#1e324c",
     "theme": "dark"
   },
-  "version": "0.7.0",
+  "version": "0.7.1",
   "publisher": "rbbit",
   "engines": {
     "vscode": "^1.5.0",

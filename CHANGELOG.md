@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+
+## [0.7.1]
 #### Fixed
 - Code completions does show when user types ([#55](https://github.com/buehler/typescript-hero/issues/55))
 - Default exports and imports are working ([#40](https://github.com/buehler/typescript-hero/issues/40))
@@ -67,7 +70,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.7.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.7.1...master
+[0.7.1]: https://github.com/buehler/typescript-hero/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/buehler/typescript-hero/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/buehler/typescript-hero/compare/v0.5.4...v0.6.0
 [0.5.4]: https://github.com/buehler/typescript-hero/compare/v0.5.0...v0.5.4
