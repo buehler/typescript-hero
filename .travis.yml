@@ -28,8 +28,9 @@ deploy:
   script: ./deploy.sh
   skip_cleanup: true
   on:
-    tags: true
     repo: buehler/typescript-hero
+
+after_failure: "cat $TRAVIS_BUILD_DIR/npm-debug.log"
 
 notifications:
   email: false
