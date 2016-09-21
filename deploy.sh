@@ -10,5 +10,6 @@ if [ $TRAVIS_OS_NAME == "osx" ]; then
     if [ $? -ne 0 ]; then
         echo "There was a problem with the deployment."
         cat $TRAVIS_BUILD_DIR/npm-debug.log
+        exit 1
     fi
 fi
