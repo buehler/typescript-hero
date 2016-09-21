@@ -91,16 +91,7 @@ export class ResolveIndex {
 
     public rebuildForFile(filePath: string): Promise<void> {
         let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
-            rebuildFiles = [<Uri>{ fsPath: filePath }];
-        Object
-            .keys(this.parsedResources)
-            .filter(o => o.startsWith('/'))
-            .forEach(key => {
-                let resource = this.parsedResources[key] as TsFile;
-                if (this.doesExportResource(resource, rebuildResource)) {
-                    rebuildFiles.push(<Uri>{fsPath: resource.filePath});
-                }
-            });
+            rebuildFiles = [<Uri>{ fsPath: filePath }, ...this.getExportedResources(rebuildResource)];
 
         return this.parser
             .parseFiles(rebuildFiles)
@@ -118,16 +109,7 @@ export class ResolveIndex {
 
     public removeForFile(filePath: string): Promise<void> {
         let removeResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
-            rebuildFiles = [];
-        Object
-            .keys(this.parsedResources)
-            .filter(o => o.startsWith('/'))
-            .forEach(key => {
-                let resource = this.parsedResources[key] as TsFile;
-                if (this.doesExportResource(resource, removeResource)) {
-                    rebuildFiles.push(<Uri>{fsPath: resource.filePath});
-                }
-            });
+            rebuildFiles = this.getExportedResources(removeResource);
 
         return this.parser
             .parseFiles(rebuildFiles)
@@ -329,6 +311,20 @@ export class ResolveIndex {
                 this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
                 return uris.reduce((all, cur) => all.concat(cur), []);
             });
+    }
+
+    private getExportedResources(resourceToCheck: string): Uri[] {
+        let resources = [];
+        Object
+            .keys(this.parsedResources)
+            .filter(o => o.startsWith('/'))
+            .forEach(key => {
+                let resource = this.parsedResources[key] as TsFile;
+                if (this.doesExportResource(resource, resourceToCheck)) {
+                    resources.push(<Uri>{ fsPath: resource.filePath });
+                }
+            });
+        return resources;
     }
 
     private doesExportResource(resource: TsFile, resourcePath: string): boolean {
