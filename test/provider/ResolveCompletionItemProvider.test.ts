@@ -124,13 +124,28 @@ describe('ResolveCompletionItemProvider', () => {
             .catch(done);
     });
 
-    it('shoud add no text edit if import is already imported', done => {
+    it('shoud resolve to no import if import is already imported', done => {
         provider
             .provideCompletionItems(document, new vscode.Position(11, 9), token)
             .then(result => {
                 try {
                     should.exist(result);
-                    result[0].additionalTextEdits.should.be.an('array').with.lengthOf(0);
+                    result.should.be.an('array').with.lengthOf(0);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
+
+    it('shoud suggeset an item from the own file', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(15, 5), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result.should.be.an('array').with.lengthOf(0);
                     done();
                 } catch (e) {
                     done(e);
