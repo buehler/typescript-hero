@@ -139,4 +139,19 @@ describe('ResolveCompletionItemProvider', () => {
             .catch(done);
     });
 
+    it('shoud suggeset an item from the own file', done => {
+        provider
+            .provideCompletionItems(document, new vscode.Position(15, 5), token)
+            .then(result => {
+                try {
+                    should.exist(result);
+                    result.should.be.an('array').with.lengthOf(0);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
+            })
+            .catch(done);
+    });
+
 });

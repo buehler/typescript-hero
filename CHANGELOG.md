@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Fixed
 - Autocomplete does not suggest items that are already imported
+- Autocomplete does not suggest items of the own file ([#61](https://github.com/buehler/typescript-hero/issues/61)) 
 
 ## [0.7.1]
 #### Fixed

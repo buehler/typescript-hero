@@ -10,3 +10,7 @@ import {AlreadyImported} from './codeCompletionImports';
 ShouldBeImpor
 
 AlreadyImp
+
+class YayAClass { }
+
+YayACla
