@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
-
+#### Fixed
+- Autocomplete does not suggest items that are already imported
 
 ## [0.7.1]
 #### Fixed

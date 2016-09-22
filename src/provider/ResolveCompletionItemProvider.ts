@@ -6,7 +6,7 @@ import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getRelativeLibraryName, getAbsolutLibraryName} from '../utilities/ResolveIndexExtensions';
+import {getAbsolutLibraryName, getDeclarationsFilteredByImports, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
 import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit} from 'vscode';
 
@@ -49,12 +49,15 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 if (token.isCancellationRequested) {
                     return [];
                 }
-                let declarations = this.index.declarationInfos;
+                
                 if (token.isCancellationRequested) {
                     return [];
                 }
 
-                let filtered = declarations.filter(o => o.declaration.name.indexOf(searchWord) >= 0).map(o => {
+                let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports)
+                    .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name));
+
+                let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
                     let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
                     item.detail = o.from;
                     item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
