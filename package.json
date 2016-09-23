@@ -161,7 +161,7 @@
             "TopOfFile",
             "AtCursorLocation"
           ],
-          "default": "topOfFile",
+          "default": "TopOfFile",
           "description": "Defines the location of new imports."
         },
         "typescriptHero.restartDebugger.watchFolders": {
