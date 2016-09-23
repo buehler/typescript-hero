@@ -32,7 +32,7 @@ export class TsNamedImport extends TsImport {
 
     public toMultiLineImport({pathDelimiter}: TsImportOptions): string {
         return `import {
-    ${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(',\n')}
+${this.specifiers.sort(this.specifierSort).map(o => `    ${o.toImport()}`).join(',\n')}
 } from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 
