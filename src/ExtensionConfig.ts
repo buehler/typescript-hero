@@ -1,4 +1,4 @@
-import {TsImportOptions} from './models/TsImportOptions';
+import {ImportLocation, TsImportOptions} from './models/TsImportOptions';
 import {LogLevel} from './utilities/Logger';
 import {injectable} from 'inversify';
 import {workspace} from 'vscode';
@@ -48,6 +48,11 @@ class ResolverConfig {
 
     public get multiLineWrapThreshold(): number {
         return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
+    }
+
+    public get newImportLocation(): ImportLocation {
+        let configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
+        return ImportLocation[configString];
     }
 
     public get importOptions(): TsImportOptions {

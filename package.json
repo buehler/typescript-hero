@@ -156,6 +156,14 @@
           "default": 80,
           "description": "Defines the threshold when an import should be wrapped into a multiline import."
         },
+        "typescriptHero.resolver.newImportLocation": {
+          "enum": [
+            "TopOfFile",
+            "AtCursorLocation"
+          ],
+          "default": "topOfFile",
+          "description": "Defines the location of new imports."
+        },
         "typescriptHero.restartDebugger.watchFolders": {
           "type": "array",
           "items": {
