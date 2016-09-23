@@ -289,15 +289,17 @@ export class ResolveExtension extends BaseExtension {
                 fromLine = lineNr;
                 multiLine = true;
             } else if (multiLine && importLine.match(/from\s?['"].*['"];?/)) {
-                let lineText = '';
+                let lineText = '',
+                    localFromLine = fromLine,
+                    localToLine = lineNr;
                 for (let line = fromLine; line <= lineNr; line++) {
                     lineText += doc.lineAt(line).text;
                 }
                 parsings.push(this.parser.parseSource(lineText).then(parsed => {
                     return {
                         import: parsed.imports[0],
-                        from: fromLine,
-                        to: lineNr
+                        from: localFromLine,
+                        to: localToLine
                     };
                 }));
                 multiLine = false;
