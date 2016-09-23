@@ -12,7 +12,7 @@ import {Logger, LoggerFactory} from '../utilities/Logger';
 import {getRelativeLibraryName, getAbsolutLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace} from 'vscode';
+import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace, Range} from 'vscode';
 
 type ImportInformation = {};
 
@@ -255,17 +255,36 @@ export class ResolveExtension extends BaseExtension {
 
     private commitDocumentImports(newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
         let doc = window.activeTextEditor.document,
-            parsings = [];
+            parsings = [],
+            importLine: string,
+            multiLine = false,
+            fromLine;
 
         for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
-            let line = doc.lineAt(lineNr);
-            if (line.text.match(/^import .*;$/g)) {
-                parsings.push(this.parser.parseSource(line.text).then(parsed => {
+            importLine = doc.lineAt(lineNr).text;
+            if (importLine.match(/^import .*;$/g)) {
+                parsings.push(this.parser.parseSource(importLine).then(parsed => {
                     return {
                         import: parsed.imports[0],
-                        lineNr
+                        from: lineNr
                     };
                 }));
+            } else if (importLine.match(/^import {(.+?)*[^;]?/g)) {
+                fromLine = lineNr;
+                multiLine = true;
+            } else if (multiLine && importLine.match(/from\s?['"].*['"];?/)) {
+                let lineText = '';
+                for (let line = fromLine; line <= lineNr; line++) {
+                    lineText += doc.lineAt(line).text;
+                }
+                parsings.push(this.parser.parseSource(lineText).then(parsed => {
+                    return {
+                        import: parsed.imports[0],
+                        from: fromLine,
+                        to: lineNr
+                    };
+                }));
+                multiLine = false;
             }
         }
 
@@ -274,7 +293,7 @@ export class ResolveExtension extends BaseExtension {
             .then(documentImports => window.activeTextEditor.edit(builder => {
                 if (sortAndReorder) {
                     for (let imp of documentImports) {
-                        builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                        builder.delete(getLineRange(imp));
                     }
                     newImports = [
                         ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
@@ -284,13 +303,13 @@ export class ResolveExtension extends BaseExtension {
                 } else {
                     for (let imp of documentImports) {
                         if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
-                            builder.delete(window.activeTextEditor.document.lineAt(imp.lineNr).rangeIncludingLineBreak);
+                            builder.delete(getLineRange(imp));
                         }
                     }
                     for (let imp of newImports) {
                         let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
                         if (existingImport) {
-                            builder.replace(window.activeTextEditor.document.lineAt(existingImport.lineNr).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions));
+                            builder.replace(getLineRange(existingImport), imp.toImport(this.config.resolver.importOptions));
                         } else {
                             builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
                         }
@@ -312,4 +331,12 @@ export class ResolveExtension extends BaseExtension {
             word = editor.document.getWordRangeAtPosition(selection.active);
         return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
+}
+
+function getLineRange({from, to}: { import: TsImport, from: number, to?: number }): Range {
+    let document = window.activeTextEditor.document;
+    if (!to) {
+        return document.lineAt(from).rangeIncludingLineBreak;
+    }
+    return new Range(document.lineAt(from).rangeIncludingLineBreak.start, document.lineAt(to).rangeIncludingLineBreak.end);
 }
