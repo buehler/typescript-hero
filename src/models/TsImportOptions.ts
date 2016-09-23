@@ -1,1 +1,5 @@
-export type TsImportOptions = { pathDelimiter: string, spaceBraces: boolean };
+export type TsImportOptions = {
+    pathDelimiter: string,
+    spaceBraces: boolean,
+    multiLineWrapThreshold: number
+};

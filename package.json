@@ -149,6 +149,13 @@
           ],
           "description": "Defines partial pathes that are ignored during indexing (e.g. 'node_modules' would exclude all modules)."
         },
+        "typescriptHero.resolver.multiLineWrapThreshold": {
+          "type": "number",
+          "minimum": 1,
+          "multipleOf": 1,
+          "default": 80,
+          "description": "Defines the threshold when an import should be wrapped into a multiline import."
+        },
         "typescriptHero.restartDebugger.watchFolders": {
           "type": "array",
           "items": {
