@@ -6,13 +6,13 @@ import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
-import {RESOLVE_TRIGGER_CHARACTERS, ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
+import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getRelativeLibraryName, getAbsolutLibraryName} from '../utilities/ResolveIndexExtensions';
+import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import {commands, ExtensionContext, FileSystemWatcher, languages, Position, StatusBarAlignment, Uri, window, workspace, Range} from 'vscode';
+import {commands, ExtensionContext, FileSystemWatcher, languages, Position, Range, StatusBarAlignment, Uri, window, workspace} from 'vscode';
 
 type ImportInformation = {};
 
@@ -309,7 +309,13 @@ export class ResolveExtension extends BaseExtension {
                     for (let imp of newImports) {
                         let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
                         if (existingImport) {
-                            builder.replace(getLineRange(existingImport), imp.toImport(this.config.resolver.importOptions));
+                            let importString: string;
+                            if (existingImport.to && imp instanceof TsNamedImport) {
+                                importString = imp.toMultiLineImport(this.config.resolver.importOptions);
+                            } else {
+                                importString = imp.toImport(this.config.resolver.importOptions);
+                            }
+                            builder.replace(getLineRange(existingImport), importString);
                         } else {
                             builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
                         }
