@@ -11,8 +11,7 @@ export class ResolveQuickPickItem implements QuickPickItem {
     public description: string;
 
     constructor(public declarationInfo: DeclarationInfo) {
-        //TODO: export alias (export xxx as yyy)
         this.description = this.declarationInfo.from;
-        this.label = this.declarationInfo.declaration.name; // || alias.
+        this.label = this.declarationInfo.declaration.name;
     }
 }
