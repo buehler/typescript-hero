@@ -64,6 +64,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | pathStringDelimiter                   | The string delimiter to use for the imports                                          |
 | ignorePatterns                        | If any of these strings is part of a file path, the file is ignored                  |
 | insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`) |
+| multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                     |
 
 ### Debug session restarter
 
