@@ -22,8 +22,18 @@ export class TsStringImport extends TsImport {
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
-    public toImport({pathDelimiter, spaceBraces}: TsImportOptions): string {
-        return `import {${spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${spaceBraces ? ' ' : ''}} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    public toImport({pathDelimiter, spaceBraces, multiLineWrapThreshold}: TsImportOptions): string {
+        let importString = `import {${spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${spaceBraces ? ' ' : ''}} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+        if (importString.length > multiLineWrapThreshold) {
+            return this.toMultiLineImport({ pathDelimiter, spaceBraces, multiLineWrapThreshold });
+        }
+        return importString;
+    }
+
+    public toMultiLineImport({pathDelimiter}: TsImportOptions): string {
+        return `import {
+${this.specifiers.sort(this.specifierSort).map(o => `    ${o.toImport()}`).join(',\n')}
+} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 
     private specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {

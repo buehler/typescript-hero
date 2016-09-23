@@ -46,10 +46,15 @@ class ResolverConfig {
         return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
     }
 
+    public get multiLineWrapThreshold(): number {
+        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
+    }
+
     public get importOptions(): TsImportOptions {
         return {
             pathDelimiter: this.pathStringDelimiter,
-            spaceBraces: this.insertSpaceBeforeAndAfterImportBraces
+            spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
+            multiLineWrapThreshold: this.multiLineWrapThreshold
         };
     }
 }

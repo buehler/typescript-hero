@@ -78,7 +78,7 @@ describe('ResolveIndex', () => {
             let idx: any = resolveIndex,
                 resources = idx.parsedResources;
             resources['/resourceIndex/SpecialExports'].declarations.length.should.equal(0);
-            resources['/resourceIndex/index'].declarations[2].name.should.equal('ExportAlias');
+            resources['/resourceIndex/index'].declarations[11].name.should.equal('ExportAlias');
         });
 
         it('should not contain items from the build directory', () => {
