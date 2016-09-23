@@ -65,6 +65,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | ignorePatterns                        | If any of these strings is part of a file path, the file is ignored                  |
 | insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`) |
 | multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                     |
+| newImportLocation                     | The location of new imports (at the top of the file, or at the cursor location)      |
 
 ### Debug session restarter
 

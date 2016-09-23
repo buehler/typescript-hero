@@ -3,3 +3,8 @@ export type TsImportOptions = {
     spaceBraces: boolean,
     multiLineWrapThreshold: number
 };
+
+export enum ImportLocation {
+    TopOfFile,
+    AtCursorLocation
+}

@@ -4,6 +4,7 @@ import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickIte
 import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {ImportLocation} from '../models/TsImportOptions';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
@@ -12,7 +13,7 @@ import {Logger, LoggerFactory} from '../utilities/Logger';
 import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import {commands, ExtensionContext, FileSystemWatcher, languages, Position, Range, StatusBarAlignment, Uri, window, workspace} from 'vscode';
+import {commands, ExtensionContext, FileSystemWatcher, languages, Position, Range, StatusBarAlignment, TextEditor, Uri, window, workspace} from 'vscode';
 
 type ImportInformation = {};
 
@@ -39,6 +40,21 @@ function importSort(i1: TsImport, i2: TsImport): number {
 
 function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
+}
+
+function getLineRange({from, to}: { import: TsImport, from: number, to?: number }): Range {
+    let document = window.activeTextEditor.document;
+    if (!to) {
+        return document.lineAt(from).rangeIncludingLineBreak;
+    }
+    return new Range(document.lineAt(from).rangeIncludingLineBreak.start, document.lineAt(to).rangeIncludingLineBreak.end);
+}
+
+function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
+    if (location === ImportLocation.TopOfFile) {
+        return new Position(0, 0);
+    }
+    return new Position(editor.selection.active.line, 0);
 }
 
 @injectable()
@@ -317,7 +333,10 @@ export class ResolveExtension extends BaseExtension {
                             }
                             builder.replace(getLineRange(existingImport), importString);
                         } else {
-                            builder.insert(new Position(0, 0), imp.toImport(this.config.resolver.importOptions));
+                            builder.insert(
+                                getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
+                                imp.toImport(this.config.resolver.importOptions)
+                            );
                         }
                     }
                 }
@@ -337,12 +356,4 @@ export class ResolveExtension extends BaseExtension {
             word = editor.document.getWordRangeAtPosition(selection.active);
         return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
-}
-
-function getLineRange({from, to}: { import: TsImport, from: number, to?: number }): Range {
-    let document = window.activeTextEditor.document;
-    if (!to) {
-        return document.lineAt(from).rangeIncludingLineBreak;
-    }
-    return new Range(document.lineAt(from).rangeIncludingLineBreak.start, document.lineAt(to).rangeIncludingLineBreak.end);
 }
