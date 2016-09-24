@@ -10,6 +10,8 @@ work with typescript.
 
 ## Features at a glance
 
+Here is a brief list, of what TypeScript Hero is capable of:
+
 - Add imports of your project or libraries to your current file
 - Add an import for the current name under the cursor
 - Intellisense that suggests symbols and automatically adds the needed imports
@@ -86,8 +88,16 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
-### 0.7.1
+### 0.8.0
+#### Added
+- Support for multiline imports ([#60](https://github.com/buehler/typescript-hero/issues/60))
+- Added setting for multiline threshold
+- Configurable new import location (at top of the file or at the cursor position) ([#41](https://github.com/buehler/typescript-hero/issues/41))
+- Asks for alias if a specifier is already present ([#44](https://github.com/buehler/typescript-hero/issues/44))
+
 #### Fixed
-- Code completions does show when user types ([#55](https://github.com/buehler/typescript-hero/issues/55))
-- Default exports and imports are working ([#40](https://github.com/buehler/typescript-hero/issues/40))
-- New created files are correctly indexed now ([#46](https://github.com/buehler/typescript-hero/issues/46))
+- Autocomplete does not suggest items that are already imported ([#64](https://github.com/buehler/typescript-hero/issues/64))
+- Autocomplete does not suggest items of the own file ([#61](https://github.com/buehler/typescript-hero/issues/61))
+- Does not generate duplicates when multiline imports are used ([#43](https://github.com/buehler/typescript-hero/issues/43))
+- Multiline imports were not working with multiple imports
+- Autocomplete does not add other classes from a file as well
