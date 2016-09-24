@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.8.0]
 #### Added
 - Support for multiline imports ([#60](https://github.com/buehler/typescript-hero/issues/60))
 - Added setting for multiline threshold
@@ -81,7 +83,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.7.1...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.8.0...master
+[0.8.0]: https://github.com/buehler/typescript-hero/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/buehler/typescript-hero/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/buehler/typescript-hero/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/buehler/typescript-hero/compare/v0.5.4...v0.6.0
