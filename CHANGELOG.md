@@ -7,11 +7,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Support for multiline imports ([#60](https://github.com/buehler/typescript-hero/issues/60))
 - Added setting for multiline threshold
 - Configurable new import location (at top of the file or at the cursor position) ([#41](https://github.com/buehler/typescript-hero/issues/41))
+- Asks for alias if a specifier is already present ([#44](https://github.com/buehler/typescript-hero/issues/44))
 
 #### Fixed
 - Autocomplete does not suggest items that are already imported ([#64](https://github.com/buehler/typescript-hero/issues/64))
 - Autocomplete does not suggest items of the own file ([#61](https://github.com/buehler/typescript-hero/issues/61))
 - Does not generate duplicates when multiline imports are used ([#43](https://github.com/buehler/typescript-hero/issues/43))
+- Multiline imports were not working with multiple imports
+- Autocomplete does not add other classes from a file as well
 
 ## [0.7.1]
 #### Fixed

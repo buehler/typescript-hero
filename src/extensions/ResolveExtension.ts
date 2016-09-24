@@ -1,19 +1,47 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
+import {
+    CommandQuickPickItem,
+    ResolveQuickPickItem
+} from '../models/QuickPickItems';
 import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
-import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {
+    TsAliasedImport,
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsImport,
+    TsNamedImport,
+    TsNamespaceImport,
+    TsStringImport
+} from '../models/TsImport';
 import {ImportLocation} from '../models/TsImportOptions';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
-import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
+import {
+    ResolveCompletionItemProvider
+} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {
+    getAbsolutLibraryName,
+    getRelativeLibraryName
+} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
-import {commands, ExtensionContext, FileSystemWatcher, languages, Position, Range, StatusBarAlignment, TextEditor, Uri, window, workspace} from 'vscode';
+import {
+    commands,
+    ExtensionContext,
+    FileSystemWatcher,
+    languages,
+    Position,
+    Range,
+    StatusBarAlignment,
+    TextEditor,
+    Uri,
+    window,
+    workspace
+} from 'vscode';
 
 type ImportInformation = {};
 
@@ -234,16 +262,39 @@ export class ResolveExtension extends BaseExtension {
                     let lib = getAbsolutLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
                     return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
                 });
+
+                let specifiers = imports.reduce((all, cur) => {
+                    if (cur instanceof TsNamedImport) {
+                        all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
+                    } else if (cur instanceof TsAliasedImport) {
+                        all.push(cur.alias);
+                    }
+                    return all;
+                }, []);
+
                 let promise = Promise.resolve(imports),
                     defaultImportAlias = (declaration: DefaultDeclaration) => {
                         promise = promise.then(imports => window.showInputBox({
                             prompt: 'Please enter a variable name for the default export..',
                             placeHolder: 'Default export name',
-                            //TODO: wait for bugfix of vscode ... code: value: declaration.name,
+                            //TODO: wait for bugfix of vscode ... code: value: declaration.name, https://github.com/Microsoft/vscode/issues/11503
                             validateInput: s => !!s ? '' : 'Please enter a variable name'
                         }).then(defaultAlias => {
                             if (defaultAlias) {
                                 imports.push(new TsDefaultImport(getRelativeLibraryName(item.description, window.activeTextEditor.document.fileName), defaultAlias));
+                            }
+                            return imports;
+                        }));
+                    },
+                    duplicateSpecifier = (imp: TsNamedImport, pushToImports: boolean) => {
+                        promise = promise.then(imports => window.showInputBox({
+                            prompt: 'Please enter an alias for the specifier..',
+                            placeHolder: 'Alias for specifier',
+                            validateInput: s => !!s ? '' : 'Please enter a variable name'
+                        }).then(alias => {
+                            imp.specifiers.push(new TsResolveSpecifier(item.label, alias));
+                            if (alias && pushToImports) {
+                                imports.push(imp);
                             }
                             return imports;
                         }));
@@ -257,13 +308,21 @@ export class ResolveExtension extends BaseExtension {
                     } else {
                         let library = getRelativeLibraryName(item.declarationInfo.from, window.activeTextEditor.document.fileName);
                         let named = new TsNamedImport(library);
-                        named.specifiers.push(new TsResolveSpecifier(item.label));
-                        imports.push(named);
+                        if (specifiers.some(o => o === item.label)) {
+                            duplicateSpecifier(named, true);
+                        } else {
+                            named.specifiers.push(new TsResolveSpecifier(item.label));
+                            imports.push(named);
+                        }
                     }
                 } else if (declaration instanceof DefaultDeclaration) {
                     defaultImportAlias(declaration);
                 } else if (imported instanceof TsNamedImport) {
-                    imported.specifiers.push(new TsResolveSpecifier(item.label));
+                    if (specifiers.some(o => o === item.label)) {
+                        duplicateSpecifier(imported, false);
+                    } else {
+                        imported.specifiers.push(new TsResolveSpecifier(item.label));
+                    }
                 }
                 return promise.then(imports => this.commitDocumentImports(imports));
             });
@@ -289,15 +348,17 @@ export class ResolveExtension extends BaseExtension {
                 fromLine = lineNr;
                 multiLine = true;
             } else if (multiLine && importLine.match(/from\s?['"].*['"];?/)) {
-                let lineText = '';
+                let lineText = '',
+                    localFromLine = fromLine,
+                    localToLine = lineNr;
                 for (let line = fromLine; line <= lineNr; line++) {
                     lineText += doc.lineAt(line).text;
                 }
                 parsings.push(this.parser.parseSource(lineText).then(parsed => {
                     return {
                         import: parsed.imports[0],
-                        from: fromLine,
-                        to: lineNr
+                        from: localFromLine,
+                        to: localToLine
                     };
                 }));
                 multiLine = false;
