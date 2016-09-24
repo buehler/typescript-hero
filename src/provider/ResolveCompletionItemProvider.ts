@@ -1,14 +1,31 @@
 import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {ModuleDeclaration} from '../models/TsDeclaration';
-import {TsExternalModuleImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
+import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
+import {
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsNamedImport,
+    TsNamespaceImport
+} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getAbsolutLibraryName, getDeclarationsFilteredByImports, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {
+    getAbsolutLibraryName,
+    getDeclarationsFilteredByImports,
+    getRelativeLibraryName
+} from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
-import {CancellationToken, CompletionItem, CompletionItemProvider, Position, TextDocument, TextEdit} from 'vscode';
+import {
+    CancellationToken,
+    CompletionItem,
+    CompletionItemProvider,
+    Position,
+    TextDocument,
+    TextEdit,
+    Range
+} from 'vscode';
 
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
@@ -49,7 +66,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 if (token.isCancellationRequested) {
                     return [];
                 }
-                
+
                 if (token.isCancellationRequested) {
                     return [];
                 }
@@ -73,19 +90,6 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
     }
 
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: TsFile): TextEdit[] {
-        // TODO: Default import / export (#40)
-        if (parsedSource.imports.some(o => {
-            if (o instanceof TsNamespaceImport || o instanceof TsExternalModuleImport) {
-                return declaration.from === o.libraryName;
-            } else if (o instanceof TsNamedImport) {
-                let importedLib = getAbsolutLibraryName(o.libraryName, document.fileName);
-                return importedLib === declaration.from && o.specifiers.some(s => s.specifier === declaration.declaration.name);
-            }
-            return false;
-        })) {
-            return [];
-        }
-
         let imp = parsedSource.imports.find(o => {
             if (o instanceof TsNamedImport) {
                 let importedLib = getAbsolutLibraryName(o.libraryName, document.fileName);
@@ -95,19 +99,34 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         });
 
         if (imp && imp instanceof TsNamedImport) {
-            let line = document.getText().split('\n').indexOf(imp.toImport(this.config.resolver.importOptions).replace('\n', ''));
-            if (line < 0) {
+            let docText = document.getText(),
+                impText = imp.toImport(this.config.resolver.importOptions);
+            let position = document.positionAt(docText.indexOf(impText));
+            if (!position || position.line < 0) {
                 return [];
             }
             imp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
+
+            //get the range for multiline imports
+            let splittedImport = impText.split('\n').filter(Boolean),
+                toPosition = document.positionAt(docText.indexOf(splittedImport[splittedImport.length - 1]));
+
+            let lineFrom = position.line,
+                lineTo = toPosition ? toPosition.line : lineFrom;
+
             return [
-                TextEdit.replace(document.lineAt(line).rangeIncludingLineBreak, imp.toImport(this.config.resolver.importOptions))
+                TextEdit.replace(new Range(
+                    document.lineAt(lineFrom).rangeIncludingLineBreak.start,
+                    document.lineAt(lineTo).rangeIncludingLineBreak.end
+                ), imp.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
             return [
                 TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
             ];
+        } else if (declaration.declaration instanceof DefaultDeclaration) {
+            // TODO: when the completion starts, the command should add the text edit.
         } else {
             let library = getRelativeLibraryName(declaration.from, document.fileName);
             let named = new TsNamedImport(library);
