@@ -12,7 +12,7 @@ work with typescript.
 
 - Add imports of your project or libraries to your current file
 - Add an import for the current name under the cursor
-- CodeCompletionProvider that suggests symbols and automatically adds the needed imports
+- Intellisense that suggests symbols and automatically adds the needed imports
 - Sort and organize your imports (sort and remove unused)
 - Restart your debug session when your code changes
 
