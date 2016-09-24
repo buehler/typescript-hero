@@ -13,6 +13,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Autocomplete does not suggest items of the own file ([#61](https://github.com/buehler/typescript-hero/issues/61))
 - Does not generate duplicates when multiline imports are used ([#43](https://github.com/buehler/typescript-hero/issues/43))
 - Multiline imports were not working with multiple imports
+- Autocomplete does not add other classes from a file as well
 
 ## [0.7.1]
 #### Fixed
