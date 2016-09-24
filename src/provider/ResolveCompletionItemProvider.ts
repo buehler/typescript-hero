@@ -99,15 +99,15 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         });
 
         if (imp && imp instanceof TsNamedImport) {
+            let modifiedImp = imp.clone();
             let docText = document.getText(),
-                impText = imp.toImport(this.config.resolver.importOptions);
+                impText = modifiedImp.toImport(this.config.resolver.importOptions);
             let position = document.positionAt(docText.indexOf(impText));
             if (!position || position.line < 0) {
                 return [];
             }
-            imp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
+            modifiedImp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
 
-            //get the range for multiline imports
             let splittedImport = impText.split('\n').filter(Boolean),
                 toPosition = document.positionAt(docText.indexOf(splittedImport[splittedImport.length - 1]));
 
@@ -118,7 +118,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                 TextEdit.replace(new Range(
                     document.lineAt(lineFrom).rangeIncludingLineBreak.start,
                     document.lineAt(lineTo).rangeIncludingLineBreak.end
-                ), imp.toImport(this.config.resolver.importOptions))
+                ), modifiedImp.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);

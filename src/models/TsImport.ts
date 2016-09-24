@@ -30,6 +30,12 @@ export class TsNamedImport extends TsImport {
         return importString;
     }
 
+    public clone(): TsNamedImport {
+        let clone = new TsNamedImport(this.libraryName);
+        this.specifiers.forEach(o => clone.specifiers.push(o));
+        return clone;
+    }
+
     public toMultiLineImport({pathDelimiter}: TsImportOptions): string {
         return `import {
 ${this.specifiers.sort(this.specifierSort).map(o => `    ${o.toImport()}`).join(',\n')}
