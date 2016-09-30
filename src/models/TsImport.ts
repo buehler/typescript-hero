@@ -38,7 +38,7 @@ export class TsNamedImport extends TsImport {
     }
 
     public toMultiLineImport({pathDelimiter, tabSize}: TsImportOptions): string {
-        let spacings = Array(tabSize).join(' ');
+        let spacings = Array(tabSize + 1).join(' ');
         return `import {
 ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.toImport()}`).join(',\n')}
 } from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
