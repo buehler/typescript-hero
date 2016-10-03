@@ -1,9 +1,6 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {
-    CommandQuickPickItem,
-    ResolveQuickPickItem
-} from '../models/QuickPickItems';
+import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
 import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {
@@ -18,15 +15,10 @@ import {
 import {ImportLocation} from '../models/TsImportOptions';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
-import {
-    ResolveCompletionItemProvider
-} from '../provider/ResolveCompletionItemProvider';
+import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {
-    getAbsolutLibraryName,
-    getRelativeLibraryName
-} from '../utilities/ResolveIndexExtensions';
+import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {
