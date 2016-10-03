@@ -80,7 +80,7 @@ function getLineRange({from, to}: { import: TsImport, from: number, to?: number 
 
 function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
     if (location === ImportLocation.TopOfFile) {
-        return new Position(0, 0);
+        return editor.document.lineAt(0).text.match(/use strict/) ? new Position(1, 0) : new Position(0, 0);
     }
     return new Position(editor.selection.active.line, 0);
 }
@@ -376,7 +376,10 @@ export class ResolveExtension extends BaseExtension {
                         ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
                         ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
                     ];
-                    builder.insert(new Position(0, 0), newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), ''));
+                    builder.insert(
+                        getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
+                        newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), '')
+                    );
                 } else {
                     for (let imp of documentImports) {
                         if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
