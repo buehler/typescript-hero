@@ -22,10 +22,11 @@ export class TsStringImport extends TsImport {
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
-    public toImport({pathDelimiter, spaceBraces, multiLineWrapThreshold}: TsImportOptions): string {
+    public toImport(options: TsImportOptions): string {
+        let {pathDelimiter, spaceBraces, multiLineWrapThreshold} = options;
         let importString = `import {${spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${spaceBraces ? ' ' : ''}} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
         if (importString.length > multiLineWrapThreshold) {
-            return this.toMultiLineImport({ pathDelimiter, spaceBraces, multiLineWrapThreshold });
+            return this.toMultiLineImport(options);
         }
         return importString;
     }
@@ -36,9 +37,10 @@ export class TsNamedImport extends TsImport {
         return clone;
     }
 
-    public toMultiLineImport({pathDelimiter}: TsImportOptions): string {
+    public toMultiLineImport({pathDelimiter, tabSize}: TsImportOptions): string {
+        let spacings = Array(tabSize + 1).join(' ');
         return `import {
-${this.specifiers.sort(this.specifierSort).map(o => `    ${o.toImport()}`).join(',\n')}
+${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.toImport()}`).join(',\n')}
 } from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
 

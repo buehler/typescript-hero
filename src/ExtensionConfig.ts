@@ -55,11 +55,16 @@ class ResolverConfig {
         return ImportLocation[configString];
     }
 
+    public get tabSize(): number {
+        return workspace.getConfiguration().get<number>('editor.tabSize');
+    }
+
     public get importOptions(): TsImportOptions {
         return {
             pathDelimiter: this.pathStringDelimiter,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
-            multiLineWrapThreshold: this.multiLineWrapThreshold
+            multiLineWrapThreshold: this.multiLineWrapThreshold,
+            tabSize: this.tabSize
         };
     }
 }
