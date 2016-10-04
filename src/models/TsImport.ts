@@ -2,14 +2,14 @@ import {TsImportOptions} from './TsImportOptions';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
 
 export abstract class TsImport {
-    constructor(public libraryName: string) { }
+    constructor(public libraryName: string, public start?: number, public end?: number) { }
 
     public abstract toImport(options: TsImportOptions): string;
 }
 
 export abstract class TsAliasedImport extends TsImport {
-    constructor(libraryName: string, public alias: string) {
-        super(libraryName);
+    constructor(libraryName: string, public alias: string, start?: number, end?: number) {
+        super(libraryName, start, end);
     }
 }
 
@@ -32,7 +32,7 @@ export class TsNamedImport extends TsImport {
     }
 
     public clone(): TsNamedImport {
-        let clone = new TsNamedImport(this.libraryName);
+        let clone = new TsNamedImport(this.libraryName, this.start, this.end);
         this.specifiers.forEach(o => clone.specifiers.push(o));
         return clone;
     }
