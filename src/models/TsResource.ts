@@ -1,3 +1,4 @@
+import {TsNode} from './TsNode';
 import {TsDeclaration} from './TsDeclaration';
 import {TsExport} from './TsExport';
 import {TsImport} from './TsImport';
@@ -7,14 +8,16 @@ import {workspace} from 'vscode';
 // TsSource can be: File, Module, Namespace
 // module contains declarations, imports, exports, submodules
 
-export abstract class TsResource {
+export abstract class TsResource extends TsNode {
     public imports: TsImport[] = [];
     public declarations: TsDeclaration[] = [];
     public exports: TsExport[] = [];
     public resources: TsResource[] = [];
     public usages: string[] = [];
 
-    constructor(public start: number, public end: number) { }
+    constructor(start: number, end: number) {
+        super(start, end);
+    }
 
     public get nonLocalUsages(): string[] {
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage) && !this.resources.some(o => o instanceof TsNamedResource && o.name === usage));

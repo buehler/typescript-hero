@@ -1,3 +1,4 @@
+import {TsFile} from '../models/TsResource';
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
@@ -249,7 +250,7 @@ export class ResolveExtension extends BaseExtension {
                         keep.push(actImport);
                     }
                 }
-                return this.commitDocumentImports(keep, true);
+                return this.commitDocumentImports(parsed, keep, true);
             })
             .catch(e => {
                 this.logger.error('An error happend during "organize imports".', { error: e });
@@ -343,87 +344,49 @@ export class ResolveExtension extends BaseExtension {
                         imported.specifiers.push(new TsResolveSpecifier(item.label));
                     }
                 }
-                return promise.then(imports => this.commitDocumentImports(imports));
+                return promise.then(imports => this.commitDocumentImports(parsedDocument, imports));
             });
     }
 
-    private commitDocumentImports(newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
-        let doc = window.activeTextEditor.document,
-            parsings = [],
-            importLine: string,
-            multiLine = false,
-            fromLine;
-
-        for (let lineNr = 0; lineNr < doc.lineCount; lineNr++) {
-            importLine = doc.lineAt(lineNr).text;
-            if (importLine.match(/^import .*;$/g)) {
-                parsings.push(this.parser.parseSource(importLine).then(parsed => {
-                    return {
-                        import: parsed.imports[0],
-                        from: lineNr
-                    };
-                }));
-            } else if (importLine.match(/^import {(.+?)*[^;]?/g)) {
-                fromLine = lineNr;
-                multiLine = true;
-            } else if (multiLine && importLine.match(/from\s?['"].*['"];?/)) {
-                let lineText = '',
-                    localFromLine = fromLine,
-                    localToLine = lineNr;
-                for (let line = fromLine; line <= lineNr; line++) {
-                    lineText += doc.lineAt(line).text;
+    private commitDocumentImports(parsedDocument: TsFile, newImports: TsImport[], sortAndReorder: boolean = false): Thenable<boolean> {
+        return window.activeTextEditor.edit(builder => {
+            if (sortAndReorder) {
+                for (let imp of parsedDocument.imports) {
+                    builder.delete(getLineRange(imp));
                 }
-                parsings.push(this.parser.parseSource(lineText).then(parsed => {
-                    return {
-                        import: parsed.imports[0],
-                        from: localFromLine,
-                        to: localToLine
-                    };
-                }));
-                multiLine = false;
-            }
-        }
-
-        return Promise
-            .all(parsings)
-            .then(documentImports => window.activeTextEditor.edit(builder => {
-                if (sortAndReorder) {
-                    for (let imp of documentImports) {
+                newImports = [
+                    ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
+                    ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+                ];
+                builder.insert(
+                    getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
+                    newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), '')
+                );
+            } else {
+                for (let imp of documentImports) {
+                    if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
                         builder.delete(getLineRange(imp));
                     }
-                    newImports = [
-                        ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
-                        ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-                    ];
-                    builder.insert(
-                        getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
-                        newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), '')
-                    );
-                } else {
-                    for (let imp of documentImports) {
-                        if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
-                            builder.delete(getLineRange(imp));
-                        }
-                    }
-                    for (let imp of newImports) {
-                        let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
-                        if (existingImport) {
-                            let importString: string;
-                            if (existingImport.to && imp instanceof TsNamedImport) {
-                                importString = imp.toMultiLineImport(this.config.resolver.importOptions);
-                            } else {
-                                importString = imp.toImport(this.config.resolver.importOptions);
-                            }
-                            builder.replace(getLineRange(existingImport), importString);
+                }
+                for (let imp of newImports) {
+                    let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
+                    if (existingImport) {
+                        let importString: string;
+                        if (existingImport.to && imp instanceof TsNamedImport) {
+                            importString = imp.toMultiLineImport(this.config.resolver.importOptions);
                         } else {
-                            builder.insert(
-                                getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
-                                imp.toImport(this.config.resolver.importOptions)
-                            );
+                            importString = imp.toImport(this.config.resolver.importOptions);
                         }
+                        builder.replace(getLineRange(existingImport), importString);
+                    } else {
+                        builder.insert(
+                            getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
+                            imp.toImport(this.config.resolver.importOptions)
+                        );
                     }
                 }
-            }));
+            }
+        });
     }
 
     private showCacheWarning(): void {

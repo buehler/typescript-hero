@@ -1,8 +1,11 @@
+import {TsNode} from './TsNode';
 import {TsResource} from './TsResource';
 import {CompletionItemKind} from 'vscode';
 
-export abstract class TsDeclaration {
-    constructor(public name: string, public start: number, public end: number) { }
+export abstract class TsDeclaration extends TsNode {
+    constructor(public name: string, start: number, end: number) {
+        super(start, end);
+    }
 
     public abstract getItemKind(): CompletionItemKind;
 }

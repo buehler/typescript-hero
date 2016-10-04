@@ -1,13 +1,18 @@
+import {TsNode} from './TsNode';
 import {TsExportableDeclaration} from './TsDeclaration';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
 import {TsModule, TsNamespace, TsResource} from './TsResource';
 
-export abstract class TsExport {
-    constructor(public start: number, public end: number) { }
+export abstract class TsExport extends TsNode {
+    constructor(start: number, end: number) {
+        super(start, end);
+    }
 }
 
-export abstract class TsFromExport {
-    constructor(public start: number, public end: number, public from?: string) { }
+export abstract class TsFromExport extends TsNode {
+    constructor(start: number, end: number, public from?: string) {
+        super(start, end);
+    }
 }
 
 export class TsAllFromExport extends TsFromExport {

@@ -1,8 +1,11 @@
+import {TsNode} from './TsNode';
 import {TsImportOptions} from './TsImportOptions';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
 
-export abstract class TsImport {
-    constructor(public libraryName: string, public start?: number, public end?: number) { }
+export abstract class TsImport extends TsNode {
+    constructor(public libraryName: string, start?: number, end?: number) {
+        super(start, end);
+    }
 
     public abstract toImport(options: TsImportOptions): string;
 }
