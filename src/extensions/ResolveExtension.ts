@@ -352,7 +352,7 @@ export class ResolveExtension extends BaseExtension {
         return window.activeTextEditor.edit(builder => {
             if (sortAndReorder) {
                 for (let imp of parsedDocument.imports) {
-                    builder.delete(getLineRange(imp));
+                    builder.delete(imp.getRange(window.activeTextEditor.document));
                 }
                 newImports = [
                     ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
@@ -363,21 +363,15 @@ export class ResolveExtension extends BaseExtension {
                     newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), '')
                 );
             } else {
-                for (let imp of documentImports) {
-                    if (!newImports.find(o => o.libraryName === imp.import.libraryName)) {
-                        builder.delete(getLineRange(imp));
+                for (let imp of parsedDocument.imports) {
+                    if (!newImports.find(o => o.libraryName === imp.libraryName)) {
+                        builder.delete(imp.getRange(window.activeTextEditor.document));
                     }
                 }
                 for (let imp of newImports) {
-                    let existingImport = documentImports.find(o => o.import.libraryName === imp.libraryName);
+                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName);
                     if (existingImport) {
-                        let importString: string;
-                        if (existingImport.to && imp instanceof TsNamedImport) {
-                            importString = imp.toMultiLineImport(this.config.resolver.importOptions);
-                        } else {
-                            importString = imp.toImport(this.config.resolver.importOptions);
-                        }
-                        builder.replace(getLineRange(existingImport), importString);
+                        builder.replace(existingImport.getRange(window.activeTextEditor.document), imp.toImport(this.config.resolver.importOptions));
                     } else {
                         builder.insert(
                             getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),

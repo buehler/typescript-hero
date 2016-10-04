@@ -1,10 +1,20 @@
-import {TsNode} from './TsNode';
 import {TsImportOptions} from './TsImportOptions';
+import {TsNode} from './TsNode';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
+import {Position, Range, TextDocument} from 'vscode';
 
 export abstract class TsImport extends TsNode {
     constructor(public libraryName: string, start?: number, end?: number) {
         super(start, end);
+    }
+
+    public getRange(document: TextDocument): Range {
+        return this.start !== undefined && this.end !== undefined ?
+            new Range(
+                document.lineAt(document.positionAt(this.start).line).rangeIncludingLineBreak.start,
+                document.lineAt(document.positionAt(this.end).line).rangeIncludingLineBreak.end
+            ) :
+            new Range(new Position(0, 0), new Position(0, 0));
     }
 
     public abstract toImport(options: TsImportOptions): string;
