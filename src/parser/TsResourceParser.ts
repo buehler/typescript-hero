@@ -1,19 +1,4 @@
 import {CancellationRequested} from '../models/CancellationRequested';
-import {
-    ClassDeclaration as TshClassDeclaration,
-    ConstructorDeclaration as TshConstructorDeclaration,
-    DefaultDeclaration,
-    EnumDeclaration as TshEnumDeclaration,
-    FunctionDeclaration as TshFunctionDeclaration,
-    InterfaceDeclaration as TshInterfaceDeclaration,
-    MethodDeclaration as TshMethodDeclaration,
-    ParameterDeclaration as TshParameterDeclaration,
-    PropertyDeclaration as TshPropertyDeclaration,
-    PropertyVisibility,
-    TsExportableCallableDeclaration,
-    TypeAliasDeclaration as TshTypeAliasDeclaration,
-    VariableDeclaration as TshVariableDeclaration
-} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../models/TsExport';
 import {
     TsDefaultImport,
@@ -75,6 +60,21 @@ import {
     TypeAliasDeclaration,
     VariableStatement
 } from 'typescript';
+import {
+    ClassDeclaration as TshClassDeclaration,
+    ConstructorDeclaration as TshConstructorDeclaration,
+    DefaultDeclaration,
+    EnumDeclaration as TshEnumDeclaration,
+    FunctionDeclaration as TshFunctionDeclaration,
+    InterfaceDeclaration as TshInterfaceDeclaration,
+    MethodDeclaration as TshMethodDeclaration,
+    ParameterDeclaration as TshParameterDeclaration,
+    PropertyDeclaration as TshPropertyDeclaration,
+    PropertyVisibility,
+    TsExportableCallableDeclaration,
+    TypeAliasDeclaration as TshTypeAliasDeclaration,
+    VariableDeclaration as TshVariableDeclaration
+} from '../models/TsDeclaration';
 import {CancellationToken, Uri} from 'vscode';
 
 const usageNotAllowedParents = [
@@ -180,7 +180,7 @@ export class TsResourceParser {
     }
 
     private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsFile {
-        let tsFile = new TsFile(source.fileName);
+        let tsFile = new TsFile(source.fileName, source.getStart(), source.getEnd());
 
         let syntaxList = source.getChildAt(0);
         if (cancellationToken && cancellationToken.onCancellationRequested) {
@@ -403,7 +403,7 @@ export class TsResourceParser {
     }
 
     private parseModule(tsResource: TsResource, node: ModuleDeclaration): TsResource {
-        let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ? new TsNamespace((node.name as Identifier).text) : new TsModule((node.name as Identifier).text);
+        let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ? new TsNamespace((node.name as Identifier).text, node.getStart(), node.getEnd()) : new TsModule((node.name as Identifier).text, node.getStart(), node.getEnd());
         tsResource.resources.push(resource);
         return resource;
     }

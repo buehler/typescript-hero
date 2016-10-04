@@ -14,6 +14,8 @@ export abstract class TsResource {
     public resources: TsResource[] = [];
     public usages: string[] = [];
 
+    constructor(public start: number, public end: number) { }
+
     public get nonLocalUsages(): string[] {
         return this.usages.filter(usage => !this.declarations.some(o => o.name === usage) && !this.resources.some(o => o instanceof TsNamedResource && o.name === usage));
     }
@@ -30,8 +32,8 @@ export class TsFile extends TsResource {
         return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);
     }
 
-    constructor(public filePath: string) {
-        super();
+    constructor(public filePath: string, start: number, end: number) {
+        super(start, end);
     }
 
     public getIdentifier(): string {
@@ -40,8 +42,8 @@ export class TsFile extends TsResource {
 }
 
 export abstract class TsNamedResource extends TsResource {
-    constructor(public name: string) {
-        super();
+    constructor(public name: string, start: number, end: number) {
+        super(start, end);
     }
 
     public getNamespaceAlias(): string {
