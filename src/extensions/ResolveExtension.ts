@@ -63,14 +63,6 @@ function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
 }
 
-function getLineRange({from, to}: { import: TsImport, from: number, to?: number }): Range {
-    let document = window.activeTextEditor.document;
-    if (!to) {
-        return document.lineAt(from).rangeIncludingLineBreak;
-    }
-    return new Range(document.lineAt(from).rangeIncludingLineBreak.start, document.lineAt(to).rangeIncludingLineBreak.end);
-}
-
 function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
     if (location === ImportLocation.TopOfFile) {
         return editor.document.lineAt(0).text.match(/use strict/) ? new Position(1, 0) : new Position(0, 0);
