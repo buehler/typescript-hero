@@ -1,14 +1,80 @@
 import {CancellationRequested} from '../models/CancellationRequested';
+import {
+    ClassDeclaration as TshClassDeclaration,
+    ConstructorDeclaration as TshConstructorDeclaration,
+    DefaultDeclaration,
+    EnumDeclaration as TshEnumDeclaration,
+    FunctionDeclaration as TshFunctionDeclaration,
+    InterfaceDeclaration as TshInterfaceDeclaration,
+    MethodDeclaration as TshMethodDeclaration,
+    ParameterDeclaration as TshParameterDeclaration,
+    PropertyDeclaration as TshPropertyDeclaration,
+    PropertyVisibility,
+    TsExportableCallableDeclaration,
+    TypeAliasDeclaration as TshTypeAliasDeclaration,
+    VariableDeclaration as TshVariableDeclaration
+} from '../models/TsDeclaration';
 import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../models/TsExport';
-import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../models/TsImport';
+import {
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsNamedImport,
+    TsNamespaceImport,
+    TsStringImport
+} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile, TsModule, TsNamespace, TsResource} from '../models/TsResource';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {isArrayBindingPattern, isConstructorDeclaration, isExportDeclaration, isExternalModuleReference, isIdentifier, isImportDeclaration, isMethodDeclaration, isMethodSignature, isNamedExports, isNamedImports, isNamespaceImport, isObjectBindingPattern, isPropertyDeclaration, isPropertySignature, isStringLiteral} from '../utilities/TypeGuards';
+import {
+    isArrayBindingPattern,
+    isConstructorDeclaration,
+    isExportDeclaration,
+    isExternalModuleReference,
+    isIdentifier,
+    isImportDeclaration,
+    isMethodDeclaration,
+    isMethodSignature,
+    isNamedExports,
+    isNamedImports,
+    isNamespaceImport,
+    isObjectBindingPattern,
+    isPropertyDeclaration,
+    isPropertySignature,
+    isStringLiteral
+} from '../utilities/TypeGuards';
 import {readFileSync} from 'fs';
 import {inject, injectable} from 'inversify';
-import {ArrayBindingPattern, BindingElement, ClassDeclaration, ConstructorDeclaration, createSourceFile, EnumDeclaration, ExportAssignment, ExportDeclaration, ExternalModuleReference, FunctionDeclaration, Identifier, ImportDeclaration, ImportEqualsDeclaration, InterfaceDeclaration, MethodDeclaration, MethodSignature, ModuleDeclaration, NamedImports, NamespaceImport, Node, NodeFlags, ObjectBindingPattern, ParameterDeclaration, ScriptTarget, SourceFile, StringLiteral, SyntaxKind, TypeAliasDeclaration, VariableStatement} from 'typescript';
-import {ClassDeclaration as TshClassDeclaration, ConstructorDeclaration as TshConstructorDeclaration, DefaultDeclaration, EnumDeclaration as TshEnumDeclaration, FunctionDeclaration as TshFunctionDeclaration, InterfaceDeclaration as TshInterfaceDeclaration, MethodDeclaration as TshMethodDeclaration, ParameterDeclaration as TshParameterDeclaration, PropertyDeclaration as TshPropertyDeclaration, PropertyVisibility, TsExportableCallableDeclaration, TypeAliasDeclaration as TshTypeAliasDeclaration, VariableDeclaration as TshVariableDeclaration} from '../models/TsDeclaration';
+import {
+    ArrayBindingPattern,
+    BindingElement,
+    ClassDeclaration,
+    ConstructorDeclaration,
+    createSourceFile,
+    EnumDeclaration,
+    ExportAssignment,
+    ExportDeclaration,
+    ExternalModuleReference,
+    FunctionDeclaration,
+    Identifier,
+    ImportDeclaration,
+    ImportEqualsDeclaration,
+    InterfaceDeclaration,
+    MethodDeclaration,
+    MethodSignature,
+    ModuleDeclaration,
+    NamedImports,
+    NamespaceImport,
+    Node,
+    NodeFlags,
+    ObjectBindingPattern,
+    ParameterDeclaration,
+    ScriptTarget,
+    SourceFile,
+    StringLiteral,
+    SyntaxKind,
+    TypeAliasDeclaration,
+    VariableStatement
+} from 'typescript';
 import {CancellationToken, Uri} from 'vscode';
 
 const usageNotAllowedParents = [
