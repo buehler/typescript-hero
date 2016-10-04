@@ -270,10 +270,10 @@ export class TsResourceParser {
                 return;
             }
             if (tsExport.getText().indexOf('*') > -1) {
-                tsResource.exports.push(new TsAllFromExport((tsExport.moduleSpecifier as StringLiteral).text));
+                tsResource.exports.push(new TsAllFromExport(node.getStart(), node.getEnd(), (tsExport.moduleSpecifier as StringLiteral).text));
             } else if (tsExport.exportClause && isNamedExports(tsExport.exportClause)) {
                 let lib = tsExport.moduleSpecifier as StringLiteral,
-                    ex = new TsNamedFromExport(lib.text);
+                    ex = new TsNamedFromExport(node.getStart(), node.getEnd(), lib.text);
                 ex.specifiers = tsExport.exportClause.elements.map(o => o.propertyName && o.name ? new TsResolveSpecifier(o.propertyName.text, o.name.text) : new TsResolveSpecifier(o.name.text));
 
                 tsResource.exports.push(ex);
@@ -281,7 +281,7 @@ export class TsResourceParser {
         } else {
             let literal = node.expression as Identifier;
             if (node.isExportEquals) {
-                tsResource.exports.push(new TsAssignedExport(literal.text, tsResource));
+                tsResource.exports.push(new TsAssignedExport(node.getStart(), node.getEnd(), literal.text, tsResource));
             } else {
                 let name = (literal && literal.text) ? literal.text : getDefaultResourceIdentifier(tsResource);
                 tsResource.declarations.push(new DefaultDeclaration(name, tsResource));
