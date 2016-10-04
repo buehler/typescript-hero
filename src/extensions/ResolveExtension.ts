@@ -361,7 +361,7 @@ export class ResolveExtension extends BaseExtension {
                     }
                 }
                 for (let imp of newImports) {
-                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName);
+                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName && o !== imp);
                     if (existingImport) {
                         builder.replace(existingImport.getRange(window.activeTextEditor.document), imp.toImport(this.config.resolver.importOptions));
                     } else {
