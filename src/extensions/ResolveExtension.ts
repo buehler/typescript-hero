@@ -1,9 +1,6 @@
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
-import {
-    CommandQuickPickItem,
-    ResolveQuickPickItem
-} from '../models/QuickPickItems';
+import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
 import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
 import {TshCommand} from '../models/TshCommand';
 import {
@@ -18,15 +15,10 @@ import {
 import {ImportLocation} from '../models/TsImportOptions';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsResourceParser} from '../parser/TsResourceParser';
-import {
-    ResolveCompletionItemProvider
-} from '../provider/ResolveCompletionItemProvider';
+import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {
-    getAbsolutLibraryName,
-    getRelativeLibraryName
-} from '../utilities/ResolveIndexExtensions';
+import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {
@@ -85,11 +77,28 @@ function getImportInsertPosition(location: ImportLocation, editor: TextEditor): 
     return new Position(editor.selection.active.line, 0);
 }
 
+function compareIgnorePatterns(local: string[], config: string[]): boolean {
+    if (local.length !== config.length) {
+        return false;
+    }
+    let localSorted = local.sort(),
+        configSorted = config.sort();
+
+    for (let x = 0; x < configSorted.length; x++) {
+        if (configSorted[x] !== localSorted[x]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 @injectable()
 export class ResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
+    private ignorePatterns: string[];
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private pickProvider: ResolveQuickPickProvider,
@@ -100,6 +109,7 @@ export class ResolveExtension extends BaseExtension {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
+        this.ignorePatterns = this.config.resolver.ignorePatterns;
 
         this.logger.info('Extension instantiated.');
     }
@@ -168,6 +178,15 @@ export class ResolveExtension extends BaseExtension {
             this.logger.info(`File "${uri.fsPath}" deleted. Removing file.`);
             this.index.removeForFile(uri.fsPath);
         });
+
+        context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+            if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
+                this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
+                this.refreshIndex();
+                this.ignorePatterns = this.config.resolver.ignorePatterns;
+            }
+        }));
+
         this.logger.info('Initialized.');
     }
 
