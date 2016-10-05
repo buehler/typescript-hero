@@ -72,7 +72,7 @@ export class RestartDebuggerExtension extends BaseExtension {
             this.fileWatcher = null;
             this.logger.info(`Deactivated.`);
             this.statusBarItem.text = '$(pulse) $(x)';
-            this.statusBarItem.tooltip = 'The restart is currently deactivated. Click to deactivate.';
+            this.statusBarItem.tooltip = 'The restart is currently deactivated. Click to activate.';
         }
     }
 
