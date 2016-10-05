@@ -264,10 +264,13 @@ export class ResolveExtension extends BaseExtension {
     }
 
     private addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
-        return this.parser
-            .parseSource(window.activeTextEditor.document.getText())
-            .then(parsedDocument => {
-                let imports = parsedDocument.imports;
+        return Promise
+            .all([
+                this.parser.parseSource(window.activeTextEditor.document.getText()),
+                this.parser.parseSource(window.activeTextEditor.document.getText())
+            ])
+            .then((parsedDocuments: any) => {
+                let imports = parsedDocuments[0].imports;
                 let declaration = item.declarationInfo.declaration;
 
                 let imported = imports.find(o => {
@@ -336,7 +339,7 @@ export class ResolveExtension extends BaseExtension {
                         imported.specifiers.push(new TsResolveSpecifier(item.label));
                     }
                 }
-                return promise.then(imports => this.commitDocumentImports(parsedDocument, imports));
+                return promise.then(imports => this.commitDocumentImports(parsedDocuments[1], imports));
             });
     }
 
@@ -361,7 +364,7 @@ export class ResolveExtension extends BaseExtension {
                     }
                 }
                 for (let imp of newImports) {
-                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName && o !== imp);
+                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName);
                     if (existingImport) {
                         builder.replace(existingImport.getRange(window.activeTextEditor.document), imp.toImport(this.config.resolver.importOptions));
                     } else {
