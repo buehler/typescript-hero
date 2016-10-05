@@ -29,6 +29,7 @@ All commands are preceeded by `typescriptHero`.
 | resolve.addImportUnderCursor | import resolver | Imports the symbol under the cursor                       |
 | resolve.organizeImports      | import resolver | Removes unused imports and orders all imports             |
 | resolve.rebuildCache         | import resolver | Rebuilds the whole symbol cache (or index)                |
+| restartDebugger.toggle       | debug restarter | Toggles the active state of the debug restarter           |
 
 ## Keybindings
 
