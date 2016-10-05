@@ -6,6 +6,9 @@ import {join, normalize, parse, relative} from 'path';
 import {Position, TextEditor, workspace} from 'vscode';
 
 export function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
+    if (!editor) {
+        return new Position(0, 0);
+    }
     if (location === ImportLocation.TopOfFile) {
         return editor.document.lineAt(0).text.match(/use strict/) ? new Position(1, 0) : new Position(0, 0);
     }
