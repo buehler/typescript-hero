@@ -97,25 +97,10 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         if (imp && imp instanceof TsNamedImport) {
             let modifiedImp = imp.clone();
-            let docText = document.getText(),
-                impText = modifiedImp.toImport(this.config.resolver.importOptions);
-            let position = document.positionAt(docText.indexOf(impText));
-            if (!position || position.line < 0) {
-                return [];
-            }
             modifiedImp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
 
-            let splittedImport = impText.split('\n').filter(Boolean),
-                toPosition = document.positionAt(docText.indexOf(splittedImport[splittedImport.length - 1]));
-
-            let lineFrom = position.line,
-                lineTo = toPosition ? toPosition.line : lineFrom;
-
             return [
-                TextEdit.replace(new Range(
-                    document.lineAt(lineFrom).rangeIncludingLineBreak.start,
-                    document.lineAt(lineTo).rangeIncludingLineBreak.end
-                ), modifiedImp.toImport(this.config.resolver.importOptions))
+                TextEdit.replace(imp.getRange(document), modifiedImp.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
