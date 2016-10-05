@@ -1,4 +1,3 @@
-import {TsFile} from '../models/TsResource';
 import {ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
@@ -13,13 +12,17 @@ import {
     TsNamespaceImport,
     TsStringImport
 } from '../models/TsImport';
-import {ImportLocation} from '../models/TsImportOptions';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
+import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
 import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
 import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
 import {Logger, LoggerFactory} from '../utilities/Logger';
-import {getAbsolutLibraryName, getRelativeLibraryName} from '../utilities/ResolveIndexExtensions';
+import {
+    getAbsolutLibraryName,
+    getImportInsertPosition,
+    getRelativeLibraryName
+} from '../utilities/ResolveIndexExtensions';
 import {BaseExtension} from './BaseExtension';
 import {inject, injectable} from 'inversify';
 import {
@@ -27,10 +30,7 @@ import {
     ExtensionContext,
     FileSystemWatcher,
     languages,
-    Position,
-    Range,
     StatusBarAlignment,
-    TextEditor,
     Uri,
     window,
     workspace
@@ -61,13 +61,6 @@ function importSort(i1: TsImport, i2: TsImport): number {
 
 function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
-}
-
-function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
-    if (location === ImportLocation.TopOfFile) {
-        return editor.document.lineAt(0).text.match(/use strict/) ? new Position(1, 0) : new Position(0, 0);
-    }
-    return new Position(editor.selection.active.line, 0);
 }
 
 function compareIgnorePatterns(local: string[], config: string[]): boolean {
