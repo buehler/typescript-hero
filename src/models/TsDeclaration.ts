@@ -1,15 +1,18 @@
+import {TsNode} from './TsNode';
 import {TsResource} from './TsResource';
 import {CompletionItemKind} from 'vscode';
 
-export abstract class TsDeclaration {
-    constructor(public name: string) { }
+export abstract class TsDeclaration extends TsNode {
+    constructor(public name: string, start: number, end: number) {
+        super(start, end);
+    }
 
     public abstract getItemKind(): CompletionItemKind;
 }
 
 export abstract class TsExportableDeclaration extends TsDeclaration {
-    constructor(name: string, public isExported: boolean) {
-        super(name);
+    constructor(name: string, start: number, end: number, public isExported: boolean) {
+        super(name, start, end);
     }
 }
 
@@ -42,8 +45,8 @@ export const enum PropertyVisibility {
 }
 
 export class PropertyDeclaration extends TsDeclaration {
-    constructor(name: string, public visibility: PropertyVisibility) {
-        super(name);
+    constructor(name: string, start: number, end: number, public visibility: PropertyVisibility) {
+        super(name, start, end);
     }
 
     public getItemKind(): CompletionItemKind {
@@ -52,8 +55,8 @@ export class PropertyDeclaration extends TsDeclaration {
 }
 
 export class MethodDeclaration extends TsExportableCallableDeclaration {
-    constructor(name: string) {
-        super(name, false);
+    constructor(name: string, start: number, end: number) {
+        super(name, start, end, false);
     }
 
     public getItemKind(): CompletionItemKind {
@@ -68,8 +71,8 @@ export class FunctionDeclaration extends TsExportableCallableDeclaration {
 }
 
 export class ConstructorDeclaration extends TsExportableCallableDeclaration {
-    constructor() {
-        super('constructor', false);
+    constructor(start: number, end: number) {
+        super('constructor', start, end, false);
     }
 
     public getItemKind(): CompletionItemKind {
@@ -92,8 +95,8 @@ export class EnumDeclaration extends TsExportableDeclaration {
 }
 
 export class VariableDeclaration extends TsExportableDeclaration {
-    constructor(name: string, isExported: boolean, public isConst: boolean) {
-        super(name, isExported);
+    constructor(name: string, start: number, end: number, isExported: boolean, public isConst: boolean) {
+        super(name, start, end, isExported);
     }
 
     public getItemKind(): CompletionItemKind {
@@ -119,7 +122,7 @@ export class DefaultDeclaration extends TsExportableDeclaration {
     }
 
     constructor(name: string, private resource: TsResource) {
-        super(name, true);
+        super(name, 0, 0, true);
     }
 
     public getItemKind(): CompletionItemKind {

@@ -190,7 +190,7 @@ export class ResolveIndex {
                             index[resource.name] = [];
                         }
                         index[resource.name].push({
-                            declaration: new ModuleDeclaration(resource.getNamespaceAlias()),
+                            declaration: new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
                             from: resource.name
                         });
                     }

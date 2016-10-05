@@ -1,12 +1,7 @@
 import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
 import {ExtensionConfig} from '../ExtensionConfig';
 import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
-import {
-    TsDefaultImport,
-    TsExternalModuleImport,
-    TsNamedImport,
-    TsNamespaceImport
-} from '../models/TsImport';
+import {TsNamedImport, TsNamespaceImport} from '../models/TsImport';
 import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
 import {TsFile} from '../models/TsResource';
 import {TsResourceParser} from '../parser/TsResourceParser';
@@ -14,6 +9,7 @@ import {Logger, LoggerFactory} from '../utilities/Logger';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
+    getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
 import {inject, injectable} from 'inversify';
@@ -22,9 +18,10 @@ import {
     CompletionItem,
     CompletionItemProvider,
     Position,
+    Range,
     TextDocument,
     TextEdit,
-    Range
+    window
 } from 'vscode';
 
 @injectable()
@@ -100,30 +97,15 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         if (imp && imp instanceof TsNamedImport) {
             let modifiedImp = imp.clone();
-            let docText = document.getText(),
-                impText = modifiedImp.toImport(this.config.resolver.importOptions);
-            let position = document.positionAt(docText.indexOf(impText));
-            if (!position || position.line < 0) {
-                return [];
-            }
             modifiedImp.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
 
-            let splittedImport = impText.split('\n').filter(Boolean),
-                toPosition = document.positionAt(docText.indexOf(splittedImport[splittedImport.length - 1]));
-
-            let lineFrom = position.line,
-                lineTo = toPosition ? toPosition.line : lineFrom;
-
             return [
-                TextEdit.replace(new Range(
-                    document.lineAt(lineFrom).rangeIncludingLineBreak.start,
-                    document.lineAt(lineTo).rangeIncludingLineBreak.end
-                ), modifiedImp.toImport(this.config.resolver.importOptions))
+                TextEdit.replace(imp.getRange(document), modifiedImp.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
             return [
-                TextEdit.insert(new Position(0, 0), mod.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), mod.toImport(this.config.resolver.importOptions))
             ];
         } else if (declaration.declaration instanceof DefaultDeclaration) {
             // TODO: when the completion starts, the command should add the text edit.
@@ -132,7 +114,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             let named = new TsNamedImport(library);
             named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [
-                TextEdit.insert(new Position(0, 0), named.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), named.toImport(this.config.resolver.importOptions))
             ];
         }
     }

@@ -1,15 +1,28 @@
 import {TsImportOptions} from './TsImportOptions';
+import {TsNode} from './TsNode';
 import {TsResolveSpecifier} from './TsResolveSpecifier';
+import {Position, Range, TextDocument} from 'vscode';
 
-export abstract class TsImport {
-    constructor(public libraryName: string) { }
+export abstract class TsImport extends TsNode {
+    constructor(public libraryName: string, start?: number, end?: number) {
+        super(start, end);
+    }
+
+    public getRange(document: TextDocument): Range {
+        return this.start !== undefined && this.end !== undefined ?
+            new Range(
+                document.lineAt(document.positionAt(this.start).line).rangeIncludingLineBreak.start,
+                document.lineAt(document.positionAt(this.end).line).rangeIncludingLineBreak.end
+            ) :
+            new Range(new Position(0, 0), new Position(0, 0));
+    }
 
     public abstract toImport(options: TsImportOptions): string;
 }
 
 export abstract class TsAliasedImport extends TsImport {
-    constructor(libraryName: string, public alias: string) {
-        super(libraryName);
+    constructor(libraryName: string, public alias: string, start?: number, end?: number) {
+        super(libraryName, start, end);
     }
 }
 
@@ -32,7 +45,7 @@ export class TsNamedImport extends TsImport {
     }
 
     public clone(): TsNamedImport {
-        let clone = new TsNamedImport(this.libraryName);
+        let clone = new TsNamedImport(this.libraryName, this.start, this.end);
         this.specifiers.forEach(o => clone.specifiers.push(o));
         return clone;
     }
