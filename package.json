@@ -83,6 +83,10 @@
       {
         "command": "typescriptHero.resolve.rebuildCache",
         "title": "Typescript: Rebuild the resolver cache"
+      },
+      {
+        "command": "typescriptHero.restartDebugger.toggle",
+        "title": "Typescript: Toggles the debug restarter"
       }
     ],
     "keybindings": [
