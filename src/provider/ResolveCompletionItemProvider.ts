@@ -64,12 +64,9 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
                     return [];
                 }
 
-                if (token.isCancellationRequested) {
-                    return [];
-                }
-
                 let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports)
-                    .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name));
+                    .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
+                    .filter(o => !parsed.usages.some(d => d === o.declaration.name));
 
                 let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
                     let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
