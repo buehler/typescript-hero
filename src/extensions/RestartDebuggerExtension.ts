@@ -1,10 +1,10 @@
-import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem} from '../models/QuickPickItems';
-import {TshCommand} from '../models/TshCommand';
-import {Logger, LoggerFactory} from '../utilities/Logger';
-import {BaseExtension} from './BaseExtension';
-import {inject, injectable} from 'inversify';
-import {commands, ExtensionContext, FileSystemWatcher, StatusBarAlignment, window, workspace} from 'vscode';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { CommandQuickPickItem } from '../models/QuickPickItems';
+import { TshCommand } from '../models/TshCommand';
+import { Logger, LoggerFactory } from '../utilities/Logger';
+import { BaseExtension } from './BaseExtension';
+import { inject, injectable } from 'inversify';
+import { commands, ExtensionContext, FileSystemWatcher, StatusBarAlignment, window, workspace } from 'vscode';
 
 const DEBOUNCE = 1500;
 
@@ -13,7 +13,7 @@ export class RestartDebuggerExtension extends BaseExtension {
     private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 3);
     private fileWatcher: FileSystemWatcher;
     private logger: Logger;
-    private restartCall: number;
+    private restartCall: NodeJS.Timer;
     private active: boolean;
 
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, private config: ExtensionConfig) {

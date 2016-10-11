@@ -15,7 +15,7 @@ export class ResolveQuickPickProvider {
     }
 
     public addImportPick(activeDocument: TextDocument): Thenable<ResolveQuickPickItem> {
-        return window.showQuickPick(this.buildQuickPickList(activeDocument));
+        return window.showQuickPick<ResolveQuickPickItem>(this.buildQuickPickList(activeDocument));
     }
 
     public addImportUnderCursorPick(activeDocument: TextDocument, cursorSymbol: string): Thenable<ResolveQuickPickItem> {
