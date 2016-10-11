@@ -144,13 +144,13 @@ export class ResolveIndex {
         return new Promise<void>(
             resolve => {
                 for (let file of files) {
-                    if (file.filePath.indexOf('node_modules') > -1) {
-                        let libname = getNodeLibraryName(file.filePath);
-                        parsedResources[libname] = file;
-                    } else if (file.filePath.indexOf('typings') > -1) {
+                    if (file.filePath.indexOf('typings') > -1 || file.filePath.indexOf('node_modules/@types') > -1) {
                         for (let resource of file.resources) {
                             parsedResources[resource.getIdentifier()] = resource;
                         }
+                    } else if (file.filePath.indexOf('node_modules') > -1) {
+                        let libname = getNodeLibraryName(file.filePath);
+                        parsedResources[libname] = file;
                     } else {
                         parsedResources[file.getIdentifier()] = file;
                     }
