@@ -1,5 +1,5 @@
-import {CancellationRequested} from '../models/CancellationRequested';
-import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../models/TsExport';
+import { CancellationRequested } from '../models/CancellationRequested';
+import { TsAllFromExport, TsAssignedExport, TsNamedFromExport } from '../models/TsExport';
 import {
     TsDefaultImport,
     TsExternalModuleImport,
@@ -7,9 +7,9 @@ import {
     TsNamespaceImport,
     TsStringImport
 } from '../models/TsImport';
-import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsFile, TsModule, TsNamespace, TsResource} from '../models/TsResource';
-import {Logger, LoggerFactory} from '../utilities/Logger';
+import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
+import { TsFile, TsModule, TsNamespace, TsResource } from '../models/TsResource';
+import { Logger, LoggerFactory } from '../utilities/Logger';
 import {
     isArrayBindingPattern,
     isConstructorDeclaration,
@@ -27,8 +27,8 @@ import {
     isPropertySignature,
     isStringLiteral
 } from '../utilities/TypeGuards';
-import {readFileSync} from 'fs';
-import {inject, injectable} from 'inversify';
+import { readFileSync } from 'fs';
+import { inject, injectable } from 'inversify';
 import {
     ArrayBindingPattern,
     BindingElement,
@@ -75,7 +75,7 @@ import {
     TypeAliasDeclaration as TshTypeAliasDeclaration,
     VariableDeclaration as TshVariableDeclaration
 } from '../models/TsDeclaration';
-import {CancellationToken, Uri} from 'vscode';
+import { CancellationToken, Uri } from 'vscode';
 
 const usageNotAllowedParents = [
     SyntaxKind.ImportEqualsDeclaration,
@@ -141,42 +141,36 @@ export class TsResourceParser {
         this.logger.info('Instantiated.');
     }
 
-    public parseSource(source: string): Promise<TsFile> {
-        return new Promise((resolve, reject) => {
-            try {
-                let tmp = createSourceFile('inline.ts', source, ScriptTarget.ES6, true);
-                resolve(this.parseTypescript(tmp));
-            } catch (e) {
-                this.logger.error('Error happend during source parsing', { error: e });
-                reject(e);
-            }
-        });
+    public async parseSource(source: string): Promise<TsFile> {
+        try {
+            return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES6, true));
+        } catch (e) {
+            this.logger.error('Error happend during source parsing (parseSource())', { error: e });
+        }
     }
 
-    public parseFile(file: Uri): Promise<TsFile> {
-        return this.parseFiles([file]).then(files => files[0]);
+    public async parseFile(file: Uri): Promise<TsFile> {
+        return await this.parseFiles([file])[0];
     }
 
-    public parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
-        return new Promise((resolve, reject) => {
-            try {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                let parsed = filePathes
-                    .map(o => createSourceFile(o.fsPath, readFileSync(o.fsPath).toString(), ScriptTarget.ES6, true))
-                    .map(o => this.parseTypescript(o, cancellationToken));
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                resolve(parsed);
-            } catch (e) {
-                if (!(e instanceof CancellationRequested)) {
-                    this.logger.error('Error happend during file parsing', { error: e });
-                }
-                reject(e);
+    public async parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            this.cancelRequested();
+            return;
+        }
+
+        try {
+            let parsed = filePathes
+                .map(o => createSourceFile(o.fsPath, readFileSync(o.fsPath).toString(), ScriptTarget.ES6, true))
+                .map(o => this.parseTypescript(o, cancellationToken));
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                this.cancelRequested();
+                return;
             }
-        });
+            return parsed;
+        } catch (e) {
+            this.logger.error('Error happend during file parsing', { error: e });
+        }
     }
 
     private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsFile {
@@ -184,7 +178,8 @@ export class TsResourceParser {
 
         let syntaxList = source.getChildAt(0);
         if (cancellationToken && cancellationToken.onCancellationRequested) {
-            throw new CancellationRequested();
+            this.cancelRequested();
+            return;
         }
         this.parse(tsFile, syntaxList, cancellationToken);
 
@@ -475,5 +470,9 @@ export class TsResourceParser {
 
     private checkExported(node: Node): boolean {
         return (node.flags & NodeFlags.Export) === NodeFlags.Export;
+    }
+
+    private cancelRequested(): void {
+        this.logger.info('Cancellation requested');
     }
 }
