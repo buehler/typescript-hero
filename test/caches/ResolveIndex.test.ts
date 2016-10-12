@@ -50,7 +50,7 @@ describe('ResolveIndex', () => {
 
         it('should contain declarations with names', () => {
             let list = resolveIndex.index['isString'];
-            list.should.be.an('array').with.lengthOf(1);
+            list.should.be.an('array').with.lengthOf(2);
 
             list[0].from.should.equal('/resourceIndex/HelperFunctions');
             list[0].declaration.should.be.an.instanceof(FunctionDeclaration);

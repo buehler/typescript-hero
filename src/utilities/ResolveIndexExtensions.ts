@@ -1,9 +1,9 @@
-import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
-import {DefaultDeclaration} from '../models/TsDeclaration';
-import {TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport} from '../models/TsImport';
-import {ImportLocation} from '../models/TsImportOptions';
-import {join, normalize, parse, relative} from 'path';
-import {Position, TextEditor, workspace} from 'vscode';
+import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
+import { DefaultDeclaration } from '../models/TsDeclaration';
+import { TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
+import { ImportLocation } from '../models/TsImportOptions';
+import { join, normalize, parse, relative } from 'path';
+import { Position, TextEditor, workspace } from 'vscode';
 
 export function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
     if (!editor) {
@@ -19,9 +19,9 @@ export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, doc
     let declarations = resolveIndex.declarationInfos;
 
     for (let tsImport of imports) {
-            let importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath);
+        let importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath);
         if (tsImport instanceof TsNamedImport) {
-            declarations = declarations.filter(o => o.from !== importedLib || !tsImport.specifiers.some(s => s.specifier === o.declaration.name));
+            declarations = declarations.filter(o => o.from !== importedLib || !(tsImport as TsNamedImport).specifiers.some(s => s.specifier === o.declaration.name));
         } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         } else if (tsImport instanceof TsDefaultImport) {
