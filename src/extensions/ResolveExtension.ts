@@ -180,23 +180,24 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Dispose called.');
     }
 
-    private addImport(): void {
+    private async addImport(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
         }
-        this.pickProvider.addImportPick(window.activeTextEditor.document).then(o => {
-            if (o) {
-                this.logger.info('Add import to document', { resolveItem: o });
-                this.addImportToDocument(o);
+        try {
+            let newImport = await this.pickProvider.addImportPick(window.activeTextEditor.document);
+            if (newImport) {
+                this.logger.info('Add import to document', { resolveItem: newImport });
+                this.addImportToDocument(newImport);
             }
-        }, err => {
-            this.logger.error('An error happend during import picking', { error: err });
+        } catch (e) {
+            this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
-        });
+        }
     }
 
-    private addImportUnderCursor(): void {
+    private async addImportUnderCursor(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
@@ -205,15 +206,17 @@ export class ResolveExtension extends BaseExtension {
         if (!!!selectedSymbol) {
             return;
         }
-        this.pickProvider.addImportUnderCursorPick(window.activeTextEditor.document, selectedSymbol).then(o => {
-            if (o) {
-                this.logger.info('Add import to document', { resolveItem: o });
-                this.addImportToDocument(o);
+
+        try {
+            let newImport = await this.pickProvider.addImportUnderCursorPick(window.activeTextEditor.document, selectedSymbol);
+            if (newImport) {
+                this.logger.info('Add import to document', { resolveItem: newImport });
+                this.addImportToDocument(newImport);
             }
-        }, err => {
-            this.logger.error('An error happend during import picking', { error: err });
+        } catch (e) {
+            this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
-        });
+        }
     }
 
     private async organizeImports(): Promise<boolean> {

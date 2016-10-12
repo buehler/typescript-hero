@@ -1,14 +1,13 @@
-import { ExtensionConfig } from '../ExtensionConfig';
-import { CancellationRequested } from '../models/CancellationRequested';
-import { ModuleDeclaration, TsDeclaration, TsExportableDeclaration } from '../models/TsDeclaration';
-import { TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport } from '../models/TsExport';
-import { TsFile, TsModule, TsNamedResource, TsNamespace, TsResource } from '../models/TsResource';
-import { TsResourceParser } from '../parser/TsResourceParser';
-import { Logger, LoggerFactory } from '../utilities/Logger';
-import { existsSync } from 'fs';
-import { inject, injectable } from 'inversify';
-import { join, normalize, resolve, sep } from 'path';
-import { CancellationToken, CancellationTokenSource, Uri, workspace } from 'vscode';
+import {ExtensionConfig} from '../ExtensionConfig';
+import {ModuleDeclaration, TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
+import {TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
+import {TsFile, TsModule, TsNamedResource, TsNamespace, TsResource} from '../models/TsResource';
+import {TsResourceParser} from '../parser/TsResourceParser';
+import {Logger, LoggerFactory} from '../utilities/Logger';
+import {existsSync} from 'fs';
+import {inject, injectable} from 'inversify';
+import {join, normalize, resolve, sep} from 'path';
+import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
 
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
 export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
