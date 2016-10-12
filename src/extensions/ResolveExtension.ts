@@ -1,8 +1,8 @@
-import {ResolveIndex} from '../caches/ResolveIndex';
-import {ExtensionConfig} from '../ExtensionConfig';
-import {CommandQuickPickItem, ResolveQuickPickItem} from '../models/QuickPickItems';
-import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
-import {TshCommand} from '../models/TshCommand';
+import { ResolveIndex } from '../caches/ResolveIndex';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { CommandQuickPickItem, ResolveQuickPickItem } from '../models/QuickPickItems';
+import { DefaultDeclaration, ModuleDeclaration } from '../models/TsDeclaration';
+import { TshCommand } from '../models/TshCommand';
 import {
     TsAliasedImport,
     TsDefaultImport,
@@ -12,19 +12,19 @@ import {
     TsNamespaceImport,
     TsStringImport
 } from '../models/TsImport';
-import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsFile} from '../models/TsResource';
-import {TsResourceParser} from '../parser/TsResourceParser';
-import {ResolveCompletionItemProvider} from '../provider/ResolveCompletionItemProvider';
-import {ResolveQuickPickProvider} from '../provider/ResolveQuickPickProvider';
-import {Logger, LoggerFactory} from '../utilities/Logger';
+import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
+import { TsFile } from '../models/TsResource';
+import { TsResourceParser } from '../parser/TsResourceParser';
+import { ResolveCompletionItemProvider } from '../provider/ResolveCompletionItemProvider';
+import { ResolveQuickPickProvider } from '../provider/ResolveQuickPickProvider';
+import { Logger, LoggerFactory } from '../utilities/Logger';
 import {
     getAbsolutLibraryName,
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
-import {BaseExtension} from './BaseExtension';
-import {inject, injectable} from 'inversify';
+import { BaseExtension } from './BaseExtension';
+import { inject, injectable } from 'inversify';
 import {
     commands,
     ExtensionContext,
@@ -216,30 +216,31 @@ export class ResolveExtension extends BaseExtension {
         });
     }
 
-    private organizeImports(): Promise<boolean> {
-        return this.parser
-            .parseSource(window.activeTextEditor.document.getText())
-            .then(parsed => {
-                let keep: TsImport[] = [];
-                for (let actImport of parsed.imports) {
-                    if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
-                        if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
-                            keep.push(actImport);
-                        }
-                    } else if (actImport instanceof TsNamedImport) {
-                        actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1).sort(specifierSort);
-                        if (actImport.specifiers.length) {
-                            keep.push(actImport);
-                        }
-                    } else if (actImport instanceof TsStringImport) {
+    private async organizeImports(): Promise<boolean> {
+        try {
+            let parsed = await this.parser.parseSource(window.activeTextEditor.document.getText()),
+                keep: TsImport[] = [];
+
+            for (let actImport of parsed.imports) {
+                if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
+                    if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
                         keep.push(actImport);
                     }
+                } else if (actImport instanceof TsNamedImport) {
+                    actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1).sort(specifierSort);
+                    if (actImport.specifiers.length) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof TsStringImport) {
+                    keep.push(actImport);
                 }
-                return this.commitDocumentImports(parsed, keep, true);
-            })
-            .catch(e => {
-                this.logger.error('An error happend during "organize imports".', { error: e });
-            });
+            }
+
+            return await this.commitDocumentImports(parsed, keep, true);
+        } catch (e) {
+            this.logger.error('An error happend during "organize imports".', { error: e });
+            return false;
+        }
     }
 
     private refreshIndex(file?: Uri): void {
@@ -256,88 +257,88 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
-    private addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
-        return Promise
-            .all([
-                this.parser.parseSource(window.activeTextEditor.document.getText()),
-                this.parser.parseSource(window.activeTextEditor.document.getText())
-            ])
-            .then((parsedDocuments: any) => {
-                let imports = parsedDocuments[0].imports;
-                let declaration = item.declarationInfo.declaration;
+    private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
+        let parsedDocuments = await Promise.all([
+            this.parser.parseSource(window.activeTextEditor.document.getText()),
+            this.parser.parseSource(window.activeTextEditor.document.getText())
+        ]);
 
-                let imported = imports.find(o => {
-                    let lib = getAbsolutLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
-                    return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
-                });
+        let imports = parsedDocuments[0].imports;
+        let declaration = item.declarationInfo.declaration;
 
-                let specifiers = imports.reduce((all, cur) => {
-                    if (cur instanceof TsNamedImport) {
-                        all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
-                    } else if (cur instanceof TsAliasedImport) {
-                        all.push(cur.alias);
+        let imported = imports.find(o => {
+            let lib = getAbsolutLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
+            return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
+        });
+
+        let specifiers = imports.reduce((all, cur) => {
+            if (cur instanceof TsNamedImport) {
+                all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
+            } else if (cur instanceof TsAliasedImport) {
+                all.push(cur.alias);
+            }
+            return all;
+        }, []);
+
+        let promise = Promise.resolve(imports),
+            defaultImportAlias = (declaration: DefaultDeclaration) => {
+                promise = promise.then(imports => window.showInputBox({
+                    prompt: 'Please enter a variable name for the default export..',
+                    placeHolder: 'Default export name',
+                    //TODO: wait for bugfix of vscode ... code: value: declaration.name, https://github.com/Microsoft/vscode/issues/11503
+                    validateInput: s => !!s ? '' : 'Please enter a variable name'
+                }).then(defaultAlias => {
+                    if (defaultAlias) {
+                        imports.push(new TsDefaultImport(getRelativeLibraryName(item.description, window.activeTextEditor.document.fileName), defaultAlias));
                     }
-                    return all;
-                }, []);
-
-                let promise = Promise.resolve(imports),
-                    defaultImportAlias = (declaration: DefaultDeclaration) => {
-                        promise = promise.then(imports => window.showInputBox({
-                            prompt: 'Please enter a variable name for the default export..',
-                            placeHolder: 'Default export name',
-                            //TODO: wait for bugfix of vscode ... code: value: declaration.name, https://github.com/Microsoft/vscode/issues/11503
-                            validateInput: s => !!s ? '' : 'Please enter a variable name'
-                        }).then(defaultAlias => {
-                            if (defaultAlias) {
-                                imports.push(new TsDefaultImport(getRelativeLibraryName(item.description, window.activeTextEditor.document.fileName), defaultAlias));
-                            }
-                            return imports;
-                        }));
-                    },
-                    duplicateSpecifier = (imp: TsNamedImport, pushToImports: boolean) => {
-                        promise = promise.then(imports => window.showInputBox({
-                            prompt: 'Please enter an alias for the specifier..',
-                            placeHolder: 'Alias for specifier',
-                            validateInput: s => !!s ? '' : 'Please enter a variable name'
-                        }).then(alias => {
-                            imp.specifiers.push(new TsResolveSpecifier(item.label, alias));
-                            if (alias && pushToImports) {
-                                imports.push(imp);
-                            }
-                            return imports;
-                        }));
-                    };
-
-                if (!imported) {
-                    if (declaration instanceof ModuleDeclaration) {
-                        imports.push(new TsNamespaceImport(item.description, item.label));
-                    } else if (declaration instanceof DefaultDeclaration) {
-                        defaultImportAlias(declaration);
-                    } else {
-                        let library = getRelativeLibraryName(item.declarationInfo.from, window.activeTextEditor.document.fileName);
-                        let named = new TsNamedImport(library);
-                        if (specifiers.some(o => o === item.label)) {
-                            duplicateSpecifier(named, true);
-                        } else {
-                            named.specifiers.push(new TsResolveSpecifier(item.label));
-                            imports.push(named);
-                        }
+                    return imports;
+                }));
+            },
+            duplicateSpecifier = (imp: TsNamedImport, pushToImports: boolean) => {
+                promise = promise.then(imports => window.showInputBox({
+                    prompt: 'Please enter an alias for the specifier..',
+                    placeHolder: 'Alias for specifier',
+                    validateInput: s => !!s ? '' : 'Please enter a variable name'
+                }).then(alias => {
+                    imp.specifiers.push(new TsResolveSpecifier(item.label, alias));
+                    if (alias && pushToImports) {
+                        imports.push(imp);
                     }
-                } else if (declaration instanceof DefaultDeclaration) {
-                    defaultImportAlias(declaration);
-                } else if (imported instanceof TsNamedImport) {
-                    if (specifiers.some(o => o === item.label)) {
-                        duplicateSpecifier(imported, false);
-                    } else {
-                        imported.specifiers.push(new TsResolveSpecifier(item.label));
-                    }
+                    return imports;
+                }));
+            };
+
+        if (!imported) {
+            if (declaration instanceof ModuleDeclaration) {
+                imports.push(new TsNamespaceImport(item.description, item.label));
+            } else if (declaration instanceof DefaultDeclaration) {
+                defaultImportAlias(declaration);
+            } else {
+                let library = getRelativeLibraryName(item.declarationInfo.from, window.activeTextEditor.document.fileName);
+                let named = new TsNamedImport(library);
+                if (specifiers.some(o => o === item.label)) {
+                    duplicateSpecifier(named, true);
+                } else {
+                    named.specifiers.push(new TsResolveSpecifier(item.label));
+                    imports.push(named);
                 }
-                return promise.then(imports => this.commitDocumentImports(parsedDocuments[1], imports));
-            });
+            }
+        } else if (declaration instanceof DefaultDeclaration) {
+            defaultImportAlias(declaration);
+        } else if (imported instanceof TsNamedImport) {
+            if (specifiers.some(o => o === item.label)) {
+                duplicateSpecifier(imported, false);
+            } else {
+                imported.specifiers.push(new TsResolveSpecifier(item.label));
+            }
+        }
+
+        let newImports = await promise;
+        return await this.commitDocumentImports(parsedDocuments[1], newImports);
     }
 
-    private commitDocumentImports(parsedDocument: TsFile, newImports: TsImport[], sortAndReorder: boolean = false): Thenable<boolean> {
-        return window.activeTextEditor.edit(builder => {
+    private async commitDocumentImports(parsedDocument: TsFile, newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
+        return await window.activeTextEditor.edit(builder => {
             if (sortAndReorder) {
                 for (let imp of parsedDocument.imports) {
                     builder.delete(imp.getRange(window.activeTextEditor.document));
