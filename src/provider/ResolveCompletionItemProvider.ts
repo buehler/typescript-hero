@@ -1,18 +1,18 @@
-import {DeclarationInfo, ResolveIndex} from '../caches/ResolveIndex';
-import {ExtensionConfig} from '../ExtensionConfig';
-import {DefaultDeclaration, ModuleDeclaration} from '../models/TsDeclaration';
-import {TsNamedImport, TsNamespaceImport} from '../models/TsImport';
-import {TsResolveSpecifier} from '../models/TsResolveSpecifier';
-import {TsFile} from '../models/TsResource';
-import {TsResourceParser} from '../parser/TsResourceParser';
-import {Logger, LoggerFactory} from '../utilities/Logger';
+import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { DefaultDeclaration, ModuleDeclaration } from '../models/TsDeclaration';
+import { TsNamedImport, TsNamespaceImport } from '../models/TsImport';
+import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
+import { TsFile } from '../models/TsResource';
+import { TsResourceParser } from '../parser/TsResourceParser';
+import { Logger, LoggerFactory } from '../utilities/Logger';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
-import {inject, injectable} from 'inversify';
+import { inject, injectable } from 'inversify';
 import {
     CancellationToken,
     CompletionItem,
@@ -35,7 +35,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         this.logger.info('Instantiated.');
     }
 
-    provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
+    public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
         let wordAtPosition = document.getWordRangeAtPosition(position),
             lineText = document.lineAt(position.line).text,
             searchWord = '';
@@ -57,29 +57,28 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
 
         this.logger.info('Search completion for word.', { searchWord });
 
-        return this.parser.parseSource(document.getText())
-            .then(parsed => {
-                if (token.isCancellationRequested) {
-                    return [];
-                }
+        let parsed = await this.parser.parseSource(document.getText());
 
-                let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports)
-                    .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
-                    .filter(o => !parsed.usages.some(d => d === o.declaration.name));
+        if (token.isCancellationRequested) {
+            return [];
+        }
 
-                let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
-                    let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
-                    item.detail = o.from;
-                    item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
-                    return item;
-                });
+        let declarations = getDeclarationsFilteredByImports(this.index, document.fileName, parsed.imports)
+            .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
+            .filter(o => !parsed.usages.some(d => d === o.declaration.name));
 
-                if (token.isCancellationRequested) {
-                    return [];
-                }
+        let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
+            let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
+            item.detail = o.from;
+            item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
+            return item;
+        });
 
-                return filtered;
-            });
+        if (token.isCancellationRequested) {
+            return [];
+        }
+
+        return filtered;
     }
 
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: TsFile): TextEdit[] {

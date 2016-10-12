@@ -1,4 +1,3 @@
-import { CancellationRequested } from '../models/CancellationRequested';
 import { TsAllFromExport, TsAssignedExport, TsNamedFromExport } from '../models/TsExport';
 import {
     TsDefaultImport,
@@ -189,7 +188,7 @@ export class TsResourceParser {
     private parse(tsResource: TsResource, node: Node, cancellationToken?: CancellationToken): void {
         for (let child of node.getChildren()) {
             if (cancellationToken && cancellationToken.onCancellationRequested) {
-                throw new CancellationRequested();
+                return;
             }
             switch (child.kind) {
                 case SyntaxKind.ImportDeclaration:
