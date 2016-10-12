@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Added
 - Typescript symbols know their positions (resources, declarations, imports, exports)
 - Statusbar item for the state of the debug restarter ([#85](https://github.com/buehler/typescript-hero/issues/85))
+- Import a default export does suggest a name ([#71](https://github.com/buehler/typescript-hero/issues/71))
 
 #### Fixed
 - New imports will be below `"use strict"` if it's the first line ([#73](https://github.com/buehler/typescript-hero/issues/73))
