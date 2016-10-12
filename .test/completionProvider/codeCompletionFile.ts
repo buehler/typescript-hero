@@ -4,7 +4,7 @@ MyClass.Fancie
 import {isNum}
 isNum
 
-MyCla
+MyClas
 
 import {AlreadyImported} from './codeCompletionImports';
 ShouldBeImpor
