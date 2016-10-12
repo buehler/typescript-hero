@@ -1,14 +1,14 @@
-import {ExtensionConfig} from '../ExtensionConfig';
-import {CancellationRequested} from '../models/CancellationRequested';
-import {ModuleDeclaration, TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
-import {TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
-import {TsFile, TsModule, TsNamedResource, TsNamespace, TsResource} from '../models/TsResource';
-import {TsResourceParser} from '../parser/TsResourceParser';
-import {Logger, LoggerFactory} from '../utilities/Logger';
-import {existsSync} from 'fs';
-import {inject, injectable} from 'inversify';
-import {join, normalize, resolve, sep} from 'path';
-import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { CancellationRequested } from '../models/CancellationRequested';
+import { ModuleDeclaration, TsDeclaration, TsExportableDeclaration } from '../models/TsDeclaration';
+import { TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport } from '../models/TsExport';
+import { TsFile, TsModule, TsNamedResource, TsNamespace, TsResource } from '../models/TsResource';
+import { TsResourceParser } from '../parser/TsResourceParser';
+import { Logger, LoggerFactory } from '../utilities/Logger';
+import { existsSync } from 'fs';
+import { inject, injectable } from 'inversify';
+import { join, normalize, resolve, sep } from 'path';
+import { CancellationToken, CancellationTokenSource, Uri, workspace } from 'vscode';
 
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
 export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
@@ -47,7 +47,7 @@ export class ResolveIndex {
         this.logger = loggerFactory('ResolveIndex');
     }
 
-    public buildIndex(cancellationToken?: CancellationToken): Promise<void> {
+    public async buildIndex(cancellationToken?: CancellationToken): Promise<void> {
         if (this.cancelToken) {
             this.logger.info('Refresh already running, canceling first.');
             this.cancelRefresh();
@@ -56,74 +56,65 @@ export class ResolveIndex {
         this.logger.info('Starting index refresh.');
         this.cancelToken = new CancellationTokenSource();
 
-        return this.findFiles(cancellationToken)
-            .then(files => {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                this.logger.info(`Finding finished. Found ${files.length} files.`);
+        try {
+            let files = await this.findFiles(cancellationToken);
 
-                return this.parser.parseFiles(files);
-            })
-            .then(parsed => {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                this.cancelRequested();
+                return;
+            }
 
-                return this.parseResources(parsed, cancellationToken);
-            })
-            .then(resources => {
-                this.parsedResources = resources;
-                return this.createIndex(resources, cancellationToken);
-            })
-            .then(index => {
-                this._index = index;
-                this.cancelToken.dispose();
-                this.cancelToken = null;
-            })
-            .catch(e => {
-                if (!(e instanceof CancellationRequested)) {
-                    throw e;
-                }
-                this.logger.info('Cancellation requested.');
-            });
+            this.logger.info(`Finding finished. Found ${files.length} files.`);
+
+            let parsed = await this.parser.parseFiles(files);
+
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                this.cancelRequested();
+                return;
+            }
+
+            this.parsedResources = await this.parseResources(parsed, cancellationToken);
+            this._index = await this.createIndex(this.parsedResources, cancellationToken);
+        } catch (e) {
+            this.logger.error('Catched an error during buildIndex()', e);
+        } finally {
+            this.cancelToken.dispose();
+            this.cancelToken = null;
+        }
+
     }
 
-    public rebuildForFile(filePath: string): Promise<void> {
+    public async rebuildForFile(filePath: string): Promise<void> {
         let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = [<Uri>{ fsPath: filePath }, ...this.getExportedResources(rebuildResource)];
 
-        return this.parser
-            .parseFiles(rebuildFiles)
-            .then(parsed => this.parseResources(parsed))
-            .then(resources => {
-                for (let key in resources) {
-                    this.parsedResources[key] = resources[key];
-                }
-                return this.createIndex(this.parsedResources);
-            })
-            .then(index => {
-                this._index = index;
-            });
+        try {
+            let resources = await this.parseResources(await this.parser.parseFiles(rebuildFiles));
+
+            for (let key in resources) {
+                this.parsedResources[key] = resources[key];
+            }
+            this._index = await this.createIndex(this.parsedResources);
+        } catch (e) {
+            this.logger.error('Catched an error during rebuildForFile()', e);
+        }
     }
 
-    public removeForFile(filePath: string): Promise<void> {
+    public async removeForFile(filePath: string): Promise<void> {
         let removeResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = this.getExportedResources(removeResource);
 
-        return this.parser
-            .parseFiles(rebuildFiles)
-            .then(parsed => this.parseResources(parsed))
-            .then(resources => {
-                delete this.parsedResources[removeResource];
-                for (let key in resources) {
-                    this.parsedResources[key] = resources[key];
-                }
-                return this.createIndex(this.parsedResources);
-            })
-            .then(index => {
-                this._index = index;
-            });
+        try {
+            let resources = await this.parseResources(await this.parser.parseFiles(rebuildFiles));
+
+            delete this.parsedResources[removeResource];
+            for (let key in resources) {
+                this.parsedResources[key] = resources[key];
+            }
+            this._index = await this.createIndex(this.parsedResources);
+        } catch (e) {
+            this.logger.error('Catched an error during removeForFile()', e);
+        }
     }
 
     public cancelRefresh(): void {
@@ -139,73 +130,70 @@ export class ResolveIndex {
         this._index = null;
     }
 
-    private parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
+    private async parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
         let parsedResources: Resources = {};
-        return new Promise<void>(
-            resolve => {
-                for (let file of files) {
-                    if (file.filePath.indexOf('typings') > -1 || file.filePath.indexOf('node_modules/@types') > -1) {
-                        for (let resource of file.resources) {
-                            parsedResources[resource.getIdentifier()] = resource;
-                        }
-                    } else if (file.filePath.indexOf('node_modules') > -1) {
-                        let libname = getNodeLibraryName(file.filePath);
-                        parsedResources[libname] = file;
-                    } else {
-                        parsedResources[file.getIdentifier()] = file;
-                    }
+
+        for (let file of files) {
+            if (file.filePath.indexOf('typings') > -1 || file.filePath.indexOf('node_modules/@types') > -1) {
+                for (let resource of file.resources) {
+                    parsedResources[resource.getIdentifier()] = resource;
                 }
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                resolve();
-            })
-            .then(() => Object
-                .keys(parsedResources)
-                .sort((k1, k2) => k2.length - k1.length)
-                .forEach(key => {
-                    if (cancellationToken && cancellationToken.onCancellationRequested) {
-                        throw new CancellationRequested();
-                    }
-                    let resource = parsedResources[key];
-                    resource.declarations = resource.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
-                    this.processResourceExports(parsedResources, resource);
-                })
-            )
-            .then(() => parsedResources);
+            } else if (file.filePath.indexOf('node_modules') > -1) {
+                let libname = getNodeLibraryName(file.filePath);
+                parsedResources[libname] = file;
+            } else {
+                parsedResources[file.getIdentifier()] = file;
+            }
+        }
+
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            this.cancelRequested();
+            return;
+        }
+
+        for (let key of Object.keys(parsedResources).sort((k1, k2) => k2.length - k1.length)) {
+            if (cancellationToken && cancellationToken.onCancellationRequested) {
+                this.cancelRequested();
+                return;
+            }
+            let resource = parsedResources[key];
+            resource.declarations = resource.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported);
+            this.processResourceExports(parsedResources, resource);
+        }
+
+        return parsedResources;
     }
 
-    private createIndex(resources: Resources, cancellationToken?: CancellationToken): Promise<ResourceIndex> {
+    private async createIndex(resources: Resources, cancellationToken?: CancellationToken): Promise<ResourceIndex> {
         if (cancellationToken && cancellationToken.onCancellationRequested) {
-            throw new CancellationRequested();
+            this.cancelRequested();
+            return;
         }
+
         let index: ResourceIndex = {};
-        return new Promise(resolve => {
-            Object
-                .keys(resources)
-                .forEach(key => {
-                    let resource = resources[key];
-                    if (resource instanceof TsNamedResource) {
-                        if (!index[resource.name]) {
-                            index[resource.name] = [];
-                        }
-                        index[resource.name].push({
-                            declaration: new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
-                            from: resource.name
-                        });
-                    }
-                    for (let declaration of resource.declarations) {
-                        if (!index[declaration.name]) {
-                            index[declaration.name] = [];
-                        }
-                        index[declaration.name].push({
-                            declaration,
-                            from: key.replace(/[/]?index$/, '')
-                        });
-                    }
+
+        for (let key of Object.keys(resources)) {
+            let resource = resources[key];
+            if (resource instanceof TsNamedResource) {
+                if (!index[resource.name]) {
+                    index[resource.name] = [];
+                }
+                index[resource.name].push({
+                    declaration: new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
+                    from: resource.name
                 });
-            resolve(index);
-        });
+            }
+            for (let declaration of resource.declarations) {
+                if (!index[declaration.name]) {
+                    index[declaration.name] = [];
+                }
+                index[declaration.name].push({
+                    declaration,
+                    from: key.replace(/[/]?index$/, '')
+                });
+            }
+        }
+        return index;
     }
 
     private processResourceExports(parsedResources: Resources, resource: TsResource): void {
@@ -277,7 +265,7 @@ export class ResolveIndex {
         });
     }
 
-    private findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
+    private async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
         let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
 
         let globs = [],
@@ -300,17 +288,15 @@ export class ResolveIndex {
 
         searches.push(workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**', undefined, cancellationToken));
 
-        return Promise
-            .all(searches)
-            .then(uris => {
-                if (cancellationToken && cancellationToken.onCancellationRequested) {
-                    throw new CancellationRequested();
-                }
-                let excludePatterns = this.config.resolver.ignorePatterns;
-                uris = uris.map(o => o.filter(f => f.fsPath.split(sep).every(p => excludePatterns.indexOf(p) < 0)));
-                this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
-                return uris.reduce((all, cur) => all.concat(cur), []);
-            });
+        let uris = await Promise.all(searches);
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            this.cancelRequested();
+            return;
+        }
+        let excludePatterns = this.config.resolver.ignorePatterns;
+        uris = uris.map(o => o.filter(f => f.fsPath.split(sep).every(p => excludePatterns.indexOf(p) < 0)));
+        this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
+        return uris.reduce((all, cur) => all.concat(cur), []);
     }
 
     private getExportedResources(resourceToCheck: string): Uri[] {
@@ -341,5 +327,9 @@ export class ResolveIndex {
         }
 
         return exportsResource;
+    }
+
+    private cancelRequested(): void {
+        this.logger.info('Cancellation requested.');
     }
 }
