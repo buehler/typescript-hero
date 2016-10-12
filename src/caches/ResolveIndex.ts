@@ -1,13 +1,13 @@
-import {ExtensionConfig} from '../ExtensionConfig';
-import {ModuleDeclaration, TsDeclaration, TsExportableDeclaration} from '../models/TsDeclaration';
-import {TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport} from '../models/TsExport';
-import {TsFile, TsModule, TsNamedResource, TsNamespace, TsResource} from '../models/TsResource';
-import {TsResourceParser} from '../parser/TsResourceParser';
-import {Logger, LoggerFactory} from '../utilities/Logger';
-import {existsSync} from 'fs';
-import {inject, injectable} from 'inversify';
-import {join, normalize, resolve, sep} from 'path';
-import {CancellationToken, CancellationTokenSource, Uri, workspace} from 'vscode';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { ModuleDeclaration, TsDeclaration, TsExportableDeclaration } from '../models/TsDeclaration';
+import { TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport } from '../models/TsExport';
+import { TsFile, TsNamedResource, TsResource } from '../models/TsResource';
+import { TsResourceParser } from '../parser/TsResourceParser';
+import { Logger, LoggerFactory } from '../utilities/Logger';
+import { existsSync } from 'fs';
+import { inject, injectable } from 'inversify';
+import { join, normalize, resolve, sep } from 'path';
+import { CancellationToken, CancellationTokenSource, Uri, workspace } from 'vscode';
 
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
 export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
@@ -16,7 +16,7 @@ type Resources = { [name: string]: TsResource };
 function getNodeLibraryName(path: string): string {
     let dirs = path.split(sep),
         nodeIndex = dirs.indexOf('node_modules');
-    return dirs.slice(nodeIndex + 1).join('/').replace(/([.]d)?([.]tsx?)?/g, '').replace('/index', '');
+    return dirs.slice(nodeIndex + 1).join('/').replace(/([.]d)?([.]tsx?)?/g, '').replace(new RegExp(`/(index|${dirs[nodeIndex + 1]})$`), '');
 }
 
 @injectable()
@@ -218,7 +218,7 @@ export class ResolveIndex {
                 } else if (ex instanceof TsNamedFromExport) {
                     this.processNamedFromExport(parsedResources, ex, resource, parsedResources[sourceLib]);
                 }
-            } else if (resource instanceof TsModule || resource instanceof TsNamespace) {
+            } else {
                 if (ex instanceof TsAssignedExport) {
                     this.processAssignedExport(parsedResources, ex, resource);
                 } else if (ex instanceof TsNamedFromExport && ex.from && parsedResources[ex.from]) {
