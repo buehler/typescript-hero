@@ -18,7 +18,6 @@ import {
     CompletionItem,
     CompletionItemProvider,
     Position,
-    Range,
     TextDocument,
     TextEdit,
     window
