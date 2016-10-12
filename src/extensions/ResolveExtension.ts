@@ -285,7 +285,7 @@ export class ResolveExtension extends BaseExtension {
                 promise = promise.then(imports => window.showInputBox({
                     prompt: 'Please enter a variable name for the default export..',
                     placeHolder: 'Default export name',
-                    //TODO: wait for bugfix of vscode ... code: value: declaration.name, https://github.com/Microsoft/vscode/issues/11503
+                    value: declaration.name,
                     validateInput: s => !!s ? '' : 'Please enter a variable name'
                 }).then(defaultAlias => {
                     if (defaultAlias) {
