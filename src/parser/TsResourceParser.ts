@@ -150,7 +150,7 @@ export class TsResourceParser {
     }
 
     public async parseFile(file: Uri): Promise<TsFile> {
-        return await this.parseFiles([file])[0];
+        return (await this.parseFiles([file]))[0];
     }
 
     public async parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
