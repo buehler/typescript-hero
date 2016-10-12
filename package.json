@@ -129,7 +129,7 @@
         },
         "typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Defines if there should be a space inside the curly braces of an import statement."
         },
         "typescriptHero.resolver.pathStringDelimiter": {
