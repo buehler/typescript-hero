@@ -11,13 +11,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Changed
 - Upgrade to TS2.0 ([#88](https://github.com/buehler/typescript-hero/issues/88))
-
+- Default value of `typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces` is `true` now
 
 #### Fixed
 - New imports will be below `"use strict"` if it's the first line ([#73](https://github.com/buehler/typescript-hero/issues/73))
 - Multiline imports respect `editor.tabSize` ([#74](https://github.com/buehler/typescript-hero/issues/74))
 - Reload index when configuration of the ignore patterns changed ([#75](https://github.com/buehler/typescript-hero/issues/75))
 - Autocomplete filters local file usages ([#69](https://github.com/buehler/typescript-hero/issues/69))
+- Default exports do not break extension anymore ([#79](https://github.com/buehler/typescript-hero/issues/79))
 
 ## [0.8.0]
 #### Added

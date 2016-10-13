@@ -302,7 +302,12 @@ export class TsResourceParser {
     }
 
     private parseFunction(tsResource: TsResource, node: FunctionDeclaration): void {
-        let func = new TshFunctionDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node));
+        let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
+        let func = new TshFunctionDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
+        if (this.checkDefaultExport(node)) {
+            func.isExported = false;
+            tsResource.declarations.push(new DefaultDeclaration(func.name, tsResource));
+        }
         func.parameters = this.parseMethodParams(node);
         tsResource.declarations.push(func);
         this.parseFunctionParts(tsResource, func, node);
@@ -323,7 +328,12 @@ export class TsResourceParser {
     }
 
     private parseInterface(tsResource: TsResource, node: InterfaceDeclaration): void {
-        let interfaceDeclaration = new TshInterfaceDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node));
+        let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
+        let interfaceDeclaration = new TshInterfaceDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
+        if (this.checkDefaultExport(node)) {
+            interfaceDeclaration.isExported = false;
+            tsResource.declarations.push(new DefaultDeclaration(interfaceDeclaration.name, tsResource));
+        }
         if (node.members) {
             node.members.forEach(o => {
                 if (isPropertySignature(o)) {
@@ -339,7 +349,12 @@ export class TsResourceParser {
     }
 
     private parseClass(tsResource: TsResource, node: ClassDeclaration): void {
-        let classDeclaration = new TshClassDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node));
+        let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
+        let classDeclaration = new TshClassDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
+        if (this.checkDefaultExport(node)) {
+            classDeclaration.isExported = false;
+            tsResource.declarations.push(new DefaultDeclaration(classDeclaration.name, tsResource));
+        }
         if (node.members) {
             node.members.forEach(o => {
                 if (isPropertyDeclaration(o)) {
@@ -469,6 +484,10 @@ export class TsResourceParser {
 
     private checkExported(node: Node): boolean {
         return (node.flags & NodeFlags.Export) === NodeFlags.Export;
+    }
+
+    private checkDefaultExport(node: Node): boolean {
+        return (node.flags & NodeFlags.Default) === NodeFlags.Default;
     }
 
     private cancelRequested(): void {
