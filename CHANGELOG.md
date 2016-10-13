@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Changed
 - Upgrade to TS2.0 ([#88](https://github.com/buehler/typescript-hero/issues/88))
+- Default value of `typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces` is `true` now
 
 #### Fixed
 - New imports will be below `"use strict"` if it's the first line ([#73](https://github.com/buehler/typescript-hero/issues/73))
