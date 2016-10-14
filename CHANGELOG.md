@@ -20,6 +20,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Autocomplete filters local file usages ([#69](https://github.com/buehler/typescript-hero/issues/69))
 - Default exports do not break extension anymore ([#79](https://github.com/buehler/typescript-hero/issues/79))
 - Node pathes are correctly split ([#76](https://github.com/buehler/typescript-hero/issues/76))
+- Exports from root index.ts are not empty
 
 ## [0.8.0]
 #### Added

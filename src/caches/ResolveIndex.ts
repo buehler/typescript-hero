@@ -188,7 +188,7 @@ export class ResolveIndex {
                 }
                 index[declaration.name].push({
                     declaration,
-                    from: key.replace(/[/]?index$/, '')
+                    from: key.replace(/[/]?index$/, '') || '/'
                 });
             }
         }
