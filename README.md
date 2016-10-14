@@ -1,4 +1,4 @@
-# Typescript Hero
+# TypeScript Hero
 
 TypeScript Hero is a vscode extension that makes your live easier.
 When you are coding a lot of `TypeScript` you may want vscode to automatically
@@ -89,16 +89,22 @@ Please visit [the issue list](https://github.com/buehler/typescript-hero/issues)
 This section will cover the newest release, for the rest of the changelog,
 please visit the [CHANGELOG](https://github.com/buehler/typescript-hero/blob/master/CHANGELOG.md)
 
-### 0.8.0
+### 0.9.0
 #### Added
-- Support for multiline imports ([#60](https://github.com/buehler/typescript-hero/issues/60))
-- Added setting for multiline threshold
-- Configurable new import location (at top of the file or at the cursor position) ([#41](https://github.com/buehler/typescript-hero/issues/41))
-- Asks for alias if a specifier is already present ([#44](https://github.com/buehler/typescript-hero/issues/44))
+- Typescript symbols know their positions (resources, declarations, imports, exports)
+- Statusbar item for the state of the debug restarter ([#85](https://github.com/buehler/typescript-hero/issues/85))
+- Import a default export does suggest a name ([#71](https://github.com/buehler/typescript-hero/issues/71))
+- Support for `@types` style definitions of TS2.0 ([#77](https://github.com/buehler/typescript-hero/issues/77))
+
+#### Changed
+- Upgrade to TS2.0 ([#88](https://github.com/buehler/typescript-hero/issues/88))
+- Default value of `typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces` is `true` now
 
 #### Fixed
-- Autocomplete does not suggest items that are already imported ([#64](https://github.com/buehler/typescript-hero/issues/64))
-- Autocomplete does not suggest items of the own file ([#61](https://github.com/buehler/typescript-hero/issues/61))
-- Does not generate duplicates when multiline imports are used ([#43](https://github.com/buehler/typescript-hero/issues/43))
-- Multiline imports were not working with multiple imports
-- Autocomplete does not add other classes from a file as well
+- New imports will be below `"use strict"` if it's the first line ([#73](https://github.com/buehler/typescript-hero/issues/73))
+- Multiline imports respect `editor.tabSize` ([#74](https://github.com/buehler/typescript-hero/issues/74))
+- Reload index when configuration of the ignore patterns changed ([#75](https://github.com/buehler/typescript-hero/issues/75))
+- Autocomplete filters local file usages ([#69](https://github.com/buehler/typescript-hero/issues/69))
+- Default exports do not break extension anymore ([#79](https://github.com/buehler/typescript-hero/issues/79))
+- Node pathes are correctly split ([#76](https://github.com/buehler/typescript-hero/issues/76))
+- Exports from root index.ts are not empty
