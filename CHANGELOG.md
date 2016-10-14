@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.9.0]
 #### Added
 - Typescript symbols know their positions (resources, declarations, imports, exports)
 - Statusbar item for the state of the debug restarter ([#85](https://github.com/buehler/typescript-hero/issues/85))
@@ -101,7 +103,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.8.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.9.0...master
+[0.9.0]: https://github.com/buehler/typescript-hero/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/buehler/typescript-hero/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/buehler/typescript-hero/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/buehler/typescript-hero/compare/v0.6.0...v0.7.0
