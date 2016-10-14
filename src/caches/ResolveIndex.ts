@@ -14,7 +14,7 @@ export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
 type Resources = { [name: string]: TsResource };
 
 function getNodeLibraryName(path: string): string {
-    let dirs = path.split(sep),
+    let dirs = path.split(/\/|\\/),
         nodeIndex = dirs.indexOf('node_modules');
     return dirs.slice(nodeIndex + 1).join('/').replace(/([.]d)?([.]tsx?)?/g, '').replace(new RegExp(`/(index|${dirs[nodeIndex + 1]})$`), '');
 }
