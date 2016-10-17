@@ -15,13 +15,13 @@ os:
 #     sleep 3; 
 #   fi
 
-# install:
-# - npm run bootstrap
-# - npm run build
+install:
+ - npm run install
+ - npm run build
 
 script:
-#- npm test --silent
-- echo "tests are temporarily disabled."
+- npm test --silent
+#- echo "tests are temporarily disabled."
 
 deploy:
   provider: script
