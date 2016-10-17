@@ -1,11 +1,11 @@
 import 'reflect-metadata';
-import {ClassDeclaration, DefaultDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration} from '../../src/models/TsDeclaration';
-import {TsAllFromExport, TsAssignedExport, TsNamedFromExport} from '../../src/models/TsExport';
-import {TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport} from '../../src/models/TsImport';
-import {TsModule, TsNamespace, TsResource} from '../../src/models/TsResource';
-import {TsResourceParser} from '../../src/parser/TsResourceParser';
+import { ClassDeclaration, DefaultDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration } from '../../src/models/TsDeclaration';
+import { TsAllFromExport, TsAssignedExport, TsNamedFromExport } from '../../src/models/TsExport';
+import { TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport } from '../../src/models/TsImport';
+import { TsModule, TsNamespace, TsResource } from '../../src/models/TsResource';
+import { TsResourceParser } from '../../src/parser/TsResourceParser';
 import * as chai from 'chai';
-import {join} from 'path';
+import { join } from 'path';
 
 chai.should();
 
@@ -28,8 +28,9 @@ describe('TsResourceParser', () => {
 
         const file = join(process.cwd(), '.test/resourceParser/importsOnly.ts');
 
-        beforeEach(() => {
-            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+        beforeEach(async done => {
+            parsed = await parser.parseFile(<any>{ fsPath: file });
+            done();
         });
 
         it('should parse imports', () => {
@@ -101,8 +102,9 @@ describe('TsResourceParser', () => {
 
         const file = join(process.cwd(), '.test/resourceParser/exportsOnly.ts');
 
-        beforeEach(() => {
-            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+        beforeEach(async done => {
+            parsed = await parser.parseFile(<any>{ fsPath: file });
+            done();
         });
 
         it('should parse export all from another file', () => {
@@ -147,8 +149,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/enum.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -177,8 +180,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/typeAlias.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -203,8 +207,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/function.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -258,8 +263,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/variable.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -318,8 +324,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/interface.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -363,8 +370,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/class.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -416,8 +424,9 @@ describe('TsResourceParser', () => {
 
             const file = join(process.cwd(), '.test/resourceParser/module.ts');
 
-            beforeEach(() => {
-                return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+            beforeEach(async done => {
+                parsed = await parser.parseFile(<any>{ fsPath: file });
+                done();
             });
 
             it('should parse a file', () => {
@@ -444,8 +453,9 @@ describe('TsResourceParser', () => {
     describe('Usages', () => {
         const file = join(process.cwd(), '.test/resourceParser/usagesOnly.ts');
 
-        beforeEach(() => {
-            return parser.parseFile(<any>{ fsPath: file }).then(file => parsed = file);
+        beforeEach(async done => {
+            parsed = await parser.parseFile(<any>{ fsPath: file });
+            done();
         });
 
         it('should parse decorator usages', () => {
@@ -503,7 +513,7 @@ describe('TsResourceParser', () => {
             usages.should.contain('functionCall');
             usages.should.contain('MyProperty');
         });
-        
+
         it('should parse indexer access', () => {
             let usages = parsed.usages;
             usages.should.contain('Indexing');

@@ -1,5 +1,5 @@
 "MyCl"
-MyClass.Fancie
+Foobar.Fancie
 // isNum
 import {isNum}
 isNum

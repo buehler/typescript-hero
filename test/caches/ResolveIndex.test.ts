@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import {ResolveIndex} from '../../src/caches/ResolveIndex';
-import {Injector} from '../../src/IoC';
-import {ClassDeclaration, FunctionDeclaration} from '../../src/models/TsDeclaration';
+import { ResolveIndex } from '../../src/caches/ResolveIndex';
+import { Injector } from '../../src/IoC';
+import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
 import * as chai from 'chai';
 
 chai.should();
@@ -18,32 +18,38 @@ describe('ResolveIndex', () => {
         resolveIndex.reset();
     });
 
-    it('should resolve the build process', done => {
-        resolveIndex.buildIndex().then(done).catch(done);
+    it('should resolve the build process', async done => {
+        try {
+            await resolveIndex.buildIndex();
+            done();
+        } catch (e) {
+            done(e);
+        }
     });
 
     it('should not have an index ready without build', () => {
         resolveIndex.indexReady.should.be.false;
     });
 
-    it('should have an index ready after build', done => {
-        resolveIndex.buildIndex()
-            .then(() => {
-                resolveIndex.indexReady.should.be.true;
-                done();
-            })
-            .catch(done);
+    it('should have an index ready after build', async done => {
+        await resolveIndex.buildIndex();
+        resolveIndex.indexReady.should.be.true;
+        done();
     });
 
     describe('buildIndex()', () => {
 
-        beforeEach(() => resolveIndex.buildIndex());
+        beforeEach(async done => {
+            await resolveIndex.buildIndex();
+            done();
+        });
 
         it('should contain certain parsedResources', () => {
             let idx: any = resolveIndex,
                 resources = idx.parsedResources;
             resources.should.contain.any.key('body-parser');
             resources.should.contain.any.key('fancy-library');
+            resources.should.contain.any.key('NodeJS');
             resources.should.contain.any.key('/resourceIndex/index');
             resources.should.contain.any.key('/resourceIndex/MyClass');
         });
