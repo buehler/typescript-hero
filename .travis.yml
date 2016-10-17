@@ -16,7 +16,7 @@ os:
 #   fi
 
 install:
- - npm run install
+ - npm install
  - npm run build
 
 script:
