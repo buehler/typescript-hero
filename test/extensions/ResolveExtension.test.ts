@@ -16,7 +16,7 @@ describe('ResolveExtension', () => {
 
     describe('addImportToDocument', () => {
 
-        const file = join(process.cwd(), '.test/resolveExtension/addImportToDocument.ts');
+        const file = join(process.cwd(), '_test/resolveExtension/addImportToDocument.ts');
         let document: vscode.TextDocument;
 
         before(async done => {
