@@ -33,14 +33,18 @@ after_success:
 - npm install -g vsce;
 - vsce package;
 
+after_failure:
+- echo "There was a problem with the deployment."
+- cat $TRAVIS_BUILD_DIR/npm-debug.log
+
 deploy:
   provider: script
-  script: ./deploy.sh
+  script: vsce publish -p $VSCE_TOKEN
   skip_cleanup: true
   on:
     tags: true
     repo: buehler/typescript-hero
-    condition: $TRAVIS_OS_NAME = "linux"
+    condition: $TRAVIS_OS_NAME = linux
 
 notifications:
   email: false

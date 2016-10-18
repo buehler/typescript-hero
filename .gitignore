@@ -1,8 +1,5 @@
 out
 node_modules
-typings
-!typings/node.d.ts
-!typings/vscode-typings.d.ts
 .vscode-test
 *.vsix
 
