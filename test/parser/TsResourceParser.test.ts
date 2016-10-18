@@ -26,7 +26,7 @@ describe('TsResourceParser', () => {
 
     describe('Imports', () => {
 
-        const file = join(process.cwd(), '_test/resourceParser/importsOnly.ts');
+        const file = join(process.cwd(), '_workspace/resourceParser/importsOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -100,7 +100,7 @@ describe('TsResourceParser', () => {
 
     describe('Exports', () => {
 
-        const file = join(process.cwd(), '_test/resourceParser/exportsOnly.ts');
+        const file = join(process.cwd(), '_workspace/resourceParser/exportsOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -147,7 +147,7 @@ describe('TsResourceParser', () => {
 
         describe('Enums', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/enum.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/enum.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -178,7 +178,7 @@ describe('TsResourceParser', () => {
 
         describe('Type aliases', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/typeAlias.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/typeAlias.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -205,7 +205,7 @@ describe('TsResourceParser', () => {
 
         describe('Functions', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/function.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/function.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -261,7 +261,7 @@ describe('TsResourceParser', () => {
 
         describe('Variables', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/variable.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/variable.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -322,7 +322,7 @@ describe('TsResourceParser', () => {
 
         describe('Interfaces', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/interface.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/interface.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -368,7 +368,7 @@ describe('TsResourceParser', () => {
 
         describe('Classes', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/class.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/class.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -422,7 +422,7 @@ describe('TsResourceParser', () => {
 
         describe('Modules', () => {
 
-            const file = join(process.cwd(), '_test/resourceParser/module.ts');
+            const file = join(process.cwd(), '_workspace/resourceParser/module.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -451,7 +451,7 @@ describe('TsResourceParser', () => {
     });
 
     describe('Usages', () => {
-        const file = join(process.cwd(), '_test/resourceParser/usagesOnly.ts');
+        const file = join(process.cwd(), '_workspace/resourceParser/usagesOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });

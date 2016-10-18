@@ -20,7 +20,7 @@ describe('ResolveQuickPickProvider', () => {
     describe('addImport', () => {
 
         it('shoud show all possible declarations', async done => {
-            let file = join(process.cwd(), '_test/foobar.ts');
+            let file = join(process.cwd(), '_workspace/foobar.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -33,7 +33,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud order own files before typings / node modules', async done => {
-            let file = join(process.cwd(), '_test/foobar.ts');
+            let file = join(process.cwd(), '_workspace/foobar.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -47,7 +47,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud order the declarations by name', async done => {
-            let file = join(process.cwd(), '_test/foobar.ts');
+            let file = join(process.cwd(), '_workspace/foobar.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -63,7 +63,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud filter already imported named symbols', async done => {
-            let file = join(process.cwd(), '_test/quickPickProvider/alreadyNamedImport.ts');
+            let file = join(process.cwd(), '_workspace/quickPickProvider/alreadyNamedImport.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -75,7 +75,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud filter already imported modules / namespaces', async done => {
-            let file = join(process.cwd(), '_test/quickPickProvider/alreadyNamespaceImport.ts');
+            let file = join(process.cwd(), '_workspace/quickPickProvider/alreadyNamespaceImport.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -90,7 +90,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud filter already imported external module reference', async done => {
-            let file = join(process.cwd(), '_test/quickPickProvider/alreadyExternalModuleImport.ts');
+            let file = join(process.cwd(), '_workspace/quickPickProvider/alreadyExternalModuleImport.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -105,7 +105,7 @@ describe('ResolveQuickPickProvider', () => {
         });
 
         it('shoud filter already imported default imports', async done => {
-            let file = join(process.cwd(), '_test/defaultExport/codefile.ts');
+            let file = join(process.cwd(), '_workspace/defaultExport/codefile.ts');
             try {
                 let doc = await vscode.workspace.openTextDocument(file),
                     items = await provider.buildQuickPickList(doc);
@@ -120,7 +120,7 @@ describe('ResolveQuickPickProvider', () => {
 
     describe('addImportUnderCursor', () => {
 
-        const file = join(process.cwd(), '_test/quickPickProvider/importUnderTheCursor.ts');
+        const file = join(process.cwd(), '_workspace/quickPickProvider/importUnderTheCursor.ts');
         let document: vscode.TextDocument;
 
         before(async done => {
