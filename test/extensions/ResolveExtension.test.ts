@@ -26,14 +26,12 @@ describe('ResolveExtension', () => {
         });
 
         afterEach(async done => {
-            if (vscode.window.activeTextEditor) {
-                await vscode.window.activeTextEditor.edit(builder => {
-                    builder.delete(new vscode.Range(
-                        new vscode.Position(0, 0),
-                        document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
-                    ));
-                });
-            }
+            await vscode.window.activeTextEditor.edit(builder => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+            });
             done();
         });
 
@@ -82,18 +80,32 @@ describe('ResolveExtension', () => {
             }
         });
 
-        it('shoud only use forward slashes');
+        it('shoud only use forward slashes', async done => {
+            try {
+                let items = await extension.pickProvider.buildQuickPickList(document, 'SubFileLevel3');
+                await extension.addImportToDocument(items[0]);
+                document.getText().should.not.match(/\\/);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
-        it('shoud use ./ for same directory files');
-
-        it('shoud remove /index from ../index.ts files');
-
-        it('should correctly use ../ for parent index files');
+        it('shoud use ./ for same directory files', async done => {
+            try {
+                let items = await extension.pickProvider.buildQuickPickList(document, 'AddImportSameDirectory');
+                await extension.addImportToDocument(items[0]);
+                document.getText().should.match(/\.\/sameDirectory/);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 
     describe('addImportUnderCursor', () => {
-        
+
     });
 
     describe('organizeImports', () => {
