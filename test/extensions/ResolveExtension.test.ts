@@ -104,10 +104,6 @@ describe('ResolveExtension', () => {
 
     });
 
-    describe('addImportUnderCursor', () => {
-
-    });
-
     describe('organizeImports', () => {
 
         it('shoud remove unused imports');
