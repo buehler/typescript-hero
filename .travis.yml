@@ -27,7 +27,7 @@ install:
 
 script:
 #- npm test --silent
-- ls -la $TRAVIS_BUILD_DIR/test/_workspace
+- for f in $TRAVIS_BUILD_DIR/test/_workspace/*; do echo "File $f found.."; done
 - echo "tests are temporarily disabled."
 
 after_success:
