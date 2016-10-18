@@ -11,10 +11,6 @@ describe('ResolveExtension', () => {
     let extension: any;
 
     before(() => {
-        console.log('MMYYYYYY VARS!');
-        console.log(vscode.workspace.rootPath);
-        console.log(vscode.workspace.textDocuments);
-        console.log('END MY VARS');
         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
     });
 
