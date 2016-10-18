@@ -36,8 +36,8 @@ export class Logger {
     }
 
     private log(level: LogLevel, message: string, data?: any): void {
-        console.log(`${this.prefix ? `${this.prefix}: ` : ''}${message}`, data);
         if (this.config.logLevel >= level) {
+            console.log(`${this.prefix ? `${this.prefix}: ` : ''}${message}`, data);
             Logger.channel.appendLine(`${this.prefix ? `${this.prefix}: ` : ''}${message}`);
             if (data) {
                 Logger.channel.appendLine(`\tData:\t${util.inspect(data, {})}`);
