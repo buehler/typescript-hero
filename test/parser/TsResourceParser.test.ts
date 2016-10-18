@@ -5,6 +5,7 @@ import { TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImpo
 import { TsModule, TsNamespace, TsResource } from '../../src/models/TsResource';
 import { TsResourceParser } from '../../src/parser/TsResourceParser';
 import * as chai from 'chai';
+import * as vscode from 'vscode';
 import { join } from 'path';
 
 chai.should();
@@ -26,7 +27,7 @@ describe('TsResourceParser', () => {
 
     describe('Imports', () => {
 
-        const file = join(process.cwd(), '_workspace/resourceParser/importsOnly.ts');
+        const file = join(vscode.workspace.rootPath, 'resourceParser/importsOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -100,7 +101,7 @@ describe('TsResourceParser', () => {
 
     describe('Exports', () => {
 
-        const file = join(process.cwd(), '_workspace/resourceParser/exportsOnly.ts');
+        const file = join(vscode.workspace.rootPath, 'resourceParser/exportsOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -147,7 +148,7 @@ describe('TsResourceParser', () => {
 
         describe('Enums', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/enum.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/enum.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -178,7 +179,7 @@ describe('TsResourceParser', () => {
 
         describe('Type aliases', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/typeAlias.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/typeAlias.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -205,7 +206,7 @@ describe('TsResourceParser', () => {
 
         describe('Functions', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/function.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/function.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -261,7 +262,7 @@ describe('TsResourceParser', () => {
 
         describe('Variables', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/variable.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/variable.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -322,7 +323,7 @@ describe('TsResourceParser', () => {
 
         describe('Interfaces', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/interface.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/interface.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -368,7 +369,7 @@ describe('TsResourceParser', () => {
 
         describe('Classes', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/class.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/class.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -422,7 +423,7 @@ describe('TsResourceParser', () => {
 
         describe('Modules', () => {
 
-            const file = join(process.cwd(), '_workspace/resourceParser/module.ts');
+            const file = join(vscode.workspace.rootPath, 'resourceParser/module.ts');
 
             beforeEach(async done => {
                 parsed = await parser.parseFile(<any>{ fsPath: file });
@@ -451,7 +452,7 @@ describe('TsResourceParser', () => {
     });
 
     describe('Usages', () => {
-        const file = join(process.cwd(), '_workspace/resourceParser/usagesOnly.ts');
+        const file = join(vscode.workspace.rootPath, 'resourceParser/usagesOnly.ts');
 
         beforeEach(async done => {
             parsed = await parser.parseFile(<any>{ fsPath: file });

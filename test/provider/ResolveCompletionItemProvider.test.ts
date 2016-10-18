@@ -14,7 +14,7 @@ describe('ResolveCompletionItemProvider', () => {
 
     before(async done => {
         provider = Injector.get(ResolveCompletionItemProvider);
-        let file = join(process.cwd(), '_workspace/completionProvider/codeCompletionFile.ts');
+        let file = join(vscode.workspace.rootPath, 'completionProvider/codeCompletionFile.ts');
         document = await vscode.workspace.openTextDocument(file);
         done();
     });
