@@ -1,7 +1,6 @@
 import { Injector } from '../../src/IoC';
 import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveQuickPickProvider } from '../../src/provider/ResolveQuickPickProvider';
-import { waitForWorkspace } from '../utilities';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -14,10 +13,8 @@ describe('ResolveQuickPickProvider', () => {
 
     let provider: ProviderMock;
 
-    before(async done => {
+    before(() => {
         provider = Injector.get(ResolveQuickPickProvider) as ProviderMock;
-        await waitForWorkspace();
-        done();
     });
 
     describe('addImport', () => {

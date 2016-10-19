@@ -1,6 +1,5 @@
 import { Injector } from '../../src/IoC';
 import { ResolveCompletionItemProvider } from '../../src/provider/ResolveCompletionItemProvider';
-import { waitForWorkspace } from '../utilities';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -15,7 +14,6 @@ describe('ResolveCompletionItemProvider', () => {
 
     before(async done => {
         provider = Injector.get(ResolveCompletionItemProvider);
-        await waitForWorkspace();
         let file = join(vscode.workspace.rootPath, 'completionProvider/codeCompletionFile.ts');
         document = await vscode.workspace.openTextDocument(file);
         await vscode.window.showTextDocument(document);

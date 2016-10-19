@@ -1,6 +1,5 @@
 import { ResolveExtension } from '../../src/extensions/ResolveExtension';
 import { Injector } from '../../src/IoC';
-import { waitForWorkspace } from '../utilities';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -11,10 +10,8 @@ describe('ResolveExtension', () => {
 
     let extension: any;
 
-    before(async done => {
+    before(() => {
         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
-        await waitForWorkspace();
-        done();
     });
 
     describe('addImportToDocument', () => {
@@ -109,13 +106,68 @@ describe('ResolveExtension', () => {
 
     describe('organizeImports', () => {
 
-        it('shoud remove unused imports');
+        const file = join(vscode.workspace.rootPath, 'resolveExtension/organizeImports.ts');
+        let document: vscode.TextDocument;
+        let documentText: string;
 
-        it('shoud order string imports to the top');
+        before(async done => {
+            document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document);
+            documentText = document.getText();
+            done();
+        });
 
-        it('shoud order libraries by name');
+        afterEach(async done => {
+            await vscode.window.activeTextEditor.edit(builder => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+                builder.insert(new vscode.Position(0, 0), documentText);
+            });
+            done();
+        });
 
-        it('shoud order specifiers by name');
+        it('shoud remove unused imports', async done => {
+            try {
+                await extension.organizeImports();
+                document.getText().should.not.match(/Class1/);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('shoud order string imports to the top', async done => {
+            try {
+                await extension.organizeImports();
+                document.lineAt(0).text.should.equal(`import 'foo-bar';`);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('shoud order libraries by name', async done => {
+            try {
+                await extension.organizeImports();
+                document.lineAt(1).text.should.match(/resourceIndex/);
+                document.lineAt(2).text.should.match(/subfolderstructure/);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('shoud order specifiers by name', async done => {
+            try {
+                await extension.organizeImports();
+                document.lineAt(1).text.should.match(/ExportAlias.*FancierLibraryClass/);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 

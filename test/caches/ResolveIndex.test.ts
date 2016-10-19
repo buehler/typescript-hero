@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
-import { waitForWorkspace } from '../utilities';
 import * as chai from 'chai';
 
 chai.should();
@@ -11,10 +10,8 @@ describe('ResolveIndex', () => {
 
     let resolveIndex: ResolveIndex;
 
-    before(async done => {
+    before(() => {
         resolveIndex = Injector.get(ResolveIndex);
-        await waitForWorkspace();
-        done();
     });
 
     beforeEach(() => {
