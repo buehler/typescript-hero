@@ -1,47 +1,24 @@
 import { readdir, stat } from 'fs';
 import { join } from 'path';
 
+const filewalker = require('filewalker');
+
 type WorkspaceFile = { path: string, isDirectory: boolean };
 
-async function walk(directory): Promise<WorkspaceFile[]> {
-    return new Promise<WorkspaceFile[]>((resolve, reject) => {
-        readdir(directory, (err, files) => {
-            if (err) {
+export function getFiles(directory): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+        let files = [];
+        filewalker(directory, { matchRegExp: /(\.d)?\.tsx?$/ })
+            .on('error', err => {
+                console.error(`Error happened during loading files from path: ${err}`);
                 reject(err);
-                return;
-            }
-            Promise
-                .all(files.map(file => {
-                    let path = join(directory, file);
-                    return new Promise<WorkspaceFile>((resolve, reject) => {
-                        stat(path, (err, stats) => {
-                            if (err) {
-                                reject(err);
-                                return;
-                            }
-                            resolve({
-                                path,
-                                isDirectory: stats.isDirectory()
-                            });
-                        });
-                    });
-                }))
-                .then(resolve)
-                .catch(reject);
-        });
+            })
+            .on('file', file => {
+                files.push(join(directory, file));
+            })
+            .on('done', () => {
+                resolve(files);
+            })
+            .walk();
     });
-}
-
-export async function getFiles(directory): Promise<string[]> {
-    let files: WorkspaceFile[] = [];
-
-    for (let file of await walk(directory)) {
-        if (file.isDirectory) {
-            files = files.concat(await walk(file.path));
-        } else {
-            files.push(file);
-        }
-    }
-
-    return files.filter(f => !f.isDirectory).map(f => f.path);
 }

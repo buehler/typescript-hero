@@ -9,6 +9,6 @@
         "dist",
         "resourceParser"
     ],
-    "typescriptHero.verbosity": "All",
+    "typescriptHero.verbosity": "Nothing",
     "tslint.enable": false
 }
