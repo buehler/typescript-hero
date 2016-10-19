@@ -1,4 +1,3 @@
-import { readdir, stat } from 'fs';
 import { join } from 'path';
 
 const filewalker = require('filewalker');

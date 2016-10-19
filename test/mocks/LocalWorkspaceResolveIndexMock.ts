@@ -23,10 +23,11 @@ export class LocalWorkspaceResolveIndexMock extends ResolveIndex {
         if (!this.files) {
             let files = await getFiles(this.mockPath),
                 excludePatterns = this.myConfig.resolver.ignorePatterns;
+            console.log(`Found the following files with filewalk: \n${files.map(f => f += '\n')}`);
             this.files = files
                 .filter(f => f.split(/\\|\//).every(p => excludePatterns.indexOf(p) < 0))
                 .map(f => <Uri>{ fsPath: f });
-            console.log(`Found the following files: \n${this.files.map(f => `${f.fsPath}\n`)}`);
+            console.log(`Found the following files after filter: \n${this.files.map(f => `${f.fsPath}\n`)}`);
         }
         return this.files;
     }
