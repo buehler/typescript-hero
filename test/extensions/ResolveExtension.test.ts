@@ -1,3 +1,4 @@
+import { waitForWorkspace } from '../utilities';
 import { Injector } from '../../src/IoC';
 import { ResolveExtension } from '../../src/extensions/ResolveExtension';
 import * as chai from 'chai';
@@ -10,8 +11,10 @@ describe('ResolveExtension', () => {
 
     let extension: any;
 
-    before(() => {
+    before(async done => {
         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
+        await waitForWorkspace();
+        done();
     });
 
     describe('addImportToDocument', () => {
