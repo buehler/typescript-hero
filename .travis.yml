@@ -26,9 +26,9 @@ install:
  - npm run build
 
 script:
-- npm test --silent
+#- npm test --silent
 #- for f in $TRAVIS_BUILD_DIR/test/_workspace/*; do echo "File $f found.."; done
-#- echo "tests are temporarily disabled."
+- echo "tests are temporarily disabled."
 
 after_success:
 - npm install -g vsce;
