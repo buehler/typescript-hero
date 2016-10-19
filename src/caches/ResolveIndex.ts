@@ -266,7 +266,7 @@ export class ResolveIndex {
         });
     }
 
-    private async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
+    protected async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
         let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
 
         let globs = [],
