@@ -93,6 +93,10 @@
       {
         "command": "typescriptHero.restartDebugger.toggle",
         "title": "Typescript: Toggles the debug restarter"
+      },
+      {
+        "command": "typescriptHero.codeFix.executeCodeAction",
+        "title": "Typescript: Execute a code action"
       }
     ],
     "keybindings": [

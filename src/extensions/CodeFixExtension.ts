@@ -37,3 +37,10 @@
 //     }
 
 // }
+
+
+/*
+some kind of a document manager. -> parses document, than one can perform
+certain actions on the document (add import, remove import, whatev.) future: create a class
+commit document: save the changes to the document.
+*/
