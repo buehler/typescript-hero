@@ -1,12 +1,27 @@
 import 'reflect-metadata';
-import { ClassDeclaration, DefaultDeclaration, EnumDeclaration, FunctionDeclaration, InterfaceDeclaration, PropertyVisibility, TypeAliasDeclaration, VariableDeclaration } from '../../src/models/TsDeclaration';
+import {
+    ClassDeclaration,
+    DefaultDeclaration,
+    EnumDeclaration,
+    FunctionDeclaration,
+    InterfaceDeclaration,
+    PropertyVisibility,
+    TypeAliasDeclaration,
+    VariableDeclaration
+} from '../../src/models/TsDeclaration';
 import { TsAllFromExport, TsAssignedExport, TsNamedFromExport } from '../../src/models/TsExport';
-import { TsDefaultImport, TsExternalModuleImport, TsNamedImport, TsNamespaceImport, TsStringImport } from '../../src/models/TsImport';
+import {
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsNamedImport,
+    TsNamespaceImport,
+    TsStringImport
+} from '../../src/models/TsImport';
 import { TsModule, TsNamespace, TsResource } from '../../src/models/TsResource';
 import { TsResourceParser } from '../../src/parser/TsResourceParser';
 import * as chai from 'chai';
-import * as vscode from 'vscode';
 import { join } from 'path';
+import * as vscode from 'vscode';
 
 chai.should();
 

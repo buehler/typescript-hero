@@ -1,9 +1,9 @@
-import { waitForWorkspace } from '../utilities';
-import { Injector } from '../../src/IoC';
 import { ResolveExtension } from '../../src/extensions/ResolveExtension';
+import { Injector } from '../../src/IoC';
+import { waitForWorkspace } from '../utilities';
 import * as chai from 'chai';
-import * as vscode from 'vscode';
 import { join } from 'path';
+import * as vscode from 'vscode';
 
 chai.should();
 
