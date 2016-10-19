@@ -12,16 +12,7 @@ describe('ResolveIndex', () => {
     let resolveIndex: ResolveIndex;
 
     before(() => {
-        console.log('FOOOOOBAR');
-        console.log('mounted mock.');
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
         resolveIndex = Injector.get(ResolveIndex);
-    });
-
-    after(() => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     beforeEach(() => {

@@ -15,19 +15,8 @@ describe('ResolveQuickPickProvider', () => {
 
     let provider: ProviderMock;
 
-    before(async done => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
-        let index = Injector.get(ResolveIndex);
-        await index.buildIndex();
-
+    before(() => {
         provider = Injector.get(ResolveQuickPickProvider) as ProviderMock;
-        done();
-    });
-
-    after(() => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     describe('addImport', () => {

@@ -17,6 +17,7 @@ async function findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
 export class LocalWorkspaceResolveIndexMock extends ResolveIndex {
     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory, parser: TsResourceParser, config: ExtensionConfig) {
         super(loggerFactory, parser, config);
+        console.log('INSTANCE!!');
     }
 }
 

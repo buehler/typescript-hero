@@ -12,19 +12,8 @@ describe('ResolveExtension', () => {
 
     let extension: any;
 
-    before(async done => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
-        let index = Injector.get(ResolveIndex);
-        await index.buildIndex();
-
+    before(() => {
         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
-        done();
-    });
-
-    after(() => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     describe('addImportToDocument', () => {

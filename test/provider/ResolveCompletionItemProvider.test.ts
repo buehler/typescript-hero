@@ -15,21 +15,11 @@ describe('ResolveCompletionItemProvider', () => {
         token = new vscode.CancellationTokenSource().token;
 
     before(async done => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
-        let index = Injector.get(ResolveIndex);
-        await index.buildIndex();
-
         provider = Injector.get(ResolveCompletionItemProvider);
         let file = join(vscode.workspace.rootPath, 'completionProvider/codeCompletionFile.ts');
         document = await vscode.workspace.openTextDocument(file);
         await vscode.window.showTextDocument(document);
         done();
-    });
-
-    after(() => {
-        Injector.unbind(ResolveIndex);
-        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     it('shoud resolve to null if typing in a string', async done => {

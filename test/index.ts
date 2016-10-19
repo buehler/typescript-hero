@@ -1,5 +1,9 @@
 import 'reflect-metadata';
-import {Injector} from '../src/IoC';
+import { ResolveIndex } from '../src/caches/ResolveIndex';
+import { Injector } from '../src/IoC';
+import { LocalWorkspaceResolveIndexMock } from './mocks/LocalWorkspaceResolveIndexMock';
+import { ExtensionContext, Memento } from 'vscode';
+
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
 //
@@ -12,7 +16,6 @@ import {Injector} from '../src/IoC';
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-import {ExtensionContext, Memento} from 'vscode';
 
 class ContextMock implements ExtensionContext {
     subscriptions: { dispose(): any }[] = [];
@@ -26,6 +29,8 @@ class ContextMock implements ExtensionContext {
 }
 
 Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
+Injector.unbind(ResolveIndex);
+Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
 
 const testRunner = require('vscode/lib/testrunner');
 
