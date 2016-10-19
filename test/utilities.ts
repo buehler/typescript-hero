@@ -1,6 +1,5 @@
-import { join } from 'path';
 import { readdir, stat } from 'fs';
-import { workspace } from 'vscode';
+import { join } from 'path';
 
 type WorkspaceFile = { path: string, isDirectory: boolean };
 
@@ -46,27 +45,3 @@ export async function getFiles(directory): Promise<string[]> {
 
     return files.filter(f => !f.isDirectory).map(f => f.path);
 }
-
-// export async function openTestfiles(): Promise<void> {
-//     for (let file of await getFiles(workspace.rootPath)) {
-//         await workspace.openTextDocument(file);
-//     }
-// }
-
-// export async function waitForWorkspace(): Promise<void> {
-//     if (workspace.textDocuments.length > 0) {
-//         return;
-//     }
-//     let interval;
-//     await openTestfiles();
-//     return new Promise<void>(resolve => {
-//         let fn = () => {
-//             if (workspace.textDocuments.length > 0) {
-//                 clearInterval(interval);
-//                 resolve();
-//             }
-//         };
-
-//         interval = setInterval(() => fn(), 10);
-//     });
-// }
