@@ -1,5 +1,7 @@
+import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { ResolveExtension } from '../../src/extensions/ResolveExtension';
 import { Injector } from '../../src/IoC';
+import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -10,8 +12,19 @@ describe('ResolveExtension', () => {
 
     let extension: any;
 
-    before(() => {
+    before(async done => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
+        let index = Injector.get(ResolveIndex);
+        await index.buildIndex();
+
         extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
+        done();
+    });
+
+    after(() => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     describe('addImportToDocument', () => {

@@ -1,6 +1,8 @@
+import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveQuickPickProvider } from '../../src/provider/ResolveQuickPickProvider';
+import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -13,8 +15,19 @@ describe('ResolveQuickPickProvider', () => {
 
     let provider: ProviderMock;
 
-    before(() => {
+    before(async done => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
+        let index = Injector.get(ResolveIndex);
+        await index.buildIndex();
+
         provider = Injector.get(ResolveQuickPickProvider) as ProviderMock;
+        done();
+    });
+
+    after(() => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     describe('addImport', () => {

@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
+import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 
 chai.should();
@@ -11,7 +12,14 @@ describe('ResolveIndex', () => {
     let resolveIndex: ResolveIndex;
 
     before(() => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
         resolveIndex = Injector.get(ResolveIndex);
+    });
+
+    after(() => {
+        Injector.unbind(ResolveIndex);
+        Injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
     });
 
     beforeEach(() => {

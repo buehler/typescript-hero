@@ -33,7 +33,7 @@ async function walk(directory): Promise<WorkspaceFile[]> {
     });
 }
 
-async function getFiles(directory): Promise<string[]> {
+export async function getFiles(directory): Promise<string[]> {
     let files: WorkspaceFile[] = [];
 
     for (let file of await walk(directory)) {
@@ -47,26 +47,26 @@ async function getFiles(directory): Promise<string[]> {
     return files.filter(f => !f.isDirectory).map(f => f.path);
 }
 
-export async function openTestfiles(): Promise<void> {
-    for (let file of await getFiles(workspace.rootPath)) {
-        await workspace.openTextDocument(file);
-    }
-}
+// export async function openTestfiles(): Promise<void> {
+//     for (let file of await getFiles(workspace.rootPath)) {
+//         await workspace.openTextDocument(file);
+//     }
+// }
 
-export async function waitForWorkspace(): Promise<void> {
-    if (workspace.textDocuments.length > 0) {
-        return;
-    }
-    let interval;
-    await openTestfiles();
-    return new Promise<void>(resolve => {
-        let fn = () => {
-            if (workspace.textDocuments.length > 0) {
-                clearInterval(interval);
-                resolve();
-            }
-        };
+// export async function waitForWorkspace(): Promise<void> {
+//     if (workspace.textDocuments.length > 0) {
+//         return;
+//     }
+//     let interval;
+//     await openTestfiles();
+//     return new Promise<void>(resolve => {
+//         let fn = () => {
+//             if (workspace.textDocuments.length > 0) {
+//                 clearInterval(interval);
+//                 resolve();
+//             }
+//         };
 
-        interval = setInterval(() => fn(), 10);
-    });
-}
+//         interval = setInterval(() => fn(), 10);
+//     });
+// }
