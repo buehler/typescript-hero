@@ -77,8 +77,10 @@ export class ResolveIndex {
         } catch (e) {
             this.logger.error('Catched an error during buildIndex()', e);
         } finally {
-            this.cancelToken.dispose();
-            this.cancelToken = null;
+            if (this.cancelToken) {
+                this.cancelToken.dispose();
+                this.cancelToken = null;
+            }
         }
 
     }

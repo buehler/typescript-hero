@@ -35,11 +35,11 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "bootstrap": "npm install",
-    "vscode:prepublish": "npm run bootstrap && npm run build && npm prune --production",
+    "vscode:prepublish": "npm run install && npm run build && npm prune --production",
     "precompile": "del ./out",
     "compile": "tsc -w --sourceMap",
     "postinstall": "node ./node_modules/vscode/bin/install",
+    "pretest": "tslint -c tslint.json --project tsconfig.json -e \"test/**/*.*\"",
     "test": "node ./node_modules/vscode/bin/test",
     "build": "del ./out && tsc",
     "package": "npm run build && del './*.vsix' && vsce package"
