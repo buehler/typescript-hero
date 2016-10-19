@@ -7,7 +7,9 @@ import { CancellationToken, Uri, workspace } from 'vscode';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 
 async function findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
-    let files = await getFiles(workspace.rootPath);
+    let path = process.env.CODE_TESTS_WORKSPACE || workspace.rootPath;
+    console.log(`use mocked findFiles() with path: ${path}`);
+    let files = await getFiles(path);
     return files.map(f => <Uri>{ fsPath: f });
 }
 
