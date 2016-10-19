@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import {TypeScriptHero} from './TypeScriptHero';
-import {ExtensionContext, Disposable} from 'vscode';
-import {Injector} from './IoC';
+import { Injector } from './IoC';
+import { TypeScriptHero } from './TypeScriptHero';
+import { Disposable, ExtensionContext } from 'vscode';
 
 let extension: Disposable;
 

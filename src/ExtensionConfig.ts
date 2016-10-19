@@ -1,7 +1,7 @@
-import {ImportLocation, TsImportOptions} from './models/TsImportOptions';
-import {LogLevel} from './utilities/Logger';
-import {injectable} from 'inversify';
-import {workspace} from 'vscode';
+import { ImportLocation, TsImportOptions } from './models/TsImportOptions';
+import { LogLevel } from './utilities/Logger';
+import { injectable } from 'inversify';
+import { workspace } from 'vscode';
 
 const sectionKey = 'typescriptHero';
 

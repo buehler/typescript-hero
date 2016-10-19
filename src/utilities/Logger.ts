@@ -1,7 +1,7 @@
-import {ExtensionConfig} from '../ExtensionConfig';
-import {injectable} from 'inversify';
-import {ExtensionContext, OutputChannel, window} from 'vscode';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { injectable } from 'inversify';
 import * as util from 'util';
+import { ExtensionContext, OutputChannel, window } from 'vscode';
 
 export type LoggerFactory = (prefix?: string) => Logger;
 

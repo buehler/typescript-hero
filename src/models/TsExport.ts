@@ -1,7 +1,7 @@
-import {TsNode} from './TsNode';
-import {TsExportableDeclaration} from './TsDeclaration';
-import {TsResolveSpecifier} from './TsResolveSpecifier';
-import {TsModule, TsNamespace, TsResource} from './TsResource';
+import { TsExportableDeclaration } from './TsDeclaration';
+import { TsNode } from './TsNode';
+import { TsResolveSpecifier } from './TsResolveSpecifier';
+import { TsModule, TsNamespace, TsResource } from './TsResource';
 
 export abstract class TsExport extends TsNode {
     constructor(start: number, end: number) {

@@ -1,6 +1,6 @@
-import {TsNode} from './TsNode';
-import {TsResource} from './TsResource';
-import {CompletionItemKind} from 'vscode';
+import { TsNode } from './TsNode';
+import { TsResource } from './TsResource';
+import { CompletionItemKind } from 'vscode';
 
 export abstract class TsDeclaration extends TsNode {
     constructor(public name: string, start: number, end: number) {

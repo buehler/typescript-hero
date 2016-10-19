@@ -1,8 +1,8 @@
-import {BaseExtension} from './extensions/BaseExtension';
-import {GuiProvider} from './provider/GuiProvider';
-import {Logger, LoggerFactory} from './utilities/Logger';
-import {inject, injectable, multiInject} from 'inversify';
-import {Disposable, ExtensionContext} from 'vscode';
+import { BaseExtension } from './extensions/BaseExtension';
+import { GuiProvider } from './provider/GuiProvider';
+import { Logger, LoggerFactory } from './utilities/Logger';
+import { inject, injectable, multiInject } from 'inversify';
+import { Disposable, ExtensionContext } from 'vscode';
 
 @injectable()
 export class TypeScriptHero implements Disposable {

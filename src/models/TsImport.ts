@@ -1,7 +1,7 @@
-import {TsImportOptions} from './TsImportOptions';
-import {TsNode} from './TsNode';
-import {TsResolveSpecifier} from './TsResolveSpecifier';
-import {Position, Range, TextDocument} from 'vscode';
+import { TsImportOptions } from './TsImportOptions';
+import { TsNode } from './TsNode';
+import { TsResolveSpecifier } from './TsResolveSpecifier';
+import { Position, Range, TextDocument } from 'vscode';
 
 export abstract class TsImport extends TsNode {
     constructor(public libraryName: string, start?: number, end?: number) {

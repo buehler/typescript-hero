@@ -1,4 +1,4 @@
-import {Position, Range, TextDocument} from 'vscode';
+import { Position, Range, TextDocument } from 'vscode';
 
 export abstract class TsNode {
     constructor(public start?: number, public end?: number) { }

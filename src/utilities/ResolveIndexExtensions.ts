@@ -1,6 +1,12 @@
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { DefaultDeclaration } from '../models/TsDeclaration';
-import { TsDefaultImport, TsExternalModuleImport, TsImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
+import {
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsImport,
+    TsNamedImport,
+    TsNamespaceImport
+} from '../models/TsImport';
 import { ImportLocation } from '../models/TsImportOptions';
 import { join, normalize, parse, relative } from 'path';
 import { Position, TextEditor, workspace } from 'vscode';

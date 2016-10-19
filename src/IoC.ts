@@ -1,16 +1,16 @@
-import {ResolveCompletionItemProvider} from './provider/ResolveCompletionItemProvider';
-import {ResolveIndex} from './caches/ResolveIndex';
-import {ExtensionConfig} from './ExtensionConfig';
-import {BaseExtension} from './extensions/BaseExtension';
-import {ResolveExtension} from './extensions/ResolveExtension';
-import {RestartDebuggerExtension} from './extensions/RestartDebuggerExtension';
-import {TsResourceParser} from './parser/TsResourceParser';
-import {GuiProvider} from './provider/GuiProvider';
-import {ResolveQuickPickProvider} from './provider/ResolveQuickPickProvider';
-import {TypeScriptHero} from './TypeScriptHero';
-import {Logger} from './utilities/Logger';
-import {interfaces, Kernel} from 'inversify';
-import {ExtensionContext} from 'vscode';
+import { ResolveIndex } from './caches/ResolveIndex';
+import { ExtensionConfig } from './ExtensionConfig';
+import { BaseExtension } from './extensions/BaseExtension';
+import { ResolveExtension } from './extensions/ResolveExtension';
+import { RestartDebuggerExtension } from './extensions/RestartDebuggerExtension';
+import { TsResourceParser } from './parser/TsResourceParser';
+import { GuiProvider } from './provider/GuiProvider';
+import { ResolveCompletionItemProvider } from './provider/ResolveCompletionItemProvider';
+import { ResolveQuickPickProvider } from './provider/ResolveQuickPickProvider';
+import { TypeScriptHero } from './TypeScriptHero';
+import { Logger } from './utilities/Logger';
+import { interfaces, Kernel } from 'inversify';
+import { ExtensionContext } from 'vscode';
 
 let injector = new Kernel();
 

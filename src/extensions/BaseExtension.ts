@@ -1,6 +1,6 @@
-import {CommandQuickPickItem} from '../models/QuickPickItems';
-import {injectable} from 'inversify';
-import {Disposable, ExtensionContext} from 'vscode';
+import { CommandQuickPickItem } from '../models/QuickPickItems';
+import { injectable } from 'inversify';
+import { Disposable, ExtensionContext } from 'vscode';
 
 @injectable()
 export abstract class BaseExtension implements Disposable {

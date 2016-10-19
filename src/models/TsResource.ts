@@ -1,9 +1,9 @@
-import {TsNode} from './TsNode';
-import {TsDeclaration} from './TsDeclaration';
-import {TsExport} from './TsExport';
-import {TsImport} from './TsImport';
-import {parse, ParsedPath} from 'path';
-import {workspace} from 'vscode';
+import { TsDeclaration } from './TsDeclaration';
+import { TsExport } from './TsExport';
+import { TsImport } from './TsImport';
+import { TsNode } from './TsNode';
+import { parse, ParsedPath } from 'path';
+import { workspace } from 'vscode';
 
 // TsSource can be: File, Module, Namespace
 // module contains declarations, imports, exports, submodules
