@@ -29,8 +29,8 @@ class ContextMock implements ExtensionContext {
 }
 
 Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
-Injector.unbind(ResolveIndex);
-Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
+// Injector.unbind(ResolveIndex);
+// Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
 
 const testRunner = require('vscode/lib/testrunner');
 
