@@ -1,5 +1,7 @@
 import 'reflect-metadata';
-import {Injector} from '../src/IoC';
+import { Injector } from '../src/IoC';
+import { ExtensionContext, Memento } from 'vscode';
+
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
 //
@@ -12,7 +14,6 @@ import {Injector} from '../src/IoC';
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-import {ExtensionContext, Memento} from 'vscode';
 
 class ContextMock implements ExtensionContext {
     subscriptions: { dispose(): any }[] = [];

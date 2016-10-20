@@ -131,6 +131,40 @@ export class ResolveIndex {
         this._index = null;
     }
 
+    protected async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
+        let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
+
+        let globs = [],
+            ignores = ['**/typings/**'];
+
+        if (workspace.rootPath && existsSync(join(workspace.rootPath, 'package.json'))) {
+            let packageJson = require(join(workspace.rootPath, 'package.json'));
+            if (packageJson['dependencies']) {
+                globs = globs.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
+                ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
+            }
+            if (packageJson['devDependencies']) {
+                globs = globs.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
+                ignores = ignores.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
+            }
+        } else {
+            globs.push('**/node_modules/**/*.d.ts');
+        }
+        searches.push(workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`, undefined, cancellationToken));
+
+        searches.push(workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**', undefined, cancellationToken));
+
+        let uris = await Promise.all(searches);
+        if (cancellationToken && cancellationToken.onCancellationRequested) {
+            this.cancelRequested();
+            return;
+        }
+        let excludePatterns = this.config.resolver.ignorePatterns;
+        uris = uris.map(o => o.filter(f => f.fsPath.replace(workspace.rootPath, '').split(sep).every(p => excludePatterns.indexOf(p) < 0)));
+        this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
+        return uris.reduce((all, cur) => all.concat(cur), []);
+    }
+
     private async parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
         let parsedResources: Resources = {};
 
@@ -264,40 +298,6 @@ export class ResolveIndex {
                 exported.declarations = [];
             }
         });
-    }
-
-    private async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
-        let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
-
-        let globs = [],
-            ignores = ['**/typings/**'];
-
-        if (workspace.rootPath && existsSync(join(workspace.rootPath, 'package.json'))) {
-            let packageJson = require(join(workspace.rootPath, 'package.json'));
-            if (packageJson['dependencies']) {
-                globs = globs.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
-                ignores = ignores.concat(Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
-            }
-            if (packageJson['devDependencies']) {
-                globs = globs.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`));
-                ignores = ignores.concat(Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`));
-            }
-        } else {
-            globs.push('**/node_modules/**/*.d.ts');
-        }
-        searches.push(workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`, undefined, cancellationToken));
-
-        searches.push(workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**', undefined, cancellationToken));
-
-        let uris = await Promise.all(searches);
-        if (cancellationToken && cancellationToken.onCancellationRequested) {
-            this.cancelRequested();
-            return;
-        }
-        let excludePatterns = this.config.resolver.ignorePatterns;
-        uris = uris.map(o => o.filter(f => f.fsPath.split(sep).every(p => excludePatterns.indexOf(p) < 0)));
-        this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
-        return uris.reduce((all, cur) => all.concat(cur), []);
     }
 
     private getExportedResources(resourceToCheck: string): Uri[] {
