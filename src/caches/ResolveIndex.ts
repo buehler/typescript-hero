@@ -131,7 +131,7 @@ export class ResolveIndex {
         this._index = null;
     }
 
-    protected async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
+    private async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
         let searches: PromiseLike<Uri[]>[] = [workspace.findFiles('{**/*.ts,**/*.tsx}', '{**/node_modules/**,**/typings/**}', undefined, cancellationToken)];
 
         let globs = [],
@@ -160,7 +160,7 @@ export class ResolveIndex {
             return;
         }
         let excludePatterns = this.config.resolver.ignorePatterns;
-        uris = uris.map(o => o.filter(f => f.fsPath.replace(workspace.rootPath, '').split(sep).every(p => excludePatterns.indexOf(p) < 0)));
+        uris = uris.map(o => o.filter(f => f.fsPath.replace(workspace.rootPath, '').split(/\\|\//).every(p => excludePatterns.indexOf(p) < 0)));
         this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
         return uris.reduce((all, cur) => all.concat(cur), []);
     }
