@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
-import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 
 chai.should();

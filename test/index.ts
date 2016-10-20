@@ -1,7 +1,5 @@
 import 'reflect-metadata';
-import { ResolveIndex } from '../src/caches/ResolveIndex';
 import { Injector } from '../src/IoC';
-import { LocalWorkspaceResolveIndexMock } from './mocks/LocalWorkspaceResolveIndexMock';
 import { ExtensionContext, Memento } from 'vscode';
 
 //
@@ -29,8 +27,6 @@ class ContextMock implements ExtensionContext {
 }
 
 Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
-// Injector.unbind(ResolveIndex);
-// Injector.bind(ResolveIndex).to(LocalWorkspaceResolveIndexMock).inSingletonScope();
 
 const testRunner = require('vscode/lib/testrunner');
 

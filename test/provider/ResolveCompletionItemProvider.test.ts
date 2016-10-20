@@ -1,7 +1,5 @@
-import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ResolveCompletionItemProvider } from '../../src/provider/ResolveCompletionItemProvider';
-import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';

@@ -1,8 +1,6 @@
-import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
 import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveQuickPickProvider } from '../../src/provider/ResolveQuickPickProvider';
-import { LocalWorkspaceResolveIndexMock } from '../mocks/LocalWorkspaceResolveIndexMock';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
