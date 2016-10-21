@@ -23,3 +23,5 @@ There are very few constraints that need to be fulfilled:
 - Write tests for your feature (the more, the better)
 - Update the changelog
 - Document your feature (readme / docs)
+
+:tada: Happy contributing :tada:
