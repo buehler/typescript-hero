@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "inversify": "^2.0.0",
+    "inversify-inject-decorators": "^2.0.0",
     "reflect-metadata": "^0.1.8",
     "typescript": "^2.0.3"
   },

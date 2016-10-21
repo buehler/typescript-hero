@@ -10,6 +10,7 @@ import { ResolveQuickPickProvider } from './provider/ResolveQuickPickProvider';
 import { TypeScriptHero } from './TypeScriptHero';
 import { Logger } from './utilities/Logger';
 import { interfaces, Kernel } from 'inversify';
+import getDecorators from 'inversify-inject-decorators';
 import { ExtensionContext } from 'vscode';
 
 let injector = new Kernel();
@@ -42,3 +43,4 @@ injector.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((co
 });
 
 export const Injector = injector;
+export const InjectorDecorators = getDecorators(injector);
