@@ -61,9 +61,9 @@ class ResolverConfig {
 
     public get importOptions(): TsImportOptions {
         return {
+            multiLineWrapThreshold: this.multiLineWrapThreshold,
             pathDelimiter: this.pathStringDelimiter,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
-            multiLineWrapThreshold: this.multiLineWrapThreshold,
             tabSize: this.tabSize
         };
     }

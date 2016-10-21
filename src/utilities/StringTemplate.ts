@@ -2,7 +2,7 @@ export function stringTemplate(strings: string[], ...keys: number[]): (...values
     return (...values: any[]) => {
         let result = [strings[0]];
 
-        keys.forEach(function (key, idx) {
+        keys.forEach((key, idx) => {
             result.push(values[key], strings[idx + 1]);
         });
 

@@ -5,7 +5,7 @@ import { Disposable, ExtensionContext } from 'vscode';
 
 let extension: Disposable;
 
-export function activate(context: ExtensionContext) {
+export function activate(context: ExtensionContext): void {
     if (Injector.isBound('context')) {
         Injector.unbind('context');
     }
@@ -13,7 +13,7 @@ export function activate(context: ExtensionContext) {
     extension = Injector.get(TypeScriptHero);
 }
 
-export function deactivate() {
+export function deactivate(): void {
     extension.dispose();
     extension = null;
 }

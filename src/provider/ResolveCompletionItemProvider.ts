@@ -27,15 +27,21 @@ import {
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
     private logger: Logger;
 
-    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
+    constructor(
+        @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private config: ExtensionConfig,
         private index: ResolveIndex,
-        private parser: TsResourceParser) {
+        private parser: TsResourceParser
+    ) {
         this.logger = loggerFactory('ResolveCompletionItemProvider');
         this.logger.info('Instantiated.');
     }
 
-    public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
+    public async provideCompletionItems(
+        document: TextDocument,
+        position: Position,
+        token: CancellationToken
+    ): Promise<CompletionItem[]> {
         let wordAtPosition = document.getWordRangeAtPosition(position),
             lineText = document.lineAt(position.line).text,
             searchWord = '';
@@ -67,12 +73,14 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
 
-        let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
-            let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
-            item.detail = o.from;
-            item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
-            return item;
-        });
+        let filtered = declarations
+            .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
+            .map(o => {
+                let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
+                item.detail = o.from;
+                item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
+                return item;
+            });
 
         if (token.isCancellationRequested) {
             return [];
@@ -100,7 +108,12 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
             return [
-                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), mod.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(
+                    getImportInsertPosition(
+                        this.config.resolver.newImportLocation, window.activeTextEditor
+                    ),
+                    mod.toImport(this.config.resolver.importOptions)
+                )
             ];
         } else if (declaration.declaration instanceof DefaultDeclaration) {
             // TODO: when the completion starts, the command should add the text edit.
@@ -109,7 +122,12 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             let named = new TsNamedImport(library);
             named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [
-                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), named.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(
+                    getImportInsertPosition(
+                        this.config.resolver.newImportLocation, window.activeTextEditor
+                    ),
+                    named.toImport(this.config.resolver.importOptions)
+                )
             ];
         }
     }

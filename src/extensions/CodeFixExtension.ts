@@ -23,7 +23,8 @@
 //     }
 
 //     public initialize(context: ExtensionContext): void {
-//         context.subscriptions.push(commands.registerCommand('typescriptHero.codeFix.executeCodeAction', (codeAction: CodeAction) => this.executeCodeAction(codeAction)));
+//         context.subscriptions.push(commands.registerCommand('typescriptHero.codeFix.executeCodeAction', 
+// (codeAction: CodeAction) => this.executeCodeAction(codeAction)));
 //         context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this.codeActionProvider));
 //         this.logger.info('Initialized.');
 //     }
@@ -37,7 +38,6 @@
 //     }
 
 // }
-
 
 /*
 some kind of a document manager. -> parses document, than one can perform

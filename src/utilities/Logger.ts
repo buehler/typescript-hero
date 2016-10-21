@@ -37,6 +37,7 @@ export class Logger {
 
     private log(level: LogLevel, message: string, data?: any): void {
         if (this.config.logLevel >= level) {
+            // tslint:disable-next-line
             console.log(`${this.prefix ? `${this.prefix}: ` : ''}${message}`, data);
             Logger.channel.appendLine(`${this.prefix ? `${this.prefix}: ` : ''}${message}`);
             if (data) {

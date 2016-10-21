@@ -21,17 +21,24 @@ export function getImportInsertPosition(location: ImportLocation, editor: TextEd
     return new Position(editor.selection.active.line, 0);
 }
 
-export function getDeclarationsFilteredByImports(resolveIndex: ResolveIndex, documentPath: string, imports: TsImport[]): DeclarationInfo[] {
+export function getDeclarationsFilteredByImports(
+    resolveIndex: ResolveIndex,
+    documentPath: string,
+    imports: TsImport[]
+): DeclarationInfo[] {
     let declarations = resolveIndex.declarationInfos;
 
     for (let tsImport of imports) {
         let importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath);
         if (tsImport instanceof TsNamedImport) {
-            declarations = declarations.filter(o => o.from !== importedLib || !(tsImport as TsNamedImport).specifiers.some(s => s.specifier === o.declaration.name));
+            declarations = declarations
+                .filter(o => o.from !== importedLib || !(tsImport as TsNamedImport).specifiers
+                    .some(s => s.specifier === o.declaration.name));
         } else if (tsImport instanceof TsNamespaceImport || tsImport instanceof TsExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         } else if (tsImport instanceof TsDefaultImport) {
-            declarations = declarations.filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
+            declarations = declarations
+                .filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
         }
     }
 
@@ -52,7 +59,9 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string): 
     if (!library.startsWith('.')) {
         return library;
     }
-    let relative = '/' + workspace.asRelativePath(normalize(join(parse(actualFilePath).dir, library))).replace(/[/]$/g, '');
+    let relative = '/' + workspace.asRelativePath(
+        normalize(join(parse(actualFilePath).dir, library))
+    ).replace(/[/]$/g, '');
     return relative;
 }
 

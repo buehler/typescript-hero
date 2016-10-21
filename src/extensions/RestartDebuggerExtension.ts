@@ -4,13 +4,21 @@ import { TshCommand } from '../models/TshCommand';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { BaseExtension } from './BaseExtension';
 import { inject, injectable } from 'inversify';
-import { commands, ExtensionContext, FileSystemWatcher, StatusBarAlignment, window, workspace } from 'vscode';
+import {
+    commands,
+    ExtensionContext,
+    FileSystemWatcher,
+    StatusBarAlignment,
+    StatusBarItem,
+    window,
+    workspace
+} from 'vscode';
 
 const DEBOUNCE = 1500;
 
 @injectable()
 export class RestartDebuggerExtension extends BaseExtension {
-    private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 3);
+    private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 3);
     private fileWatcher: FileSystemWatcher;
     private logger: Logger;
     private restartCall: NodeJS.Timer;

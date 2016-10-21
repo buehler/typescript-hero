@@ -36,8 +36,12 @@ export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
     public toImport(options: TsImportOptions): string {
-        let {pathDelimiter, spaceBraces, multiLineWrapThreshold} = options;
-        let importString = `import {${spaceBraces ? ' ' : ''}${this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', ')}${spaceBraces ? ' ' : ''}} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+        let {pathDelimiter, spaceBraces, multiLineWrapThreshold} = options,
+            space = spaceBraces ? ' ' : '',
+            specifiers = this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', '),
+            lib = this.libraryName;
+
+        let importString = `import {${space}${specifiers}${space}} from ${pathDelimiter}${lib}${pathDelimiter};\n`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
         }

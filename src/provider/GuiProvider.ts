@@ -5,12 +5,17 @@ import { commands, ExtensionContext, window } from 'vscode';
 
 @injectable()
 export class GuiProvider {
-    constructor( @inject('context') context: ExtensionContext, @multiInject('Extension') private extensions: BaseExtension[]) {
+    constructor(
+        @inject('context') context: ExtensionContext,
+        @multiInject('Extension') private extensions: BaseExtension[]
+    ) {
         context.subscriptions.push(commands.registerCommand('typescriptHero.showCmdGui', () => this.showGui()));
     }
 
     private async showGui(): Promise<void> {
-        let cmd = await window.showQuickPick<CommandQuickPickItem>(this.extensions.reduce((all, cur) => all.concat(cur.getGuiCommands()), []));
+        let cmd = await window.showQuickPick<CommandQuickPickItem>(
+            this.extensions.reduce((all, cur) => all.concat(cur.getGuiCommands()), [])
+        );
         if (!cmd) {
             return;
         }
