@@ -1,3 +1,4 @@
+import { TsNamespaceImport } from '../../src/models/TsImport';
 import { Injector } from '../../src/IoC';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { TsFile } from '../../src/models/TsResource';
@@ -5,8 +6,21 @@ import { DocumentController } from '../../src/controllers/DocumentController';
 import { join } from 'path';
 import * as chai from 'chai';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
+import sinon = require('sinon');
+import sinonChai = require('sinon-chai');
 
 chai.should();
+chai.use(sinonChai);
+
+function mockInputBox(returnValue: string): sinon.SinonStub {
+    return sinon.stub(window, 'showInputBox', (options?, token?) => {
+        return Promise.resolve(returnValue);
+    });
+}
+
+function restoreInputBox(stub: sinon.SinonStub): void {
+    stub.restore();
+}
 
 describe('DocumentController', () => {
 
@@ -53,7 +67,7 @@ describe('DocumentController', () => {
 
     describe('addDeclarationImport()', () => {
 
-        it('should add an import to the virtual doc if there are no conflicts.', async done => {
+        it('should add a normal import to the virtual doc if there are no conflicts.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
@@ -67,13 +81,28 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add a text edit to the virtual doc if there are no conflicts.', async done => {
+        it('should add a normal text edit to the virtual doc if there are no conflicts.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
                 ctrl.addDeclarationImport(declaration);
 
                 (ctrl as any).edits.should.have.lengthOf(1);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a module import to the virtual doc if there are no conflicts.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.from === 'body-parser');
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).parsedDocument.imports.should.have.lengthOf(2);
+                (ctrl as any).parsedDocument.imports[1].should.be.an.instanceOf(TsNamespaceImport);
 
                 done();
             } catch (e) {
@@ -145,6 +174,21 @@ describe('DocumentController', () => {
                 document.lineAt(0).text.should.equals(`import { NotBarelExported } from '../resourceIndex/NotBarelExported';`);
                 document.lineAt(1).text.should.equals(`import { AlreadyImported } from '../completionProvider/codeCompletionImports';`);
                 document.lineAt(2).text.should.equals(`import { myComponent } from '../MyReactTemplate';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a single new module import to the document (top)', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.from === 'body-parser');
+                ctrl.addDeclarationImport(declaration);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import * as bodyParser from 'body-parser';`);
 
                 done();
             } catch (e) {

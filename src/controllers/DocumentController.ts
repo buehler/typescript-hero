@@ -1,16 +1,16 @@
-import { ExtensionConfig } from '../ExtensionConfig';
-import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
-import { DefaultDeclaration, ModuleDeclaration, TsDeclaration } from '../models/TsDeclaration';
 import { DeclarationInfo } from '../caches/ResolveIndex';
+import { ExtensionConfig } from '../ExtensionConfig';
+import { InjectorDecorators } from '../IoC';
+import { DefaultDeclaration, ModuleDeclaration, TsDeclaration } from '../models/TsDeclaration';
+import { TsAliasedImport, TsDefaultImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
+import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
+import { TsFile } from '../models/TsResource';
+import { TsResourceParser } from '../parser/TsResourceParser';
 import {
     getAbsolutLibraryName,
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
-import { TsAliasedImport, TsDefaultImport, TsImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
-import { TsFile } from '../models/TsResource';
-import { InjectorDecorators } from '../IoC';
-import { TsResourceParser } from '../parser/TsResourceParser';
 import { TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 /**
@@ -86,24 +86,27 @@ export class DocumentController {
         let duplicateSpecifierFound = !this.isAbstractDeclaration(declarationInfo.declaration) &&
             specifiers.some(o => o === declarationInfo.declaration.name);
 
-        if (!alreadyImported && !duplicateSpecifierFound && !this.isAbstractDeclaration(declarationInfo.declaration)) {
-            let newImport = new TsNamedImport(getRelativeLibraryName(
-                declarationInfo.from,
-                this.document.fileName
-            ));
-            newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+        if (!alreadyImported) {
+            let newImport;
+
+            if (!(duplicateSpecifierFound || this.isAbstractDeclaration(declarationInfo.declaration))) {
+                newImport = new TsNamedImport(getRelativeLibraryName(
+                    declarationInfo.from,
+                    this.document.fileName
+                ));
+                newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+            } else if (declarationInfo.declaration instanceof ModuleDeclaration) {
+                newImport = new TsNamespaceImport(
+                    declarationInfo.from,
+                    declarationInfo.declaration.name
+                );
+            }
+
             this.parsedDocument.imports.push(newImport);
             this.edits.push(TextEdit.insert(
                 getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
                 newImport.toImport(DocumentController.config.resolver.importOptions)
             ));
-            return this;
-        } else if (!alreadyImported && declarationInfo.declaration instanceof ModuleDeclaration) {
-            let newImport = new TsNamespaceImport(
-                declarationInfo.from,
-                declarationInfo.declaration.name
-            );
-            this.parsedDocument.imports.push(newImport);
         }
 
         return this;
