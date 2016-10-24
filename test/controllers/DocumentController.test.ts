@@ -83,20 +83,73 @@ describe('DocumentController', () => {
 
     });
 
-    describe.skip('commit()', () => {
+    describe('commit()', () => {
 
         it('should resolve if no edits are pending', async done => {
-
-            done();
+            try {
+                let ctrl = await DocumentController.create(document);
+                (ctrl as any).edits.should.have.lengthOf(0);
+                (await ctrl.commit()).should.be.true;
+                (ctrl as any).edits.should.have.lengthOf(0);
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
 
-    });
+        it('should add a single new import to the document (top)', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
+                ctrl.addDeclarationImport(declaration);
+                (await ctrl.commit()).should.be.true;
 
-    describe.skip('commit()', () => {
+                document.lineAt(0).text.should.equals(`import { NotBarelExported } from '../resourceIndex/NotBarelExported';`);
 
-        it('should resolve if no edits are pending', async done => {
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
-            done();
+        it('should add two new imports to the document (top)', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'AlreadyImported');
+                ctrl.addDeclarationImport(declaration);
+                ctrl.addDeclarationImport(declaration2);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import { NotBarelExported } from '../resourceIndex/NotBarelExported';`);
+                document.lineAt(1).text.should.equals(`import { AlreadyImported } from '../completionProvider/codeCompletionImports';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add three new imports to the document (top)', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'AlreadyImported'),
+                    declaration3 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+                ctrl.addDeclarationImport(declaration)
+                    .addDeclarationImport(declaration2)
+                    .addDeclarationImport(declaration3);
+
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import { NotBarelExported } from '../resourceIndex/NotBarelExported';`);
+                document.lineAt(1).text.should.equals(`import { AlreadyImported } from '../completionProvider/codeCompletionImports';`);
+                document.lineAt(2).text.should.equals(`import { myComponent } from '../MyReactTemplate';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
 
     });

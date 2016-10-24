@@ -7,7 +7,7 @@ import {
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
-import { TsAliasedImport, TsDefaultImport, TsImport, TsNamedImport } from '../models/TsImport';
+import { TsAliasedImport, TsDefaultImport, TsImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
 import { TsFile } from '../models/TsResource';
 import { InjectorDecorators } from '../IoC';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -98,6 +98,12 @@ export class DocumentController {
                 newImport.toImport(DocumentController.config.resolver.importOptions)
             ));
             return this;
+        } else if (!alreadyImported && declarationInfo.declaration instanceof ModuleDeclaration) {
+            let newImport = new TsNamespaceImport(
+                declarationInfo.from,
+                declarationInfo.declaration.name
+            );
+            this.parsedDocument.imports.push(newImport);
         }
 
         return this;
@@ -130,12 +136,16 @@ export class DocumentController {
         if (!this.isDirty) {
             return Promise.resolve(true);
         }
-        // let result = await workspace.applyEdit(this.edit);
-        // if (result) {
-        //     this.edit = null;
-        // }
 
-        // return result;
+        let edits = await Promise.all(this.edits),
+            workspaceEdit = new WorkspaceEdit();
+        workspaceEdit.set(this.document.uri, edits);
+        let result = await workspace.applyEdit(workspaceEdit);
+        if (result) {
+            this.edits = [];
+        }
+
+        return result;
     }
 
     private isAbstractDeclaration(declaration: TsDeclaration): boolean {
