@@ -87,26 +87,80 @@ export class DocumentController {
             specifiers.some(o => o === declarationInfo.declaration.name);
 
         if (!alreadyImported) {
-            let newImport;
-
             if (!(duplicateSpecifierFound || this.isAbstractDeclaration(declarationInfo.declaration))) {
-                newImport = new TsNamedImport(getRelativeLibraryName(
+                let newImport = new TsNamedImport(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName
                 ));
                 newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+                this.parsedDocument.imports.push(newImport);
+                this.edits.push(TextEdit.insert(
+                    getImportInsertPosition(
+                        DocumentController.config.resolver.newImportLocation,
+                        window.activeTextEditor
+                    ),
+                    newImport.toImport(DocumentController.config.resolver.importOptions)
+                ));
+            } else if (duplicateSpecifierFound) {
+                this.edits.push(this.resolveDuplicateSpecifier(declarationInfo.declaration.name)
+                    .then(alias => {
+                        if (alias) {
+                            let newImport = new TsNamedImport(getRelativeLibraryName(
+                                declarationInfo.from,
+                                this.document.fileName
+                            ));
+                            newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name, alias));
+                            this.parsedDocument.imports.push(newImport);
+                            return TextEdit.insert(
+                                getImportInsertPosition(
+                                    DocumentController.config.resolver.newImportLocation,
+                                    window.activeTextEditor
+                                ),
+                                newImport.toImport(DocumentController.config.resolver.importOptions)
+                            );
+                        }
+                    }));
             } else if (declarationInfo.declaration instanceof ModuleDeclaration) {
-                newImport = new TsNamespaceImport(
+                let newImport = new TsNamespaceImport(
                     declarationInfo.from,
                     declarationInfo.declaration.name
                 );
+                this.parsedDocument.imports.push(newImport);
+                this.edits.push(TextEdit.insert(
+                    getImportInsertPosition(
+                        DocumentController.config.resolver.newImportLocation,
+                        window.activeTextEditor
+                    ),
+                    newImport.toImport(DocumentController.config.resolver.importOptions)
+                ));
+            } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
+                this.edits.push(this.getDefaultIdentifier(declarationInfo.declaration.name)
+                    .then(alias => {
+                        if (alias) {
+                            let newImport = new TsDefaultImport(
+                                getRelativeLibraryName(
+                                    declarationInfo.from,
+                                    this.document.fileName
+                                ),
+                                alias
+                            );
+                            this.parsedDocument.imports.push(newImport);
+                            return TextEdit.insert(
+                                getImportInsertPosition(
+                                    DocumentController.config.resolver.newImportLocation,
+                                    window.activeTextEditor
+                                ),
+                                newImport.toImport(DocumentController.config.resolver.importOptions)
+                            );
+                        }
+                    }));
             }
+        } else if (alreadyImported instanceof DefaultDeclaration) {
 
-            this.parsedDocument.imports.push(newImport);
-            this.edits.push(TextEdit.insert(
-                getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
-                newImport.toImport(DocumentController.config.resolver.importOptions)
-            ));
+        } else if (alreadyImported instanceof TsNamedImport && !duplicateSpecifierFound) {
+
+        } else if (alreadyImported instanceof TsNamedImport && duplicateSpecifierFound) {
+
         }
 
         return this;
@@ -142,7 +196,7 @@ export class DocumentController {
 
         let edits = await Promise.all(this.edits),
             workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, edits);
+        workspaceEdit.set(this.document.uri, edits.filter(Boolean));
         let result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             this.edits = [];
@@ -153,5 +207,28 @@ export class DocumentController {
 
     private isAbstractDeclaration(declaration: TsDeclaration): boolean {
         return declaration instanceof ModuleDeclaration || declaration instanceof DefaultDeclaration;
+    }
+
+    private async resolveDuplicateSpecifier(duplicate: string): Promise<string> {
+        let alias: string;
+
+        do {
+            alias = await window.showInputBox({
+                placeHolder: 'Alias for specifier',
+                prompt: 'Please enter an alias for the specifier..',
+                validateInput: s => !!s ? '' : 'Please enter a variable name'
+            });
+        } while (alias === duplicate);
+
+        return alias;
+    }
+
+    private async getDefaultIdentifier(declarationName: string): Promise<string> {
+        return await window.showInputBox({
+            placeHolder: 'Default export name',
+            prompt: 'Please enter a variable name for the default export..',
+            validateInput: s => !!s ? '' : 'Please enter a variable name',
+            value: declarationName
+        });
     }
 }
