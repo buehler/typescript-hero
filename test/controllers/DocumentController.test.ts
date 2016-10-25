@@ -9,7 +9,7 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 import sinon = require('sinon');
 import sinonChai = require('sinon-chai');
 
-chai.should();
+let should = chai.should();
 chai.use(sinonChai);
 
 function mockInputBox(returnValue: string): sinon.SinonStub {
@@ -110,6 +110,22 @@ describe('DocumentController', () => {
             }
         });
 
+        it('should add a promised default import edit to the virtual doc if there are no conflicts.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'myDefaultExportedFunction');
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
+                (ctrl as any).edits.should.have.lengthOf(1);
+                should.exist((ctrl as any).edits[0].then);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
     });
 
     describe('commit()', () => {
@@ -193,6 +209,26 @@ describe('DocumentController', () => {
                 done();
             } catch (e) {
                 done(e);
+            }
+        });
+
+        it('should add a single default import to the document (top)', async done => {
+            let stub = mockInputBox('DEFAULT_IMPORT');
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'myDefaultExportedFunction');
+                ctrl.addDeclarationImport(declaration);
+                (await ctrl.commit()).should.be.true;
+
+                stub.should.be.calledWithMatch({ value: 'myDefaultExportedFunction' });
+                document.lineAt(0).text
+                    .should.equals(`import DEFAULT_IMPORT from '../defaultExport/lateDefaultExportedElement';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
             }
         });
 
