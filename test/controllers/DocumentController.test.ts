@@ -126,6 +126,65 @@ describe('DocumentController', () => {
             }
         });
 
+        it('should add a promised named import edit to the virtual doc if there are conflicts.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
+                ctrl.addDeclarationImport(declarations[0]);
+                ctrl.addDeclarationImport(declarations[1]);
+
+                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
+                (ctrl as any).edits.should.have.lengthOf(2);
+                should.not.exist((ctrl as any).edits[0].then);
+                should.exist((ctrl as any).edits[1].then);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add an edit to the virtual doc if there is already an import.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).edits.should.have.lengthOf(1);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not add an import to the virtual doc if there is already an import.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
+                (ctrl as any).parsedDocument.imports[0].specifiers.should.have.lengthOf(2);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+    });
+
+    describe('organizeImports()', () => {
+
+        it('should remove an unused import');
+
+        it('should remove an unused specifier from an import');
+
+        it('should remove a previously added import');
+
+        it('should add an edit (delete) for each import and one for insert (top)');
+
     });
 
     describe('commit()', () => {
@@ -231,6 +290,56 @@ describe('DocumentController', () => {
                 restoreInputBox(stub);
             }
         });
+
+        it('should add a single aliased named import when names are conflicting', async done => {
+            let stub = mockInputBox('ALIASED_IMPORT');
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
+                ctrl.addDeclarationImport(declarations[0]);
+                (await ctrl.commit()).should.be.true;
+
+                ctrl.addDeclarationImport(declarations[1]);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(
+                    `import { FancierLibraryClass as ALIASED_IMPORT } from 'fancy-library/FancierLibraryClass';`
+                );
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
+            }
+        });
+
+        it('should add a specifier to an existing import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+                ctrl.addDeclarationImport(declaration);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../resourceIndex';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a specifier to an import and a new import');
+
+        it('should convert a default import when a normal specifier is added');
+
+        it('should convert a normal import when a default specifier is added');
+
+        it('should render the optimized import');
+
+        it('should render sorted imports when optimizing');
+
+        it('should render sorted specifiers when optimizing');
 
     });
 
