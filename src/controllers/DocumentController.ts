@@ -155,12 +155,56 @@ export class DocumentController {
                         }
                     }));
             }
-        } else if (alreadyImported instanceof DefaultDeclaration) {
-
+        } else if (alreadyImported instanceof TsDefaultImport &&
+            !(declarationInfo.declaration instanceof DefaultDeclaration)) {
+            let newImport = new TsNamedImport(getRelativeLibraryName(
+                declarationInfo.from,
+                this.document.fileName
+            ));
+            newImport.specifiers.push(new TsResolveSpecifier('default', alreadyImported.alias));
+            newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+            this.parsedDocument.imports.splice(
+                this.parsedDocument.imports.indexOf(alreadyImported),
+                1,
+                newImport
+            );
+            this.edits.push(TextEdit.replace(
+                alreadyImported.getRange(this.document),
+                newImport.toImport(DocumentController.config.resolver.importOptions)
+            ));
+        } else if (alreadyImported instanceof TsNamedImport &&
+            declarationInfo.declaration instanceof DefaultDeclaration) {
+            this.edits.push(this.getDefaultIdentifier(declarationInfo.declaration.name)
+                .then(alias => {
+                    if (alias) {
+                        (alreadyImported as TsNamedImport).specifiers.push(
+                            new TsResolveSpecifier('default', alias)
+                        );
+                        return TextEdit.replace(
+                            alreadyImported.getRange(this.document),
+                            alreadyImported.toImport(DocumentController.config.resolver.importOptions)
+                        );
+                    }
+                }));
         } else if (alreadyImported instanceof TsNamedImport && !duplicateSpecifierFound) {
-
+            alreadyImported.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+            this.edits.push(TextEdit.replace(
+                alreadyImported.getRange(this.document),
+                alreadyImported.toImport(DocumentController.config.resolver.importOptions)
+            ));
         } else if (alreadyImported instanceof TsNamedImport && duplicateSpecifierFound) {
-
+            this.edits.push(this.resolveDuplicateSpecifier(declarationInfo.declaration.name)
+                .then(alias => {
+                    if (alias) {
+                        (alreadyImported as TsNamedImport).specifiers.push(
+                            new TsResolveSpecifier(declarationInfo.declaration.name, alias)
+                        );
+                        return TextEdit.replace(
+                            alreadyImported.getRange(this.document),
+                            alreadyImported.toImport(DocumentController.config.resolver.importOptions)
+                        );
+                    }
+                }));
         }
 
         return this;
