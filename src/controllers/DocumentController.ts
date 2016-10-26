@@ -2,7 +2,15 @@ import { DeclarationInfo } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { InjectorDecorators } from '../IoC';
 import { DefaultDeclaration, ModuleDeclaration, TsDeclaration } from '../models/TsDeclaration';
-import { TsAliasedImport, TsDefaultImport, TsNamedImport, TsNamespaceImport } from '../models/TsImport';
+import {
+    TsAliasedImport,
+    TsDefaultImport,
+    TsExternalModuleImport,
+    TsImport,
+    TsNamedImport,
+    TsNamespaceImport,
+    TsStringImport
+} from '../models/TsImport';
 import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -12,6 +20,26 @@ import {
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
 import { TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+
+function stringSort(strA: string, strB: string): number {
+    if (strA < strB) {
+        return -1;
+    } else if (strA > strB) {
+        return 1;
+    }
+    return 0;
+}
+
+function importSort(i1: TsImport, i2: TsImport): number {
+    let strA = i1.libraryName.toLowerCase(),
+        strB = i2.libraryName.toLowerCase();
+
+    return stringSort(strA, strB);
+}
+
+function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
+    return stringSort(i1.specifier, i2.specifier);
+}
 
 /**
  * Management class for a TextDocument. Can add and remove parts of the document
@@ -221,6 +249,38 @@ export class DocumentController {
      * @memberOf DocumentController
      */
     public organizeImports(): this {
+        let keep: TsImport[] = [];
+
+        for (let actImport of this.parsedDocument.imports) {
+            if (actImport instanceof TsNamespaceImport ||
+                actImport instanceof TsExternalModuleImport ||
+                actImport instanceof TsDefaultImport) {
+                if (this.parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                    keep.push(actImport);
+                }
+            } else if (actImport instanceof TsNamedImport) {
+                actImport.specifiers = actImport.specifiers
+                    .filter(o => this.parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
+                    .sort(specifierSort);
+                if (actImport.specifiers.length) {
+                    keep.push(actImport);
+                }
+            } else if (actImport instanceof TsStringImport) {
+                keep.push(actImport);
+            }
+            this.edits.push(TextEdit.delete(actImport.getRange(this.document)));
+        }
+
+        keep = [
+            ...keep.filter(o => o instanceof TsStringImport).sort(importSort),
+            ...keep.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+        ];
+
+        this.edits.push(TextEdit.insert(
+            getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
+            keep.reduce((all, cur) => all += cur.toImport(DocumentController.config.resolver.importOptions), '')
+        ));
+
         return this;
     }
 
