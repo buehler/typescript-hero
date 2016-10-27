@@ -177,13 +177,62 @@ describe('DocumentController', () => {
 
     describe('organizeImports()', () => {
 
-        it('should remove an unused import');
+        it('should remove an unused import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+                ctrl.addDeclarationImport(declaration);
 
-        it('should remove an unused specifier from an import');
+                (ctrl as any).edits[0]._newText.should.equals(`import { myComponent } from '../MyReactTemplate';\n`);
 
-        it('should remove a previously added import');
+                ctrl.organizeImports();
 
-        it('should add an edit (delete) for each import and one for insert (top)');
+                (ctrl as any).edits[3]._newText.should.equals(`import { Class1 } from '../resourceIndex';\n`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove an unused specifier from an import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).edits[0]._newText.should.equals(`import { Class1, Class2 } from '../resourceIndex';\n`);
+
+                ctrl.organizeImports();
+
+                (ctrl as any).edits[2]._newText.should.equals(`import { Class1 } from '../resourceIndex';\n`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add an edit (delete) for each import and one for insert (top)', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+
+                ctrl.addDeclarationImport(declaration1)
+                    .addDeclarationImport(declaration2)
+                    .organizeImports();
+
+                (ctrl as any).edits.should.have.lengthOf(5);
+                (ctrl as any).edits[2]._newText.should.equals('');
+                (ctrl as any).edits[3]._newText.should.equals('');
+                (ctrl as any).edits[4]._newText.should.not.equals('');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 
@@ -329,13 +378,109 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add a specifier to an import and a new import');
+        it('should add a specifier to an import and a new import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
 
-        it('should convert a default import when a normal specifier is added');
+                await ctrl.addDeclarationImport(declaration1)
+                    .addDeclarationImport(declaration2)
+                    .commit();
 
-        it('should convert a normal import when a default specifier is added');
+                document.lineAt(0).text.should.equals(`import { myComponent } from '../MyReactTemplate';`);
+                document.lineAt(1).text.should.equals(`import { Class1, Class2 } from '../resourceIndex';`);
 
-        it('should render the optimized import');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should convert a default import when a normal specifier is added', async done => {
+            let stub = mockInputBox('DEFAULT_IMPORT');
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
+                await ctrl.addDeclarationImport(declaration).commit();
+
+                document.lineAt(0).text.should.equals(`import DEFAULT_IMPORT from '../defaultExport/multiExport';`);
+
+                declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+                await ctrl.addDeclarationImport(declaration).commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { default as DEFAULT_IMPORT, MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
+            }
+        });
+
+        it('should convert a normal import when a default specifier is added', async done => {
+            let stub = mockInputBox('DEFAULT_IMPORT');
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+                await ctrl.addDeclarationImport(declaration).commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
+                ctrl.addDeclarationImport(declaration);
+                await ctrl.commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { default as DEFAULT_IMPORT, MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
+            }
+        });
+
+        it('should render the optimized import', async done => {
+            let stub = mockInputBox('DEFAULT_IMPORT');
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(5, 0), 'let foobar = new Class2();\n');
+                });
+                let ctrl = await DocumentController.create(document);
+                let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+
+                await ctrl.addDeclarationImport(declaration1)
+                    .addDeclarationImport(declaration2)
+                    .commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
+                ctrl.addDeclarationImport(declaration);
+                await ctrl.commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { default as DEFAULT_IMPORT, MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
+            }
+        });
 
         it('should render sorted imports when optimizing');
 
