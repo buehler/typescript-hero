@@ -449,7 +449,6 @@ describe('DocumentController', () => {
         });
 
         it('should render the optimized import', async done => {
-            let stub = mockInputBox('DEFAULT_IMPORT');
             try {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(new Position(5, 0), 'let foobar = new Class2();\n');
@@ -465,26 +464,63 @@ describe('DocumentController', () => {
                 document.lineAt(0).text.should.equals(
                     `import { MultiExportClass } from '../defaultExport/multiExport';`
                 );
+                document.lineAt(1).text.should.equals(
+                    `import { Class1, Class2 } from '../resourceIndex';`
+                );
 
-                declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
-                ctrl.addDeclarationImport(declaration);
-                await ctrl.commit();
+                await ctrl.organizeImports().commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } from '../defaultExport/multiExport';`
+                    `import { Class1, Class2 } from '../resourceIndex';`
                 );
+                document.lineAt(1).text.should.equals('');
 
                 done();
             } catch (e) {
                 done(e);
-            } finally {
-                restoreInputBox(stub);
             }
         });
 
-        it('should render sorted imports when optimizing');
+        it('should render sorted imports when optimizing', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(1, 0), `import { MultiExportClass } from '../defaultExport/multiExport';`);
+                    builder.insert(new Position(5, 0), 'let foobar = new MultiExportClass();\n');
+                });
+                let ctrl = await DocumentController.create(document);
 
-        it('should render sorted specifiers when optimizing');
+                await ctrl.organizeImports().commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { MultiExportClass } from '../defaultExport/multiExport';`
+                );
+                document.lineAt(1).text.should.equals(
+                    `import { Class1 } from '../resourceIndex';`
+                );
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should render sorted specifiers when optimizing', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(0, 15), ', Class2');
+                    builder.insert(new Position(5, 0), 'let foobar = new Class2();\n');
+                });
+                let ctrl = await DocumentController.create(document);
+
+                await ctrl.organizeImports().commit();
+
+                document.lineAt(0).text.should.equals(
+                    `import { Class1 } from '../resourceIndex';`
+                );
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 
