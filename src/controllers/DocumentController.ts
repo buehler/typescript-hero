@@ -1,6 +1,6 @@
 import { DeclarationInfo } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
-import { InjectorDecorators } from '../IoC';
+import { Injector } from '../IoC';
 import { DefaultDeclaration, ModuleDeclaration, TsDeclaration } from '../models/TsDeclaration';
 import {
     TsAliasedImport,
@@ -49,11 +49,13 @@ function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
  * @class DocumentController
  */
 export class DocumentController {
-    @InjectorDecorators.lazyInject(TsResourceParser)
-    private static parser: TsResourceParser;
+    private static get parser(): TsResourceParser {
+        return Injector.get(TsResourceParser);
+    }
 
-    @InjectorDecorators.lazyInject(ExtensionConfig)
-    private static config: ExtensionConfig;
+    private static get config(): ExtensionConfig {
+        return Injector.get(ExtensionConfig);
+    }
 
     private edits: (TextEdit | Promise<TextEdit>)[] = [];
 
