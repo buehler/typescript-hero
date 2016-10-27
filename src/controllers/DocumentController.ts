@@ -96,10 +96,9 @@ export class DocumentController {
      * @memberOf DocumentController
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
-        let alreadyImported = this.parsedDocument.imports.find(o => {
-            let lib = getAbsolutLibraryName(o.libraryName, this.document.fileName);
-            return lib === declarationInfo.from && !(o instanceof TsDefaultImport);
-        });
+        let alreadyImported = this.parsedDocument.imports.find(
+            o => declarationInfo.from === getAbsolutLibraryName(o.libraryName, this.document.fileName)
+        );
 
         let specifiers = this.parsedDocument.imports.reduce((all, cur) => {
             if (cur instanceof TsNamedImport) {
@@ -304,6 +303,7 @@ export class DocumentController {
         let result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             this.edits = [];
+            this.parsedDocument = await DocumentController.parser.parseSource(this.document.getText());
         }
 
         return result;
