@@ -311,10 +311,30 @@ export class DocumentController {
         return result;
     }
 
+    /**
+     * Checks if a declaration is "abstract". Meaning if the declaration is a default declaration
+     * or a module declaration (and therefore contains no real symbol).
+     * 
+     * @private
+     * @param {TsDeclaration} declaration
+     * @returns {boolean}
+     * 
+     * @memberOf DocumentController
+     */
     private isAbstractDeclaration(declaration: TsDeclaration): boolean {
         return declaration instanceof ModuleDeclaration || declaration instanceof DefaultDeclaration;
     }
 
+    /**
+     * Does resolve a duplicate specifier issue. Calls vscode inputbox as long as the inputted name
+     * does match the duplicates. (So the user needs to enter a different one)
+     * 
+     * @private
+     * @param {string} duplicate
+     * @returns {Promise<string>}
+     * 
+     * @memberOf DocumentController
+     */
     private async resolveDuplicateSpecifier(duplicate: string): Promise<string> {
         let alias: string;
 
@@ -329,6 +349,15 @@ export class DocumentController {
         return alias;
     }
 
+    /**
+     * Calls the vscode input box to ask for an indentifier for a default export.
+     * 
+     * @private
+     * @param {string} declarationName
+     * @returns {Promise<string>}
+     * 
+     * @memberOf DocumentController
+     */
     private async getDefaultIdentifier(declarationName: string): Promise<string> {
         return await window.showInputBox({
             placeHolder: 'Default export name',
