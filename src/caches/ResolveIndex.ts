@@ -9,8 +9,17 @@ import { inject, injectable } from 'inversify';
 import { join, normalize, resolve } from 'path';
 import { CancellationToken, CancellationTokenSource, Uri, workspace } from 'vscode';
 
+/**
+ * Type that defines information about a declaration.
+ * Contains the declaration and the origin of the declaration.
+ */
 export type DeclarationInfo = { declaration: TsDeclaration, from: string };
+
+/**
+ * Type for the reverse index of all declarations
+ */
 export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
+
 type Resources = { [name: string]: TsResource };
 
 function getNodeLibraryName(path: string): string {
@@ -22,6 +31,13 @@ function getNodeLibraryName(path: string): string {
         .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]})$`), '');
 }
 
+/**
+ * Global index of typescript declarations. Contains declarations and origins.
+ * Provides reverse index for search and declaration info for imports.
+ * 
+ * @export
+ * @class ResolveIndex
+ */
 @injectable()
 export class ResolveIndex {
     private logger: Logger;
@@ -30,14 +46,36 @@ export class ResolveIndex {
     private parsedResources: Resources;
     private _index: ResourceIndex;
 
+    /**
+     * Indicator if the first index was loaded and calculated or not.
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberOf ResolveIndex
+     */
     public get indexReady(): boolean {
         return !!this._index;
     }
 
+    /**
+     * Reverse index of the declarations.
+     * 
+     * @readonly
+     * @type {ResourceIndex}
+     * @memberOf ResolveIndex
+     */
     public get index(): ResourceIndex {
         return this._index;
     }
 
+    /**
+     * List of all declaration information. Contains the typescript declaration and the
+     * "from" information (from where the symbol is imported). 
+     * 
+     * @readonly
+     * @type {DeclarationInfo[]}
+     * @memberOf ResolveIndex
+     */
     public get declarationInfos(): DeclarationInfo[] {
         return Object
             .keys(this.index)
@@ -53,6 +91,15 @@ export class ResolveIndex {
         this.logger = loggerFactory('ResolveIndex');
     }
 
+    /**
+     * Tells the index to build a new index.
+     * Can be canceled with a cancellationToken.
+     * 
+     * @param {CancellationToken} [cancellationToken]
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveIndex
+     */
     public async buildIndex(cancellationToken?: CancellationToken): Promise<void> {
         if (this.cancelToken) {
             this.logger.info('Refresh already running, canceling first.');
@@ -92,6 +139,16 @@ export class ResolveIndex {
 
     }
 
+    /**
+     * Rebuild the cache for one specific file. This can happen if a file is changed (saved)
+     * and contains a new symbol. All resources are searched for files that possibly export
+     * stuff from the given file and are rebuilt as well.
+     * 
+     * @param {string} filePath
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveIndex
+     */
     public async rebuildForFile(filePath: string): Promise<void> {
         let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = [<Uri>{ fsPath: filePath }, ...this.getExportedResources(rebuildResource)];
@@ -108,6 +165,15 @@ export class ResolveIndex {
         }
     }
 
+    /**
+     * Removes the definitions and symbols for a specific file. This happens when
+     * a file is deleted. All files that export symbols from this file are rebuilt as well.
+     * 
+     * @param {string} filePath
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveIndex
+     */
     public async removeForFile(filePath: string): Promise<void> {
         let removeResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = this.getExportedResources(removeResource);
@@ -125,6 +191,12 @@ export class ResolveIndex {
         }
     }
 
+    /**
+     * Possibility to cancel a scheduled index refresh. Does dispose the cancellationToken
+     * to indicate a cancellation.
+     * 
+     * @memberOf ResolveIndex
+     */
     public cancelRefresh(): void {
         if (this.cancelToken) {
             this.logger.info('Canceling refresh.');
@@ -133,11 +205,29 @@ export class ResolveIndex {
         }
     }
 
+    /**
+     * Resets the whole index. Does delete everything. Period.
+     * 
+     * @memberOf ResolveIndex
+     */
     public reset(): void {
         this.parsedResources = null;
         this._index = null;
     }
 
+    /**
+     * Searches through all workspace files to return those, that need to be indexed.
+     * The following search patterns apply:
+     * - All *.ts and *.tsx of the actual workspace
+     * - All *.d.ts files that live in a linked node_module folder (if there is a package.json)
+     * - All *.d.ts files that are located in a "typings" folder
+     * 
+     * @private
+     * @param {CancellationToken} cancellationToken
+     * @returns {Promise<Uri[]>}
+     * 
+     * @memberOf ResolveIndex
+     */
     private async findFiles(cancellationToken: CancellationToken): Promise<Uri[]> {
         let searches: PromiseLike<Uri[]>[] = [
             workspace.findFiles(
@@ -196,6 +286,17 @@ export class ResolveIndex {
         return uris.reduce((all, cur) => all.concat(cur), []);
     }
 
+    /**
+     * Does parse the resources (symbols and declarations) of a given file.
+     * Can be cancelled with the token.
+     * 
+     * @private
+     * @param {TsFile[]} files
+     * @param {CancellationToken} [cancellationToken]
+     * @returns {Promise<Resources>}
+     * 
+     * @memberOf ResolveIndex
+     */
     private async parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
         let parsedResources: Resources = {};
 
@@ -231,6 +332,17 @@ export class ResolveIndex {
         return parsedResources;
     }
 
+    /**
+     * Creates a reverse index out of the give resources.
+     * Can be cancelled with the token.
+     * 
+     * @private
+     * @param {Resources} resources
+     * @param {CancellationToken} [cancellationToken]
+     * @returns {Promise<ResourceIndex>}
+     * 
+     * @memberOf ResolveIndex
+     */
     private async createIndex(resources: Resources, cancellationToken?: CancellationToken): Promise<ResourceIndex> {
         if (cancellationToken && cancellationToken.onCancellationRequested) {
             this.cancelRequested();
@@ -263,6 +375,17 @@ export class ResolveIndex {
         return index;
     }
 
+    /**
+     * Process all exports of a the parsed resources. Does move the declarations accordingly to their
+     * export nature.
+     * 
+     * @private
+     * @param {Resources} parsedResources
+     * @param {TsResource} resource
+     * @returns {void}
+     * 
+     * @memberOf ResolveIndex
+     */
     private processResourceExports(parsedResources: Resources, resource: TsResource): void {
         for (let ex of resource.exports) {
             if (resource instanceof TsFile && ex instanceof TsFromExport) {
@@ -296,6 +419,17 @@ export class ResolveIndex {
         }
     }
 
+    /**
+     * Processes an all export, does move the declarations accordingly.
+     * (i.e. export * from './myFile')
+     * 
+     * @private
+     * @param {Resources} parsedResources
+     * @param {TsResource} exportingLib
+     * @param {TsResource} exportedLib
+     * 
+     * @memberOf ResolveIndex
+     */
     private processAllFromExport(parsedResources: Resources, exportingLib: TsResource, exportedLib: TsResource): void {
         this.processResourceExports(parsedResources, exportedLib);
 
@@ -303,6 +437,18 @@ export class ResolveIndex {
         exportedLib.declarations = [];
     }
 
+    /**
+     * Processes a named export, does move the declarations accordingly.
+     * (i.e. export {MyClass} from './myFile')
+     * 
+     * @private
+     * @param {Resources} parsedResources
+     * @param {TsNamedFromExport} tsExport
+     * @param {TsResource} exportingLib
+     * @param {TsResource} exportedLib
+     * 
+     * @memberOf ResolveIndex
+     */
     private processNamedFromExport(
         parsedResources: Resources,
         tsExport: TsNamedFromExport,
@@ -325,6 +471,17 @@ export class ResolveIndex {
             });
     }
 
+    /**
+     * Processes an assigned export, does move the declarations accordingly.
+     * (i.e. export = namespaceName)
+     * 
+     * @private
+     * @param {Resources} parsedResources
+     * @param {TsAssignedExport} tsExport
+     * @param {TsResource} exportingLib
+     * 
+     * @memberOf ResolveIndex
+     */
     private processAssignedExport(
         parsedResources: Resources,
         tsExport: TsAssignedExport,
@@ -343,6 +500,15 @@ export class ResolveIndex {
         });
     }
 
+    /**
+     * Returns a list of files that export a certain resource (declaration).
+     * 
+     * @private
+     * @param {string} resourceToCheck
+     * @returns {Uri[]}
+     * 
+     * @memberOf ResolveIndex
+     */
     private getExportedResources(resourceToCheck: string): Uri[] {
         let resources = [];
         Object
@@ -357,6 +523,17 @@ export class ResolveIndex {
         return resources;
     }
 
+    /**
+     * Checks if a file does export another resource.
+     * (i.e. export ... from ...)
+     * 
+     * @private
+     * @param {TsFile} resource - The file that is checked
+     * @param {string} resourcePath - The resource that is searched for
+     * @returns {boolean}
+     * 
+     * @memberOf ResolveIndex
+     */
     private doesExportResource(resource: TsFile, resourcePath: string): boolean {
         let exportsResource = false;
 
@@ -373,6 +550,13 @@ export class ResolveIndex {
         return exportsResource;
     }
 
+    /**
+     * Loggs the requested cancellation.
+     * 
+     * @private
+     * 
+     * @memberOf ResolveIndex
+     */
     private cancelRequested(): void {
         this.logger.info('Cancellation requested.');
     }
