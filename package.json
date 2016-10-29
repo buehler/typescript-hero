@@ -65,7 +65,8 @@
     "onCommand:typescriptHero.showCmdGui",
     "onCommand:typescriptHero.addImport",
     "onCommand:typescriptHero.organizeImports",
-    "onLanguage:typescript"
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
   ],
   "contributes": {
     "commands": [

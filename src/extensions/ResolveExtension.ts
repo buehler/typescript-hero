@@ -41,7 +41,8 @@ type ImportInformation = {};
 const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
     resolverErr = 'Resolver $(flame)',
-    TYPESCRIPT = 'typescript';
+    TYPESCRIPT = 'typescript',
+    TYPESCRIPT_REACT = 'typescriptreact';
 
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
@@ -134,7 +135,9 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
         context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
         context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
-        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider)); //without trigger chars
+        //without trigger chars
+        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider));
+        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT_REACT, this.completionProvider));
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
