@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Fixed
+- Initialize extension and completion provider for typescript react (.tsx) files ([#112](https://github.com/buehler/typescript-hero/pull/112))
 
 ## [0.9.0]
 #### Added
@@ -23,7 +25,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Default exports do not break extension anymore ([#79](https://github.com/buehler/typescript-hero/issues/79))
 - Node pathes are correctly split ([#76](https://github.com/buehler/typescript-hero/issues/76))
 - Exports from root index.ts are not empty
-- Initialize extension and completion provider for typescript react (.tsx) files ([#112](https://github.com/buehler/typescript-hero/pull/112))
 
 ## [0.8.0]
 #### Added
