@@ -1,52 +1,77 @@
 {
+    "extends": "tslint:recommended",
     "rules": {
-        "class-name": true,
-        "curly": true,
-        "eofline": true,
-        "indent": [
+        "adjacent-overload-signatures": true,
+        "interface-name": [
             true,
-            "spaces"
+            "never-prefix"
         ],
-        "max-line-length": [
-            false
+        "member-access": [
+            true,
+            "check-accessor"
         ],
         "member-ordering": [
             true,
-            "public-before-private",
-            "static-before-instance",
-            "variables-before-functions"
+            {
+                "order": [
+                    "public-static-field",
+                    "protected-static-field",
+                    "private-static-field",
+                    "public-instance-field",
+                    "protected-instance-field",
+                    "private-instance-field",
+                    "constructor",
+                    "public-static-method",
+                    "protected-static-method",
+                    "private-static-method",
+                    "public-instance-method",
+                    "protected-instance-method",
+                    "private-instance-method"
+                ]
+            }
         ],
-        "no-arg": true,
-        "no-construct": true,
-        "no-duplicate-key": true,
-        "no-duplicate-variable": true,
-        "no-empty": true,
-        "no-eval": true,
-        "no-trailing-whitespace": true,
-        "no-unused-expression": false,
-        "no-unused-variable": true,
-        "no-unreachable": true,
-        "no-use-before-declare": true,
-        "one-line": [
+        "no-bitwise": false,
+        "no-default-export": true,
+        "no-invalid-this": true,
+        "no-namespace": [
             true,
-            "check-open-brace",
-            "check-catch",
-            "check-else",
-            "check-whitespace"
+            "allow-declarations"
+        ],
+        "no-string-literal": false,
+        "no-unused-variable": true,
+        "object-literal-key-quotes": [
+            false,
+            "as-needed"
+        ],
+        "one-variable-per-declaration": false,
+        "only-arrow-functions": [
+            true,
+            "allow-declarations"
         ],
         "quotemark": [
-            false
-        ],
-        "semicolon": [
-            true
-        ],
-        "triple-equals": [
             true,
-            "allow-null-check"
+            "single",
+            "avoid-escape"
         ],
-        "variable-name": false,
+        "trailing-comma": false,
+        "triple-equals": true,
+        "typedef": [
+            true,
+            "call-signature",
+            "parameter",
+            "property-declaration",
+            "member-variable-declaration"
+        ],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-pascal-case",
+            "allow-leading-underscore"
+        ],
         "whitespace": [
             true,
+            "check-branch",
             "check-decl",
             "check-operator",
             "check-separator",

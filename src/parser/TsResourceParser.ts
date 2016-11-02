@@ -1,3 +1,18 @@
+import {
+    ClassDeclaration as TshClassDeclaration,
+    ConstructorDeclaration as TshConstructorDeclaration,
+    DefaultDeclaration,
+    EnumDeclaration as TshEnumDeclaration,
+    FunctionDeclaration as TshFunctionDeclaration,
+    InterfaceDeclaration as TshInterfaceDeclaration,
+    MethodDeclaration as TshMethodDeclaration,
+    ParameterDeclaration as TshParameterDeclaration,
+    PropertyDeclaration as TshPropertyDeclaration,
+    PropertyVisibility,
+    TsExportableCallableDeclaration,
+    TypeAliasDeclaration as TshTypeAliasDeclaration,
+    VariableDeclaration as TshVariableDeclaration
+} from '../models/TsDeclaration';
 import { TsAllFromExport, TsAssignedExport, TsNamedFromExport } from '../models/TsExport';
 import {
     TsDefaultImport,
@@ -59,21 +74,6 @@ import {
     TypeAliasDeclaration,
     VariableStatement
 } from 'typescript';
-import {
-    ClassDeclaration as TshClassDeclaration,
-    ConstructorDeclaration as TshConstructorDeclaration,
-    DefaultDeclaration,
-    EnumDeclaration as TshEnumDeclaration,
-    FunctionDeclaration as TshFunctionDeclaration,
-    InterfaceDeclaration as TshInterfaceDeclaration,
-    MethodDeclaration as TshMethodDeclaration,
-    ParameterDeclaration as TshParameterDeclaration,
-    PropertyDeclaration as TshPropertyDeclaration,
-    PropertyVisibility,
-    TsExportableCallableDeclaration,
-    TypeAliasDeclaration as TshTypeAliasDeclaration,
-    VariableDeclaration as TshVariableDeclaration
-} from '../models/TsDeclaration';
 import { CancellationToken, Uri } from 'vscode';
 
 const usageNotAllowedParents = [
@@ -106,6 +106,13 @@ const usagePredicates = [
     allowedIfPropertyAccessFirst
 ];
 
+/**
+ * Predicate function to determine if the node is possible as a "usage".
+ * Checks for the node identifier to be the last of the identifier list.
+ * 
+ * @param {Node} node
+ * @returns {boolean}
+ */
 function allowedIfLastIdentifier(node: Node): boolean {
     if (usageAllowedIfLast.indexOf(node.parent.kind) === -1) {
         return true;
@@ -115,6 +122,13 @@ function allowedIfLastIdentifier(node: Node): boolean {
     return children.length === 1 || children.indexOf(node) === 1;
 }
 
+/**
+ * Predicate function to determine if the node is possible as a "usage".
+ * Checks if the identifier is on the lefthand side of a property access.
+ * 
+ * @param {Node} node
+ * @returns {boolean}
+ */
 function allowedIfPropertyAccessFirst(node: Node): boolean {
     if (node.parent.kind !== SyntaxKind.PropertyAccessExpression) {
         return true;
@@ -124,6 +138,13 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
     return children.indexOf(node) === 0;
 }
 
+/**
+ * Function that calculates the default name of a resource.
+ * This is used when a default export has no name (i.e. export class {}).
+ * 
+ * @param {TsResource} resource
+ * @returns {string}
+ */
 function getDefaultResourceIdentifier(resource: TsResource): string {
     if (resource instanceof TsFile && resource.isWorkspaceFile) {
         return resource.parsedPath.name;
@@ -131,6 +152,15 @@ function getDefaultResourceIdentifier(resource: TsResource): string {
     return resource.getIdentifier();
 }
 
+/**
+ * Magic.happen('here');
+ * This class is the parser of the whole extension. It uses the typescript compiler to parse a file or given
+ * source code into the token stream and therefore into the AST of the source. Afterwards an array of
+ * resources is generated and returned.
+ * 
+ * @export
+ * @class TsResourceParser
+ */
 @injectable()
 export class TsResourceParser {
     private logger: Logger;
@@ -140,6 +170,15 @@ export class TsResourceParser {
         this.logger.info('Instantiated.');
     }
 
+    /**
+     * Parses the given source into an anonymous TsFile resource.
+     * Mainly used to parse source code of a document.
+     * 
+     * @param {string} source
+     * @returns {Promise<TsFile>}
+     * 
+     * @memberOf TsResourceParser
+     */
     public async parseSource(source: string): Promise<TsFile> {
         try {
             return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES6, true));
@@ -148,10 +187,27 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses a single file into a TsFile.
+     * 
+     * @param {Uri} file
+     * @returns {Promise<TsFile>}
+     * 
+     * @memberOf TsResourceParser
+     */
     public async parseFile(file: Uri): Promise<TsFile> {
         return (await this.parseFiles([file]))[0];
     }
 
+    /**
+     * Parses multiple files into TsFiles. Can be canceled with the token.
+     * 
+     * @param {Uri[]} filePathes
+     * @param {CancellationToken} [cancellationToken]
+     * @returns {Promise<TsFile[]>}
+     * 
+     * @memberOf TsResourceParser
+     */
     public async parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
         if (cancellationToken && cancellationToken.onCancellationRequested) {
             this.cancelRequested();
@@ -172,6 +228,17 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses the typescript source into the TsFile instance. Calls .parse afterwards to
+     * get the declarations and other information about the source.
+     * 
+     * @private
+     * @param {SourceFile} source
+     * @param {CancellationToken} [cancellationToken]
+     * @returns {TsFile}
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsFile {
         let tsFile = new TsFile(source.fileName, source.getStart(), source.getEnd());
 
@@ -185,6 +252,18 @@ export class TsResourceParser {
         return tsFile;
     }
 
+    /**
+     * Recursive function that runs through the AST of a source and parses the nodes.
+     * Creates the class / function / etc declarations and instanciates a new module / namespace
+     * resource if needed.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {Node} node
+     * @param {CancellationToken} [cancellationToken]
+     * 
+     * @memberOf TsResourceParser
+     */
     private parse(tsResource: TsResource, node: Node, cancellationToken?: CancellationToken): void {
         for (let child of node.getChildren()) {
             if (cancellationToken && cancellationToken.onCancellationRequested) {
@@ -224,11 +303,22 @@ export class TsResourceParser {
                     let resource = this.parseModule(tsResource, <ModuleDeclaration>child);
                     this.parse(resource, child, cancellationToken);
                     continue;
+                default:
+                    break;
             }
             this.parse(tsResource, child, cancellationToken);
         }
     }
 
+    /**
+     * Parses an import node into the declaration.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {(ImportDeclaration | ImportEqualsDeclaration)} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseImport(tsResource: TsResource, node: ImportDeclaration | ImportEqualsDeclaration): void {
         if (isImportDeclaration(node)) {
             if (node.importClause && isNamespaceImport(node.importClause.namedBindings)) {
@@ -239,7 +329,11 @@ export class TsResourceParser {
                 let lib = node.moduleSpecifier as StringLiteral,
                     bindings = node.importClause.namedBindings as NamedImports,
                     tsImport = new TsNamedImport(lib.text, node.getStart(), node.getEnd());
-                tsImport.specifiers = bindings.elements.map(o => o.propertyName && o.name ? new TsResolveSpecifier(o.propertyName.text, o.name.text) : new TsResolveSpecifier(o.name.text));
+                tsImport.specifiers = bindings.elements.map(
+                    o => o.propertyName && o.name ?
+                        new TsResolveSpecifier(o.propertyName.text, o.name.text) :
+                        new TsResolveSpecifier(o.name.text)
+                );
 
                 tsResource.imports.push(tsImport);
             } else if (node.importClause && node.importClause.name) {
@@ -257,6 +351,16 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses an export node into the declaration.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {(ExportDeclaration | ExportAssignment)} node
+     * @returns {void}
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseExport(tsResource: TsResource, node: ExportDeclaration | ExportAssignment): void {
         if (isExportDeclaration(node)) {
             let tsExport = node as ExportDeclaration;
@@ -264,11 +368,19 @@ export class TsResourceParser {
                 return;
             }
             if (tsExport.getText().indexOf('*') > -1) {
-                tsResource.exports.push(new TsAllFromExport(node.getStart(), node.getEnd(), (tsExport.moduleSpecifier as StringLiteral).text));
+                tsResource.exports.push(
+                    new TsAllFromExport(
+                        node.getStart(), node.getEnd(), (tsExport.moduleSpecifier as StringLiteral).text
+                    )
+                );
             } else if (tsExport.exportClause && isNamedExports(tsExport.exportClause)) {
                 let lib = tsExport.moduleSpecifier as StringLiteral,
                     ex = new TsNamedFromExport(node.getStart(), node.getEnd(), lib.text);
-                ex.specifiers = tsExport.exportClause.elements.map(o => o.propertyName && o.name ? new TsResolveSpecifier(o.propertyName.text, o.name.text) : new TsResolveSpecifier(o.name.text));
+                ex.specifiers = tsExport.exportClause.elements.map(
+                    o => o.propertyName && o.name ?
+                        new TsResolveSpecifier(o.propertyName.text, o.name.text) :
+                        new TsResolveSpecifier(o.name.text)
+                );
 
                 tsResource.exports.push(ex);
             }
@@ -283,6 +395,15 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses an identifier into a usage of a resource if the predicates are true.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {Identifier} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseIdentifier(tsResource: TsResource, node: Identifier): void {
         if (node.parent && usagePredicates.every(predicate => predicate(node))) {
             if (tsResource.usages.indexOf(node.text) === -1) {
@@ -291,16 +412,48 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses an enum node into the declaration.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {EnumDeclaration} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseEnum(tsResource: TsResource, node: EnumDeclaration): void {
-        let declaration = new TshEnumDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node));
+        let declaration = new TshEnumDeclaration(
+            node.name.text, node.getStart(), node.getEnd(), this.checkExported(node)
+        );
         declaration.members = node.members.map(o => o.name.getText());
         tsResource.declarations.push(declaration);
     }
 
+    /**
+     * Parses a type alias into the declaration.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {TypeAliasDeclaration} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseTypeAlias(tsResource: TsResource, node: TypeAliasDeclaration): void {
-        tsResource.declarations.push(new TshTypeAliasDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node)));
+        tsResource.declarations.push(
+            new TshTypeAliasDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node))
+        );
     }
 
+    /**
+     * Parses a function into its declaration.
+     * Parses the functions sub information like parameters and variables.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {FunctionDeclaration} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseFunction(tsResource: TsResource, node: FunctionDeclaration): void {
         let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
         let func = new TshFunctionDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
@@ -313,11 +466,22 @@ export class TsResourceParser {
         this.parseFunctionParts(tsResource, func, node);
     }
 
+    /**
+     * Parse a variable. Information such as "is the variable const" are calculated here.
+     * 
+     * @private
+     * @param {(TsResource | TsExportableCallableDeclaration)} parent
+     * @param {VariableStatement} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseVariable(parent: TsResource | TsExportableCallableDeclaration, node: VariableStatement): void {
         let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
         if (node.declarationList && node.declarationList.declarations) {
             node.declarationList.declarations.forEach(o => {
-                let declaration = new TshVariableDeclaration(o.name.getText(), node.getStart(), node.getEnd(), this.checkExported(node), isConst);
+                let declaration = new TshVariableDeclaration(
+                    o.name.getText(), node.getStart(), node.getEnd(), this.checkExported(node), isConst
+                );
                 if (parent instanceof TsExportableCallableDeclaration) {
                     parent.variables.push(declaration);
                 } else {
@@ -327,9 +491,21 @@ export class TsResourceParser {
         }
     }
 
+    /**
+     * Parses an interface node into its declaration.
+     * Calculates the property and method defintions of the interface as well.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {InterfaceDeclaration} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseInterface(tsResource: TsResource, node: InterfaceDeclaration): void {
         let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
-        let interfaceDeclaration = new TshInterfaceDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
+        let interfaceDeclaration = new TshInterfaceDeclaration(
+            name, node.getStart(), node.getEnd(), this.checkExported(node)
+        );
         if (this.checkDefaultExport(node)) {
             interfaceDeclaration.isExported = false;
             tsResource.declarations.push(new DefaultDeclaration(interfaceDeclaration.name, tsResource));
@@ -337,7 +513,11 @@ export class TsResourceParser {
         if (node.members) {
             node.members.forEach(o => {
                 if (isPropertySignature(o)) {
-                    interfaceDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Public));
+                    interfaceDeclaration.properties.push(
+                        new TshPropertyDeclaration(
+                            (o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Public
+                        )
+                    );
                 } else if (isMethodSignature(o)) {
                     let method = new TshMethodDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd());
                     method.parameters = this.parseMethodParams(o);
@@ -348,6 +528,15 @@ export class TsResourceParser {
         tsResource.declarations.push(interfaceDeclaration);
     }
 
+    /**
+     * Parses a class node into its declaration. Calculates the properties, constructors and methods of the class.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {ClassDeclaration} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseClass(tsResource: TsResource, node: ClassDeclaration): void {
         let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
         let classDeclaration = new TshClassDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
@@ -362,21 +551,46 @@ export class TsResourceParser {
                     if (o.modifiers) {
                         o.modifiers.forEach(m => {
                             if (m.kind === SyntaxKind.PublicKeyword) {
-                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Public));
+                                classDeclaration.properties.push(
+                                    new TshPropertyDeclaration(
+                                        (o.name as Identifier).text,
+                                        o.getStart(),
+                                        o.getEnd(),
+                                        PropertyVisibility.Public
+                                    )
+                                );
                                 return;
                             }
                             if (m.kind === SyntaxKind.ProtectedKeyword) {
-                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Protected));
+                                classDeclaration.properties.push(
+                                    new TshPropertyDeclaration(
+                                        (o.name as Identifier).text,
+                                        o.getStart(),
+                                        o.getEnd(),
+                                        PropertyVisibility.Protected
+                                    )
+                                );
                                 return;
                             }
                             if (m.kind === SyntaxKind.PrivateKeyword) {
-                                classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Private));
+                                classDeclaration.properties.push(
+                                    new TshPropertyDeclaration(
+                                        (o.name as Identifier).text,
+                                        o.getStart(),
+                                        o.getEnd(),
+                                        PropertyVisibility.Private
+                                    )
+                                );
                                 return;
                             }
                         });
                     }
                     if (actualCount === classDeclaration.properties.length) {
-                        classDeclaration.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Public));
+                        classDeclaration.properties.push(
+                            new TshPropertyDeclaration(
+                                (o.name as Identifier).text, o.getStart(), o.getEnd(), PropertyVisibility.Public
+                            )
+                        );
                     }
                     return;
                 }
@@ -400,24 +614,63 @@ export class TsResourceParser {
         tsResource.declarations.push(classDeclaration);
     }
 
+    /**
+     * Parses the identifiers of a class (usages).
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {Node} node
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseClassIdentifiers(tsResource: TsResource, node: Node): void {
         for (let child of node.getChildren()) {
             switch (child.kind) {
                 case SyntaxKind.Identifier:
                     this.parseIdentifier(tsResource, <Identifier>child);
                     break;
+                default:
+                    break;
             }
             this.parseClassIdentifiers(tsResource, child);
         }
     }
 
+    /**
+     * Parse a module to its declaration. Create a new namespace or module declaration and return it to
+     * be used as the new "container".
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {ModuleDeclaration} node
+     * @returns {TsResource}
+     * 
+     * @memberOf TsResourceParser
+     */
     private parseModule(tsResource: TsResource, node: ModuleDeclaration): TsResource {
-        let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ? new TsNamespace((node.name as Identifier).text, node.getStart(), node.getEnd()) : new TsModule((node.name as Identifier).text, node.getStart(), node.getEnd());
+        let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ?
+            new TsNamespace((node.name as Identifier).text, node.getStart(), node.getEnd()) :
+            new TsModule((node.name as Identifier).text, node.getStart(), node.getEnd());
         tsResource.resources.push(resource);
         return resource;
     }
 
-    private parseFunctionParts(tsResource: TsResource, parent: TshConstructorDeclaration | TshMethodDeclaration | TshFunctionDeclaration, node: Node): void {
+    /**
+     * Parse the parts of a function. All functions / methods contain various information about used variables
+     * and parameters.
+     * 
+     * @private
+     * @param {TsResource} tsResource
+     * @param {(TshConstructorDeclaration | TshMethodDeclaration | TshFunctionDeclaration)} parent
+     * @param {Node} node
+     * 
+     * @memberOf TsResourceParser
+     */
+    private parseFunctionParts(
+        tsResource: TsResource,
+        parent: TshConstructorDeclaration | TshMethodDeclaration | TshFunctionDeclaration,
+        node: Node
+    ): void {
         for (let child of node.getChildren()) {
             switch (child.kind) {
                 case SyntaxKind.Identifier:
@@ -426,47 +679,92 @@ export class TsResourceParser {
                 case SyntaxKind.VariableStatement:
                     this.parseVariable(parent, <VariableStatement>child);
                     break;
+                default:
+                    break;
             }
             this.parseFunctionParts(tsResource, parent, child);
         }
     }
 
-    private parseCtorParams(parent: TshClassDeclaration, ctor: TshConstructorDeclaration, node: ConstructorDeclaration): void {
+    /**
+     * Parse information about a constructor. Contains parameters and used modifiers
+     * (i.e. constructor(private name: string)).
+     * 
+     * @private
+     * @param {TshClassDeclaration} parent
+     * @param {TshConstructorDeclaration} ctor
+     * @param {ConstructorDeclaration} node
+     * @returns {void}
+     * 
+     * @memberOf TsResourceParser
+     */
+    private parseCtorParams(
+        parent: TshClassDeclaration,
+        ctor: TshConstructorDeclaration,
+        node: ConstructorDeclaration
+    ): void {
         if (!node.parameters) {
             return;
         }
         node.parameters.forEach(o => {
             if (isIdentifier(o.name)) {
-                ctor.parameters.push(new TshParameterDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd()));
+                ctor.parameters.push(
+                    new TshParameterDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd())
+                );
                 if (!o.modifiers) {
                     return;
                 }
                 o.modifiers.forEach(m => {
                     if (m.kind === SyntaxKind.PublicKeyword) {
-                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Public));
+                        parent.properties.push(
+                            new TshPropertyDeclaration(
+                                (o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Public
+                            )
+                        );
                         return;
                     }
                     if (m.kind === SyntaxKind.ProtectedKeyword) {
-                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Protected));
+                        parent.properties.push(
+                            new TshPropertyDeclaration(
+                                (o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Protected
+                            )
+                        );
                         return;
                     }
                     if (m.kind === SyntaxKind.PrivateKeyword) {
-                        parent.properties.push(new TshPropertyDeclaration((o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Private));
+                        parent.properties.push(
+                            new TshPropertyDeclaration(
+                                (o.name as Identifier).text, m.getStart(), m.getEnd(), PropertyVisibility.Private
+                            )
+                        );
                         return;
                     }
                 });
             } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
                 let identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
-                ctor.parameters = ctor.parameters.concat(identifiers.elements.map((o: BindingElement) => {
-                    if (isIdentifier(o.name)) {
-                        return new TshParameterDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd());
+                ctor.parameters = ctor.parameters.concat(identifiers.elements.map((bind: BindingElement) => {
+                    if (isIdentifier(bind.name)) {
+                        return new TshParameterDeclaration(
+                            (bind.name as Identifier).text, bind.getStart(), bind.getEnd()
+                        );
                     }
                 }).filter(Boolean));
             }
         });
     }
 
-    private parseMethodParams(node: FunctionDeclaration | MethodDeclaration | MethodSignature): TshParameterDeclaration[] {
+    /**
+     * Parse method parameters. 
+     * 
+     * @private
+     * @param {(FunctionDeclaration | MethodDeclaration | MethodSignature)} node
+     * @returns {TshParameterDeclaration[]}
+     * 
+     * @memberOf TsResourceParser
+     */
+    private parseMethodParams(
+        node: FunctionDeclaration | MethodDeclaration | MethodSignature
+    ): TshParameterDeclaration[] {
         return node.parameters.reduce((all: TshParameterDeclaration[], cur: ParameterDeclaration) => {
             if (isIdentifier(cur.name)) {
                 all.push(new TshParameterDeclaration((cur.name as Identifier).text, cur.getStart(), cur.getEnd()));
@@ -482,14 +780,41 @@ export class TsResourceParser {
         }, []);
     }
 
+    /**
+     * Check if the given typescript node has the exported flag.
+     * (e.g. export class Foobar).
+     * 
+     * @private
+     * @param {Node} node
+     * @returns {boolean}
+     * 
+     * @memberOf TsResourceParser
+     */
     private checkExported(node: Node): boolean {
         return (node.flags & NodeFlags.Export) === NodeFlags.Export;
     }
 
+    /**
+     * Check if the given typescript node has the default flag.
+     * (e.g. export default class Foobar).
+     * 
+     * @private
+     * @param {Node} node
+     * @returns {boolean}
+     * 
+     * @memberOf TsResourceParser
+     */
     private checkDefaultExport(node: Node): boolean {
         return (node.flags & NodeFlags.Default) === NodeFlags.Default;
     }
 
+    /**
+     * Log the requested need of a canellation.
+     * 
+     * @private
+     * 
+     * @memberOf TsResourceParser
+     */
     private cancelRequested(): void {
         this.logger.info('Cancellation requested');
     }

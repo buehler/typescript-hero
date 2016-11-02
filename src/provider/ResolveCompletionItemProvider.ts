@@ -23,19 +23,44 @@ import {
     window
 } from 'vscode';
 
+/**
+ * Provider instance that gives the user code completion (intellisense).
+ * Is responsible for parsing the actual document and create the actions needed to import a new symbol.
+ * 
+ * @export
+ * @class ResolveCompletionItemProvider
+ * @implements {CompletionItemProvider}
+ */
 @injectable()
 export class ResolveCompletionItemProvider implements CompletionItemProvider {
     private logger: Logger;
 
-    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
+    constructor(
+        @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private config: ExtensionConfig,
         private index: ResolveIndex,
-        private parser: TsResourceParser) {
+        private parser: TsResourceParser
+    ) {
         this.logger = loggerFactory('ResolveCompletionItemProvider');
         this.logger.info('Instantiated.');
     }
 
-    public async provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken): Promise<CompletionItem[]> {
+    /**
+     * Provides the completion list to vscode.
+     * Calculates auto imports based on various situations.
+     * 
+     * @param {TextDocument} document
+     * @param {Position} position
+     * @param {CancellationToken} token
+     * @returns {Promise<CompletionItem[]>}
+     * 
+     * @memberOf ResolveCompletionItemProvider
+     */
+    public async provideCompletionItems(
+        document: TextDocument,
+        position: Position,
+        token: CancellationToken
+    ): Promise<CompletionItem[]> {
         let wordAtPosition = document.getWordRangeAtPosition(position),
             lineText = document.lineAt(position.line).text,
             searchWord = '';
@@ -48,7 +73,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         if (!searchWord ||
             token.isCancellationRequested ||
             !this.index.indexReady ||
-            (lineText.substring(0, position.character).match(/["']/g) || []).length % 2 === 1 ||
+            (lineText.substring(0, position.character).match(/["'`]/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
             lineText.match(/^import .*$/g) ||
             lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
@@ -67,12 +92,14 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
 
-        let filtered = declarations.filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0).map(o => {
-            let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
-            item.detail = o.from;
-            item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
-            return item;
-        });
+        let filtered = declarations
+            .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
+            .map(o => {
+                let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
+                item.detail = o.from;
+                item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
+                return item;
+            });
 
         if (token.isCancellationRequested) {
             return [];
@@ -81,6 +108,17 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         return filtered;
     }
 
+    /**
+     * Internal method that calculates the needed TextEdits to a given document to import the symbol.
+     * 
+     * @private
+     * @param {DeclarationInfo} declaration
+     * @param {TextDocument} document
+     * @param {TsFile} parsedSource
+     * @returns {TextEdit[]}
+     * 
+     * @memberOf ResolveCompletionItemProvider
+     */
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: TsFile): TextEdit[] {
         let imp = parsedSource.imports.find(o => {
             if (o instanceof TsNamedImport) {
@@ -100,7 +138,12 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         } else if (declaration.declaration instanceof ModuleDeclaration) {
             let mod = new TsNamespaceImport(declaration.from, declaration.declaration.name);
             return [
-                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), mod.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(
+                    getImportInsertPosition(
+                        this.config.resolver.newImportLocation, window.activeTextEditor
+                    ),
+                    mod.toImport(this.config.resolver.importOptions)
+                )
             ];
         } else if (declaration.declaration instanceof DefaultDeclaration) {
             // TODO: when the completion starts, the command should add the text edit.
@@ -109,7 +152,12 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             let named = new TsNamedImport(library);
             named.specifiers.push(new TsResolveSpecifier(declaration.declaration.name));
             return [
-                TextEdit.insert(getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor), named.toImport(this.config.resolver.importOptions))
+                TextEdit.insert(
+                    getImportInsertPosition(
+                        this.config.resolver.newImportLocation, window.activeTextEditor
+                    ),
+                    named.toImport(this.config.resolver.importOptions)
+                )
             ];
         }
     }

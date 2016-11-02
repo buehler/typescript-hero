@@ -1,28 +1,12 @@
 import { ResolveIndex } from '../caches/ResolveIndex';
+import { DocumentController } from '../controllers/DocumentController';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { CommandQuickPickItem, ResolveQuickPickItem } from '../models/QuickPickItems';
-import { DefaultDeclaration, ModuleDeclaration } from '../models/TsDeclaration';
 import { TshCommand } from '../models/TshCommand';
-import {
-    TsAliasedImport,
-    TsDefaultImport,
-    TsExternalModuleImport,
-    TsImport,
-    TsNamedImport,
-    TsNamespaceImport,
-    TsStringImport
-} from '../models/TsImport';
-import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
-import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
 import { ResolveCompletionItemProvider } from '../provider/ResolveCompletionItemProvider';
 import { ResolveQuickPickProvider } from '../provider/ResolveQuickPickProvider';
 import { Logger, LoggerFactory } from '../utilities/Logger';
-import {
-    getAbsolutLibraryName,
-    getImportInsertPosition,
-    getRelativeLibraryName
-} from '../utilities/ResolveIndexExtensions';
 import { BaseExtension } from './BaseExtension';
 import { inject, injectable } from 'inversify';
 import {
@@ -31,6 +15,7 @@ import {
     FileSystemWatcher,
     languages,
     StatusBarAlignment,
+    StatusBarItem,
     Uri,
     window,
     workspace
@@ -43,26 +28,6 @@ const resolverOk = 'Resolver $(check)',
     resolverErr = 'Resolver $(flame)',
     TYPESCRIPT = 'typescript',
     TYPESCRIPT_REACT = 'typescriptreact';
-
-function stringSort(strA: string, strB: string): number {
-    if (strA < strB) {
-        return -1;
-    } else if (strA > strB) {
-        return 1;
-    }
-    return 0;
-}
-
-function importSort(i1: TsImport, i2: TsImport): number {
-    let strA = i1.libraryName.toLowerCase(),
-        strB = i2.libraryName.toLowerCase();
-
-    return stringSort(strA, strB);
-}
-
-function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
-    return stringSort(i1.specifier, i2.specifier);
-}
 
 function compareIgnorePatterns(local: string[], config: string[]): boolean {
     if (local.length !== config.length) {
@@ -80,19 +45,31 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
     return true;
 }
 
+/**
+ * Extension that manages the imports of a document. Can organize them, import a new symbol and
+ * import a symbol under the cursor.
+ * 
+ * @export
+ * @class ResolveExtension
+ * @extends {BaseExtension}
+ */
 @injectable()
 export class ResolveExtension extends BaseExtension {
     private logger: Logger;
-    private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
-    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true);
+    private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
+    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
+        '{**/*.ts,**/package.json,**/typings.json}', true
+    );
     private ignorePatterns: string[];
 
-    constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
+    constructor(
+        @inject('LoggerFactory') loggerFactory: LoggerFactory,
         private pickProvider: ResolveQuickPickProvider,
         private parser: TsResourceParser,
         private config: ExtensionConfig,
         private index: ResolveIndex,
-        private completionProvider: ResolveCompletionItemProvider) {
+        private completionProvider: ResolveCompletionItemProvider
+    ) {
         super();
 
         this.logger = loggerFactory('ResolveExtension');
@@ -131,11 +108,20 @@ export class ResolveExtension extends BaseExtension {
     }
 
     public initialize(context: ExtensionContext): void {
-        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()));
-        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()));
-        context.subscriptions.push(commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()));
-        context.subscriptions.push(commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex()));
-        //without trigger chars
+        context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
+        );
+        context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()
+            )
+        );
+        context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports())
+        );
+        context.subscriptions.push(
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex())
+        );
         context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider));
         context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT_REACT, this.completionProvider));
         context.subscriptions.push(this.statusBarItem);
@@ -183,6 +169,15 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Dispose called.');
     }
 
+    /**
+     * Add an import from the whole list. Calls the vscode gui, where the user can
+     * select a symbol to import.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async addImport(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
@@ -200,6 +195,16 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Add an import that matches the word under the actual cursor.
+     * If an exact match is found, the import is added automatically. If not, the vscode gui
+     * will be called with the found matches.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async addImportUnderCursor(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
@@ -211,7 +216,9 @@ export class ResolveExtension extends BaseExtension {
         }
 
         try {
-            let newImport = await this.pickProvider.addImportUnderCursorPick(window.activeTextEditor.document, selectedSymbol);
+            let newImport = await this.pickProvider.addImportUnderCursorPick(
+                window.activeTextEditor.document, selectedSymbol
+            );
             if (newImport) {
                 this.logger.info('Add import to document', { resolveItem: newImport });
                 this.addImportToDocument(newImport);
@@ -222,33 +229,46 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Organizes the imports of the actual document. Sorts and formats them correctly.
+     * 
+     * @private
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async organizeImports(): Promise<boolean> {
         try {
-            let parsed = await this.parser.parseSource(window.activeTextEditor.document.getText()),
-                keep: TsImport[] = [];
-
-            for (let actImport of parsed.imports) {
-                if (actImport instanceof TsNamespaceImport || actImport instanceof TsExternalModuleImport || actImport instanceof TsDefaultImport) {
-                    if (parsed.nonLocalUsages.indexOf(actImport.alias) > -1) {
-                        keep.push(actImport);
-                    }
-                } else if (actImport instanceof TsNamedImport) {
-                    actImport.specifiers = actImport.specifiers.filter(o => parsed.nonLocalUsages.indexOf(o.alias || o.specifier) > -1).sort(specifierSort);
-                    if (actImport.specifiers.length) {
-                        keep.push(actImport);
-                    }
-                } else if (actImport instanceof TsStringImport) {
-                    keep.push(actImport);
-                }
-            }
-
-            return await this.commitDocumentImports(parsed, keep, true);
+            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            return await ctrl.organizeImports().commit();
         } catch (e) {
             this.logger.error('An error happend during "organize imports".', { error: e });
             return false;
         }
     }
 
+    /**
+     * Effectifely adds an import quick pick item to a document
+     * 
+     * @private
+     * @param {ResolveQuickPickItem} item
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ResolveExtension
+     */
+    private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
+        let ctrl = await DocumentController.create(window.activeTextEditor.document);
+        return await ctrl.addDeclarationImport(item.declarationInfo).commit();
+    }
+
+    /**
+     * Refresh the symbol index for a file or if the file uri is omitted, refresh the whole index.
+     * 
+     * @private
+     * @param {Uri} [file]
+     * 
+     * @memberOf ResolveExtension
+     */
     private refreshIndex(file?: Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
@@ -263,125 +283,25 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
-    private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
-        let parsedDocuments = await Promise.all([
-            this.parser.parseSource(window.activeTextEditor.document.getText()),
-            this.parser.parseSource(window.activeTextEditor.document.getText())
-        ]);
-
-        let imports = parsedDocuments[0].imports;
-        let declaration = item.declarationInfo.declaration;
-
-        let imported = imports.find(o => {
-            let lib = getAbsolutLibraryName(o.libraryName, window.activeTextEditor.document.fileName);
-            return lib === item.declarationInfo.from && !(o instanceof TsDefaultImport);
-        });
-
-        let specifiers = imports.reduce((all, cur) => {
-            if (cur instanceof TsNamedImport) {
-                all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
-            } else if (cur instanceof TsAliasedImport) {
-                all.push(cur.alias);
-            }
-            return all;
-        }, []);
-
-        let promise = Promise.resolve(imports),
-            defaultImportAlias = (declaration: DefaultDeclaration) => {
-                promise = promise.then(imports => window.showInputBox({
-                    prompt: 'Please enter a variable name for the default export..',
-                    placeHolder: 'Default export name',
-                    value: declaration.name,
-                    validateInput: s => !!s ? '' : 'Please enter a variable name'
-                }).then(defaultAlias => {
-                    if (defaultAlias) {
-                        imports.push(new TsDefaultImport(getRelativeLibraryName(item.description, window.activeTextEditor.document.fileName), defaultAlias));
-                    }
-                    return imports;
-                }));
-            },
-            duplicateSpecifier = (imp: TsNamedImport, pushToImports: boolean) => {
-                promise = promise.then(imports => window.showInputBox({
-                    prompt: 'Please enter an alias for the specifier..',
-                    placeHolder: 'Alias for specifier',
-                    validateInput: s => !!s ? '' : 'Please enter a variable name'
-                }).then(alias => {
-                    imp.specifiers.push(new TsResolveSpecifier(item.label, alias));
-                    if (alias && pushToImports) {
-                        imports.push(imp);
-                    }
-                    return imports;
-                }));
-            };
-
-        if (!imported) {
-            if (declaration instanceof ModuleDeclaration) {
-                imports.push(new TsNamespaceImport(item.description, item.label));
-            } else if (declaration instanceof DefaultDeclaration) {
-                defaultImportAlias(declaration);
-            } else {
-                let library = getRelativeLibraryName(item.declarationInfo.from, window.activeTextEditor.document.fileName);
-                let named = new TsNamedImport(library);
-                if (specifiers.some(o => o === item.label)) {
-                    duplicateSpecifier(named, true);
-                } else {
-                    named.specifiers.push(new TsResolveSpecifier(item.label));
-                    imports.push(named);
-                }
-            }
-        } else if (declaration instanceof DefaultDeclaration) {
-            defaultImportAlias(declaration);
-        } else if (imported instanceof TsNamedImport) {
-            if (specifiers.some(o => o === item.label)) {
-                duplicateSpecifier(imported, false);
-            } else {
-                imported.specifiers.push(new TsResolveSpecifier(item.label));
-            }
-        }
-
-        let newImports = await promise;
-        return await this.commitDocumentImports(parsedDocuments[1], newImports);
-    }
-
-    private async commitDocumentImports(parsedDocument: TsFile, newImports: TsImport[], sortAndReorder: boolean = false): Promise<boolean> {
-        return await window.activeTextEditor.edit(builder => {
-            if (sortAndReorder) {
-                for (let imp of parsedDocument.imports) {
-                    builder.delete(imp.getRange(window.activeTextEditor.document));
-                }
-                newImports = [
-                    ...newImports.filter(o => o instanceof TsStringImport).sort(importSort),
-                    ...newImports.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-                ];
-                builder.insert(
-                    getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
-                    newImports.reduce((all, cur) => all += cur.toImport(this.config.resolver.importOptions), '')
-                );
-            } else {
-                for (let imp of parsedDocument.imports) {
-                    if (!newImports.find(o => o.libraryName === imp.libraryName)) {
-                        builder.delete(imp.getRange(window.activeTextEditor.document));
-                    }
-                }
-                for (let imp of newImports) {
-                    let existingImport = parsedDocument.imports.find(o => o.libraryName === imp.libraryName);
-                    if (existingImport) {
-                        builder.replace(existingImport.getRange(window.activeTextEditor.document), imp.toImport(this.config.resolver.importOptions));
-                    } else {
-                        builder.insert(
-                            getImportInsertPosition(this.config.resolver.newImportLocation, window.activeTextEditor),
-                            imp.toImport(this.config.resolver.importOptions)
-                        );
-                    }
-                }
-            }
-        });
-    }
-
+    /**
+     * Shows a user warning if the resolve index is not ready yet.
+     * 
+     * @private
+     * 
+     * @memberOf ResolveExtension
+     */
     private showCacheWarning(): void {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
     }
 
+    /**
+     * Returns the string under the cursor.
+     * 
+     * @private
+     * @returns {string}
+     * 
+     * @memberOf ResolveExtension
+     */
     private getSymbolUnderCursor(): string {
         let editor = window.activeTextEditor;
         if (!editor) {

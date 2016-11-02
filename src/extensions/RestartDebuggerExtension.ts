@@ -4,13 +4,29 @@ import { TshCommand } from '../models/TshCommand';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { BaseExtension } from './BaseExtension';
 import { inject, injectable } from 'inversify';
-import { commands, ExtensionContext, FileSystemWatcher, StatusBarAlignment, window, workspace } from 'vscode';
+import {
+    commands,
+    ExtensionContext,
+    FileSystemWatcher,
+    StatusBarAlignment,
+    StatusBarItem,
+    window,
+    workspace
+} from 'vscode';
 
 const DEBOUNCE = 1500;
 
+/**
+ * Extension that restart the active debugger, when there are changes made to the compiled
+ * javascript files. Watches for certain configurable folders.
+ * 
+ * @export
+ * @class RestartDebuggerExtension
+ * @extends {BaseExtension}
+ */
 @injectable()
 export class RestartDebuggerExtension extends BaseExtension {
-    private statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 3);
+    private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 3);
     private fileWatcher: FileSystemWatcher;
     private logger: Logger;
     private restartCall: NodeJS.Timer;
@@ -57,6 +73,15 @@ export class RestartDebuggerExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Configure the filewatcher.
+     * If the watcher is active, deactivate it and update the statusbar accordingly.
+     * If the watcher is inactive, activate it, register it and update the statusbar accordingly.
+     * 
+     * @private
+     * 
+     * @memberOf RestartDebuggerExtension
+     */
     private configure(): void {
         if (this.active && !this.fileWatcher) {
             let watcherGlob = this.config.restartDebugger.watchFolders.map(o => `**/${o}/**/*.*`).join(',');
@@ -76,6 +101,13 @@ export class RestartDebuggerExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Ultimately calls the command to restart the debugger.
+     * 
+     * @private
+     * 
+     * @memberOf RestartDebuggerExtension
+     */
     private restartDebugger(): void {
         if (this.restartCall) {
             clearTimeout(this.restartCall);

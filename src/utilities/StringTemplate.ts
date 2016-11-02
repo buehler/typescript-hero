@@ -1,8 +1,16 @@
+/**
+ * Creates a template from an expression string. The template can then be used to infuse stuff into the template.
+ * 
+ * @export
+ * @param {string[]} strings
+ * @param {...number[]} keys
+ * @returns {(...values: any[]) => string}
+ */
 export function stringTemplate(strings: string[], ...keys: number[]): (...values: any[]) => string {
     return (...values: any[]) => {
         let result = [strings[0]];
 
-        keys.forEach(function (key, idx) {
+        keys.forEach((key, idx) => {
             result.push(values[key], strings[idx + 1]);
         });
 

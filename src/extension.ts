@@ -1,11 +1,17 @@
 import 'reflect-metadata';
-import {TypeScriptHero} from './TypeScriptHero';
-import {ExtensionContext, Disposable} from 'vscode';
-import {Injector} from './IoC';
+import { Injector } from './IoC';
+import { TypeScriptHero } from './TypeScriptHero';
+import { Disposable, ExtensionContext } from 'vscode';
 
 let extension: Disposable;
 
-export function activate(context: ExtensionContext) {
+/**
+ * Activates TypeScript Hero
+ * 
+ * @export
+ * @param {ExtensionContext} context
+ */
+export function activate(context: ExtensionContext): void {
     if (Injector.isBound('context')) {
         Injector.unbind('context');
     }
@@ -13,7 +19,12 @@ export function activate(context: ExtensionContext) {
     extension = Injector.get(TypeScriptHero);
 }
 
-export function deactivate() {
+/**
+ * Deactivates TypeScript Hero
+ * 
+ * @export
+ */
+export function deactivate(): void {
     extension.dispose();
     extension = null;
 }

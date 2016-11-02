@@ -3,8 +3,15 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- JSDOCS!
+
+#### Changed
+- Documents are managed by a controller that calculates all edits first before committing the changes
+
 #### Fixed
 - Initialize extension and completion provider for typescript react (.tsx) files ([#112](https://github.com/buehler/typescript-hero/pull/112))
+- Ticks for expression strings are also considered as strings in autocompletion (`)
 
 ## [0.9.0]
 #### Added
