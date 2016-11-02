@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Added
 - JSDOCS!
+- Code action provider (light bulb) that imports missing imports as a code fix ([#11](https://github.com/buehler/typescript-hero/issues/11))
 
 #### Changed
 - Documents are managed by a controller that calculates all edits first before committing the changes
