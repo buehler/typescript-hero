@@ -4,6 +4,14 @@ import { Logger, LoggerFactory } from './utilities/Logger';
 import { inject, injectable, multiInject } from 'inversify';
 import { Disposable, ExtensionContext } from 'vscode';
 
+/**
+ * TypeScript Hero vscode extension.
+ * Central entrypoint.
+ * 
+ * @export
+ * @class TypeScriptHero
+ * @implements {Disposable}
+ */
 @injectable()
 export class TypeScriptHero implements Disposable {
     private logger: Logger;

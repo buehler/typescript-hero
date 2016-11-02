@@ -45,6 +45,14 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
     return true;
 }
 
+/**
+ * Extension that manages the imports of a document. Can organize them, import a new symbol and
+ * import a symbol under the cursor.
+ * 
+ * @export
+ * @class ResolveExtension
+ * @extends {BaseExtension}
+ */
 @injectable()
 export class ResolveExtension extends BaseExtension {
     private logger: Logger;
@@ -161,6 +169,15 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Dispose called.');
     }
 
+    /**
+     * Add an import from the whole list. Calls the vscode gui, where the user can
+     * select a symbol to import.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async addImport(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
@@ -178,6 +195,16 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Add an import that matches the word under the actual cursor.
+     * If an exact match is found, the import is added automatically. If not, the vscode gui
+     * will be called with the found matches.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async addImportUnderCursor(): Promise<void> {
         if (!this.index.indexReady) {
             this.showCacheWarning();
@@ -202,6 +229,14 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Organizes the imports of the actual document. Sorts and formats them correctly.
+     * 
+     * @private
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async organizeImports(): Promise<boolean> {
         try {
             let ctrl = await DocumentController.create(window.activeTextEditor.document);
@@ -212,11 +247,28 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Effectifely adds an import quick pick item to a document
+     * 
+     * @private
+     * @param {ResolveQuickPickItem} item
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ResolveExtension
+     */
     private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
         let ctrl = await DocumentController.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(item.declarationInfo).commit();
     }
 
+    /**
+     * Refresh the symbol index for a file or if the file uri is omitted, refresh the whole index.
+     * 
+     * @private
+     * @param {Uri} [file]
+     * 
+     * @memberOf ResolveExtension
+     */
     private refreshIndex(file?: Uri): void {
         this.statusBarItem.text = resolverSyncing;
 
@@ -231,10 +283,25 @@ export class ResolveExtension extends BaseExtension {
         }
     }
 
+    /**
+     * Shows a user warning if the resolve index is not ready yet.
+     * 
+     * @private
+     * 
+     * @memberOf ResolveExtension
+     */
     private showCacheWarning(): void {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
     }
 
+    /**
+     * Returns the string under the cursor.
+     * 
+     * @private
+     * @returns {string}
+     * 
+     * @memberOf ResolveExtension
+     */
     private getSymbolUnderCursor(): string {
         let editor = window.activeTextEditor;
         if (!editor) {
