@@ -11,6 +11,15 @@ import { ImportLocation } from '../models/TsImportOptions';
 import { join, normalize, parse, relative } from 'path';
 import { Position, TextEditor, workspace } from 'vscode';
 
+/**
+ * Calculate the position, where a new import should be inserted.
+ * Does respect the "use strict" string as first line of a document.
+ * 
+ * @export
+ * @param {ImportLocation} location
+ * @param {TextEditor} editor
+ * @returns {Position}
+ */
 export function getImportInsertPosition(location: ImportLocation, editor: TextEditor): Position {
     if (!editor) {
         return new Position(0, 0);
@@ -21,6 +30,16 @@ export function getImportInsertPosition(location: ImportLocation, editor: TextEd
     return new Position(editor.selection.active.line, 0);
 }
 
+/**
+ * Calculates a list of declarationInfos filtered by the already imported ones in the given document.
+ * The result is a list of declarations that are not already imported by the document.
+ * 
+ * @export
+ * @param {ResolveIndex} resolveIndex
+ * @param {string} documentPath
+ * @param {TsImport[]} imports
+ * @returns {DeclarationInfo[]}
+ */
 export function getDeclarationsFilteredByImports(
     resolveIndex: ResolveIndex,
     documentPath: string,
