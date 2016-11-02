@@ -18,6 +18,12 @@ Here is a brief list, of what TypeScript Hero is capable of:
 - Sort and organize your imports (sort and remove unused)
 - Restart your debug session when your code changes
 
+##### Some badges :-)
+
+[![Travis](https://img.shields.io/travis/buehler/typescript-hero.svg)](https://travis-ci.org/buehler/typescript-hero)
+[![Marketplace](http://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
+[![Installs](http://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
+
 ## Commands
 
 All commands are preceeded by `typescriptHero`.
