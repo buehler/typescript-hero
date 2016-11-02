@@ -1,3 +1,4 @@
+import { TypescriptCodeActionProvider } from '../provider/TypescriptCodeActionProvider';
 import { CommandQuickPickItem } from '../models/QuickPickItems';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { BaseExtension } from './BaseExtension';
@@ -24,7 +25,7 @@ export class CodeFixExtension extends BaseExtension {
 
     public initialize(context: ExtensionContext): void {
         context.subscriptions.push(commands.registerCommand('typescriptHero.codeFix.executeCodeAction',
-            (codeAction: CodeAction) => this.executeCodeAction(codeAction)));
+            (codeAction: any) => this.executeCodeAction(codeAction)));
         context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this.codeActionProvider));
         this.logger.info('Initialized.');
     }
@@ -33,7 +34,7 @@ export class CodeFixExtension extends BaseExtension {
         this.logger.info('Dispose called.');
     }
 
-    private executeCodeAction(codeAction: CodeAction): void {
+    private executeCodeAction(codeAction: any): void {
         console.log(codeAction);
     }
 
