@@ -1,46 +1,40 @@
-// import { CodeAction } from '../models/CodeAction';
-// import { CommandQuickPickItem } from '../models/QuickPickItems';
-// import { TypescriptCodeActionProvider } from '../provider/TypescriptCodeActionProvider';
-// import { Logger, LoggerFactory } from '../utilities/Logger';
-// import { BaseExtension } from './BaseExtension';
-// import { inject, injectable } from 'inversify';
-// import { ExtensionContext, languages, commands } from 'vscode';
+import { CommandQuickPickItem } from '../models/QuickPickItems';
+import { Logger, LoggerFactory } from '../utilities/Logger';
+import { BaseExtension } from './BaseExtension';
+import { inject, injectable } from 'inversify';
+import { commands, ExtensionContext, languages } from 'vscode';
 
-// @injectable()
-// export class CodeFixExtension extends BaseExtension {
-//     private logger: Logger;
+@injectable()
+export class CodeFixExtension extends BaseExtension {
+    private logger: Logger;
 
-//     constructor( @inject('LoggerFactory') loggerFactory: LoggerFactory,
-//         private codeActionProvider: TypescriptCodeActionProvider) {
-//         super();
+    constructor(
+        @inject('LoggerFactory') loggerFactory: LoggerFactory,
+        private codeActionProvider: TypescriptCodeActionProvider
+    ) {
+        super();
 
-//         this.logger = loggerFactory('CodeFixExtension');
-//         this.logger.info('Extension instantiated.');
-//     }
+        this.logger = loggerFactory('CodeFixExtension');
+        this.logger.info('Extension instantiated.');
+    }
 
-//     public getGuiCommands(): CommandQuickPickItem[] {
-//         return [];
-//     }
+    public getGuiCommands(): CommandQuickPickItem[] {
+        return [];
+    }
 
-//     public initialize(context: ExtensionContext): void {
-//         context.subscriptions.push(commands.registerCommand('typescriptHero.codeFix.executeCodeAction', 
-// (codeAction: CodeAction) => this.executeCodeAction(codeAction)));
-//         context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this.codeActionProvider));
-//         this.logger.info('Initialized.');
-//     }
+    public initialize(context: ExtensionContext): void {
+        context.subscriptions.push(commands.registerCommand('typescriptHero.codeFix.executeCodeAction',
+            (codeAction: CodeAction) => this.executeCodeAction(codeAction)));
+        context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this.codeActionProvider));
+        this.logger.info('Initialized.');
+    }
 
-//     public dispose(): void {
-//         this.logger.info('Dispose called.');
-//     }
+    public dispose(): void {
+        this.logger.info('Dispose called.');
+    }
 
-//     private executeCodeAction(codeAction: CodeAction): void {
-//         console.log(codeAction);
-//     }
+    private executeCodeAction(codeAction: CodeAction): void {
+        console.log(codeAction);
+    }
 
-// }
-
-/*
-some kind of a document manager. -> parses document, than one can perform
-certain actions on the document (add import, remove import, whatev.) future: create a class
-commit document: save the changes to the document.
-*/
+}
