@@ -48,7 +48,7 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
         range: Range,
         context: CodeActionContext,
         token: CancellationToken
-    ): Command[] | Thenable<Command[]> {
+    ): Command[] {
         let commands = [],
             match: RegExpExecArray;
 
