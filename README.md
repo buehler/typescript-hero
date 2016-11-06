@@ -33,7 +33,7 @@ All commands are preceeded by `typescriptHero`.
 
 | Command                      | Extension part  | Description                                               |
 | ---------------------------- | --------------- | --------------------------------------------------------- |
-| showCmdGui                   | general         | Shows a small gui with all awailable internal commands    |
+| showCmdGui                   | general         | Shows a small gui with all available internal commands    |
 | resolve.addImport            | import resolver | Shows a pick list with all recognized, importable symbols |
 | resolve.addImportUnderCursor | import resolver | Imports the symbol under the cursor                       |
 | resolve.organizeImports      | import resolver | Removes unused imports and orders all imports             |
