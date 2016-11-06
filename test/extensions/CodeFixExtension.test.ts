@@ -4,7 +4,7 @@ import { CodeAction } from '../../src/models/CodeAction';
 import { TypescriptCodeActionProvider } from '../../src/provider/TypescriptCodeActionProvider';
 import * as chai from 'chai';
 import { join } from 'path';
-import * as sinon from 'Sinon';
+import * as sinon from 'sinon';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
 chai.should();
