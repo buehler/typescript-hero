@@ -1,4 +1,4 @@
-import { DeclarationInfo } from '../caches/ResolveIndex';
+import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { DocumentController } from '../controllers/DocumentController';
 import { TextDocument } from 'vscode';
 
@@ -33,5 +33,21 @@ export class AddImportCodeAction implements CodeAction {
     public async execute(): Promise<boolean> {
         let controller = await DocumentController.create(this.document);
         return controller.addDeclarationImport(this.importToAdd).commit();
+    }
+}
+
+/**
+ * Code action that adds all missing imports to the actual document, based on the non-local usages.
+ * 
+ * @export
+ * @class AddMissingImportsCodeAction
+ * @implements {CodeAction}
+ */
+export class AddMissingImportsCodeAction implements CodeAction {
+    constructor(private document: TextDocument, private resolveIndex: ResolveIndex) { }
+
+    public async execute(): Promise<boolean> {
+        let controller = await DocumentController.create(this.document);
+        return controller.addMissingImports(this.resolveIndex).commit();
     }
 }

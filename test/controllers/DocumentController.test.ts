@@ -1,13 +1,13 @@
-import { TsNamespaceImport } from '../../src/models/TsImport';
-import { Injector } from '../../src/IoC';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
-import { TsFile } from '../../src/models/TsResource';
 import { DocumentController } from '../../src/controllers/DocumentController';
-import { join } from 'path';
+import { Injector } from '../../src/IoC';
+import { ImportProxy } from '../../src/models/ImportProxy';
+import { TsFile } from '../../src/models/TsResource';
 import * as chai from 'chai';
-import { Position, Range, TextDocument, window, workspace } from 'vscode';
+import { join } from 'path';
 import sinon = require('sinon');
 import sinonChai = require('sinon-chai');
+import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
 let should = chai.should();
 chai.use(sinonChai);
@@ -22,7 +22,7 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-describe('DocumentController', () => {
+describe.only('DocumentController', () => {
 
     const file = join(workspace.rootPath, 'controllers/DocumentControllerFile.ts');
     let document: TextDocument,
@@ -52,28 +52,161 @@ describe('DocumentController', () => {
     describe('static create()', () => {
 
         it('should create a document controller', async done => {
-            let ctrl = await DocumentController.create(document);
-            ctrl.should.be.an.instanceof(DocumentController);
-            done();
+            try {
+                let ctrl = await DocumentController.create(document);
+                ctrl.should.be.an.instanceof(DocumentController);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
 
         it('should parse the document', async done => {
-            let ctrl = await DocumentController.create(document);
-            (ctrl as any).parsedDocument.should.be.an.instanceof(TsFile);
-            done();
+            try {
+                let ctrl = await DocumentController.create(document);
+                (ctrl as any).parsedDocument.should.be.an.instanceof(TsFile);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add an import proxy for a named import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps[0].should.be.an.instanceof(ImportProxy);
+                should.not.exist(imps[0].defaultAlias);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add an import proxy for a default import', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(new Range(
+                        new Position(0, 0),
+                        new Position(1, 0)
+                    ), `import myDefaultExportedFunction from '../defaultExport/lateDefaultExportedElement';\n`);
+                });
+
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps[0].should.be.an.instanceof(ImportProxy);
+                imps[0].defaultAlias.should.equal('myDefaultExportedFunction');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple import proxies', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(
+                        new Position(0, 0),
+                        `import myDefaultExportedFunction from '../defaultExport/lateDefaultExportedElement';\n`
+                    );
+                });
+
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps[0].should.be.an.instanceof(ImportProxy);
+                imps[0].defaultAlias.should.equal('myDefaultExportedFunction');
+                imps[1].should.be.an.instanceof(ImportProxy);
+                should.not.exist(imps[1].defaultAlias);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not add a proxy for a namespace import', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(new Range(
+                        new Position(0, 0),
+                        new Position(1, 0)
+                    ), `import * as bodyParser from 'body-parser';\n`);
+                });
+
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps.should.have.lengthOf(1);
+                imps[0].should.not.be.an.instanceof(ImportProxy);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not add a proxy for an external import', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(new Range(
+                        new Position(0, 0),
+                        new Position(1, 0)
+                    ), `import bodyParser = require('body-parser');\n`);
+                });
+
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps.should.have.lengthOf(1);
+                imps[0].should.not.be.an.instanceof(ImportProxy);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not add a proxy for a string import', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(new Range(
+                        new Position(0, 0),
+                        new Position(1, 0)
+                    ), `import 'body-parser';\n`);
+                });
+
+                let ctrl = await DocumentController.create(document),
+                    imps = (ctrl as any).parsedDocument.imports;
+
+                imps.should.have.lengthOf(1);
+                imps[0].should.not.be.an.instanceof(ImportProxy);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
         });
 
     });
 
     describe('addDeclarationImport()', () => {
 
-        it('should add a normal import to the virtual doc if there are no conflicts.', async done => {
+        it('should add a normal import to the document.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).parsedDocument.imports.should.have.lengthOf(2);
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[1].libraryName.should.equal('../resourceIndex/NotBarelExported');
+                (ctrl as any).imports[1].specifiers[0].specifier.should.equal('NotBarelExported');
 
                 done();
             } catch (e) {
@@ -81,28 +214,15 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add a normal text edit to the virtual doc if there are no conflicts.', async done => {
-            try {
-                let ctrl = await DocumentController.create(document);
-                let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
-                ctrl.addDeclarationImport(declaration);
-
-                (ctrl as any).edits.should.have.lengthOf(1);
-
-                done();
-            } catch (e) {
-                done(e);
-            }
-        });
-
-        it('should add a module import to the virtual doc if there are no conflicts.', async done => {
+        it('should add a module import to the import index.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.from === 'body-parser');
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).parsedDocument.imports.should.have.lengthOf(2);
-                (ctrl as any).parsedDocument.imports[1].should.be.an.instanceOf(TsNamespaceImport);
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[1].libraryName.should.equal('body-parser');
+                (ctrl as any).imports[1].should.not.be.an.instanceof(ImportProxy);
 
                 done();
             } catch (e) {
@@ -110,15 +230,16 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add a promised default import edit to the virtual doc if there are no conflicts.', async done => {
+        it('should add a default import to the import index.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'myDefaultExportedFunction');
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
-                (ctrl as any).edits.should.have.lengthOf(1);
-                should.exist((ctrl as any).edits[0].then);
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[1].libraryName.should.equal('../defaultExport/lateDefaultExportedElement');
+                (ctrl as any).imports[1].defaultPurposal.should.equal('myDefaultExportedFunction');
+                should.not.exist((ctrl as any).imports[1].defaultAlias);
 
                 done();
             } catch (e) {
@@ -126,31 +247,16 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add a promised named import edit to the virtual doc if there are conflicts.', async done => {
+        it('should add multiple imports to the import index.', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-                ctrl.addDeclarationImport(declarations[0]);
-                ctrl.addDeclarationImport(declarations[1]);
+                ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
 
-                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
-                (ctrl as any).edits.should.have.lengthOf(2);
-                should.not.exist((ctrl as any).edits[0].then);
-                should.exist((ctrl as any).edits[1].then);
-
-                done();
-            } catch (e) {
-                done(e);
-            }
-        });
-
-        it('should add an edit to the virtual doc if there is already an import.', async done => {
-            try {
-                let ctrl = await DocumentController.create(document);
-                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
-                ctrl.addDeclarationImport(declaration);
-
-                (ctrl as any).edits.should.have.lengthOf(1);
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[0].specifiers[1].specifier.should.equal('FancierLibraryClass');
+                (ctrl as any).imports[1].libraryName.should.equal('fancy-library/FancierLibraryClass');
+                (ctrl as any).imports[1].specifiers[0].specifier.should.equal('FancierLibraryClass');
 
                 done();
             } catch (e) {
@@ -158,14 +264,104 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should not add an import to the virtual doc if there is already an import.', async done => {
+        it('should add an import to an existing import index item.', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
+
+                ctrl.addDeclarationImport(declaration).addDeclarationImport(declaration2);
+
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
+                (ctrl as any).imports[0].specifiers[1].specifier.should.equal('Class2');
+                (ctrl as any).imports[0].specifiers[2].specifier.should.equal('Class3');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not add the same specifier twice', async done => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).parsedDocument.imports.should.have.lengthOf(1);
-                (ctrl as any).parsedDocument.imports[0].specifiers.should.have.lengthOf(2);
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).imports[0].specifiers.should.have.lengthOf(2);
+
+                ctrl.addDeclarationImport(declaration);
+
+                (ctrl as any).imports[0].specifiers.should.have.lengthOf(2);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+    });
+
+    describe('addMissingImports()', () => {
+
+        it('should add a missing imports to the import index', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(5, 0), `let foobar = new Class2();\n`);
+                });
+                let ctrl = await DocumentController.create(document);
+                ctrl.addMissingImports(index);
+
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
+                (ctrl as any).imports[0].specifiers[1].specifier.should.equal('Class2');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple missing imports for a document', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(
+                        new Position(5, 0),
+                        `let foobar = new Class2();\nlet foobaz = new Class3();\nlet barbaz = new NotBarelExported();\n`
+                    );
+                });
+                let ctrl = await DocumentController.create(document);
+                ctrl.addMissingImports(index);
+
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
+                (ctrl as any).imports[0].specifiers[1].specifier.should.equal('Class2');
+                (ctrl as any).imports[0].specifiers[2].specifier.should.equal('Class3');
+                (ctrl as any).imports[1].libraryName.should.equal('../resourceIndex/NotBarelExported');
+                (ctrl as any).imports[1].specifiers[0].specifier.should.equal('NotBarelExported');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it.skip('should create a user decision specifier if multiple delcarations are found', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(
+                        new Position(5, 0),
+                        `let foobar = new FancierLibraryClass();\n`
+                    );
+                });
+                let ctrl = await DocumentController.create(document);
+                ctrl.addMissingImports(index);
+
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).userImportDecisions['FancierLibraryClass'].should.be.an('array').with.lengthOf(2);
 
                 done();
             } catch (e) {
@@ -183,11 +379,13 @@ describe('DocumentController', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).edits[0]._newText.should.equals(`import { myComponent } from '../MyReactTemplate';\n`);
+                (ctrl as any).imports.should.have.lengthOf(2);
+                (ctrl as any).imports[1].specifiers[0].specifier.should.equal('myComponent');
 
                 ctrl.organizeImports();
 
-                (ctrl as any).edits[3]._newText.should.equals(`import { Class1 } from '../resourceIndex';\n`);
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
 
                 done();
             } catch (e) {
@@ -201,11 +399,12 @@ describe('DocumentController', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
                 ctrl.addDeclarationImport(declaration);
 
-                (ctrl as any).edits[0]._newText.should.equals(`import { Class1, Class2 } from '../resourceIndex';\n`);
+                (ctrl as any).imports[0].specifiers.should.have.lengthOf(2);
 
                 ctrl.organizeImports();
 
-                (ctrl as any).edits[2]._newText.should.equals(`import { Class1 } from '../resourceIndex';\n`);
+                (ctrl as any).imports[0].specifiers.should.have.lengthOf(1);
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
 
                 done();
             } catch (e) {
@@ -213,42 +412,39 @@ describe('DocumentController', () => {
             }
         });
 
-        it('should add an edit (delete) for each import and one for insert (top)', async done => {
+        it('should not remove a string import', async done => {
             try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(
+                        new Position(0, 0),
+                        `import 'my-string-import';\n`
+                    );
+                });
                 let ctrl = await DocumentController.create(document);
-                let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
-                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
 
-                ctrl.addDeclarationImport(declaration1)
-                    .addDeclarationImport(declaration2)
-                    .organizeImports();
+                (ctrl as any).imports.should.have.lengthOf(2);
 
-                (ctrl as any).edits.should.have.lengthOf(5);
-                (ctrl as any).edits[2]._newText.should.equals('');
-                (ctrl as any).edits[3]._newText.should.equals('');
-                (ctrl as any).edits[4]._newText.should.not.equals('');
+                ctrl.organizeImports();
+
+                (ctrl as any).imports.should.have.lengthOf(2);
 
                 done();
             } catch (e) {
                 done(e);
             }
         });
+
+        it('should order imports alphabetically');
+
+        it('should order string imports before normal imports');
+
+        it('should order specifiers alphabetically');
 
     });
 
     describe('commit()', () => {
 
-        it('should resolve if no edits are pending', async done => {
-            try {
-                let ctrl = await DocumentController.create(document);
-                (ctrl as any).edits.should.have.lengthOf(0);
-                (await ctrl.commit()).should.be.true;
-                (ctrl as any).edits.should.have.lengthOf(0);
-                done();
-            } catch (e) {
-                done(e);
-            }
-        });
+        it('should not touch anything if nothing changed');
 
         it('should add a single new import to the document (top)', async done => {
             try {
@@ -345,14 +541,14 @@ describe('DocumentController', () => {
             try {
                 let ctrl = await DocumentController.create(document);
                 let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-                ctrl.addDeclarationImport(declarations[0]);
+                ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
                 (await ctrl.commit()).should.be.true;
 
-                ctrl.addDeclarationImport(declarations[1]);
-                (await ctrl.commit()).should.be.true;
-
-                document.lineAt(0).text.should.equals(
-                    `import { FancierLibraryClass as ALIASED_IMPORT } from 'fancy-library/FancierLibraryClass';`
+                document.lineAt(0).text.should.equal(
+                    `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`
+                );
+                document.lineAt(1).text.should.equal(
+                    `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../resourceIndex';`
                 );
 
                 done();
@@ -375,6 +571,43 @@ describe('DocumentController', () => {
                 done();
             } catch (e) {
                 done(e);
+            }
+        });
+
+        it('should add multiple specifier to an existing import', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
+                ctrl.addDeclarationImport(declaration).addDeclarationImport(declaration2);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import { Class1, Class2, Class3 } from '../resourceIndex';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a specifier with a default (first) and a normal (second) import to the doc', async done => {
+            let stub = mockInputBox('DEFAULT_IMPORT');
+            try {
+                let ctrl = await DocumentController.create(document);
+                let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport'),
+                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+                ctrl.addDeclarationImport(declaration).addDeclarationImport(declaration2);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(
+                    `import { default as DEFAULT_IMPORT, MultiExportClass } from '../defaultExport/multiExport';`
+                );
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                restoreInputBox(stub);
             }
         });
 
@@ -521,6 +754,8 @@ describe('DocumentController', () => {
                 done(e);
             }
         });
+
+        it('should ask which declaration should be used on multiple options (add missing)');
 
     });
 

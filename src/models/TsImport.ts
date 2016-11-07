@@ -1,3 +1,4 @@
+import { Clonable } from './Clonable';
 import { TsImportOptions } from './TsImportOptions';
 import { TsNode } from './TsNode';
 import { TsResolveSpecifier } from './TsResolveSpecifier';
@@ -12,7 +13,7 @@ import { Position, Range, TextDocument } from 'vscode';
  * @class TsImport
  * @extends {TsNode}
  */
-export abstract class TsImport extends TsNode {
+export abstract class TsImport extends TsNode implements Clonable {
     constructor(public libraryName: string, start?: number, end?: number) {
         super(start, end);
     }
@@ -45,6 +46,8 @@ export abstract class TsImport extends TsNode {
      * @memberOf TsImport
      */
     public abstract toImport(options: TsImportOptions): string;
+
+    public abstract clone<T>(): T;
 }
 
 /**
@@ -71,6 +74,10 @@ export abstract class TsAliasedImport extends TsImport {
 export class TsStringImport extends TsImport {
     public toImport({pathDelimiter}: TsImportOptions): string {
         return `import ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    }
+
+    public clone(): TsStringImport {
+        return new TsStringImport(this.libraryName, this.start, this.end);
     }
 }
 
@@ -99,16 +106,9 @@ export class TsNamedImport extends TsImport {
         return importString;
     }
 
-    /**
-     * Clones the named import. Returnes a new instance.
-     * 
-     * @returns {TsNamedImport}
-     * 
-     * @memberOf TsNamedImport
-     */
     public clone(): TsNamedImport {
         let clone = new TsNamedImport(this.libraryName, this.start, this.end);
-        this.specifiers.forEach(o => clone.specifiers.push(o));
+        clone.specifiers = this.specifiers.map(o => o.clone());
         return clone;
     }
 
@@ -161,6 +161,10 @@ export class TsNamespaceImport extends TsAliasedImport {
     public toImport({pathDelimiter}: TsImportOptions): string {
         return `import * as ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
     }
+
+    public clone(): TsNamespaceImport {
+        return new TsNamespaceImport(this.libraryName, this.alias, this.start, this.end);
+    }
 }
 
 /**
@@ -175,6 +179,10 @@ export class TsExternalModuleImport extends TsAliasedImport {
     public toImport({pathDelimiter}: TsImportOptions): string {
         return `import ${this.alias} = require(${pathDelimiter}${this.libraryName}${pathDelimiter});\n`;
     }
+
+    public clone(): TsExternalModuleImport {
+        return new TsExternalModuleImport(this.libraryName, this.alias, this.start, this.end);
+    }
 }
 
 /**
@@ -188,5 +196,9 @@ export class TsExternalModuleImport extends TsAliasedImport {
 export class TsDefaultImport extends TsAliasedImport {
     public toImport({pathDelimiter}: TsImportOptions): string {
         return `import ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    }
+
+    public clone(): TsDefaultImport {
+        return new TsDefaultImport(this.libraryName, this.alias, this.start, this.end);
     }
 }
