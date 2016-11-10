@@ -1,4 +1,4 @@
-import { AddImportCodeAction, CodeAction } from '../models/CodeAction';
+import { AddImportCodeAction, AddMissingImportsCodeAction, CodeAction } from '../models/CodeAction';
 import { ResolveIndex } from '../caches/ResolveIndex';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { inject, injectable } from 'inversify';
@@ -50,7 +50,8 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
         token: CancellationToken
     ): Command[] {
         let commands = [],
-            match: RegExpExecArray;
+            match: RegExpExecArray,
+            addAllMissingImportsAdded = false;
 
         for (let diagnostic of context.diagnostics) {
             switch (true) {
@@ -62,6 +63,12 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                             `Import ${info.declaration.name} to the document.`,
                             new AddImportCodeAction(document, info)
                         ));
+                        if (!addAllMissingImportsAdded) {
+                            commands.push(this.createCommand(
+                                'Add all missing imports if possible.',
+                                new AddMissingImportsCodeAction(document, this.resolveIndex)
+                            ));
+                        }
                     }
                     break;
                 default:

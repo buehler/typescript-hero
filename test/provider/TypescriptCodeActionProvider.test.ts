@@ -41,7 +41,7 @@ describe('TypescriptCodeActionProvider', () => {
                     { diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
                     null
                 );
-                cmds.should.have.lengthOf(1);
+                cmds.should.have.lengthOf(2);
                 let action = cmds[0];
                 action.title.should.equal('Import Class1 to the document.');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
