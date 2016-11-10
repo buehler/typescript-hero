@@ -87,6 +87,10 @@
         "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
       },
       {
+        "command": "typescriptHero.resolve.addMissingImports",
+        "title": "Typescript: Adds all missing imports for the open document"
+      },
+      {
         "command": "typescriptHero.resolve.organizeImports",
         "title": "Typescript: Organize imports (sort and remove unused)"
       },
