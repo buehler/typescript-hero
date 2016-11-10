@@ -10,5 +10,6 @@
         "resourceParser"
     ],
     "typescriptHero.verbosity": "Nothing",
-    "tslint.enable": false
+    "tslint.enable": false,
+    "typescript.check.tscVersion": false
 }

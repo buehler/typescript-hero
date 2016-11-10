@@ -1,7 +1,9 @@
-import { DeclarationInfo } from '../caches/ResolveIndex';
+import { ResolveQuickPickItem } from '../models/QuickPickItems';
+import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { Injector } from '../IoC';
-import { DefaultDeclaration, ModuleDeclaration, TsDeclaration } from '../models/TsDeclaration';
+import { ImportProxy } from '../models/ImportProxy';
+import { DefaultDeclaration, ModuleDeclaration } from '../models/TsDeclaration';
 import {
     TsAliasedImport,
     TsDefaultImport,
@@ -16,10 +18,11 @@ import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
 import {
     getAbsolutLibraryName,
+    getDeclarationsFilteredByImports,
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../utilities/ResolveIndexExtensions';
-import { TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import { InputBoxOptions, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
@@ -57,20 +60,24 @@ export class DocumentController {
         return Injector.get(ExtensionConfig);
     }
 
-    private edits: (TextEdit | Promise<TextEdit>)[] = [];
+    private imports: TsImport[] = [];
+    private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
+    private organize: boolean;
 
     /**
-     * Indicates if there are pending / uncommited edits.
+     * Document resource for this controller. Contains the parsed document.
      * 
      * @readonly
-     * @type {boolean}
+     * @type {TsFile}
      * @memberOf DocumentController
      */
-    public get isDirty(): boolean {
-        return this.edits.length >= 0;
+    public get parsedDocument(): TsFile {
+        return this._parsedDocument;
     }
 
-    private constructor(private readonly document: TextDocument, private parsedDocument: TsFile) { }
+    private constructor(private readonly document: TextDocument, private _parsedDocument: TsFile) {
+        this.imports = _parsedDocument.imports.map(o => o.clone<TsImport>());
+    }
 
     /**
      * Creates an instance of a DocumentController.
@@ -78,164 +85,96 @@ export class DocumentController {
      * resolves to a DocumentController.
      * 
      * @static
-     * @param {TextDocument} document - The document that should be managed
+     * @param {TextDocument} document The document that should be managed
      * @returns {Promise<DocumentController>}
      * 
      * @memberOf DocumentController
      */
     public static async create(document: TextDocument): Promise<DocumentController> {
         let source = await DocumentController.parser.parseSource(document.getText());
+        source.imports = source.imports.map(
+            o => o instanceof TsNamedImport || o instanceof TsDefaultImport ? new ImportProxy(o) : o
+        );
         return new DocumentController(document, source);
     }
 
     /**
-     * Adds an import for a declaration to the document.
+     * Adds an import for a declaration to the documents imports.
+     * This index is merged and commited during the commit() function.
      * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
      * 
-     * @param {TsImport} imp - The import that should be added to the document
-     * @returns {DocumentController} - The controller instance
+     * @param {DeclarationInfo} declarationInfo The import that should be added to the document
+     * @returns {DocumentController}
      * 
      * @memberOf DocumentController
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
-        let alreadyImported = this.parsedDocument.imports.find(
-            o => declarationInfo.from === getAbsolutLibraryName(o.libraryName, this.document.fileName)
-        );
+        // If there is something already imported, it must be a NamedImport or a DefaultImport
+        let alreadyImported: ImportProxy = this.imports.find(
+            o => declarationInfo.from === getAbsolutLibraryName(o.libraryName, this.document.fileName) &&
+                o instanceof ImportProxy
+        ) as ImportProxy;
 
-        let specifiers = this.parsedDocument.imports.reduce((all, cur) => {
-            if (cur instanceof TsNamedImport) {
-                return all.concat(cur.specifiers.map(o => o.alias || o.specifier));
+        if (alreadyImported) {
+            // If we found an import for this declaration, it's either a default import or a named import
+            if (declarationInfo.declaration instanceof DefaultDeclaration) {
+                delete alreadyImported.defaultAlias;
+                alreadyImported.defaultPurposal = declarationInfo.declaration.name;
+            } else {
+                alreadyImported.addSpecifier(declarationInfo.declaration.name);
             }
-            if (cur instanceof TsAliasedImport) {
-                all.push(cur.alias);
-            }
-            return all;
-        }, []);
-
-        let duplicateSpecifierFound = !this.isAbstractDeclaration(declarationInfo.declaration) &&
-            specifiers.some(o => o === declarationInfo.declaration.name);
-
-        if (!alreadyImported) {
-            if (!(duplicateSpecifierFound || this.isAbstractDeclaration(declarationInfo.declaration))) {
-                let newImport = new TsNamedImport(getRelativeLibraryName(
+        } else {
+            if (declarationInfo.declaration instanceof ModuleDeclaration) {
+                this.imports.push(new TsNamespaceImport(
+                    declarationInfo.from,
+                    declarationInfo.declaration.name
+                ));
+            } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
+                let imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName
                 ));
-                newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
-                this.parsedDocument.imports.push(newImport);
-                this.edits.push(TextEdit.insert(
-                    getImportInsertPosition(
-                        DocumentController.config.resolver.newImportLocation,
-                        window.activeTextEditor
-                    ),
-                    newImport.toImport(DocumentController.config.resolver.importOptions)
-                ));
-            } else if (duplicateSpecifierFound) {
-                this.edits.push(this.resolveDuplicateSpecifier(declarationInfo.declaration.name)
-                    .then(alias => {
-                        if (alias) {
-                            let newImport = new TsNamedImport(getRelativeLibraryName(
-                                declarationInfo.from,
-                                this.document.fileName
-                            ));
-                            newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name, alias));
-                            this.parsedDocument.imports.push(newImport);
-                            return TextEdit.insert(
-                                getImportInsertPosition(
-                                    DocumentController.config.resolver.newImportLocation,
-                                    window.activeTextEditor
-                                ),
-                                newImport.toImport(DocumentController.config.resolver.importOptions)
-                            );
-                        }
-                    }));
-            } else if (declarationInfo.declaration instanceof ModuleDeclaration) {
-                let newImport = new TsNamespaceImport(
+                imp.defaultPurposal = declarationInfo.declaration.name;
+                this.imports.push(imp);
+            } else {
+                let imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    declarationInfo.declaration.name
-                );
-                this.parsedDocument.imports.push(newImport);
-                this.edits.push(TextEdit.insert(
-                    getImportInsertPosition(
-                        DocumentController.config.resolver.newImportLocation,
-                        window.activeTextEditor
-                    ),
-                    newImport.toImport(DocumentController.config.resolver.importOptions)
+                    this.document.fileName
                 ));
-            } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-                this.edits.push(this.getDefaultIdentifier(declarationInfo.declaration.name)
-                    .then(alias => {
-                        if (alias) {
-                            let newImport = new TsDefaultImport(
-                                getRelativeLibraryName(
-                                    declarationInfo.from,
-                                    this.document.fileName
-                                ),
-                                alias
-                            );
-                            this.parsedDocument.imports.push(newImport);
-                            return TextEdit.insert(
-                                getImportInsertPosition(
-                                    DocumentController.config.resolver.newImportLocation,
-                                    window.activeTextEditor
-                                ),
-                                newImport.toImport(DocumentController.config.resolver.importOptions)
-                            );
-                        }
-                    }));
+                imp.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+                this.imports.push(imp);
             }
-        } else if (alreadyImported instanceof TsDefaultImport &&
-            !(declarationInfo.declaration instanceof DefaultDeclaration)) {
-            let newImport = new TsNamedImport(getRelativeLibraryName(
-                declarationInfo.from,
-                this.document.fileName
-            ));
-            newImport.specifiers.push(new TsResolveSpecifier('default', alreadyImported.alias));
-            newImport.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
-            this.parsedDocument.imports.splice(
-                this.parsedDocument.imports.indexOf(alreadyImported),
-                1,
-                newImport
-            );
-            this.edits.push(TextEdit.replace(
-                alreadyImported.getRange(this.document),
-                newImport.toImport(DocumentController.config.resolver.importOptions)
-            ));
-        } else if (alreadyImported instanceof TsNamedImport &&
-            declarationInfo.declaration instanceof DefaultDeclaration) {
-            this.edits.push(this.getDefaultIdentifier(declarationInfo.declaration.name)
-                .then(alias => {
-                    if (alias) {
-                        (alreadyImported as TsNamedImport).specifiers.push(
-                            new TsResolveSpecifier('default', alias)
-                        );
-                        return TextEdit.replace(
-                            alreadyImported.getRange(this.document),
-                            alreadyImported.toImport(DocumentController.config.resolver.importOptions)
-                        );
-                    }
-                }));
-        } else if (alreadyImported instanceof TsNamedImport && !duplicateSpecifierFound) {
-            alreadyImported.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
-            this.edits.push(TextEdit.replace(
-                alreadyImported.getRange(this.document),
-                alreadyImported.toImport(DocumentController.config.resolver.importOptions)
-            ));
-        } else if (alreadyImported instanceof TsNamedImport && duplicateSpecifierFound) {
-            this.edits.push(this.resolveDuplicateSpecifier(declarationInfo.declaration.name)
-                .then(alias => {
-                    if (alias) {
-                        (alreadyImported as TsNamedImport).specifiers.push(
-                            new TsResolveSpecifier(declarationInfo.declaration.name, alias)
-                        );
-                        return TextEdit.replace(
-                            alreadyImported.getRange(this.document),
-                            alreadyImported.toImport(DocumentController.config.resolver.importOptions)
-                        );
-                    }
-                }));
         }
 
+        return this;
+    }
+
+    /**
+     * Adds all missing imports to the actual document. If multiple declarations are found for one missing
+     * specifier, the user is asked when the commit() function is executed.
+     * 
+     * @param {ResolveIndex} resolveIndex
+     * @returns {this}
+     * 
+     * @memberOf DocumentController
+     */
+    public addMissingImports(resolveIndex: ResolveIndex): this {
+        let declarations = getDeclarationsFilteredByImports(
+            resolveIndex,
+            this.document.fileName,
+            this.imports
+        );
+
+        for (let usage of this._parsedDocument.nonLocalUsages) {
+            let foundDeclarations = declarations.filter(o => o.declaration.name === usage);
+            if (foundDeclarations.length <= 0) {
+                continue;
+            } else if (foundDeclarations.length === 1) {
+                this.addDeclarationImport(foundDeclarations[0]);
+            } else {
+                this.userImportDecisions[usage] = foundDeclarations;
+            }
+        }
         return this;
     }
 
@@ -245,31 +184,32 @@ export class DocumentController {
      * 1. string-only imports (e.g. import 'reflect-metadata')
      * 2. rest, but in alphabetical order
      * 
-     * @returns {DocumentController} - The controller instance
+     * @returns {DocumentController}
      * 
      * @memberOf DocumentController
      */
     public organizeImports(): this {
+        this.organize = true;
         let keep: TsImport[] = [];
 
-        for (let actImport of this.parsedDocument.imports) {
+        for (let actImport of this.imports) {
             if (actImport instanceof TsNamespaceImport ||
-                actImport instanceof TsExternalModuleImport ||
-                actImport instanceof TsDefaultImport) {
-                if (this.parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                actImport instanceof TsExternalModuleImport) {
+                if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
                     keep.push(actImport);
                 }
-            } else if (actImport instanceof TsNamedImport) {
+            } else if (actImport instanceof ImportProxy) {
                 actImport.specifiers = actImport.specifiers
-                    .filter(o => this.parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
+                    .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
                     .sort(specifierSort);
-                if (actImport.specifiers.length) {
+                let defaultSpec = actImport.defaultAlias || actImport.defaultPurposal;
+                if (actImport.specifiers.length ||
+                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec))) {
                     keep.push(actImport);
                 }
             } else if (actImport instanceof TsStringImport) {
                 keep.push(actImport);
             }
-            this.edits.push(TextEdit.delete(actImport.getRange(this.document)));
         }
 
         keep = [
@@ -277,10 +217,7 @@ export class DocumentController {
             ...keep.filter(o => !(o instanceof TsStringImport)).sort(importSort)
         ];
 
-        this.edits.push(TextEdit.insert(
-            getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
-            keep.reduce((all, cur) => all += cur.toImport(DocumentController.config.resolver.importOptions), '')
-        ));
+        this.imports = keep;
 
         return this;
     }
@@ -295,34 +232,120 @@ export class DocumentController {
      * @memberOf DocumentController
      */
     public async commit(): Promise<boolean> {
-        if (!this.isDirty) {
-            return Promise.resolve(true);
+        // Commit the documents imports:
+        // 1. Remove imports that are in the document, but not anymore
+        // 2. Update existing / insert new ones
+        let edits = [];
+
+        await this.resolveImportSpecifiers();
+
+        if (this.organize) {
+            for (let imp of this._parsedDocument.imports) {
+                edits.push(TextEdit.delete(imp.getRange(this.document)));
+            }
+            edits.push(TextEdit.insert(
+                getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
+                this.imports.reduce(
+                    (all, cur) => all += cur.toImport(DocumentController.config.resolver.importOptions),
+                    ''
+                )
+            ));
+        } else {
+            for (let imp of this._parsedDocument.imports) {
+                if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
+                    edits.push(TextEdit.delete(imp.getRange(this.document)));
+                }
+            }
+            let proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
+            for (let imp of this.imports) {
+                if (imp instanceof ImportProxy &&
+                    proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
+                    continue;
+                }
+                if (imp.start !== undefined && imp.end !== undefined) {
+                    edits.push(TextEdit.replace(
+                        imp.getRange(this.document),
+                        imp.toImport(DocumentController.config.resolver.importOptions)
+                    ));
+                } else {
+                    edits.push(TextEdit.insert(
+                        getImportInsertPosition(
+                            DocumentController.config.resolver.newImportLocation,
+                            window.activeTextEditor
+                        ),
+                        imp.toImport(DocumentController.config.resolver.importOptions)
+                    ));
+                }
+            }
         }
 
-        let edits = await Promise.all(this.edits),
-            workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, edits.filter(Boolean));
+        // Later, more edits will come (like add methods to a class or so.) 
+
+        let workspaceEdit = new WorkspaceEdit();
+        workspaceEdit.set(this.document.uri, edits);
         let result = await workspace.applyEdit(workspaceEdit);
         if (result) {
-            this.edits = [];
-            this.parsedDocument = await DocumentController.parser.parseSource(this.document.getText());
+            delete this.organize;
+            this._parsedDocument = await DocumentController.parser.parseSource(this.document.getText());
         }
 
         return result;
     }
 
     /**
-     * Checks if a declaration is "abstract". Meaning if the declaration is a default declaration
-     * or a module declaration (and therefore contains no real symbol).
+     * Solves conflicts in named specifiers and does ask the user for aliases. Also resolves namings for default
+     * imports. As long as the user has a duplicate, he will be asked again.
      * 
      * @private
-     * @param {TsDeclaration} declaration
-     * @returns {boolean}
+     * @returns {Promise<void>}
      * 
      * @memberOf DocumentController
      */
-    private isAbstractDeclaration(declaration: TsDeclaration): boolean {
-        return declaration instanceof ModuleDeclaration || declaration instanceof DefaultDeclaration;
+    private async resolveImportSpecifiers(): Promise<void> {
+        let getSpecifiers = () => this.imports
+            .reduce((all, cur) => {
+                if (cur instanceof ImportProxy) {
+                    all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
+                    if (cur.defaultAlias) {
+                        all.push(cur.defaultAlias);
+                    }
+                }
+                if (cur instanceof TsAliasedImport) {
+                    all.push(cur.alias);
+                }
+                return all;
+            }, []) as string[];
+
+        for (let decision of Object.keys(this.userImportDecisions)) {
+            let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
+                o => new ResolveQuickPickItem(o)
+            );
+            let result: ResolveQuickPickItem;
+
+            do {
+                result = await window.showQuickPick(declarations, {
+                    placeHolder: `Multiple declarations for "${decision}" found.`
+                });
+            } while (!!!result);
+
+            this.addDeclarationImport(result.declarationInfo);
+        }
+
+        let proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
+
+        for (let imp of proxies) {
+            if (imp.defaultPurposal && !imp.defaultAlias) {
+                imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal, getSpecifiers());
+                delete imp.defaultPurposal;
+            }
+
+            for (let spec of imp.specifiers) {
+                let specifiers = getSpecifiers();
+                if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
+                    spec.alias = await this.getSpecifierAlias(specifiers);
+                }
+            }
+        }
     }
 
     /**
@@ -335,18 +358,12 @@ export class DocumentController {
      * 
      * @memberOf DocumentController
      */
-    private async resolveDuplicateSpecifier(duplicate: string): Promise<string> {
-        let alias: string;
-
-        do {
-            alias = await window.showInputBox({
-                placeHolder: 'Alias for specifier',
-                prompt: 'Please enter an alias for the specifier..',
-                validateInput: s => !!s ? '' : 'Please enter a variable name'
-            });
-        } while (alias === duplicate);
-
-        return alias;
+    private async getSpecifierAlias(specifiers: string[]): Promise<string> {
+        return this.vscodeInputBox({
+            placeHolder: 'Alias for specifier',
+            prompt: 'Please enter an alias for the specifier..',
+            validateInput: s => !!s ? '' : 'Please enter a variable name'
+        }, alias => specifiers.indexOf(alias) >= 0);
     }
 
     /**
@@ -358,12 +375,32 @@ export class DocumentController {
      * 
      * @memberOf DocumentController
      */
-    private async getDefaultIdentifier(declarationName: string): Promise<string> {
-        return await window.showInputBox({
+    private async getDefaultIdentifier(declarationName: string, specifiers: string[]): Promise<string> {
+        return this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export..',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName
-        });
+        }, alias => specifiers.indexOf(alias) >= 0);
+    }
+
+    /**
+     * Ultimately asks the user for an input. Does this, as long as the predicate function returns true.
+     * 
+     * @private
+     * @param {InputBoxOptions} options
+     * @param {() => boolean} predicate
+     * @returns {Promise<string>}
+     * 
+     * @memberOf DocumentController
+     */
+    private async vscodeInputBox(options: InputBoxOptions, predicate: (value: string) => boolean): Promise<string> {
+        let value: string;
+
+        do {
+            value = await window.showInputBox(options);
+        } while (predicate(value));
+
+        return value;
     }
 }
