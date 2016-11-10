@@ -14,7 +14,9 @@ Here is a brief list, of what TypeScript Hero is capable of:
 
 - Add imports of your project or libraries to your current file
 - Add an import for the current name under the cursor
+- Add all missing imports of a file with one command
 - Intellisense that suggests symbols and automatically adds the needed imports
+- "Light bulb feature" that fixes code you wrote (aka adds imports if you missed them, more to come.)
 - Sort and organize your imports (sort and remove unused)
 - Restart your debug session when your code changes
 
@@ -36,6 +38,7 @@ All commands are preceeded by `typescriptHero`.
 | showCmdGui                   | general         | Shows a small gui with all available internal commands    |
 | resolve.addImport            | import resolver | Shows a pick list with all recognized, importable symbols |
 | resolve.addImportUnderCursor | import resolver | Imports the symbol under the cursor                       |
+| resolve.addMissingImports    | import resolver | Imports all missing symbols for the actual document       |
 | resolve.organizeImports      | import resolver | Removes unused imports and orders all imports             |
 | resolve.rebuildCache         | import resolver | Rebuilds the whole symbol cache (or index)                |
 | restartDebugger.toggle       | debug restarter | Toggles the active state of the debug restarter           |
