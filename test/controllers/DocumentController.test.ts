@@ -1,3 +1,4 @@
+import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { DocumentController } from '../../src/controllers/DocumentController';
 import { Injector } from '../../src/IoC';
@@ -22,7 +23,7 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-describe.only('DocumentController', () => {
+describe('DocumentController', () => {
 
     const file = join(workspace.rootPath, 'controllers/DocumentControllerFile.ts');
     let document: TextDocument,
@@ -349,7 +350,7 @@ describe.only('DocumentController', () => {
             }
         });
 
-        it.skip('should create a user decision specifier if multiple delcarations are found', async done => {
+        it('should create a user decision specifier if multiple delcarations are found', async done => {
             try {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(
@@ -434,17 +435,86 @@ describe.only('DocumentController', () => {
             }
         });
 
-        it('should order imports alphabetically');
+        it('should order imports alphabetically', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(1, 0), `import { AddImportSameDirectory } from '../resolveExtension/sameDirectory';\n`);
+                    builder.insert(new Position(6, 0), `let foo = AddImportSameDirectory;\n`);
+                });
+                let ctrl = await DocumentController.create(document);
 
-        it('should order string imports before normal imports');
+                (ctrl as any).imports[0].libraryName.should.equal('../resourceIndex');
 
-        it('should order specifiers alphabetically');
+                ctrl.organizeImports();
+
+                (ctrl as any).imports[0].libraryName.should.equal('../resolveExtension/sameDirectory');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should order string imports before normal imports', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(1, 0), `import 'foobar';\n`);
+                });
+                let ctrl = await DocumentController.create(document);
+
+                (ctrl as any).imports[0].libraryName.should.not.equal('foobar');
+
+                ctrl.organizeImports();
+
+                (ctrl as any).imports[0].libraryName.should.equal('foobar');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should order specifiers alphabetically', async done => {
+            try {
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(document.lineAt(0).rangeIncludingLineBreak, `import { Class2, Class1 } from '../resourceIndex';`);
+                    builder.insert(new Position(5, 0), `let foo = new Class2();\n`);
+                });
+                let ctrl = await DocumentController.create(document);
+
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class2');
+
+                ctrl.organizeImports();
+
+                (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 
     describe('commit()', () => {
 
-        it('should not touch anything if nothing changed');
+        it('should not touch anything if nothing changed', async done => {
+            try {
+                let ctrl = await DocumentController.create(document);
+
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(document.lineAt(0).rangeIncludingLineBreak, `import {Class1} from '../resourceIndex';`);
+                });
+
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(0).text.should.equals(`import {Class1} from '../resourceIndex';`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add a single new import to the document (top)', async done => {
             try {
@@ -755,7 +825,31 @@ describe.only('DocumentController', () => {
             }
         });
 
-        it('should ask which declaration should be used on multiple options (add missing)');
+        it('should ask which declaration should be used on multiple options (add missing)', async done => {
+            let stub: sinon.SinonStub;
+            try {
+                let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
+                stub = sinon.stub(window, 'showQuickPick', () => {
+                    return Promise.resolve(new ResolveQuickPickItem(declarations[0]));
+                });
+                await window.activeTextEditor.edit(builder => {
+                    builder.insert(new Position(5, 0), 'let foobar = new FancierLibraryClass();\n');
+                });
+                let ctrl = await DocumentController.create(document);
+
+                await ctrl.addMissingImports(index).commit();
+
+                stub.should.be.calledOnce;
+
+                done();
+            } catch (e) {
+                done(e);
+            } finally {
+                if (stub) {
+                    stub.restore();
+                }
+            }
+        });
 
     });
 

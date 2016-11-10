@@ -1,3 +1,4 @@
+import { ResolveQuickPickItem } from '../models/QuickPickItems';
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { Injector } from '../IoC';
@@ -314,6 +315,21 @@ export class DocumentController {
                 }
                 return all;
             }, []) as string[];
+
+        for (let decision of Object.keys(this.userImportDecisions)) {
+            let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
+                o => new ResolveQuickPickItem(o)
+            );
+            let result: ResolveQuickPickItem;
+
+            do {
+                result = await window.showQuickPick(declarations, {
+                    placeHolder: `Multiple declarations for "${decision}" found.`
+                });
+            } while (!!!result);
+
+            this.addDeclarationImport(result.declarationInfo);
+        }
 
         let proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
 
