@@ -93,6 +93,12 @@ export class ResolveExtension extends BaseExtension {
                 new TshCommand(() => this.addImportUnderCursor())
             ),
             new CommandQuickPickItem(
+                'Import resolver: Add missing imports',
+                '',
+                'Adds all missing symbols to the actual document if possible.',
+                new TshCommand(() => this.addMissingImports())
+            ),
+            new CommandQuickPickItem(
                 'Import resolver: Organize imports',
                 '',
                 'Sorts imports and removes unused imports.',
@@ -114,6 +120,11 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(
             commands.registerTextEditorCommand(
                 'typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()
+            )
+        );
+        context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports()
             )
         );
         context.subscriptions.push(
@@ -226,6 +237,29 @@ export class ResolveExtension extends BaseExtension {
         } catch (e) {
             this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
+        }
+    }
+
+    /**
+     * Adds all missing imports to the actual document if possible. If multiple declarations are found,
+     * a quick pick list is shown to the user and he needs to decide, which import to use.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
+    private async addMissingImports(): Promise<void> {
+        if (!this.index.indexReady) {
+            this.showCacheWarning();
+            return;
+        }
+        try {
+            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            await ctrl.addMissingImports(this.index).commit();
+        } catch (e) {
+            this.logger.error('An error happend during import fixing', e);
+            window.showErrorMessage('The operation cannot be completed, there was an error during the process.');
         }
     }
 
