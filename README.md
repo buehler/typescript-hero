@@ -14,7 +14,9 @@ Here is a brief list, of what TypeScript Hero is capable of:
 
 - Add imports of your project or libraries to your current file
 - Add an import for the current name under the cursor
+- Add all missing imports of a file with one command
 - Intellisense that suggests symbols and automatically adds the needed imports
+- "Light bulb feature" that fixes code you wrote (aka adds imports if you missed them, more to come.)
 - Sort and organize your imports (sort and remove unused)
 - Restart your debug session when your code changes
 

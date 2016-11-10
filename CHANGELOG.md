@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Added
 - JSDOCS!
 - Code action provider (light bulb) that imports missing imports as a code fix ([#11](https://github.com/buehler/typescript-hero/issues/11))
-- Add all missing imports command ([#106](https://github.com/buehler/typescript-hero/issues/106))
+- Add all missing imports command usable through the gui or by command ([#106](https://github.com/buehler/typescript-hero/issues/106))
 
 #### Changed
 - Documents are managed by a controller that calculates all edits first before committing the changes
