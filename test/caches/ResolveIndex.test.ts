@@ -18,6 +18,15 @@ describe('ResolveIndex', () => {
         resolveIndex.reset();
     });
 
+    it('should not process a circular export cycle', async done => {
+        try {
+            await resolveIndex.buildIndex();
+            done();
+        } catch (e) {
+            done(e);
+        }
+    });
+
     it('should resolve the build process', async done => {
         try {
             await resolveIndex.buildIndex();

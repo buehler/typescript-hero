@@ -386,7 +386,16 @@ export class ResolveIndex {
      * 
      * @memberOf ResolveIndex
      */
-    private processResourceExports(parsedResources: Resources, resource: TsResource): void {
+    private processResourceExports(
+        parsedResources: Resources,
+        resource: TsResource,
+        processedResources: TsResource[] = []
+    ): void {
+        if (processedResources.indexOf(resource) >= 0) {
+            return;
+        }
+        processedResources.push(resource);
+
         for (let ex of resource.exports) {
             if (resource instanceof TsFile && ex instanceof TsFromExport) {
                 if (!ex.from) {
@@ -404,15 +413,22 @@ export class ResolveIndex {
                     return;
                 }
 
+                let exportedLib = parsedResources[sourceLib];
+                this.processResourceExports(parsedResources, exportedLib, processedResources);
+
                 if (ex instanceof TsAllFromExport) {
-                    this.processAllFromExport(parsedResources, resource, parsedResources[sourceLib]);
+                    this.processAllFromExport(parsedResources, resource, exportedLib);
                 } else if (ex instanceof TsNamedFromExport) {
-                    this.processNamedFromExport(parsedResources, ex, resource, parsedResources[sourceLib]);
+                    this.processNamedFromExport(parsedResources, ex, resource, exportedLib);
                 }
             } else {
                 if (ex instanceof TsAssignedExport) {
+                    for (let lib of ex.exported.filter(o => !(o instanceof TsExportableDeclaration))) {
+                        this.processResourceExports(parsedResources, lib as TsResource, processedResources);
+                    }
                     this.processAssignedExport(parsedResources, ex, resource);
                 } else if (ex instanceof TsNamedFromExport && ex.from && parsedResources[ex.from]) {
+                    this.processResourceExports(parsedResources, parsedResources[ex.from], processedResources);
                     this.processNamedFromExport(parsedResources, ex, resource, parsedResources[ex.from]);
                 }
             }
@@ -431,8 +447,6 @@ export class ResolveIndex {
      * @memberOf ResolveIndex
      */
     private processAllFromExport(parsedResources: Resources, exportingLib: TsResource, exportedLib: TsResource): void {
-        this.processResourceExports(parsedResources, exportedLib);
-
         exportingLib.declarations.push(...exportedLib.declarations);
         exportedLib.declarations = [];
     }
@@ -455,8 +469,6 @@ export class ResolveIndex {
         exportingLib: TsResource,
         exportedLib: TsResource
     ): void {
-        this.processResourceExports(parsedResources, exportedLib);
-
         exportedLib.declarations
             .forEach(o => {
                 let ex = tsExport.specifiers.find(s => s.specifier === o.name);
@@ -491,7 +503,6 @@ export class ResolveIndex {
             if (exported instanceof TsExportableDeclaration) {
                 exportingLib.declarations.push(exported);
             } else {
-                this.processResourceExports(parsedResources, exported);
                 exportingLib.declarations.push(
                     ...exported.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported)
                 );
