@@ -391,7 +391,7 @@ export class ResolveIndex {
         resource: TsResource,
         processedResources: TsResource[] = []
     ): void {
-        if (processedResources.indexOf(resource)) {
+        if (processedResources.indexOf(resource) >= 0) {
             return;
         }
         processedResources.push(resource);
