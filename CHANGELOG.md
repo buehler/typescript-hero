@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.10.0]
 #### Added
 - JSDOCS!
 - Code action provider (light bulb) that imports missing imports as a code fix ([#11](https://github.com/buehler/typescript-hero/issues/11))
@@ -114,7 +116,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.9.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.10.0...master
+[0.10.0]: https://github.com/buehler/typescript-hero/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/buehler/typescript-hero/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/buehler/typescript-hero/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/buehler/typescript-hero/compare/v0.7.0...v0.7.1
