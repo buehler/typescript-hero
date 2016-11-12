@@ -11,11 +11,19 @@ import { CompletionItemKind } from 'vscode';
  * @extends {TsNode}
  */
 export abstract class TsDeclaration extends TsNode {
+    /**
+     * Readonly information about the declaration kind. Returns the specific item kind of the declaration
+     * for code completion.
+     * 
+     * @abstract
+     * 
+     * @memberOf TsDeclaration
+     */
+    public abstract readonly itemKind: CompletionItemKind;
+
     constructor(public name: string, start: number, end: number) {
         super(start, end);
     }
-
-    public abstract getItemKind(): CompletionItemKind;
 }
 
 /**
@@ -57,7 +65,7 @@ export class InterfaceDeclaration extends TsExportableDeclaration {
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];
 
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Interface;
     }
 }
@@ -72,7 +80,7 @@ export class InterfaceDeclaration extends TsExportableDeclaration {
 export class ClassDeclaration extends InterfaceDeclaration {
     public ctor: ConstructorDeclaration;
 
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Class;
     }
 }
@@ -97,12 +105,12 @@ export const enum PropertyVisibility {
  * @extends {TsDeclaration}
  */
 export class PropertyDeclaration extends TsDeclaration {
-    constructor(name: string, start: number, end: number, public visibility: PropertyVisibility) {
-        super(name, start, end);
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.Property;
     }
 
-    public getItemKind(): CompletionItemKind {
-        return CompletionItemKind.Property;
+    constructor(name: string, start: number, end: number, public visibility: PropertyVisibility) {
+        super(name, start, end);
     }
 }
 
@@ -115,12 +123,12 @@ export class PropertyDeclaration extends TsDeclaration {
  * @extends {TsExportableCallableDeclaration}
  */
 export class MethodDeclaration extends TsExportableCallableDeclaration {
-    constructor(name: string, start: number, end: number) {
-        super(name, start, end, false);
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.Method;
     }
 
-    public getItemKind(): CompletionItemKind {
-        return CompletionItemKind.Method;
+    constructor(name: string, start: number, end: number) {
+        super(name, start, end, false);
     }
 }
 
@@ -133,7 +141,7 @@ export class MethodDeclaration extends TsExportableCallableDeclaration {
  * @extends {TsExportableCallableDeclaration}
  */
 export class FunctionDeclaration extends TsExportableCallableDeclaration {
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Function;
     }
 }
@@ -146,12 +154,12 @@ export class FunctionDeclaration extends TsExportableCallableDeclaration {
  * @extends {TsExportableCallableDeclaration}
  */
 export class ConstructorDeclaration extends TsExportableCallableDeclaration {
-    constructor(start: number, end: number) {
-        super('constructor', start, end, false);
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.Constructor;
     }
 
-    public getItemKind(): CompletionItemKind {
-        return CompletionItemKind.Constructor;
+    constructor(start: number, end: number) {
+        super('constructor', start, end, false);
     }
 }
 
@@ -164,7 +172,7 @@ export class ConstructorDeclaration extends TsExportableCallableDeclaration {
  * @extends {TsExportableDeclaration}
  */
 export class TypeAliasDeclaration extends TsExportableDeclaration {
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Keyword;
     }
 }
@@ -179,7 +187,7 @@ export class TypeAliasDeclaration extends TsExportableDeclaration {
 export class EnumDeclaration extends TsExportableDeclaration {
     public members: string[] = [];
 
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Value;
     }
 }
@@ -192,12 +200,12 @@ export class EnumDeclaration extends TsExportableDeclaration {
  * @extends {TsExportableDeclaration}
  */
 export class VariableDeclaration extends TsExportableDeclaration {
-    constructor(name: string, start: number, end: number, isExported: boolean, public isConst: boolean) {
-        super(name, start, end, isExported);
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.Variable;
     }
 
-    public getItemKind(): CompletionItemKind {
-        return CompletionItemKind.Variable;
+    constructor(name: string, start: number, end: number, isExported: boolean, public isConst: boolean) {
+        super(name, start, end, isExported);
     }
 }
 
@@ -210,7 +218,7 @@ export class VariableDeclaration extends TsExportableDeclaration {
  * @extends {TsDeclaration}
  */
 export class ParameterDeclaration extends TsDeclaration {
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
     }
 }
@@ -235,12 +243,12 @@ export class DefaultDeclaration extends TsExportableDeclaration {
         return this.exported;
     }
 
-    constructor(name: string, private resource: TsResource) {
-        super(name, 0, 0, true);
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.File;
     }
 
-    public getItemKind(): CompletionItemKind {
-        return CompletionItemKind.File;
+    constructor(name: string, private resource: TsResource) {
+        super(name, 0, 0, true);
     }
 }
 
@@ -253,7 +261,7 @@ export class DefaultDeclaration extends TsExportableDeclaration {
  * @extends {TsDeclaration}
  */
 export class ModuleDeclaration extends TsDeclaration {
-    public getItemKind(): CompletionItemKind {
+    public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Module;
     }
 }

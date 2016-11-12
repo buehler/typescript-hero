@@ -95,7 +95,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
         let filtered = declarations
             .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
             .map(o => {
-                let item = new CompletionItem(o.declaration.name, o.declaration.getItemKind());
+                let item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
                 item.detail = o.from;
                 item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
                 return item;
