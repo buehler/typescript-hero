@@ -1,12 +1,8 @@
+import { ImportProxy } from '../../src/models/ImportProxy';
+import { TsDefaultImport, TsNamedImport } from '../../src/models/TsImport';
 import { TsImportOptions } from '../../src/models/TsImportOptions';
 import { TsResolveSpecifier } from '../../src/models/TsResolveSpecifier';
-import { TsDefaultImport, TsNamedImport } from '../../src/models/TsImport';
-import { ImportProxy } from '../../src/models/ImportProxy';
-import { ResolveExtension } from '../../src/extensions/ResolveExtension';
-import { Injector } from '../../src/IoC';
 import * as chai from 'chai';
-import { join } from 'path';
-import * as vscode from 'vscode';
 import { given } from 'mocha-testdata';
 
 chai.should();
