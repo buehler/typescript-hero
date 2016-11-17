@@ -356,11 +356,12 @@ export class DocumentController {
      * @memberOf DocumentController
      */
     private async getSpecifierAlias(): Promise<string> {
-        return this.vscodeInputBox({
+        let result = await this.vscodeInputBox({
             placeHolder: 'Alias for specifier',
             prompt: 'Please enter an alias for the specifier..',
             validateInput: s => !!s ? '' : 'Please enter a variable name'
         });
+        return !!result ? result : undefined;
     }
 
     /**
@@ -373,12 +374,13 @@ export class DocumentController {
      * @memberOf DocumentController
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string> {
-        return this.vscodeInputBox({
+        let result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export..',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName
         });
+        return !!result ? result : undefined;
     }
 
     /**
