@@ -4,10 +4,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 #### Added
-- Notice when a symbol cannot be found by light bulb
+- Notice when a symbol cannot be found by light bulb ([#123](https://github.com/buehler/typescript-hero/issues/123))
 
 #### Fixed
-- All possible found declarations are listen in light-blub
+- All possible found declarations are listen in light-blub ([#123](https://github.com/buehler/typescript-hero/issues/123))
 
 ## [0.10.0]
 #### Added
