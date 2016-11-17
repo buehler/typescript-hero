@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- Notice when a symbol cannot be found by light bulb
+
+#### Fixed
+- All possible found declarations are listen in light-blub
 
 ## [0.10.0]
 #### Added
