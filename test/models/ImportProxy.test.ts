@@ -11,7 +11,7 @@ import { given } from 'mocha-testdata';
 
 chai.should();
 
-describe.only('ImportProxy', () => {
+describe('ImportProxy', () => {
 
     describe('constructor()', () => {
 
