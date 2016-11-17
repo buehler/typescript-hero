@@ -320,15 +320,14 @@ export class DocumentController {
             let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
                 o => new ResolveQuickPickItem(o)
             );
-            let result: ResolveQuickPickItem;
 
-            do {
-                result = await window.showQuickPick(declarations, {
-                    placeHolder: `Multiple declarations for "${decision}" found.`
-                });
-            } while (!!!result);
+            let result = await window.showQuickPick(declarations, {
+                placeHolder: `Multiple declarations for "${decision}" found.`
+            });
 
-            this.addDeclarationImport(result.declarationInfo);
+            if (result) {
+                this.addDeclarationImport(result.declarationInfo);
+            }
         }
 
         let proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
