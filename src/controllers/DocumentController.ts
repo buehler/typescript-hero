@@ -316,7 +316,9 @@ export class DocumentController {
                 return all;
             }, []) as string[];
 
-        for (let decision of Object.keys(this.userImportDecisions)) {
+        for (let decision of Object.keys(
+            this.userImportDecisions
+        ).filter(o => this.userImportDecisions[o].length > 0)) {
             let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
                 o => new ResolveQuickPickItem(o)
             );
