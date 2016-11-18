@@ -51,3 +51,17 @@ export class AddMissingImportsCodeAction implements CodeAction {
         return controller.addMissingImports(this.resolveIndex).commit();
     }
 }
+
+/**
+ * Code action that does literally nothing. Is used to "communicate" with the user. E.g. if
+ * an import cannot be resolved, the lightbulb will show "cannot resolve <CLASS>".
+ * 
+ * @export
+ * @class NoopCodeAction
+ * @implements {CodeAction}
+ */
+export class NoopCodeAction implements CodeAction {
+    public execute(): Promise<boolean> {
+        return Promise.resolve(true);
+    }
+}

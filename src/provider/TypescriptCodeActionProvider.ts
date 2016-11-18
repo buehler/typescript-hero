@@ -1,4 +1,4 @@
-import { AddImportCodeAction, AddMissingImportsCodeAction, CodeAction } from '../models/CodeAction';
+import { AddImportCodeAction, AddMissingImportsCodeAction, CodeAction, NoopCodeAction } from '../models/CodeAction';
 import { ResolveIndex } from '../caches/ResolveIndex';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { inject, injectable } from 'inversify';
@@ -57,18 +57,26 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
             switch (true) {
                 // When the problem is a missing import, add the import to the document.
                 case !!(match = isMissingImport(diagnostic)):
-                    let info = this.resolveIndex.declarationInfos.find(o => o.declaration.name === match[1]);
-                    if (info) {
-                        commands.push(this.createCommand(
-                            `Import ${info.declaration.name} to the document.`,
-                            new AddImportCodeAction(document, info)
-                        ));
+                    let infos = this.resolveIndex.declarationInfos.filter(o => o.declaration.name === match[1]);
+                    if (infos.length > 0) {
+                        for (let info of infos) {
+                            commands.push(this.createCommand(
+                                `Import "${info.declaration.name}" from "${info.from}".`,
+                                new AddImportCodeAction(document, info)
+                            ));
+                        }
                         if (!addAllMissingImportsAdded) {
                             commands.push(this.createCommand(
                                 'Add all missing imports if possible.',
                                 new AddMissingImportsCodeAction(document, this.resolveIndex)
                             ));
+                            addAllMissingImportsAdded = true;
                         }
+                    } else {
+                        commands.push(this.createCommand(
+                            `Cannot find "${match[1]}" in the index.`,
+                            new NoopCodeAction()
+                        ));
                     }
                     break;
                 default:
