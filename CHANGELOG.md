@@ -8,6 +8,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 #### Fixed
 - All possible found declarations are listen in light-blub ([#123](https://github.com/buehler/typescript-hero/issues/123))
+- Removed "required" user answer ([#121](https://github.com/buehler/typescript-hero/issues/121))
 
 ## [0.10.0]
 #### Added

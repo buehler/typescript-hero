@@ -316,54 +316,54 @@ export class DocumentController {
                 return all;
             }, []) as string[];
 
-        for (let decision of Object.keys(this.userImportDecisions)) {
+        for (let decision of Object.keys(
+            this.userImportDecisions
+        ).filter(o => this.userImportDecisions[o].length > 0)) {
             let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
                 o => new ResolveQuickPickItem(o)
             );
-            let result: ResolveQuickPickItem;
 
-            do {
-                result = await window.showQuickPick(declarations, {
-                    placeHolder: `Multiple declarations for "${decision}" found.`
-                });
-            } while (!!!result);
+            let result = await window.showQuickPick(declarations, {
+                placeHolder: `Multiple declarations for "${decision}" found.`
+            });
 
-            this.addDeclarationImport(result.declarationInfo);
+            if (result) {
+                this.addDeclarationImport(result.declarationInfo);
+            }
         }
 
         let proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
 
         for (let imp of proxies) {
             if (imp.defaultPurposal && !imp.defaultAlias) {
-                imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal, getSpecifiers());
+                imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal);
                 delete imp.defaultPurposal;
             }
 
             for (let spec of imp.specifiers) {
                 let specifiers = getSpecifiers();
                 if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
-                    spec.alias = await this.getSpecifierAlias(specifiers);
+                    spec.alias = await this.getSpecifierAlias();
                 }
             }
         }
     }
 
     /**
-     * Does resolve a duplicate specifier issue. Calls vscode inputbox as long as the inputted name
-     * does match the duplicates. (So the user needs to enter a different one)
+     * Does resolve a duplicate specifier issue.
      * 
      * @private
-     * @param {string} duplicate
      * @returns {Promise<string>}
      * 
      * @memberOf DocumentController
      */
-    private async getSpecifierAlias(specifiers: string[]): Promise<string> {
-        return this.vscodeInputBox({
+    private async getSpecifierAlias(): Promise<string> {
+        let result = await this.vscodeInputBox({
             placeHolder: 'Alias for specifier',
             prompt: 'Please enter an alias for the specifier..',
             validateInput: s => !!s ? '' : 'Please enter a variable name'
-        }, alias => specifiers.indexOf(alias) >= 0);
+        });
+        return !!result ? result : undefined;
     }
 
     /**
@@ -375,32 +375,26 @@ export class DocumentController {
      * 
      * @memberOf DocumentController
      */
-    private async getDefaultIdentifier(declarationName: string, specifiers: string[]): Promise<string> {
-        return this.vscodeInputBox({
+    private async getDefaultIdentifier(declarationName: string): Promise<string> {
+        let result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export..',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName
-        }, alias => specifiers.indexOf(alias) >= 0);
+        });
+        return !!result ? result : undefined;
     }
 
     /**
-     * Ultimately asks the user for an input. Does this, as long as the predicate function returns true.
+     * Ultimately asks the user for an input.
      * 
      * @private
      * @param {InputBoxOptions} options
-     * @param {() => boolean} predicate
      * @returns {Promise<string>}
      * 
      * @memberOf DocumentController
      */
-    private async vscodeInputBox(options: InputBoxOptions, predicate: (value: string) => boolean): Promise<string> {
-        let value: string;
-
-        do {
-            value = await window.showInputBox(options);
-        } while (predicate(value));
-
-        return value;
+    private async vscodeInputBox(options: InputBoxOptions): Promise<string> {
+        return await window.showInputBox(options);
     }
 }
