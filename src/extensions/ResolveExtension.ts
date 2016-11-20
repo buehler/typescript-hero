@@ -1,6 +1,6 @@
 import { ResolveIndex } from '../caches/ResolveIndex';
-import { ImportManager } from '../controllers/DocumentController';
 import { ExtensionConfig } from '../ExtensionConfig';
+import { ImportManager } from '../managers/ImportManager';
 import { CommandQuickPickItem, ResolveQuickPickItem } from '../models/QuickPickItems';
 import { TshCommand } from '../models/TshCommand';
 import { TsResourceParser } from '../parser/TsResourceParser';

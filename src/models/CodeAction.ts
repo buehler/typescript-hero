@@ -1,5 +1,5 @@
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
-import { ImportManager } from '../controllers/DocumentController';
+import { ImportManager } from '../managers/ImportManager';
 import { TextDocument } from 'vscode';
 
 /**

@@ -1,8 +1,8 @@
-import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
-import { ImportManager } from '../../src/controllers/DocumentController';
 import { Injector } from '../../src/IoC';
+import { ImportManager } from '../../src/managers/ImportManager';
 import { ImportProxy } from '../../src/models/ImportProxy';
+import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { TsFile } from '../../src/models/TsResource';
 import * as chai from 'chai';
 import { join } from 'path';
@@ -23,9 +23,9 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-describe('DocumentController', () => {
+describe('ImportManager', () => {
 
-    const file = join(workspace.rootPath, 'controllers/DocumentControllerFile.ts');
+    const file = join(workspace.rootPath, 'managers/ImportManagerFile.ts');
     let document: TextDocument,
         documentText: string,
         index: ResolveIndex;
