@@ -81,13 +81,13 @@ export class ImportManager implements ObjectManager {
     }
 
     /**
-     * Creates an instance of a DocumentController.
+     * Creates an instance of an ImportManager.
      * Does parse the document text first and returns a promise that
-     * resolves to a DocumentController.
+     * resolves to an ImportManager.
      * 
      * @static
      * @param {TextDocument} document The document that should be managed
-     * @returns {Promise<DocumentController>}
+     * @returns {Promise<ImportManager>}
      * 
      * @memberOf ImportManager
      */
@@ -105,7 +105,7 @@ export class ImportManager implements ObjectManager {
      * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
      * 
      * @param {DeclarationInfo} declarationInfo The import that should be added to the document
-     * @returns {DocumentController}
+     * @returns {ImportManager}
      * 
      * @memberOf ImportManager
      */
@@ -185,7 +185,7 @@ export class ImportManager implements ObjectManager {
      * 1. string-only imports (e.g. import 'reflect-metadata')
      * 2. rest, but in alphabetical order
      * 
-     * @returns {DocumentController}
+     * @returns {ImportManager}
      * 
      * @memberOf ImportManager
      */
