@@ -1,3 +1,4 @@
+import { ObjectManager } from './ObjectManager';
 import { ResolveQuickPickItem } from '../models/QuickPickItems';
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
@@ -51,7 +52,7 @@ function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
  * @export
  * @class ImportManager
  */
-export class ImportManager {
+export class ImportManager implements ObjectManager {
     private static get parser(): TsResourceParser {
         return Injector.get(TsResourceParser);
     }
@@ -75,7 +76,7 @@ export class ImportManager {
         return this._parsedDocument;
     }
 
-    private constructor(private readonly document: TextDocument, private _parsedDocument: TsFile) {
+    private constructor(public readonly document: TextDocument, private _parsedDocument: TsFile) {
         this.imports = _parsedDocument.imports.map(o => o.clone<TsImport>());
     }
 
