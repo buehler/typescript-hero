@@ -1,5 +1,5 @@
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
-import { DocumentController } from '../controllers/DocumentController';
+import { ImportManager } from '../controllers/DocumentController';
 import { TextDocument } from 'vscode';
 
 /**
@@ -31,7 +31,7 @@ export class AddImportCodeAction implements CodeAction {
     constructor(private document: TextDocument, private importToAdd: DeclarationInfo) { }
 
     public async execute(): Promise<boolean> {
-        let controller = await DocumentController.create(this.document);
+        let controller = await ImportManager.create(this.document);
         return controller.addDeclarationImport(this.importToAdd).commit();
     }
 }
@@ -47,7 +47,7 @@ export class AddMissingImportsCodeAction implements CodeAction {
     constructor(private document: TextDocument, private resolveIndex: ResolveIndex) { }
 
     public async execute(): Promise<boolean> {
-        let controller = await DocumentController.create(this.document);
+        let controller = await ImportManager.create(this.document);
         return controller.addMissingImports(this.resolveIndex).commit();
     }
 }

@@ -1,6 +1,6 @@
 import { ResolveQuickPickItem } from '../../src/models/QuickPickItems';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
-import { DocumentController } from '../../src/controllers/DocumentController';
+import { ImportManager } from '../../src/controllers/DocumentController';
 import { Injector } from '../../src/IoC';
 import { ImportProxy } from '../../src/models/ImportProxy';
 import { TsFile } from '../../src/models/TsResource';
@@ -54,8 +54,8 @@ describe('DocumentController', () => {
 
         it('should create a document controller', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
-                ctrl.should.be.an.instanceof(DocumentController);
+                let ctrl = await ImportManager.create(document);
+                ctrl.should.be.an.instanceof(ImportManager);
 
                 done();
             } catch (e) {
@@ -65,7 +65,7 @@ describe('DocumentController', () => {
 
         it('should parse the document', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 (ctrl as any).parsedDocument.should.be.an.instanceof(TsFile);
 
                 done();
@@ -76,7 +76,7 @@ describe('DocumentController', () => {
 
         it('should add an import proxy for a named import', async done => {
             try {
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps[0].should.be.an.instanceof(ImportProxy);
@@ -97,7 +97,7 @@ describe('DocumentController', () => {
                     ), `import myDefaultExportedFunction from '../defaultExport/lateDefaultExportedElement';\n`);
                 });
 
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps[0].should.be.an.instanceof(ImportProxy);
@@ -118,7 +118,7 @@ describe('DocumentController', () => {
                     );
                 });
 
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps[0].should.be.an.instanceof(ImportProxy);
@@ -141,7 +141,7 @@ describe('DocumentController', () => {
                     ), `import * as bodyParser from 'body-parser';\n`);
                 });
 
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps.should.have.lengthOf(1);
@@ -162,7 +162,7 @@ describe('DocumentController', () => {
                     ), `import bodyParser = require('body-parser');\n`);
                 });
 
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps.should.have.lengthOf(1);
@@ -183,7 +183,7 @@ describe('DocumentController', () => {
                     ), `import 'body-parser';\n`);
                 });
 
-                let ctrl = await DocumentController.create(document),
+                let ctrl = await ImportManager.create(document),
                     imps = (ctrl as any).parsedDocument.imports;
 
                 imps.should.have.lengthOf(1);
@@ -201,7 +201,7 @@ describe('DocumentController', () => {
 
         it('should add a normal import to the document.', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
                 ctrl.addDeclarationImport(declaration);
 
@@ -217,7 +217,7 @@ describe('DocumentController', () => {
 
         it('should add a module import to the import index.', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.from === 'body-parser');
                 ctrl.addDeclarationImport(declaration);
 
@@ -233,7 +233,7 @@ describe('DocumentController', () => {
 
         it('should add a default import to the import index.', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'myDefaultExportedFunction');
                 ctrl.addDeclarationImport(declaration);
 
@@ -250,7 +250,7 @@ describe('DocumentController', () => {
 
         it('should add multiple imports to the import index.', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
                 ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
 
@@ -267,7 +267,7 @@ describe('DocumentController', () => {
 
         it('should add an import to an existing import index item.', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
 
@@ -286,7 +286,7 @@ describe('DocumentController', () => {
 
         it('should not add the same specifier twice', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
 
                 ctrl.addDeclarationImport(declaration);
@@ -313,7 +313,7 @@ describe('DocumentController', () => {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(new Position(5, 0), `let foobar = new Class2();\n`);
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 ctrl.addMissingImports(index);
 
                 (ctrl as any).imports.should.have.lengthOf(1);
@@ -334,7 +334,7 @@ describe('DocumentController', () => {
                         `let foobar = new Class2();\nlet foobaz = new Class3();\nlet barbaz = new NotBarelExported();\n`
                     );
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 ctrl.addMissingImports(index);
 
                 (ctrl as any).imports.should.have.lengthOf(2);
@@ -358,7 +358,7 @@ describe('DocumentController', () => {
                         `let foobar = new FancierLibraryClass();\n`
                     );
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 ctrl.addMissingImports(index);
 
                 (ctrl as any).imports.should.have.lengthOf(1);
@@ -376,7 +376,7 @@ describe('DocumentController', () => {
 
         it('should remove an unused import', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
                 ctrl.addDeclarationImport(declaration);
 
@@ -396,7 +396,7 @@ describe('DocumentController', () => {
 
         it('should remove an unused specifier from an import', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
                 ctrl.addDeclarationImport(declaration);
 
@@ -421,7 +421,7 @@ describe('DocumentController', () => {
                         `import 'my-string-import';\n`
                     );
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 (ctrl as any).imports.should.have.lengthOf(2);
 
@@ -441,7 +441,7 @@ describe('DocumentController', () => {
                     builder.insert(new Position(1, 0), `import { AddImportSameDirectory } from '../resolveExtension/sameDirectory';\n`);
                     builder.insert(new Position(6, 0), `let foo = AddImportSameDirectory;\n`);
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 (ctrl as any).imports[0].libraryName.should.equal('../resourceIndex');
 
@@ -460,7 +460,7 @@ describe('DocumentController', () => {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(new Position(1, 0), `import 'foobar';\n`);
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 (ctrl as any).imports[0].libraryName.should.not.equal('foobar');
 
@@ -480,7 +480,7 @@ describe('DocumentController', () => {
                     builder.replace(document.lineAt(0).rangeIncludingLineBreak, `import { Class2, Class1 } from '../resourceIndex';`);
                     builder.insert(new Position(5, 0), `let foo = new Class2();\n`);
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class2');
 
@@ -500,7 +500,7 @@ describe('DocumentController', () => {
 
         it('should not touch anything if nothing changed', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 await window.activeTextEditor.edit(builder => {
                     builder.replace(document.lineAt(0).rangeIncludingLineBreak, `import {Class1} from '../resourceIndex';`);
@@ -518,7 +518,7 @@ describe('DocumentController', () => {
 
         it('should add a single new import to the document (top)', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
                 ctrl.addDeclarationImport(declaration);
                 (await ctrl.commit()).should.be.true;
@@ -533,7 +533,7 @@ describe('DocumentController', () => {
 
         it('should add two new imports to the document (top)', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'AlreadyImported');
                 ctrl.addDeclarationImport(declaration);
@@ -551,7 +551,7 @@ describe('DocumentController', () => {
 
         it('should add three new imports to the document (top)', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'AlreadyImported'),
                     declaration3 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
@@ -573,7 +573,7 @@ describe('DocumentController', () => {
 
         it('should add a single new module import to the document (top)', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.from === 'body-parser');
                 ctrl.addDeclarationImport(declaration);
                 (await ctrl.commit()).should.be.true;
@@ -589,7 +589,7 @@ describe('DocumentController', () => {
         it('should add a single default import to the document (top)', async done => {
             let stub = mockInputBox('DEFAULT_IMPORT');
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'myDefaultExportedFunction');
                 ctrl.addDeclarationImport(declaration);
                 (await ctrl.commit()).should.be.true;
@@ -609,7 +609,7 @@ describe('DocumentController', () => {
         it('should add a single aliased named import when names are conflicting', async done => {
             let stub = mockInputBox('ALIASED_IMPORT');
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
                 ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
                 (await ctrl.commit()).should.be.true;
@@ -631,7 +631,7 @@ describe('DocumentController', () => {
 
         it('should add a specifier to an existing import', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
                 ctrl.addDeclarationImport(declaration);
                 (await ctrl.commit()).should.be.true;
@@ -646,7 +646,7 @@ describe('DocumentController', () => {
 
         it('should add multiple specifier to an existing import', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
                 ctrl.addDeclarationImport(declaration).addDeclarationImport(declaration2);
@@ -663,7 +663,7 @@ describe('DocumentController', () => {
         it('should add a specifier with a default (first) and a normal (second) import to the doc', async done => {
             let stub = mockInputBox('DEFAULT_IMPORT');
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 ctrl.addDeclarationImport(declaration).addDeclarationImport(declaration2);
@@ -683,7 +683,7 @@ describe('DocumentController', () => {
 
         it('should add a specifier to an import and a new import', async done => {
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
 
@@ -703,7 +703,7 @@ describe('DocumentController', () => {
         it('should convert a default import when a normal specifier is added', async done => {
             let stub = mockInputBox('DEFAULT_IMPORT');
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
                 await ctrl.addDeclarationImport(declaration).commit();
 
@@ -727,7 +727,7 @@ describe('DocumentController', () => {
         it('should convert a normal import when a default specifier is added', async done => {
             let stub = mockInputBox('DEFAULT_IMPORT');
             try {
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration).commit();
 
@@ -756,7 +756,7 @@ describe('DocumentController', () => {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(new Position(5, 0), 'let foobar = new Class2();\n');
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
                 let declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
                     declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
 
@@ -790,7 +790,7 @@ describe('DocumentController', () => {
                     builder.insert(new Position(1, 0), `import { MultiExportClass } from '../defaultExport/multiExport';`);
                     builder.insert(new Position(5, 0), 'let foobar = new MultiExportClass();\n');
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 await ctrl.organizeImports().commit();
 
@@ -812,7 +812,7 @@ describe('DocumentController', () => {
                     builder.insert(new Position(0, 9), 'Class2, ');
                     builder.insert(new Position(5, 0), 'let foobar = new Class2();\n');
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 await ctrl.organizeImports().commit();
 
@@ -835,7 +835,7 @@ describe('DocumentController', () => {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(new Position(5, 0), 'let foobar = new FancierLibraryClass();\n');
                 });
-                let ctrl = await DocumentController.create(document);
+                let ctrl = await ImportManager.create(document);
 
                 await ctrl.addMissingImports(index).commit();
 

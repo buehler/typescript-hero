@@ -1,5 +1,5 @@
 import { ResolveIndex } from '../caches/ResolveIndex';
-import { DocumentController } from '../controllers/DocumentController';
+import { ImportManager } from '../controllers/DocumentController';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { CommandQuickPickItem, ResolveQuickPickItem } from '../models/QuickPickItems';
 import { TshCommand } from '../models/TshCommand';
@@ -255,7 +255,7 @@ export class ResolveExtension extends BaseExtension {
             return;
         }
         try {
-            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            let ctrl = await ImportManager.create(window.activeTextEditor.document);
             await ctrl.addMissingImports(this.index).commit();
         } catch (e) {
             this.logger.error('An error happend during import fixing', e);
@@ -273,7 +273,7 @@ export class ResolveExtension extends BaseExtension {
      */
     private async organizeImports(): Promise<boolean> {
         try {
-            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            let ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
         } catch (e) {
             this.logger.error('An error happend during "organize imports".', { error: e });
@@ -291,7 +291,7 @@ export class ResolveExtension extends BaseExtension {
      * @memberOf ResolveExtension
      */
     private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
-        let ctrl = await DocumentController.create(window.activeTextEditor.document);
+        let ctrl = await ImportManager.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(item.declarationInfo).commit();
     }
 
