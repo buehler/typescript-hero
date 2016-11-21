@@ -23,7 +23,9 @@ export class ClassManager implements ObjectManager {
         public readonly document: TextDocument,
         public readonly parsedDocument: TsFile,
         private readonly managedClass: ClassDeclaration
-    ) { }
+    ) {
+        
+    }
 
     /**
      * Creates an instance of a ClassManager.

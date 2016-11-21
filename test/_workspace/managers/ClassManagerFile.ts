@@ -1,0 +1,8 @@
+
+class ManagedClass {
+
+}
+
+class ManagedClassWithMethods {
+
+}
