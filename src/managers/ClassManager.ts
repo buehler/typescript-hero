@@ -1,11 +1,12 @@
 import { ExtensionConfig } from '../ExtensionConfig';
 import { Injector } from '../IoC';
 import { Changeable } from '../models/Changeable';
-import { ClassNotFoundError, PropertyNotFound } from '../models/Errors';
+import { ClassNotFoundError, MethodNotFound, PropertyDuplicated, PropertyNotFound } from '../models/Errors';
 import {
     ClassDeclaration,
     ConstructorDeclaration,
     MethodDeclaration,
+    ParameterDeclaration,
     PropertyDeclaration,
     PropertyVisibility
 } from '../models/TsDeclaration';
@@ -75,10 +76,12 @@ export class ClassManager implements ObjectManager {
         visibility: PropertyVisibility,
         type: string
     ): this {
-        if (!this.properties.some(o => o.object.name === name)) {
-            let prop = new PropertyDeclaration(name, visibility);
-            this.properties.push(new Changeable(prop, true));
+        if (this.properties.some(o => o.object.name === name && !o.isDeleted)) {
+            throw new PropertyDuplicated(name, this.managedClass.name);
         }
+
+        let prop = new PropertyDeclaration(name, visibility);
+        this.properties.push(new Changeable(prop, true));
 
         return this;
     }
@@ -99,11 +102,28 @@ export class ClassManager implements ObjectManager {
         return this;
     }
 
-    public addMethod(): this {
+    public addMethod(
+        nameOrDeclaration: string,
+        visibility?: any,
+        type?: string,
+        parameters?: ParameterDeclaration[]
+    ): this {
         return this;
     }
 
-    public removeMethod(): this {
+    /**
+     * TODO
+     * 
+     * @param {string} name
+     * @returns {this}
+     * 
+     * @memberOf ClassManager
+     */
+    public removeMethod(name: string): this {
+        if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
+            throw new MethodNotFound(name, this.managedClass.name);
+        }
+        this.methods.find(o => o.object.name === name).isDeleted = true;
         return this;
     }
 
