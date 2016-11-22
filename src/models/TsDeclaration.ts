@@ -2,6 +2,9 @@ import { TsNode } from './TsNode';
 import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
 
+// TODO: Add types to declarations
+// TODO: Add visibility to class methods
+
 /**
  * Baseclass for all declaration objects. Contains the name of the symbol, the start and end points.
  * 
@@ -21,7 +24,7 @@ export abstract class TsDeclaration extends TsNode {
      */
     public abstract readonly itemKind: CompletionItemKind;
 
-    constructor(public name: string, start: number, end: number) {
+    constructor(public name: string, start?: number, end?: number) {
         super(start, end);
     }
 }
@@ -109,7 +112,12 @@ export class PropertyDeclaration extends TsDeclaration {
         return CompletionItemKind.Property;
     }
 
-    constructor(name: string, start: number, end: number, public visibility: PropertyVisibility) {
+    constructor(
+        name: string,
+        public visibility: PropertyVisibility,
+        start?: number,
+        end?: number
+    ) {
         super(name, start, end);
     }
 }

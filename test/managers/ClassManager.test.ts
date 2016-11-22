@@ -77,4 +77,53 @@ describe.only('ClassManager', () => {
 
     });
 
+    describe('addProperty()', () => {
+
+        it('should add a property to the class array', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClass');
+                ctrl.should.be.an.instanceof(ClassManager);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should set the isNew flag of Changeable<T>');
+
+        it('should not set the other flags of Changeable<T>');
+
+    });
+
+    describe('removeProperty()', () => {
+
+        it('should ');
+
+    });
+
+    describe('addMethod()', () => {
+
+        it('should ');
+
+    });
+
+    describe('removeProperty()', () => {
+
+        it('should ');
+
+    });
+
+    describe('setConstructor()', () => {
+
+        it('should ');
+
+    });
+
+    describe('commit()', () => {
+
+        it('should ');
+
+    });
+
 });

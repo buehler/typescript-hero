@@ -1,12 +1,16 @@
-import { ClassNotFoundError } from '../models/Errors';
-import { ClassDeclaration } from '../models/TsDeclaration';
 import { ExtensionConfig } from '../ExtensionConfig';
 import { Injector } from '../IoC';
-import { ImportProxy } from '../models/ImportProxy';
-import { TsDefaultImport, TsNamedImport } from '../models/TsImport';
+import { Changeable } from '../models/Changeable';
+import { ClassNotFoundError, PropertyNotFound } from '../models/Errors';
+import {
+    ClassDeclaration,
+    ConstructorDeclaration,
+    MethodDeclaration,
+    PropertyDeclaration,
+    PropertyVisibility
+} from '../models/TsDeclaration';
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
-import { ImportManager } from './ImportManager';
 import { ObjectManager } from './ObjectManager';
 import { TextDocument } from 'vscode';
 
@@ -19,12 +23,18 @@ export class ClassManager implements ObjectManager {
         return Injector.get(ExtensionConfig);
     }
 
+    private ctor: Changeable<ConstructorDeclaration>;
+    private properties: Changeable<PropertyDeclaration>[] = [];
+    private methods: Changeable<MethodDeclaration>[] = [];
+
     private constructor(
         public readonly document: TextDocument,
         public readonly parsedDocument: TsFile,
         private readonly managedClass: ClassDeclaration
     ) {
-        
+        this.ctor = new Changeable(managedClass.ctor);
+        this.properties = managedClass.properties.map(o => new Changeable(o));
+        this.methods = managedClass.methods.map(o => new Changeable(o));
     }
 
     /**
@@ -48,6 +58,53 @@ export class ClassManager implements ObjectManager {
             throw new ClassNotFoundError(className);
         }
         return new ClassManager(document, source, managedClass);
+    }
+
+    /**
+     * TODO
+     * 
+     * @param {string} name
+     * @param {PropertyVisibility} visibility
+     * @param {string} type
+     * @returns {this}
+     * 
+     * @memberOf ClassManager
+     */
+    public addProperty(
+        name: string,
+        visibility: PropertyVisibility,
+        type: string
+    ): this {
+        if (!this.properties.some(o => o.object.name === name)) {
+            let prop = new PropertyDeclaration(name, visibility);
+            this.properties.push(new Changeable(prop, true));
+        }
+
+        return this;
+    }
+
+    /**
+     * TODO
+     * 
+     * @param {string} name
+     * @returns {this}
+     * 
+     * @memberOf ClassManager
+     */
+    public removeProperty(name: string): this {
+        if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
+            throw new PropertyNotFound(name, this.managedClass.name);
+        }
+        this.properties.find(o => o.object.name === name).isDeleted = true;
+        return this;
+    }
+
+    public addMethod(): this {
+        return this;
+    }
+
+    public removeMethod(): this {
+        return this;
     }
 
     public async commit(): Promise<boolean> {
