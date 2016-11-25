@@ -2,9 +2,6 @@ import { TsNode } from './TsNode';
 import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
 
-// TODO: Add types to declarations
-// TODO: Add visibility to class methods
-
 /**
  * Baseclass for all declaration objects. Contains the name of the symbol, the start and end points.
  * 
@@ -30,6 +27,20 @@ export abstract class TsDeclaration extends TsNode {
 }
 
 /**
+ * TODO
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedDeclaration
+ * @extends {TsDeclaration}
+ */
+export abstract class TsTypedDeclaration extends TsDeclaration {
+    constructor(name: string, public type?: string, start?: number, end?: number) {
+        super(name, start, end);
+    }
+}
+
+/**
  * Exportable declaration base (e.g. functions, classes)
  * Contains a boolean flag that indicates if the object is exported.
  * 
@@ -45,6 +56,20 @@ export abstract class TsExportableDeclaration extends TsDeclaration {
 }
 
 /**
+ * TODO
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedExportableDeclaration
+ * @extends {TsTypedDeclaration}
+ */
+export abstract class TsTypedExportableDeclaration extends TsTypedDeclaration {
+    constructor(name: string, type: string, start: number, end: number, public isExported: boolean) {
+        super(name, type, start, end);
+    }
+}
+
+/**
  * Callable declaration like a constructor, a method or a function.
  * 
  * @export
@@ -53,6 +78,19 @@ export abstract class TsExportableDeclaration extends TsDeclaration {
  * @extends {TsExportableDeclaration}
  */
 export abstract class TsExportableCallableDeclaration extends TsExportableDeclaration {
+    public parameters: ParameterDeclaration[] = [];
+    public variables: VariableDeclaration[] = [];
+}
+
+/**
+ * TODO
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedExportableCallableDeclaration
+ * @extends {TsTypedExportableDeclaration}
+ */
+export abstract class TsTypedExportableCallableDeclaration extends TsTypedExportableDeclaration {
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 }
@@ -105,9 +143,9 @@ export const enum PropertyVisibility {
  * 
  * @export
  * @class PropertyDeclaration
- * @extends {TsDeclaration}
+ * @extends {TsTypedDeclaration}
  */
-export class PropertyDeclaration extends TsDeclaration {
+export class PropertyDeclaration extends TsTypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Property;
     }
@@ -115,10 +153,11 @@ export class PropertyDeclaration extends TsDeclaration {
     constructor(
         name: string,
         public visibility: PropertyVisibility,
+        type?: string,
         start?: number,
         end?: number
     ) {
-        super(name, start, end);
+        super(name, type, start, end);
     }
 }
 
@@ -128,15 +167,15 @@ export class PropertyDeclaration extends TsDeclaration {
  * 
  * @export
  * @class MethodDeclaration
- * @extends {TsExportableCallableDeclaration}
+ * @extends {TsTypedExportableCallableDeclaration}
  */
-export class MethodDeclaration extends TsExportableCallableDeclaration {
+export class MethodDeclaration extends TsTypedExportableCallableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Method;
     }
 
-    constructor(name: string, start: number, end: number) {
-        super(name, start, end, false);
+    constructor(name: string, type?: string, start?: number, end?: number) {
+        super(name, type, start, end, false);
     }
 }
 
@@ -146,9 +185,9 @@ export class MethodDeclaration extends TsExportableCallableDeclaration {
  * 
  * @export
  * @class FunctionDeclaration
- * @extends {TsExportableCallableDeclaration}
+ * @extends {TsTypedExportableCallableDeclaration}
  */
-export class FunctionDeclaration extends TsExportableCallableDeclaration {
+export class FunctionDeclaration extends TsTypedExportableCallableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Function;
     }
@@ -166,7 +205,7 @@ export class ConstructorDeclaration extends TsExportableCallableDeclaration {
         return CompletionItemKind.Constructor;
     }
 
-    constructor(start: number, end: number) {
+    constructor(start?: number, end?: number) {
         super('constructor', start, end, false);
     }
 }
@@ -205,15 +244,22 @@ export class EnumDeclaration extends TsExportableDeclaration {
  * 
  * @export
  * @class VariableDeclaration
- * @extends {TsExportableDeclaration}
+ * @extends {TsTypedExportableDeclaration}
  */
-export class VariableDeclaration extends TsExportableDeclaration {
+export class VariableDeclaration extends TsTypedExportableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
     }
 
-    constructor(name: string, start: number, end: number, isExported: boolean, public isConst: boolean) {
-        super(name, start, end, isExported);
+    constructor(
+        name: string,
+        isExported: boolean,
+        public isConst: boolean,
+        type?: string,
+        start?: number,
+        end?: number
+    ) {
+        super(name, type, start, end, isExported);
     }
 }
 
