@@ -1,10 +1,20 @@
 {
     "extends": "tslint:recommended",
+    "rulesDirectory": [
+        "node_modules/tslint-jsdoc-rules/lib"
+    ],
     "rules": {
         "adjacent-overload-signatures": true,
         "interface-name": [
             true,
             "never-prefix"
+        ],
+        "jsdoc-require": [
+            true,
+            "no-constructors",
+            "no-properties",
+            "no-private",
+            "no-private-properties"
         ],
         "member-access": [
             true,
