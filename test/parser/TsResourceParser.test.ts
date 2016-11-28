@@ -229,7 +229,7 @@ describe('TsResourceParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(3);
+                parsed.declarations.should.be.an('array').with.lengthOf(4);
             });
 
             it('should parse a function correctly', () => {
@@ -281,6 +281,12 @@ describe('TsResourceParser', () => {
                 func1.type.should.equal('string');
                 func2.type.should.equal('void');
                 should.not.exist(func3.type);
+            });
+
+            it('should parse a typeguard correctly', () => {
+                let func1 = parsed.declarations[3] as FunctionDeclaration;
+
+                func1.type.should.equal('str is number');
             });
 
         });

@@ -10,3 +10,7 @@ export function function2(param1: string, { objParam1, objParam2 }, [arrParam1, 
 function withoutReturnType() {
     return '';
 }
+
+function typeGuard(str: any): str is number {
+    return str.constructor === Number;
+}
