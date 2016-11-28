@@ -396,6 +396,18 @@ describe('TsResourceParser', () => {
                 parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
             });
 
+            it('should parse the returntype of a method', () => {
+                let parsedInterface = parsed.declarations[0] as InterfaceDeclaration;
+                should.not.exist(parsedInterface.methods[0].type);
+                parsedInterface.methods[1].type.should.equal('void');
+            });
+
+            it('should parse the type of a property', () => {
+                let parsedInterface = parsed.declarations[1] as InterfaceDeclaration;
+                parsedInterface.properties[0].type.should.equal('string');
+                parsedInterface.properties[1].type.should.equal('number');
+            });
+
         });
 
         describe('Classes', () => {
@@ -449,6 +461,24 @@ describe('TsResourceParser', () => {
                 parsedClass.properties[2].name.should.equal('pub');
                 parsedClass.properties[2].visibility.should.equal(PropertyVisibility.Public);
             });
+
+            it('should parse the returntype of a method', () => {
+                let parsedClass = parsed.declarations[0] as ClassDeclaration;
+                should.not.exist(parsedClass.methods[0].type);
+                parsedClass.methods[1].type.should.equal('void');
+            });
+
+            it('should parse the type of a property', () => {
+                let parsedClass = parsed.declarations[2] as ClassDeclaration;
+                parsedClass.properties[0].type.should.equal('string');
+            });
+
+            it('should parse the type of a constructor introduced property', () => {
+                let parsedClass = parsed.declarations[1] as ClassDeclaration;
+                parsedClass.properties[0].type.should.equal('string');
+            });
+
+            it('should parse a methods visibility');
 
         });
 
