@@ -10,7 +10,7 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 let should = chai.should();
 chai.use(sinonChai);
 
-describe.only('ClassManager', () => {
+describe('ClassManager', () => {
 
     const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
     let document: TextDocument,

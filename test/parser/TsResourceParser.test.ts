@@ -23,7 +23,7 @@ import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-chai.should();
+let should = chai.should();
 
 describe('TsResourceParser', () => {
 
@@ -229,7 +229,7 @@ describe('TsResourceParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(2);
+                parsed.declarations.should.be.an('array').with.lengthOf(3);
             });
 
             it('should parse a function correctly', () => {
@@ -271,6 +271,16 @@ describe('TsResourceParser', () => {
                 func2.variables[0].name.should.equal('constVar1');
                 func2.variables[0].isExported.should.be.false;
                 func2.variables[0].isConst.should.be.true;
+            });
+
+            it('should parse return types correctly', () => {
+                let func1 = parsed.declarations[0] as FunctionDeclaration,
+                    func2 = parsed.declarations[1] as FunctionDeclaration,
+                    func3 = parsed.declarations[2] as FunctionDeclaration;
+
+                func1.type.should.equal('string');
+                func2.type.should.equal('void');
+                should.not.exist(func3.type);
             });
 
         });
