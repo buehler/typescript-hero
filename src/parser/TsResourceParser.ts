@@ -10,6 +10,7 @@ import {
     PropertyDeclaration as TshPropertyDeclaration,
     PropertyVisibility,
     TsExportableCallableDeclaration,
+    TsTypedExportableCallableDeclaration,
     TypeAliasDeclaration as TshTypeAliasDeclaration,
     VariableDeclaration as TshVariableDeclaration
 } from '../models/TsDeclaration';
@@ -64,6 +65,7 @@ import {
     NamedImports,
     NamespaceImport,
     Node,
+    TypeNode,
     NodeFlags,
     ObjectBindingPattern,
     ParameterDeclaration,
@@ -153,6 +155,16 @@ function getDefaultResourceIdentifier(resource: TsResource): string {
 }
 
 /**
+ * TODO
+ * 
+ * @param {TypeNode} node
+ * @returns {(string|undefined)}
+ */
+function getNodeType(node: TypeNode): string | undefined {
+    return node ? node.getText() : undefined;
+}
+
+/**
  * Magic.happen('here');
  * This class is the parser of the whole extension. It uses the typescript compiler to parse a file or given
  * source code into the token stream and therefore into the AST of the source. Afterwards an array of
@@ -196,7 +208,11 @@ export class TsResourceParser {
      * @memberOf TsResourceParser
      */
     public async parseFile(file: Uri): Promise<TsFile> {
-        return (await this.parseFiles([file]))[0];
+        let parse = await this.parseFiles([file]);
+        if (!parse || parse.length <= 0) {
+            throw new Error(`Could not parse file "${file.fsPath}"`);
+        }
+        return parse[0];
     }
 
     /**
@@ -456,7 +472,9 @@ export class TsResourceParser {
      */
     private parseFunction(tsResource: TsResource, node: FunctionDeclaration): void {
         let name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
-        let func = new TshFunctionDeclaration(name, node.getStart(), node.getEnd(), this.checkExported(node));
+        let func = new TshFunctionDeclaration(
+            name, getNodeType(node.type), node.getStart(), node.getEnd(), this.checkExported(node)
+        );
         if (this.checkDefaultExport(node)) {
             func.isExported = false;
             tsResource.declarations.push(new DefaultDeclaration(func.name, tsResource));
@@ -475,14 +493,23 @@ export class TsResourceParser {
      * 
      * @memberOf TsResourceParser
      */
-    private parseVariable(parent: TsResource | TsExportableCallableDeclaration, node: VariableStatement): void {
+    private parseVariable(
+        parent: TsResource | TsExportableCallableDeclaration | TsTypedExportableCallableDeclaration,
+        node: VariableStatement
+    ): void {
         let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
         if (node.declarationList && node.declarationList.declarations) {
             node.declarationList.declarations.forEach(o => {
                 let declaration = new TshVariableDeclaration(
-                    o.name.getText(), node.getStart(), node.getEnd(), this.checkExported(node), isConst
+                    o.name.getText(),
+                    this.checkExported(node),
+                    isConst,
+                    getNodeType(o.type),
+                    node.getStart(),
+                    node.getEnd()
                 );
-                if (parent instanceof TsExportableCallableDeclaration) {
+                if (parent instanceof TsExportableCallableDeclaration ||
+                    parent instanceof TsTypedExportableCallableDeclaration) {
                     parent.variables.push(declaration);
                 } else {
                     parent.declarations.push(declaration);
@@ -515,11 +542,20 @@ export class TsResourceParser {
                 if (isPropertySignature(o)) {
                     interfaceDeclaration.properties.push(
                         new TshPropertyDeclaration(
-                            (o.name as Identifier).text, PropertyVisibility.Public, o.getStart(), o.getEnd()
+                            (o.name as Identifier).text,
+                            PropertyVisibility.Public,
+                            getNodeType(o.type),
+                            o.getStart(),
+                            o.getEnd()
                         )
                     );
                 } else if (isMethodSignature(o)) {
-                    let method = new TshMethodDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd());
+                    let method = new TshMethodDeclaration(
+                        (o.name as Identifier).text,
+                        getNodeType(o.type),
+                        o.getStart(),
+                        o.getEnd()
+                    );
                     method.parameters = this.parseMethodParams(o);
                     interfaceDeclaration.methods.push(method);
                 }
@@ -555,6 +591,7 @@ export class TsResourceParser {
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
                                         PropertyVisibility.Public,
+                                        getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
                                     )
@@ -566,6 +603,7 @@ export class TsResourceParser {
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
                                         PropertyVisibility.Protected,
+                                        getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
                                     )
@@ -577,6 +615,7 @@ export class TsResourceParser {
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
                                         PropertyVisibility.Private,
+                                        getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
                                     )
@@ -588,7 +627,11 @@ export class TsResourceParser {
                     if (actualCount === classDeclaration.properties.length) {
                         classDeclaration.properties.push(
                             new TshPropertyDeclaration(
-                                (o.name as Identifier).text, PropertyVisibility.Public, o.getStart(), o.getEnd()
+                                (o.name as Identifier).text,
+                                PropertyVisibility.Public,
+                                getNodeType(o.type),
+                                o.getStart(),
+                                o.getEnd()
                             )
                         );
                     }
@@ -601,7 +644,9 @@ export class TsResourceParser {
                     classDeclaration.ctor = ctor;
                     this.parseFunctionParts(tsResource, ctor, o);
                 } else if (isMethodDeclaration(o)) {
-                    let method = new TshMethodDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd());
+                    let method = new TshMethodDeclaration(
+                        (o.name as Identifier).text, getNodeType(o.type), o.getStart(), o.getEnd()
+                    );
                     method.parameters = this.parseMethodParams(o);
                     classDeclaration.methods.push(method);
                     this.parseFunctionParts(tsResource, method, o);
@@ -718,7 +763,11 @@ export class TsResourceParser {
                     if (m.kind === SyntaxKind.PublicKeyword) {
                         parent.properties.push(
                             new TshPropertyDeclaration(
-                                (o.name as Identifier).text, PropertyVisibility.Public, m.getStart(), m.getEnd()
+                                (o.name as Identifier).text,
+                                PropertyVisibility.Public,
+                                getNodeType(o.type),
+                                m.getStart(),
+                                m.getEnd()
                             )
                         );
                         return;
@@ -726,7 +775,11 @@ export class TsResourceParser {
                     if (m.kind === SyntaxKind.ProtectedKeyword) {
                         parent.properties.push(
                             new TshPropertyDeclaration(
-                                (o.name as Identifier).text, PropertyVisibility.Protected, m.getStart(), m.getEnd()
+                                (o.name as Identifier).text,
+                                PropertyVisibility.Protected,
+                                getNodeType(o.type),
+                                m.getStart(),
+                                m.getEnd()
                             )
                         );
                         return;
@@ -734,7 +787,11 @@ export class TsResourceParser {
                     if (m.kind === SyntaxKind.PrivateKeyword) {
                         parent.properties.push(
                             new TshPropertyDeclaration(
-                                (o.name as Identifier).text, PropertyVisibility.Private, m.getStart(), m.getEnd()
+                                (o.name as Identifier).text,
+                                PropertyVisibility.Private,
+                                getNodeType(o.type),
+                                m.getStart(),
+                                m.getEnd()
                             )
                         );
                         return;
