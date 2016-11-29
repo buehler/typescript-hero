@@ -1,4 +1,4 @@
-import { ClassDeclaration, DeclarationVisibility } from '../../src/models/TsDeclaration';
+import { ClassDeclaration, DeclarationVisibility, MethodDeclaration } from '../../src/models/TsDeclaration';
 import { ClassManager } from '../../src/managers/ClassManager';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
@@ -72,6 +72,7 @@ describe.only('ClassManager', () => {
                 (ctrl as any).properties.should.have.lengthOf(3);
                 ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
                 (ctrl as any).properties.should.have.lengthOf(4);
+                ((ctrl as any).properties.every(o => !!o.object)).should.be.true;
 
                 done();
             } catch (e) {
@@ -135,12 +136,28 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should not remove the element from the array', async done => {
+        it('should not remove the element from the array when not new', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
                 (ctrl as any).properties.should.have.lengthOf(3);
                 ctrl.removeProperty('foo');
+                (ctrl as any).properties.should.have.lengthOf(3);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove a new property when deleted immediatly', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                (ctrl as any).properties.should.have.lengthOf(3);
+                ctrl.addProperty('newProp', DeclarationVisibility.Public, 'string');
+                (ctrl as any).properties.should.have.lengthOf(4);
+                ctrl.removeProperty('newProp');
                 (ctrl as any).properties.should.have.lengthOf(3);
 
                 done();
@@ -164,13 +181,30 @@ describe.only('ClassManager', () => {
 
     describe('addMethod()', () => {
 
-        it('should add a method to the class array', async done => {
+        it('should add a method to the class array with a name', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
                 (ctrl as any).methods.should.have.lengthOf(3);
                 ctrl.addMethod('newMethod');
                 (ctrl as any).methods.should.have.lengthOf(4);
+                ((ctrl as any).methods.every(o => !!o.object)).should.be.true;
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a method to the class array with a declaration', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods'),
+                    decl = new MethodDeclaration('newMethod');
+
+                (ctrl as any).methods.should.have.lengthOf(3);
+                ctrl.addMethod(decl);
+                (ctrl as any).methods.should.have.lengthOf(4);
+                ((ctrl as any).methods.every(o => !!o.object)).should.be.true;
 
                 done();
             } catch (e) {
@@ -220,12 +254,28 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should not remove the element from the array', async done => {
+        it('should not remove the element from the array when not new', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
                 (ctrl as any).methods.should.have.lengthOf(3);
                 ctrl.removeMethod('method');
+                (ctrl as any).methods.should.have.lengthOf(3);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove a new method when deleted immediatly', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                (ctrl as any).methods.should.have.lengthOf(3);
+                ctrl.addMethod('randomMethod');
+                (ctrl as any).methods.should.have.lengthOf(4);
+                ctrl.removeMethod('randomMethod');
                 (ctrl as any).methods.should.have.lengthOf(3);
 
                 done();
@@ -260,7 +310,23 @@ describe.only('ClassManager', () => {
             done();
         });
 
-        it('should not touch anything if there has nothing changed');
+        it('should not touch anything if there has nothing changed', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                await window.activeTextEditor.edit(builder => {
+                    builder.replace(document.lineAt(10).rangeIncludingLineBreak, `public fooobar(): string {   }`);
+                });
+
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(10).text.should.equals(`public fooobar(): string {   }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add a new property to a class');
 

@@ -114,7 +114,11 @@ export class ClassManager implements ObjectManager {
         if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyNotFound(name, this.managedClass.name);
         }
-        this.properties.find(o => o.object.name === name).isDeleted = true;
+        let property = this.properties.find(o => o.object.name === name);
+        property.isDeleted = true;
+        if (property.isNew) {
+            this.properties.splice(this.properties.indexOf(property), 1);
+        }
         return this;
     }
 
@@ -145,6 +149,8 @@ export class ClassManager implements ObjectManager {
             if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
                 throw new MethodDeclaration(nameOrDeclaration, this.managedClass.name);
             }
+            declaration = new MethodDeclaration(nameOrDeclaration, type, visibility);
+            declaration.parameters = parameters || [];
         }
 
         this.methods.push(new Changeable(declaration, true));
@@ -164,7 +170,11 @@ export class ClassManager implements ObjectManager {
         if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
             throw new MethodNotFound(name, this.managedClass.name);
         }
-        this.methods.find(o => o.object.name === name).isDeleted = true;
+        let method = this.methods.find(o => o.object.name === name);
+        method.isDeleted = true;
+        if (method.isNew) {
+            this.methods.splice(this.methods.indexOf(method), 1);
+        }
         return this;
     }
 
