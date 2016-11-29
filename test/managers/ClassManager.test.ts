@@ -10,7 +10,7 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 let should = chai.should();
 chai.use(sinonChai);
 
-describe('ClassManager', () => {
+describe.only('ClassManager', () => {
 
     const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
     let document: TextDocument,
@@ -141,7 +141,7 @@ describe('ClassManager', () => {
 
                 (ctrl as any).properties.should.have.lengthOf(3);
                 ctrl.removeProperty('foo');
-                (ctrl as any).properties.should.have.lengthOf(3)
+                (ctrl as any).properties.should.have.lengthOf(3);
 
                 done();
             } catch (e) {
@@ -164,11 +164,34 @@ describe('ClassManager', () => {
 
     describe('addMethod()', () => {
 
-        it('should add a method to the class array');
+        it('should add a method to the class array', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-        it('should set the isNew flag of Changeable<T>');
+                (ctrl as any).methods.should.have.lengthOf(3);
+                ctrl.addMethod('newMethod');
+                (ctrl as any).methods.should.have.lengthOf(4);
 
-        it.skip('should throw when adding a duplicate method', done => {
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should set the isNew flag of Changeable<T>', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.addMethod('newMethod');
+                (ctrl as any).methods[3].isNew.should.be.true;
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should throw when adding a duplicate method', done => {
             let fn = async () => {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
                 ctrl.addMethod('whatever');
@@ -183,9 +206,33 @@ describe('ClassManager', () => {
 
     describe('removeMethod()', () => {
 
-        it('should set the deleted flag of Changeable<T>');
+        it('should set the deleted flag of Changeable<T>', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-        it('should set the isNew flag');
+                (ctrl as any).methods[0].isDeleted.should.be.false;
+                ctrl.removeMethod('method');
+                (ctrl as any).methods[0].isDeleted.should.be.true;
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should not remove the element from the array', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                (ctrl as any).methods.should.have.lengthOf(3);
+                ctrl.removeMethod('method');
+                (ctrl as any).methods.should.have.lengthOf(3);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should throw when a method is not found', done => {
             let fn = async () => {

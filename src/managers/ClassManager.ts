@@ -1,14 +1,20 @@
 import { ExtensionConfig } from '../ExtensionConfig';
 import { Injector } from '../IoC';
 import { Changeable } from '../models/Changeable';
-import { ClassNotFoundError, MethodNotFound, PropertyDuplicated, PropertyNotFound } from '../models/Errors';
+import {
+    ClassNotFoundError,
+    MethodDuplicated,
+    MethodNotFound,
+    PropertyDuplicated,
+    PropertyNotFound
+} from '../models/Errors';
 import {
     ClassDeclaration,
     ConstructorDeclaration,
+    DeclarationVisibility,
     MethodDeclaration,
     ParameterDeclaration,
-    PropertyDeclaration,
-    DeclarationVisibility
+    PropertyDeclaration
 } from '../models/TsDeclaration';
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -71,6 +77,16 @@ export class ClassManager implements ObjectManager {
      * 
      * @memberOf ClassManager
      */
+    /**
+     * 
+     * 
+     * @param {string} name
+     * @param {DeclarationVisibility} visibility
+     * @param {string} type
+     * @returns {this}
+     * 
+     * @memberOf ClassManager
+     */
     public addProperty(
         name: string,
         visibility: DeclarationVisibility,
@@ -80,7 +96,7 @@ export class ClassManager implements ObjectManager {
             throw new PropertyDuplicated(name, this.managedClass.name);
         }
 
-        let prop = new PropertyDeclaration(name, visibility);
+        let prop = new PropertyDeclaration(name, visibility, type);
         this.properties.push(new Changeable(prop, true));
 
         return this;
@@ -102,12 +118,37 @@ export class ClassManager implements ObjectManager {
         return this;
     }
 
+    /**
+     * TODO
+     * 
+     * @param {(string | MethodDeclaration)} nameOrDeclaration
+     * @param {DeclarationVisibility} [visibility]
+     * @param {string} [type]
+     * @param {ParameterDeclaration[]} [parameters]
+     * @returns {this}
+     * 
+     * @memberOf ClassManager
+     */
     public addMethod(
-        nameOrDeclaration: string,
-        visibility?: any,
+        nameOrDeclaration: string | MethodDeclaration,
+        visibility?: DeclarationVisibility,
         type?: string,
         parameters?: ParameterDeclaration[]
     ): this {
+        let declaration: MethodDeclaration;
+        if (nameOrDeclaration instanceof MethodDeclaration) {
+            if (this.methods.some(o => o.object.name === nameOrDeclaration.name && !o.isDeleted)) {
+                throw new MethodDuplicated(nameOrDeclaration.name, this.managedClass.name);
+            }
+            declaration = nameOrDeclaration;
+        } else {
+            if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
+                throw new MethodDeclaration(nameOrDeclaration, this.managedClass.name);
+            }
+        }
+
+        this.methods.push(new Changeable(declaration, true));
+
         return this;
     }
 
@@ -127,6 +168,13 @@ export class ClassManager implements ObjectManager {
         return this;
     }
 
+    /**
+     * TODO
+     * 
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ClassManager
+     */
     public async commit(): Promise<boolean> {
         return true;
     }
