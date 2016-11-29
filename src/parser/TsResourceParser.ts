@@ -8,7 +8,7 @@ import {
     MethodDeclaration as TshMethodDeclaration,
     ParameterDeclaration as TshParameterDeclaration,
     PropertyDeclaration as TshPropertyDeclaration,
-    PropertyVisibility,
+    DeclarationVisibility,
     TsExportableCallableDeclaration,
     TsTypedExportableCallableDeclaration,
     TypeAliasDeclaration as TshTypeAliasDeclaration,
@@ -543,7 +543,7 @@ export class TsResourceParser {
                     interfaceDeclaration.properties.push(
                         new TshPropertyDeclaration(
                             (o.name as Identifier).text,
-                            PropertyVisibility.Public,
+                            DeclarationVisibility.Public,
                             getNodeType(o.type),
                             o.getStart(),
                             o.getEnd()
@@ -590,7 +590,7 @@ export class TsResourceParser {
                                 classDeclaration.properties.push(
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
-                                        PropertyVisibility.Public,
+                                        DeclarationVisibility.Public,
                                         getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
@@ -602,7 +602,7 @@ export class TsResourceParser {
                                 classDeclaration.properties.push(
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
-                                        PropertyVisibility.Protected,
+                                        DeclarationVisibility.Protected,
                                         getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
@@ -614,7 +614,7 @@ export class TsResourceParser {
                                 classDeclaration.properties.push(
                                     new TshPropertyDeclaration(
                                         (o.name as Identifier).text,
-                                        PropertyVisibility.Private,
+                                        DeclarationVisibility.Private,
                                         getNodeType(o.type),
                                         o.getStart(),
                                         o.getEnd()
@@ -628,7 +628,7 @@ export class TsResourceParser {
                         classDeclaration.properties.push(
                             new TshPropertyDeclaration(
                                 (o.name as Identifier).text,
-                                PropertyVisibility.Public,
+                                DeclarationVisibility.Public,
                                 getNodeType(o.type),
                                 o.getStart(),
                                 o.getEnd()
@@ -764,7 +764,7 @@ export class TsResourceParser {
                         parent.properties.push(
                             new TshPropertyDeclaration(
                                 (o.name as Identifier).text,
-                                PropertyVisibility.Public,
+                                DeclarationVisibility.Public,
                                 getNodeType(o.type),
                                 m.getStart(),
                                 m.getEnd()
@@ -776,7 +776,7 @@ export class TsResourceParser {
                         parent.properties.push(
                             new TshPropertyDeclaration(
                                 (o.name as Identifier).text,
-                                PropertyVisibility.Protected,
+                                DeclarationVisibility.Protected,
                                 getNodeType(o.type),
                                 m.getStart(),
                                 m.getEnd()
@@ -788,7 +788,7 @@ export class TsResourceParser {
                         parent.properties.push(
                             new TshPropertyDeclaration(
                                 (o.name as Identifier).text,
-                                PropertyVisibility.Private,
+                                DeclarationVisibility.Private,
                                 getNodeType(o.type),
                                 m.getStart(),
                                 m.getEnd()

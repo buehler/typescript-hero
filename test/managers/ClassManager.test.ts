@@ -1,4 +1,4 @@
-import { ClassDeclaration, PropertyVisibility } from '../../src/models/TsDeclaration';
+import { ClassDeclaration, DeclarationVisibility } from '../../src/models/TsDeclaration';
 import { ClassManager } from '../../src/managers/ClassManager';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
@@ -70,7 +70,7 @@ describe('ClassManager', () => {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
                 (ctrl as any).properties.should.have.lengthOf(3);
-                ctrl.addProperty('newProperty', PropertyVisibility.Public, 'string');
+                ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
                 (ctrl as any).properties.should.have.lengthOf(4);
 
                 done();
@@ -83,7 +83,7 @@ describe('ClassManager', () => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
-                ctrl.addProperty('newProperty', PropertyVisibility.Public, 'string');
+                ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
                 (ctrl as any).properties[3].isNew.should.be.true;
 
                 done();
@@ -96,7 +96,7 @@ describe('ClassManager', () => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
-                ctrl.addProperty('newProperty', PropertyVisibility.Public, 'string');
+                ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
                 (ctrl as any).properties[3].isModified.should.be.false;
                 (ctrl as any).properties[3].isDeleted.should.be.false;
 
@@ -109,7 +109,7 @@ describe('ClassManager', () => {
         it('should throw when adding a duplicate property', done => {
             let fn = async () => {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
-                ctrl.addProperty('foo', PropertyVisibility.Public, 'string');
+                ctrl.addProperty('foo', DeclarationVisibility.Public, 'string');
             };
 
             fn()

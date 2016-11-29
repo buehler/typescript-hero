@@ -8,7 +8,7 @@ import {
     MethodDeclaration,
     ParameterDeclaration,
     PropertyDeclaration,
-    PropertyVisibility
+    DeclarationVisibility
 } from '../models/TsDeclaration';
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -73,7 +73,7 @@ export class ClassManager implements ObjectManager {
      */
     public addProperty(
         name: string,
-        visibility: PropertyVisibility,
+        visibility: DeclarationVisibility,
         type: string
     ): this {
         if (this.properties.some(o => o.object.name === name && !o.isDeleted)) {

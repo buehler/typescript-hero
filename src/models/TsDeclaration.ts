@@ -127,12 +127,12 @@ export class ClassDeclaration extends InterfaceDeclaration {
 }
 
 /**
- * Visibility of a class or interface property.
+ * Visibility of a class or interface property, as well as a method.
  * 
  * @export
  * @enum {number}
  */
-export const enum PropertyVisibility {
+export const enum DeclarationVisibility {
     Private,
     Public,
     Protected
@@ -152,7 +152,7 @@ export class PropertyDeclaration extends TsTypedDeclaration {
 
     constructor(
         name: string,
-        public visibility: PropertyVisibility,
+        public visibility: DeclarationVisibility,
         type?: string,
         start?: number,
         end?: number
