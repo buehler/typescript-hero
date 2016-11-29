@@ -165,6 +165,31 @@ function getNodeType(node: TypeNode): string | undefined {
 }
 
 /**
+ * TODO
+ * 
+ * @param {Node} node
+ * @returns
+ */
+function getNodeVisibility(node: Node): DeclarationVisibility | undefined {
+    if (!node.modifiers) {
+        return undefined;
+    }
+
+    for (let modifier of node.modifiers) {
+        switch (modifier.kind) {
+            case SyntaxKind.PublicKeyword:
+                return DeclarationVisibility.Public;
+            case SyntaxKind.ProtectedKeyword:
+                return DeclarationVisibility.Protected;
+            case SyntaxKind.PrivateKeyword:
+                return DeclarationVisibility.Private;
+            default:
+                break;
+        }
+    }
+}
+
+/**
  * Magic.happen('here');
  * This class is the parser of the whole extension. It uses the typescript compiler to parse a file or given
  * source code into the token stream and therefore into the AST of the source. Afterwards an array of
@@ -553,6 +578,7 @@ export class TsResourceParser {
                     let method = new TshMethodDeclaration(
                         (o.name as Identifier).text,
                         getNodeType(o.type),
+                        DeclarationVisibility.Public,
                         o.getStart(),
                         o.getEnd()
                     );
@@ -585,50 +611,21 @@ export class TsResourceParser {
                 if (isPropertyDeclaration(o)) {
                     let actualCount = classDeclaration.properties.length;
                     if (o.modifiers) {
-                        o.modifiers.forEach(m => {
-                            if (m.kind === SyntaxKind.PublicKeyword) {
-                                classDeclaration.properties.push(
-                                    new TshPropertyDeclaration(
-                                        (o.name as Identifier).text,
-                                        DeclarationVisibility.Public,
-                                        getNodeType(o.type),
-                                        o.getStart(),
-                                        o.getEnd()
-                                    )
-                                );
-                                return;
-                            }
-                            if (m.kind === SyntaxKind.ProtectedKeyword) {
-                                classDeclaration.properties.push(
-                                    new TshPropertyDeclaration(
-                                        (o.name as Identifier).text,
-                                        DeclarationVisibility.Protected,
-                                        getNodeType(o.type),
-                                        o.getStart(),
-                                        o.getEnd()
-                                    )
-                                );
-                                return;
-                            }
-                            if (m.kind === SyntaxKind.PrivateKeyword) {
-                                classDeclaration.properties.push(
-                                    new TshPropertyDeclaration(
-                                        (o.name as Identifier).text,
-                                        DeclarationVisibility.Private,
-                                        getNodeType(o.type),
-                                        o.getStart(),
-                                        o.getEnd()
-                                    )
-                                );
-                                return;
-                            }
-                        });
+                        classDeclaration.properties.push(
+                            new TshPropertyDeclaration(
+                                (o.name as Identifier).text,
+                                getNodeVisibility(o),
+                                getNodeType(o.type),
+                                o.getStart(),
+                                o.getEnd()
+                            )
+                        );
                     }
                     if (actualCount === classDeclaration.properties.length) {
                         classDeclaration.properties.push(
                             new TshPropertyDeclaration(
                                 (o.name as Identifier).text,
-                                DeclarationVisibility.Public,
+                                getNodeVisibility(o),
                                 getNodeType(o.type),
                                 o.getStart(),
                                 o.getEnd()
@@ -759,44 +756,15 @@ export class TsResourceParser {
                 if (!o.modifiers) {
                     return;
                 }
-                o.modifiers.forEach(m => {
-                    if (m.kind === SyntaxKind.PublicKeyword) {
-                        parent.properties.push(
-                            new TshPropertyDeclaration(
-                                (o.name as Identifier).text,
-                                DeclarationVisibility.Public,
-                                getNodeType(o.type),
-                                m.getStart(),
-                                m.getEnd()
-                            )
-                        );
-                        return;
-                    }
-                    if (m.kind === SyntaxKind.ProtectedKeyword) {
-                        parent.properties.push(
-                            new TshPropertyDeclaration(
-                                (o.name as Identifier).text,
-                                DeclarationVisibility.Protected,
-                                getNodeType(o.type),
-                                m.getStart(),
-                                m.getEnd()
-                            )
-                        );
-                        return;
-                    }
-                    if (m.kind === SyntaxKind.PrivateKeyword) {
-                        parent.properties.push(
-                            new TshPropertyDeclaration(
-                                (o.name as Identifier).text,
-                                DeclarationVisibility.Private,
-                                getNodeType(o.type),
-                                m.getStart(),
-                                m.getEnd()
-                            )
-                        );
-                        return;
-                    }
-                });
+                parent.properties.push(
+                    new TshPropertyDeclaration(
+                        (o.name as Identifier).text,
+                        getNodeVisibility(o),
+                        getNodeType(o.type),
+                        o.getStart(),
+                        o.getEnd()
+                    )
+                );
             } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
                 let identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
                 ctor.parameters = ctor.parameters.concat(identifiers.elements.map((bind: BindingElement) => {
