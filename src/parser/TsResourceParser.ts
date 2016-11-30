@@ -642,7 +642,7 @@ export class TsResourceParser {
                     this.parseFunctionParts(tsResource, ctor, o);
                 } else if (isMethodDeclaration(o)) {
                     let method = new TshMethodDeclaration(
-                        (o.name as Identifier).text, getNodeType(o.type), o.getStart(), o.getEnd()
+                        (o.name as Identifier).text, getNodeType(o.type), getNodeVisibility(o), o.getStart(), o.getEnd()
                     );
                     method.parameters = this.parseMethodParams(o);
                     classDeclaration.methods.push(method);

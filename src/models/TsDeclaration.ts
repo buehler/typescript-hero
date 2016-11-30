@@ -134,8 +134,8 @@ export class ClassDeclaration extends InterfaceDeclaration {
  */
 export const enum DeclarationVisibility {
     Private,
-    Public,
-    Protected
+    Protected,
+    Public
 }
 
 /**
