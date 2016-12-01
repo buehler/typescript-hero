@@ -245,7 +245,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.start).line + 1;
         for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
             edits.push(TextEdit.insert(
-                new Position(lastPosition++, 0),
+                new Position(lastPosition, 0),
                 property.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })
             ));
         }

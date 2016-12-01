@@ -384,8 +384,6 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add multiple properties to an empty class');
-
         it('should remove a property from a class', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
@@ -402,7 +400,43 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add multiple properties to a class');
+        it('should add multiple properties to a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number')
+                    .addProperty('pubProp', DeclarationVisibility.Public, 'string');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(10).text.should.equals(`    public pubProp: string;`);
+                document.lineAt(11).text.should.equals(`    protected newProp: number;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple properties to an empty class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'EmptyClass');
+
+                ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number')
+                    .addProperty('pubProp', DeclarationVisibility.Public, 'string');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(46).text.should.equals(`    public pubProp: string;`);
+                document.lineAt(47).text.should.equals(`    protected newProp: number;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a property in between properties');
+
+        it('should add multiple properties in between properties');
 
         it('should remove multiple properties from a class', async done => {
             try {
