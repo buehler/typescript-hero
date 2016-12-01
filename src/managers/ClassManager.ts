@@ -19,7 +19,7 @@ import {
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
 import { ObjectManager } from './ObjectManager';
-import { Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
+import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
 
 type VisibleObject = { visibility?: DeclarationVisibility };
 
@@ -234,6 +234,19 @@ export class ClassManager implements ObjectManager {
                         this.document.positionAt(property.object.end).line
                     ).rangeIncludingLineBreak.end,
                 )
+            ));
+        }
+
+        // TODO update
+
+        let lastProperty = this.properties.filter(o => !o.isNew).pop(),
+            lastPosition = lastProperty ?
+                this.document.positionAt(lastProperty.object.end).line + 1 :
+                this.document.positionAt(this.managedClass.start).line + 1;
+        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
+            edits.push(TextEdit.insert(
+                new Position(lastPosition++, 0),
+                property.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })
             ));
         }
 

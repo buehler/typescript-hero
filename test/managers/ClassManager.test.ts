@@ -339,20 +339,52 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it.skip('should add a new property to a class', async done => {
+        it('should add a new property to a class without properties', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
                 ctrl.addProperty('newProp', DeclarationVisibility.Private, 'myType');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(10).text.should.equals(`public fooobar(): string {   }`);
+                document.lineAt(10).text.should.equals(`    private newProp: myType;`);
 
                 done();
             } catch (e) {
                 done(e);
             }
         });
+
+        it('should add a new property to a class with properties', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.addProperty('newProp', DeclarationVisibility.Public, 'taip');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(25).text.should.equals(`    public newProp: taip;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add a property to an empty class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'EmptyClass');
+
+                ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(46).text.should.equals(`    protected newProp: number;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple properties to an empty class');
 
         it('should remove a property from a class', async done => {
             try {
@@ -387,6 +419,8 @@ describe.only('ClassManager', () => {
                 done(e);
             }
         });
+
+        it('should remove multiple properties to reach an empty class');
 
         it('should add a method to a class');
 

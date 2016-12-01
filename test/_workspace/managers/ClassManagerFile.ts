@@ -42,3 +42,6 @@ class ManagedClassFull {
         return {} as any;
     }
 }
+
+class EmptyClass {
+}

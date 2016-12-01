@@ -93,6 +93,14 @@ export class TsStringImport extends TsImport {
 export class TsNamedImport extends TsImport {
     public specifiers: TsResolveSpecifier[] = [];
 
+    /**
+     * TODO
+     * 
+     * @param {TsImportOptions} options
+     * @returns {string}
+     * 
+     * @memberOf TsNamedImport
+     */
     public toImport(options: TsImportOptions): string {
         let {pathDelimiter, spaceBraces, multiLineWrapThreshold} = options,
             space = spaceBraces ? ' ' : '',
@@ -106,6 +114,13 @@ export class TsNamedImport extends TsImport {
         return importString;
     }
 
+    /**
+     * TODO
+     * 
+     * @returns {TsNamedImport}
+     * 
+     * @memberOf TsNamedImport
+     */
     public clone(): TsNamedImport {
         let clone = new TsNamedImport(this.libraryName, this.start, this.end);
         clone.specifiers = this.specifiers.map(o => o.clone());

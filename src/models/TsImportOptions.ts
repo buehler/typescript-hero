@@ -26,3 +26,5 @@ export enum ImportLocation {
     TopOfFile,
     AtCursorLocation
 }
+
+// TODO rename.

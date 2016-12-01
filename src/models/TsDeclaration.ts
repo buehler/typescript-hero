@@ -1,3 +1,4 @@
+import { ToTypescriptOptions } from './GeneratorOptions';
 import { TsNode } from './TsNode';
 import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
@@ -23,6 +24,17 @@ export abstract class TsDeclaration extends TsNode {
 
     constructor(public name: string, start?: number, end?: number) {
         super(start, end);
+    }
+
+    /**
+     * TODO
+     * 
+     * @returns {string}
+     * 
+     * @memberOf TsDeclaration
+     */
+    public toTypescript(options: ToTypescriptOptions): string {
+        throw new Error('not implemented!');
     }
 }
 
@@ -150,6 +162,27 @@ export class PropertyDeclaration extends TsTypedDeclaration {
         return CompletionItemKind.Property;
     }
 
+    /**
+     * TODO
+     * 
+     * @readonly
+     * @private
+     * @type {string}
+     * @memberOf PropertyDeclaration
+     */
+    private get visibilityText(): string {
+        switch (this.visibility) {
+            case DeclarationVisibility.Private:
+                return 'private';
+            case DeclarationVisibility.Public:
+                return 'public';
+            case DeclarationVisibility.Protected:
+                return 'protected';
+            default:
+                return '';
+        }
+    }
+
     constructor(
         name: string,
         public visibility: DeclarationVisibility,
@@ -158,6 +191,19 @@ export class PropertyDeclaration extends TsTypedDeclaration {
         end?: number
     ) {
         super(name, type, start, end);
+    }
+
+    /**
+     * TODO
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript({tabSize}: ToTypescriptOptions): string {
+        return `${Array(tabSize + 1).join(' ')}${this.visibilityText} ${this.name}` +
+            `${this.type ? `: ${this.type}` : ''};\n`;
     }
 }
 
