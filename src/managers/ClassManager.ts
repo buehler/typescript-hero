@@ -19,7 +19,33 @@ import {
 import { TsFile } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
 import { ObjectManager } from './ObjectManager';
-import { TextDocument } from 'vscode';
+import { Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
+
+type VisibleObject = { visibility?: DeclarationVisibility };
+
+/**
+ * TODO
+ * 
+ * @param {Changeable<VisibleObject>} o1
+ * @param {Changeable<VisibleObject>} o2
+ * @returns {number}
+ */
+function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleObject>): number {
+    let left = o1.object.visibility,
+        right = o2.object.visibility;
+
+    if ((left === undefined && right === undefined) || (left === right)) {
+        return 0;
+    }
+    if (left !== undefined && right === undefined) {
+        return -1;
+    }
+    if (left === undefined && right !== undefined) {
+        return 1;
+    }
+
+    return right - left;
+}
 
 export class ClassManager implements ObjectManager {
     private static get parser(): TsResourceParser {
@@ -186,6 +212,33 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public async commit(): Promise<boolean> {
-        return true;
+        /*
+            for each properties, then for each methods
+            delete,
+            update,
+            insert
+        
+            insert reihenfolge: public, protected, private
+            static?
+        */
+
+        let edits = [];
+
+        for (let property of this.properties.filter(o => o.isDeleted)) {
+            edits.push(TextEdit.delete(
+                new Range(
+                    this.document.lineAt(
+                        this.document.positionAt(property.object.start).line
+                    ).rangeIncludingLineBreak.start,
+                    this.document.lineAt(
+                        this.document.positionAt(property.object.end).line
+                    ).rangeIncludingLineBreak.end,
+                )
+            ));
+        }
+
+        let workspaceEdit = new WorkspaceEdit();
+        workspaceEdit.set(this.document.uri, edits);
+        return workspace.applyEdit(workspaceEdit);
     }
 }

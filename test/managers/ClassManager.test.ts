@@ -10,6 +10,17 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 let should = chai.should();
 chai.use(sinonChai);
 
+function lineRangeText(document: TextDocument, from: number, to: number): string {
+    let text = '';
+    for (from; from <= to; from++) {
+        text += document.lineAt(from).text;
+        if (from !== to) {
+            text += '\n';
+        }
+    }
+    return text;
+}
+
 describe.only('ClassManager', () => {
 
     const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
@@ -328,13 +339,54 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add a new property to a class');
+        it.skip('should add a new property to a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-        it('should remove a property from a class');
+                ctrl.addProperty('newProp', DeclarationVisibility.Private, 'myType');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(10).text.should.equals(`public fooobar(): string {   }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove a property from a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                document.lineAt(22).text.should.equal('    public foo: string;');
+                ctrl.removeProperty('foo');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(22).text.should.equal('    protected bar: string;');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add multiple properties to a class');
 
-        it('should remove multiple properties from a class');
+        it('should remove multiple properties from a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.removeProperty('foo').removeProperty('baz');
+                (await ctrl.commit()).should.be.true;
+
+                lineRangeText(document, 21, 23).should.equal(`class ManagedClassWithProperties {
+    protected bar: string;
+}`);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add a method to a class');
 
