@@ -1,4 +1,9 @@
-import { ClassDeclaration, DeclarationVisibility, MethodDeclaration } from '../../src/models/TsDeclaration';
+import {
+    ClassDeclaration,
+    DeclarationVisibility,
+    MethodDeclaration,
+    ParameterDeclaration
+} from '../../src/models/TsDeclaration';
 import { ClassManager } from '../../src/managers/ClassManager';
 import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { Injector } from '../../src/IoC';
@@ -522,7 +527,22 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add a method to a class');
+        it('should add a method to a class with methods', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(20).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(21).text.should.equals(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(22).text.should.equals(`    }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should remove a method from a class');
 

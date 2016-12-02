@@ -118,7 +118,7 @@ export class ClassManager implements ObjectManager {
         visibility: DeclarationVisibility,
         type: string
     ): this {
-        if (this.methods.some(o => o.object.name === name && !o.isDeleted)) {
+        if (this.properties.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyDuplicated(name, this.managedClass.name);
         }
 
@@ -137,13 +137,13 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public removeProperty(name: string): this {
-        if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
+        if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyNotFound(name, this.managedClass.name);
         }
-        let property = this.methods.find(o => o.object.name === name);
+        let property = this.properties.find(o => o.object.name === name);
         property.isDeleted = true;
         if (property.isNew) {
-            this.methods.splice(this.methods.indexOf(property), 1);
+            this.properties.splice(this.properties.indexOf(property), 1);
         }
         return this;
     }
@@ -242,7 +242,8 @@ export class ClassManager implements ObjectManager {
      */
     private calculatePropertyEdits(): TextEdit[] {
         let edits = [];
-        for (let property of this.methods.filter(o => o.isDeleted)) {
+
+        for (let property of this.properties.filter(o => o.isDeleted)) {
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
@@ -257,8 +258,8 @@ export class ClassManager implements ObjectManager {
 
         // TODO update
 
-        for (let property of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
-            let lastProperty = this.methods.filter(
+        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
+            let lastProperty = this.properties.filter(
                 o => !o.isNew && !o.isDeleted && o.object.visibility === property.object.visibility
             ).pop();
             let lastPosition = lastProperty ?
