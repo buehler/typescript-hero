@@ -239,11 +239,13 @@ export class ClassManager implements ObjectManager {
 
         // TODO update
 
-        let lastProperty = this.properties.filter(o => !o.isNew).pop(),
-            lastPosition = lastProperty ?
+        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
+            let lastProperty = this.properties.filter(
+                o => !o.isNew && o.object.visibility === property.object.visibility
+            ).pop();
+            let lastPosition = lastProperty ?
                 this.document.positionAt(lastProperty.object.end).line + 1 :
                 this.document.positionAt(this.managedClass.start).line + 1;
-        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
                 property.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })

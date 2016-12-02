@@ -361,7 +361,7 @@ describe.only('ClassManager', () => {
                 ctrl.addProperty('newProp', DeclarationVisibility.Public, 'taip');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(25).text.should.equals(`    public newProp: taip;`);
+                document.lineAt(23).text.should.equals(`    public newProp: taip;`);
 
                 done();
             } catch (e) {
@@ -434,7 +434,21 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add a property in between properties');
+        it('should add a property in between properties', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(23).text.should.equals(`    protected bar: string;`);
+                document.lineAt(24).text.should.equals(`    protected newProp: number;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add multiple properties in between properties');
 
