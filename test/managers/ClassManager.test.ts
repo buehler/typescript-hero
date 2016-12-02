@@ -15,7 +15,7 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 let should = chai.should();
 chai.use(sinonChai);
 
-describe('ClassManager', () => {
+describe.only('ClassManager', () => {
 
     const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
     let document: TextDocument,
@@ -603,7 +603,7 @@ describe('ClassManager', () => {
             }
         });
 
-        it.only('should add a property and a method to a class', async done => {
+        it('should add a property and a method to a class', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassFull');
 
@@ -623,13 +623,50 @@ describe('ClassManager', () => {
             }
         });
 
-        it('should remove a property and a method from a class');
+        it('should remove a property and a method from a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassFull');
 
-        it('should add multiple properties and methods to a class');
+                ctrl.removeProperty('bar')
+                    .removeMethod('whatever');
+                (await ctrl.commit()).should.be.true;
 
-        it('should remove multiple properties and methods from a class');
+                document.lineAt(29).text.should.not.equal('    protected bar: string;');
 
-        it('should add a method to a class and remove a property from a class');
+                document.lineAt(38).text.should.not.equal(`    protected whatever(): string {`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple properties and methods to a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassFull');
+
+                ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'FOOBAR')
+                    .addMethod('newMethod', DeclarationVisibility.Public)
+                    .addProperty('newProperty2', DeclarationVisibility.Public, 'FOOBAR')
+                    .addMethod('newMethod2', DeclarationVisibility.Public);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(29).text.should.equal('    public newProperty: FOOBAR;');
+                document.lineAt(30).text.should.equal('    public newProperty2: FOOBAR;');
+
+                document.lineAt(38).text.should.equal(`    public newMethod() {`);
+                document.lineAt(39).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(40).text.should.equal(`    }`);
+
+                document.lineAt(42).text.should.equal(`    public newMethod2() {`);
+                document.lineAt(43).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(44).text.should.equal(`    }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 
