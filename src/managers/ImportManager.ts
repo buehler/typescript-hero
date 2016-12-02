@@ -25,6 +25,13 @@ import {
 } from '../utilities/ResolveIndexExtensions';
 import { InputBoxOptions, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
+/**
+ * String-Sort function.
+ * 
+ * @param {string} strA
+ * @param {string} strB
+ * @returns {number}
+ */
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
         return -1;
@@ -34,6 +41,13 @@ function stringSort(strA: string, strB: string): number {
     return 0;
 }
 
+/**
+ * Order imports by library name.
+ * 
+ * @param {TsImport} i1
+ * @param {TsImport} i2
+ * @returns {number}
+ */
 function importSort(i1: TsImport, i2: TsImport): number {
     let strA = i1.libraryName.toLowerCase(),
         strB = i2.libraryName.toLowerCase();
@@ -41,6 +55,13 @@ function importSort(i1: TsImport, i2: TsImport): number {
     return stringSort(strA, strB);
 }
 
+/**
+ * Order specifiers by name.
+ * 
+ * @param {TsResolveSpecifier} i1
+ * @param {TsResolveSpecifier} i2
+ * @returns {number}
+ */
 function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
 }

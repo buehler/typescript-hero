@@ -39,6 +39,13 @@ export class RestartDebuggerExtension extends BaseExtension {
         this.logger.info('Extension instantiated.');
     }
 
+    /**
+     * Returns command items for this extension.
+     * 
+     * @returns {CommandQuickPickItem[]}
+     * 
+     * @memberOf RestartDebuggerExtension
+     */
     public getGuiCommands(): CommandQuickPickItem[] {
         return [
             new CommandQuickPickItem(
@@ -53,6 +60,13 @@ export class RestartDebuggerExtension extends BaseExtension {
         ];
     }
 
+    /**
+     * Initializes the extension.
+     * 
+     * @param {ExtensionContext} context
+     * 
+     * @memberOf RestartDebuggerExtension
+     */
     public initialize(context: ExtensionContext): void {
         this.configure();
         context.subscriptions.push(commands.registerCommand('typescriptHero.restartDebugger.toggle', () => {
@@ -65,6 +79,12 @@ export class RestartDebuggerExtension extends BaseExtension {
         this.logger.info('Initialized.');
     }
 
+    /**
+     * Disposes the extension.
+     * 
+     * 
+     * @memberOf RestartDebuggerExtension
+     */
     public dispose(): void {
         this.logger.info('Dispose called.');
         if (this.fileWatcher) {

@@ -30,6 +30,13 @@ export interface CodeAction {
 export class AddImportCodeAction implements CodeAction {
     constructor(private document: TextDocument, private importToAdd: DeclarationInfo) { }
 
+    /**
+     * Executes the code action. Depending on the action, there are several actions performed.
+     * 
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf AddImportCodeAction
+     */
     public async execute(): Promise<boolean> {
         let controller = await ImportManager.create(this.document);
         return controller.addDeclarationImport(this.importToAdd).commit();
@@ -46,6 +53,13 @@ export class AddImportCodeAction implements CodeAction {
 export class AddMissingImportsCodeAction implements CodeAction {
     constructor(private document: TextDocument, private resolveIndex: ResolveIndex) { }
 
+    /**
+     * Executes the code action. Depending on the action, there are several actions performed.
+     * 
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf AddMissingImportsCodeAction
+     */
     public async execute(): Promise<boolean> {
         let controller = await ImportManager.create(this.document);
         return controller.addMissingImports(this.resolveIndex).commit();
@@ -61,6 +75,13 @@ export class AddMissingImportsCodeAction implements CodeAction {
  * @implements {CodeAction}
  */
 export class NoopCodeAction implements CodeAction {
+    /**
+     * Executes the code action. Depending on the action, there are several actions performed.
+     * 
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf NoopCodeAction
+     */
     public execute(): Promise<boolean> {
         return Promise.resolve(true);
     }

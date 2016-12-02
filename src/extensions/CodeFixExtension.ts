@@ -28,10 +28,24 @@ export class CodeFixExtension extends BaseExtension {
         this.logger.info('Extension instantiated.');
     }
 
+    /**
+     * Returns command items for this extension.
+     * 
+     * @returns {CommandQuickPickItem[]}
+     * 
+     * @memberOf CodeFixExtension
+     */
     public getGuiCommands(): CommandQuickPickItem[] {
         return [];
     }
 
+    /**
+     * Initializes the extension.
+     * 
+     * @param {ExtensionContext} context
+     * 
+     * @memberOf CodeFixExtension
+     */
     public initialize(context: ExtensionContext): void {
         context.subscriptions.push(commands.registerCommand(
             'typescriptHero.codeFix.executeCodeAction',
@@ -41,6 +55,12 @@ export class CodeFixExtension extends BaseExtension {
         this.logger.info('Initialized.');
     }
 
+    /**
+     * Disposes the extension.
+     * 
+     * 
+     * @memberOf CodeFixExtension
+     */
     public dispose(): void {
         this.logger.info('Dispose called.');
     }

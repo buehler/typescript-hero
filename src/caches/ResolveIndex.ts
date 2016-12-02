@@ -27,6 +27,13 @@ export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
 
 type Resources = { [name: string]: TsResource };
 
+/**
+ * Returns the name of the node folder. Is used as the library name for indexing.
+ * (e.g. ./node_modules/webpack returns webpack)
+ * 
+ * @param {string} path
+ * @returns {string}
+ */
 function getNodeLibraryName(path: string): string {
     let dirs = path.split(/\/|\\/),
         nodeIndex = dirs.indexOf('node_modules');

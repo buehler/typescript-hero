@@ -29,6 +29,13 @@ const resolverOk = 'Resolver $(check)',
     TYPESCRIPT = 'typescript',
     TYPESCRIPT_REACT = 'typescriptreact';
 
+/**
+ * Compares the ignorepatterns (if they have the same elements ignored).
+ * 
+ * @param {string[]} local
+ * @param {string[]} config
+ * @returns {boolean}
+ */
 function compareIgnorePatterns(local: string[], config: string[]): boolean {
     if (local.length !== config.length) {
         return false;
@@ -78,6 +85,13 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Extension instantiated.');
     }
 
+    /**
+     * Returns command items for this extension.
+     * 
+     * @returns {CommandQuickPickItem[]}
+     * 
+     * @memberOf ResolveExtension
+     */
     public getGuiCommands(): CommandQuickPickItem[] {
         return [
             new CommandQuickPickItem(
@@ -113,6 +127,13 @@ export class ResolveExtension extends BaseExtension {
         ];
     }
 
+    /**
+     * Initializes the extension.
+     * 
+     * @param {ExtensionContext} context
+     * 
+     * @memberOf ResolveExtension
+     */
     public initialize(context: ExtensionContext): void {
         context.subscriptions.push(
             commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
@@ -176,6 +197,12 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Initialized.');
     }
 
+    /**
+     * Disposes the extension.
+     * 
+     * 
+     * @memberOf ResolveExtension
+     */
     public dispose(): void {
         this.logger.info('Dispose called.');
     }
