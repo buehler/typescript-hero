@@ -13,7 +13,7 @@ export class ClassNotFoundError extends Error {
 }
 
 /**
- * TODO
+ * This error is thrown, when a property should be added to a virtual class that is already present.
  * 
  * @export
  * @class PropertyDuplicated
@@ -27,7 +27,7 @@ export class PropertyDuplicated extends Error {
 }
 
 /**
- * TODO
+ * Thrown when a property does not exist on a virtual class.
  * 
  * @export
  * @class PropertyNotFound
@@ -41,7 +41,7 @@ export class PropertyNotFound extends Error {
 }
 
 /**
- * TODO
+ * Thrown when a method should be added to a virtual class that is already present.
  * 
  * @export
  * @class MethodDuplicated
@@ -55,7 +55,7 @@ export class MethodDuplicated extends Error {
 }
 
 /**
- * TODO
+ * Thrown when a method should be removed that does not exist on the virtual class.
  * 
  * @export
  * @class MethodNotFound

@@ -155,7 +155,7 @@ function getDefaultResourceIdentifier(resource: TsResource): string {
 }
 
 /**
- * TODO
+ * Returns the type text (type information) for a given node.
  * 
  * @param {TypeNode} node
  * @returns {(string|undefined)}
@@ -165,7 +165,7 @@ function getNodeType(node: TypeNode): string | undefined {
 }
 
 /**
- * TODO
+ * Returns the enum value (visibility) of a node.
  * 
  * @param {Node} node
  * @returns

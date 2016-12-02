@@ -4,7 +4,7 @@ import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
 
 /**
- * TODO
+ * Returns the visibility string for a given enum value.
  * 
  * @param {DeclarationVisibility} visibility
  * @returns {string}
@@ -46,7 +46,7 @@ export abstract class TsDeclaration extends TsNode {
     }
 
     /**
-     * TODO
+     * Generate typescript code.
      * 
      * @returns {string}
      * 
@@ -58,7 +58,7 @@ export abstract class TsDeclaration extends TsNode {
 }
 
 /**
- * TODO
+ * Typed declaration that contains type information.
  * 
  * @export
  * @abstract
@@ -87,7 +87,7 @@ export abstract class TsExportableDeclaration extends TsDeclaration {
 }
 
 /**
- * TODO
+ * Exportable declaration base that contains type information.
  * 
  * @export
  * @abstract
@@ -114,7 +114,7 @@ export abstract class TsExportableCallableDeclaration extends TsExportableDeclar
 }
 
 /**
- * TODO
+ * Exportable callable declaration that contains type information.
  * 
  * @export
  * @abstract
@@ -192,7 +192,7 @@ export class PropertyDeclaration extends TsTypedDeclaration {
     }
 
     /**
-     * TODO
+     * Generate typescript code.
      *
      * @param {ToTypescriptOptions} 
      * @returns {string}
@@ -223,7 +223,7 @@ export class MethodDeclaration extends TsTypedExportableCallableDeclaration {
     }
 
     /**
-     * TODO
+     * Generate typescript code.
      *
      * @param {ToTypescriptOptions} 
      * @returns {string}
@@ -338,7 +338,7 @@ export class ParameterDeclaration extends TsTypedDeclaration {
     }
 
     /**
-     * TODO
+     * Generate typescript code.
      *
      * @param {ToTypescriptOptions} 
      * @returns {string}

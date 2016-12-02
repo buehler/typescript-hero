@@ -24,7 +24,7 @@ import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } fro
 type VisibleObject = { visibility?: DeclarationVisibility };
 
 /**
- * TODO
+ * Sortfunction for changeable objects. Does sort the objects by visibility.
  * 
  * @param {Changeable<VisibleObject>} o1
  * @param {Changeable<VisibleObject>} o2
@@ -94,20 +94,10 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Add a property to the virtual class. Creates a Changeable<T> object with the .isNew flag set to true.
      * 
      * @param {string} name
      * @param {PropertyVisibility} visibility
-     * @param {string} type
-     * @returns {this}
-     * 
-     * @memberOf ClassManager
-     */
-    /**
-     * 
-     * 
-     * @param {string} name
-     * @param {DeclarationVisibility} visibility
      * @param {string} type
      * @returns {this}
      * 
@@ -129,7 +119,7 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Remove (aka set isDeleted) a property from the virtual class.
      * 
      * @param {string} name
      * @returns {this}
@@ -149,7 +139,7 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Add a method to the virtual class.
      * 
      * @param {(string | MethodDeclaration)} nameOrDeclaration
      * @param {DeclarationVisibility} [visibility]
@@ -185,7 +175,7 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Removes a method from the virtual class.
      * 
      * @param {string} name
      * @returns {this}
@@ -205,23 +195,17 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Commits the virtual class to the given document.
+     * The following steps are exectued with properties and methods:
+     * - Delete properties
+     * - Update changed properties (still TODO)
+     * - Insert new properties
      * 
      * @returns {Promise<boolean>}
      * 
      * @memberOf ClassManager
      */
     public async commit(): Promise<boolean> {
-        /*
-            for each properties, then for each methods
-            delete,
-            update,
-            insert
-        
-            insert reihenfolge: public, protected, private
-            static?
-        */
-
         let edits = [
             ...this.calculatePropertyEdits(),
             ...this.calculateMethodEdits()
@@ -233,7 +217,8 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Determines if a propertydeclaration is injected by the constructor.
+     * I.e. constructor(public foo: string)...
      * 
      * @private
      * @param {PropertyDeclaration} property
@@ -250,7 +235,7 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Calculates TextEdits for properties.
      * 
      * @private
      * @returns {TextEdit[]}
@@ -295,7 +280,7 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Calculates TextEdits for methods.
      * 
      * @private
      * @returns {TextEdit[]}
