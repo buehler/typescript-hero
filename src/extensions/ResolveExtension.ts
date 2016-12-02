@@ -25,9 +25,7 @@ type ImportInformation = {};
 
 const resolverOk = 'Resolver $(check)',
     resolverSyncing = 'Resolver $(sync)',
-    resolverErr = 'Resolver $(flame)',
-    TYPESCRIPT = 'typescript',
-    TYPESCRIPT_REACT = 'typescriptreact';
+    resolverErr = 'Resolver $(flame)';
 
 /**
  * Compares the ignorepatterns (if they have the same elements ignored).
