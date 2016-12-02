@@ -13,7 +13,6 @@
             true,
             "no-constructors",
             "no-properties",
-            "no-private",
             "no-private-properties"
         ],
         "member-access": [
