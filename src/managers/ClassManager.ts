@@ -118,7 +118,7 @@ export class ClassManager implements ObjectManager {
         visibility: DeclarationVisibility,
         type: string
     ): this {
-        if (this.properties.some(o => o.object.name === name && !o.isDeleted)) {
+        if (this.methods.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyDuplicated(name, this.managedClass.name);
         }
 
@@ -137,13 +137,13 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public removeProperty(name: string): this {
-        if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
+        if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyNotFound(name, this.managedClass.name);
         }
-        let property = this.properties.find(o => o.object.name === name);
+        let property = this.methods.find(o => o.object.name === name);
         property.isDeleted = true;
         if (property.isNew) {
-            this.properties.splice(this.properties.indexOf(property), 1);
+            this.methods.splice(this.methods.indexOf(property), 1);
         }
         return this;
     }
@@ -222,9 +222,27 @@ export class ClassManager implements ObjectManager {
             static?
         */
 
-        let edits = [];
+        let edits = [
+            ...this.calculatePropertyEdits(),
+            ...this.calculateMethodEdits()
+        ];
 
-        for (let property of this.properties.filter(o => o.isDeleted)) {
+        let workspaceEdit = new WorkspaceEdit();
+        workspaceEdit.set(this.document.uri, edits);
+        return workspace.applyEdit(workspaceEdit);
+    }
+
+    /**
+     * TODO
+     * 
+     * @private
+     * @returns {TextEdit[]}
+     * 
+     * @memberOf ClassManager
+     */
+    private calculatePropertyEdits(): TextEdit[] {
+        let edits = [];
+        for (let property of this.methods.filter(o => o.isDeleted)) {
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
@@ -239,8 +257,8 @@ export class ClassManager implements ObjectManager {
 
         // TODO update
 
-        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
-            let lastProperty = this.properties.filter(
+        for (let property of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
+            let lastProperty = this.methods.filter(
                 o => !o.isNew && !o.isDeleted && o.object.visibility === property.object.visibility
             ).pop();
             let lastPosition = lastProperty ?
@@ -252,8 +270,47 @@ export class ClassManager implements ObjectManager {
             ));
         }
 
-        let workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, edits);
-        return workspace.applyEdit(workspaceEdit);
+        return edits;
+    }
+
+    /**
+     * TODO
+     * 
+     * @private
+     * @returns {TextEdit[]}
+     * 
+     * @memberOf ClassManager
+     */
+    private calculateMethodEdits(): TextEdit[] {
+        let edits = [];
+        for (let method of this.methods.filter(o => o.isDeleted)) {
+            edits.push(TextEdit.delete(
+                new Range(
+                    this.document.lineAt(
+                        this.document.positionAt(method.object.start).line
+                    ).rangeIncludingLineBreak.start,
+                    this.document.lineAt(
+                        this.document.positionAt(method.object.end).line
+                    ).rangeIncludingLineBreak.end,
+                )
+            ));
+        }
+
+        // TODO update
+
+        for (let method of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
+            let lastMethod = this.methods.filter(
+                o => !o.isNew && !o.isDeleted && o.object.visibility === method.object.visibility
+            ).pop();
+            let lastPosition = lastMethod ?
+                this.document.positionAt(lastMethod.object.end).line + 1 :
+                this.document.positionAt(this.managedClass.end).line;
+            edits.push(TextEdit.insert(
+                new Position(lastPosition, 0),
+                '\n' + method.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })
+            ));
+        }
+
+        return edits;
     }
 }
