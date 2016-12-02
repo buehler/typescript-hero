@@ -751,7 +751,9 @@ export class TsResourceParser {
         node.parameters.forEach(o => {
             if (isIdentifier(o.name)) {
                 ctor.parameters.push(
-                    new TshParameterDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd())
+                    new TshParameterDeclaration(
+                        (o.name as Identifier).text, getNodeType(o.type), o.getStart(), o.getEnd()
+                    )
                 );
                 if (!o.modifiers) {
                     return;
@@ -770,7 +772,7 @@ export class TsResourceParser {
                 ctor.parameters = ctor.parameters.concat(identifiers.elements.map((bind: BindingElement) => {
                     if (isIdentifier(bind.name)) {
                         return new TshParameterDeclaration(
-                            (bind.name as Identifier).text, bind.getStart(), bind.getEnd()
+                            (bind.name as Identifier).text, undefined, bind.getStart(), bind.getEnd()
                         );
                     }
                 }).filter(Boolean));
@@ -792,12 +794,16 @@ export class TsResourceParser {
     ): TshParameterDeclaration[] {
         return node.parameters.reduce((all: TshParameterDeclaration[], cur: ParameterDeclaration) => {
             if (isIdentifier(cur.name)) {
-                all.push(new TshParameterDeclaration((cur.name as Identifier).text, cur.getStart(), cur.getEnd()));
+                all.push(new TshParameterDeclaration(
+                    (cur.name as Identifier).text, getNodeType(cur.type), cur.getStart(), cur.getEnd()
+                ));
             } else if (isObjectBindingPattern(cur.name) || isArrayBindingPattern(cur.name)) {
                 let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern;
                 all = all.concat(identifiers.elements.map((o: BindingElement) => {
                     if (isIdentifier(o.name)) {
-                        return new TshParameterDeclaration((o.name as Identifier).text, o.getStart(), o.getEnd());
+                        return new TshParameterDeclaration(
+                            (o.name as Identifier).text, undefined, o.getStart(), o.getEnd()
+                        );
                     }
                 }).filter(Boolean));
             }

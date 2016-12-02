@@ -4,6 +4,25 @@ import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
 
 /**
+ * TODO
+ * 
+ * @param {DeclarationVisibility} visibility
+ * @returns {string}
+ */
+function getVisibilityText(visibility: DeclarationVisibility): string {
+    switch (visibility) {
+        case DeclarationVisibility.Private:
+            return 'private';
+        case DeclarationVisibility.Public:
+            return 'public';
+        case DeclarationVisibility.Protected:
+            return 'protected';
+        default:
+            return '';
+    }
+}
+
+/**
  * Baseclass for all declaration objects. Contains the name of the symbol, the start and end points.
  * 
  * @export
@@ -162,27 +181,6 @@ export class PropertyDeclaration extends TsTypedDeclaration {
         return CompletionItemKind.Property;
     }
 
-    /**
-     * TODO
-     * 
-     * @readonly
-     * @private
-     * @type {string}
-     * @memberOf PropertyDeclaration
-     */
-    private get visibilityText(): string {
-        switch (this.visibility) {
-            case DeclarationVisibility.Private:
-                return 'private';
-            case DeclarationVisibility.Public:
-                return 'public';
-            case DeclarationVisibility.Protected:
-                return 'protected';
-            default:
-                return '';
-        }
-    }
-
     constructor(
         name: string,
         public visibility: DeclarationVisibility,
@@ -202,7 +200,7 @@ export class PropertyDeclaration extends TsTypedDeclaration {
      * @memberOf PropertyDeclaration
      */
     public toTypescript({tabSize}: ToTypescriptOptions): string {
-        return `${Array(tabSize + 1).join(' ')}${this.visibilityText} ${this.name}` +
+        return `${Array(tabSize + 1).join(' ')}${getVisibilityText(this.visibility)} ${this.name}` +
             `${this.type ? `: ${this.type}` : ''};\n`;
     }
 }
@@ -222,6 +220,23 @@ export class MethodDeclaration extends TsTypedExportableCallableDeclaration {
 
     constructor(name: string, type?: string, public visibility?: DeclarationVisibility, start?: number, end?: number) {
         super(name, type, start, end, false);
+    }
+
+    /**
+     * TODO
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript({tabSize}: ToTypescriptOptions): string {
+        let intend = Array(tabSize + 1).join(' ');
+        return `${intend}${getVisibilityText(this.visibility)} ${this.name}(` +
+            `${this.parameters.map(o => o.toTypescript({ tabSize })).join(', ')})` +
+            `${this.type ? `: ${this.type}` : ''} {
+${intend}${intend}throw new Error('Not implemented yet.');
+${intend}}\n`;
     }
 }
 
@@ -315,11 +330,23 @@ export class VariableDeclaration extends TsTypedExportableDeclaration {
  * 
  * @export
  * @class ParameterDeclaration
- * @extends {TsDeclaration}
+ * @extends {TsTypedDeclaration}
  */
-export class ParameterDeclaration extends TsDeclaration {
+export class ParameterDeclaration extends TsTypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
+    }
+
+    /**
+     * TODO
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript(options: ToTypescriptOptions): string {
+        return `${this.name}${this.type ? `: ${this.type}` : ''}`;
     }
 }
 
