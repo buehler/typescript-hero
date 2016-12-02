@@ -1,6 +1,26 @@
+import { ToTypescriptOptions } from './GeneratorOptions';
 import { TsNode } from './TsNode';
 import { TsResource } from './TsResource';
 import { CompletionItemKind } from 'vscode';
+
+/**
+ * Returns the visibility string for a given enum value.
+ * 
+ * @param {DeclarationVisibility} visibility
+ * @returns {string}
+ */
+function getVisibilityText(visibility: DeclarationVisibility): string {
+    switch (visibility) {
+        case DeclarationVisibility.Private:
+            return 'private';
+        case DeclarationVisibility.Public:
+            return 'public';
+        case DeclarationVisibility.Protected:
+            return 'protected';
+        default:
+            return '';
+    }
+}
 
 /**
  * Baseclass for all declaration objects. Contains the name of the symbol, the start and end points.
@@ -21,8 +41,33 @@ export abstract class TsDeclaration extends TsNode {
      */
     public abstract readonly itemKind: CompletionItemKind;
 
-    constructor(public name: string, start: number, end: number) {
+    constructor(public name: string, start?: number, end?: number) {
         super(start, end);
+    }
+
+    /**
+     * Generate typescript code.
+     * 
+     * @returns {string}
+     * 
+     * @memberOf TsDeclaration
+     */
+    public toTypescript(options: ToTypescriptOptions): string {
+        throw new Error('not implemented!');
+    }
+}
+
+/**
+ * Typed declaration that contains type information.
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedDeclaration
+ * @extends {TsDeclaration}
+ */
+export abstract class TsTypedDeclaration extends TsDeclaration {
+    constructor(name: string, public type?: string, start?: number, end?: number) {
+        super(name, start, end);
     }
 }
 
@@ -42,6 +87,20 @@ export abstract class TsExportableDeclaration extends TsDeclaration {
 }
 
 /**
+ * Exportable declaration base that contains type information.
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedExportableDeclaration
+ * @extends {TsTypedDeclaration}
+ */
+export abstract class TsTypedExportableDeclaration extends TsTypedDeclaration {
+    constructor(name: string, type: string, start: number, end: number, public isExported: boolean) {
+        super(name, type, start, end);
+    }
+}
+
+/**
  * Callable declaration like a constructor, a method or a function.
  * 
  * @export
@@ -50,6 +109,19 @@ export abstract class TsExportableDeclaration extends TsDeclaration {
  * @extends {TsExportableDeclaration}
  */
 export abstract class TsExportableCallableDeclaration extends TsExportableDeclaration {
+    public parameters: ParameterDeclaration[] = [];
+    public variables: VariableDeclaration[] = [];
+}
+
+/**
+ * Exportable callable declaration that contains type information.
+ * 
+ * @export
+ * @abstract
+ * @class TsTypedExportableCallableDeclaration
+ * @extends {TsTypedExportableDeclaration}
+ */
+export abstract class TsTypedExportableCallableDeclaration extends TsTypedExportableDeclaration {
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 }
@@ -86,15 +158,15 @@ export class ClassDeclaration extends InterfaceDeclaration {
 }
 
 /**
- * Visibility of a class or interface property.
+ * Visibility of a class or interface property, as well as a method.
  * 
  * @export
  * @enum {number}
  */
-export const enum PropertyVisibility {
+export const enum DeclarationVisibility {
     Private,
-    Public,
-    Protected
+    Protected,
+    Public
 }
 
 /**
@@ -102,15 +174,34 @@ export const enum PropertyVisibility {
  * 
  * @export
  * @class PropertyDeclaration
- * @extends {TsDeclaration}
+ * @extends {TsTypedDeclaration}
  */
-export class PropertyDeclaration extends TsDeclaration {
+export class PropertyDeclaration extends TsTypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Property;
     }
 
-    constructor(name: string, start: number, end: number, public visibility: PropertyVisibility) {
-        super(name, start, end);
+    constructor(
+        name: string,
+        public visibility: DeclarationVisibility,
+        type?: string,
+        start?: number,
+        end?: number
+    ) {
+        super(name, type, start, end);
+    }
+
+    /**
+     * Generate typescript code.
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript({tabSize}: ToTypescriptOptions): string {
+        return `${Array(tabSize + 1).join(' ')}${getVisibilityText(this.visibility)} ${this.name}` +
+            `${this.type ? `: ${this.type}` : ''};\n`;
     }
 }
 
@@ -120,15 +211,32 @@ export class PropertyDeclaration extends TsDeclaration {
  * 
  * @export
  * @class MethodDeclaration
- * @extends {TsExportableCallableDeclaration}
+ * @extends {TsTypedExportableCallableDeclaration}
  */
-export class MethodDeclaration extends TsExportableCallableDeclaration {
+export class MethodDeclaration extends TsTypedExportableCallableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Method;
     }
 
-    constructor(name: string, start: number, end: number) {
-        super(name, start, end, false);
+    constructor(name: string, type?: string, public visibility?: DeclarationVisibility, start?: number, end?: number) {
+        super(name, type, start, end, false);
+    }
+
+    /**
+     * Generate typescript code.
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript({tabSize}: ToTypescriptOptions): string {
+        let intend = Array(tabSize + 1).join(' ');
+        return `${intend}${getVisibilityText(this.visibility)} ${this.name}(` +
+            `${this.parameters.map(o => o.toTypescript({ tabSize })).join(', ')})` +
+            `${this.type ? `: ${this.type}` : ''} {
+${intend}${intend}throw new Error('Not implemented yet.');
+${intend}}\n`;
     }
 }
 
@@ -138,9 +246,9 @@ export class MethodDeclaration extends TsExportableCallableDeclaration {
  * 
  * @export
  * @class FunctionDeclaration
- * @extends {TsExportableCallableDeclaration}
+ * @extends {TsTypedExportableCallableDeclaration}
  */
-export class FunctionDeclaration extends TsExportableCallableDeclaration {
+export class FunctionDeclaration extends TsTypedExportableCallableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Function;
     }
@@ -158,7 +266,7 @@ export class ConstructorDeclaration extends TsExportableCallableDeclaration {
         return CompletionItemKind.Constructor;
     }
 
-    constructor(start: number, end: number) {
+    constructor(start?: number, end?: number) {
         super('constructor', start, end, false);
     }
 }
@@ -197,15 +305,22 @@ export class EnumDeclaration extends TsExportableDeclaration {
  * 
  * @export
  * @class VariableDeclaration
- * @extends {TsExportableDeclaration}
+ * @extends {TsTypedExportableDeclaration}
  */
-export class VariableDeclaration extends TsExportableDeclaration {
+export class VariableDeclaration extends TsTypedExportableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
     }
 
-    constructor(name: string, start: number, end: number, isExported: boolean, public isConst: boolean) {
-        super(name, start, end, isExported);
+    constructor(
+        name: string,
+        isExported: boolean,
+        public isConst: boolean,
+        type?: string,
+        start?: number,
+        end?: number
+    ) {
+        super(name, type, start, end, isExported);
     }
 }
 
@@ -215,11 +330,23 @@ export class VariableDeclaration extends TsExportableDeclaration {
  * 
  * @export
  * @class ParameterDeclaration
- * @extends {TsDeclaration}
+ * @extends {TsTypedDeclaration}
  */
-export class ParameterDeclaration extends TsDeclaration {
+export class ParameterDeclaration extends TsTypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
+    }
+
+    /**
+     * Generate typescript code.
+     *
+     * @param {ToTypescriptOptions} 
+     * @returns {string}
+     * 
+     * @memberOf PropertyDeclaration
+     */
+    public toTypescript(options: ToTypescriptOptions): string {
+        return `${this.name}${this.type ? `: ${this.type}` : ''}`;
     }
 }
 

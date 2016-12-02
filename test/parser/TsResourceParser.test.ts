@@ -5,7 +5,7 @@ import {
     EnumDeclaration,
     FunctionDeclaration,
     InterfaceDeclaration,
-    PropertyVisibility,
+    DeclarationVisibility,
     TypeAliasDeclaration,
     VariableDeclaration
 } from '../../src/models/TsDeclaration';
@@ -23,7 +23,7 @@ import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
-chai.should();
+let should = chai.should();
 
 describe('TsResourceParser', () => {
 
@@ -229,7 +229,7 @@ describe('TsResourceParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(2);
+                parsed.declarations.should.be.an('array').with.lengthOf(4);
             });
 
             it('should parse a function correctly', () => {
@@ -271,6 +271,22 @@ describe('TsResourceParser', () => {
                 func2.variables[0].name.should.equal('constVar1');
                 func2.variables[0].isExported.should.be.false;
                 func2.variables[0].isConst.should.be.true;
+            });
+
+            it('should parse return types correctly', () => {
+                let func1 = parsed.declarations[0] as FunctionDeclaration,
+                    func2 = parsed.declarations[1] as FunctionDeclaration,
+                    func3 = parsed.declarations[2] as FunctionDeclaration;
+
+                func1.type.should.equal('string');
+                func2.type.should.equal('void');
+                should.not.exist(func3.type);
+            });
+
+            it('should parse a typeguard correctly', () => {
+                let func1 = parsed.declarations[3] as FunctionDeclaration;
+
+                func1.type.should.equal('str is number');
             });
 
         });
@@ -360,8 +376,8 @@ describe('TsResourceParser', () => {
                 parsedInterface.properties[0].name.should.equal('property1');
                 parsedInterface.properties[1].name.should.equal('property2');
 
-                parsedInterface.properties[0].visibility.should.equal(PropertyVisibility.Public);
-                parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
+                parsedInterface.properties[0].visibility.should.equal(DeclarationVisibility.Public);
+                parsedInterface.properties[1].visibility.should.equal(DeclarationVisibility.Public);
             });
 
             it('should parse an exported interface', () => {
@@ -376,8 +392,20 @@ describe('TsResourceParser', () => {
                 parsedInterface.properties[0].name.should.equal('property1');
                 parsedInterface.properties[1].name.should.equal('property2');
 
-                parsedInterface.properties[0].visibility.should.equal(PropertyVisibility.Public);
-                parsedInterface.properties[1].visibility.should.equal(PropertyVisibility.Public);
+                parsedInterface.properties[0].visibility.should.equal(DeclarationVisibility.Public);
+                parsedInterface.properties[1].visibility.should.equal(DeclarationVisibility.Public);
+            });
+
+            it('should parse the returntype of a method', () => {
+                let parsedInterface = parsed.declarations[0] as InterfaceDeclaration;
+                should.not.exist(parsedInterface.methods[0].type);
+                parsedInterface.methods[1].type.should.equal('void');
+            });
+
+            it('should parse the type of a property', () => {
+                let parsedInterface = parsed.declarations[1] as InterfaceDeclaration;
+                parsedInterface.properties[0].type.should.equal('string');
+                parsedInterface.properties[1].type.should.equal('number');
             });
 
         });
@@ -418,7 +446,7 @@ describe('TsResourceParser', () => {
                 parsedClass.ctor.parameters[0].name.should.equal('param1');
 
                 parsedClass.properties[0].name.should.equal('param1');
-                parsedClass.properties[0].visibility.should.equal(PropertyVisibility.Public);
+                parsedClass.properties[0].visibility.should.equal(DeclarationVisibility.Public);
             });
 
             it('should parse an exported class', () => {
@@ -427,12 +455,30 @@ describe('TsResourceParser', () => {
                 parsedClass.isExported.should.be.true;
 
                 parsedClass.properties[0].name.should.equal('_property');
-                parsedClass.properties[0].visibility.should.equal(PropertyVisibility.Private);
+                parsedClass.properties[0].visibility.should.equal(DeclarationVisibility.Private);
                 parsedClass.properties[1].name.should.equal('protect');
-                parsedClass.properties[1].visibility.should.equal(PropertyVisibility.Protected);
+                parsedClass.properties[1].visibility.should.equal(DeclarationVisibility.Protected);
                 parsedClass.properties[2].name.should.equal('pub');
-                parsedClass.properties[2].visibility.should.equal(PropertyVisibility.Public);
+                parsedClass.properties[2].visibility.should.equal(DeclarationVisibility.Public);
             });
+
+            it('should parse the returntype of a method', () => {
+                let parsedClass = parsed.declarations[0] as ClassDeclaration;
+                should.not.exist(parsedClass.methods[0].type);
+                parsedClass.methods[1].type.should.equal('void');
+            });
+
+            it('should parse the type of a property', () => {
+                let parsedClass = parsed.declarations[2] as ClassDeclaration;
+                parsedClass.properties[0].type.should.equal('string');
+            });
+
+            it('should parse the type of a constructor introduced property', () => {
+                let parsedClass = parsed.declarations[1] as ClassDeclaration;
+                parsedClass.properties[0].type.should.equal('string');
+            });
+
+            it('should parse a methods visibility');
 
         });
 

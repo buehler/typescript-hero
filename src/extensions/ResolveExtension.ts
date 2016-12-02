@@ -1,6 +1,6 @@
 import { ResolveIndex } from '../caches/ResolveIndex';
-import { DocumentController } from '../controllers/DocumentController';
 import { ExtensionConfig } from '../ExtensionConfig';
+import { ImportManager } from '../managers/ImportManager';
 import { CommandQuickPickItem, ResolveQuickPickItem } from '../models/QuickPickItems';
 import { TshCommand } from '../models/TshCommand';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -29,6 +29,13 @@ const resolverOk = 'Resolver $(check)',
     TYPESCRIPT = 'typescript',
     TYPESCRIPT_REACT = 'typescriptreact';
 
+/**
+ * Compares the ignorepatterns (if they have the same elements ignored).
+ * 
+ * @param {string[]} local
+ * @param {string[]} config
+ * @returns {boolean}
+ */
 function compareIgnorePatterns(local: string[], config: string[]): boolean {
     if (local.length !== config.length) {
         return false;
@@ -78,6 +85,13 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Extension instantiated.');
     }
 
+    /**
+     * Returns command items for this extension.
+     * 
+     * @returns {CommandQuickPickItem[]}
+     * 
+     * @memberOf ResolveExtension
+     */
     public getGuiCommands(): CommandQuickPickItem[] {
         return [
             new CommandQuickPickItem(
@@ -113,6 +127,13 @@ export class ResolveExtension extends BaseExtension {
         ];
     }
 
+    /**
+     * Initializes the extension.
+     * 
+     * @param {ExtensionContext} context
+     * 
+     * @memberOf ResolveExtension
+     */
     public initialize(context: ExtensionContext): void {
         context.subscriptions.push(
             commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
@@ -176,6 +197,12 @@ export class ResolveExtension extends BaseExtension {
         this.logger.info('Initialized.');
     }
 
+    /**
+     * Disposes the extension.
+     * 
+     * 
+     * @memberOf ResolveExtension
+     */
     public dispose(): void {
         this.logger.info('Dispose called.');
     }
@@ -255,7 +282,7 @@ export class ResolveExtension extends BaseExtension {
             return;
         }
         try {
-            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            let ctrl = await ImportManager.create(window.activeTextEditor.document);
             await ctrl.addMissingImports(this.index).commit();
         } catch (e) {
             this.logger.error('An error happend during import fixing', e);
@@ -273,7 +300,7 @@ export class ResolveExtension extends BaseExtension {
      */
     private async organizeImports(): Promise<boolean> {
         try {
-            let ctrl = await DocumentController.create(window.activeTextEditor.document);
+            let ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
         } catch (e) {
             this.logger.error('An error happend during "organize imports".', { error: e });
@@ -291,7 +318,7 @@ export class ResolveExtension extends BaseExtension {
      * @memberOf ResolveExtension
      */
     private async addImportToDocument(item: ResolveQuickPickItem): Promise<boolean> {
-        let ctrl = await DocumentController.create(window.activeTextEditor.document);
+        let ctrl = await ImportManager.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(item.declarationInfo).commit();
     }
 

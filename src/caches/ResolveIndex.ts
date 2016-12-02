@@ -1,5 +1,10 @@
 import { ExtensionConfig } from '../ExtensionConfig';
-import { ModuleDeclaration, TsDeclaration, TsExportableDeclaration } from '../models/TsDeclaration';
+import {
+    ModuleDeclaration,
+    TsDeclaration,
+    TsExportableDeclaration,
+    TsTypedExportableDeclaration
+} from '../models/TsDeclaration';
 import { TsAllFromExport, TsAssignedExport, TsFromExport, TsNamedFromExport } from '../models/TsExport';
 import { TsFile, TsNamedResource, TsResource } from '../models/TsResource';
 import { TsResourceParser } from '../parser/TsResourceParser';
@@ -22,6 +27,13 @@ export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
 
 type Resources = { [name: string]: TsResource };
 
+/**
+ * Returns the name of the node folder. Is used as the library name for indexing.
+ * (e.g. ./node_modules/webpack returns webpack)
+ * 
+ * @param {string} path
+ * @returns {string}
+ */
 function getNodeLibraryName(path: string): string {
     let dirs = path.split(/\/|\\/),
         nodeIndex = dirs.indexOf('node_modules');
@@ -297,7 +309,7 @@ export class ResolveIndex {
      * 
      * @memberOf ResolveIndex
      */
-    private async parseResources(files: TsFile[], cancellationToken?: CancellationToken): Promise<Resources> {
+    private async parseResources(files: TsFile[] = [], cancellationToken?: CancellationToken): Promise<Resources> {
         let parsedResources: Resources = {};
 
         for (let file of files) {
@@ -324,8 +336,9 @@ export class ResolveIndex {
                 return;
             }
             let resource = parsedResources[key];
-            resource.declarations = resource.declarations
-                .filter(o => o instanceof TsExportableDeclaration && o.isExported);
+            resource.declarations = resource.declarations.filter(
+                o => (o instanceof TsExportableDeclaration || o instanceof TsTypedExportableDeclaration) && o.isExported
+            );
             this.processResourceExports(parsedResources, resource);
         }
 
@@ -423,7 +436,9 @@ export class ResolveIndex {
                 }
             } else {
                 if (ex instanceof TsAssignedExport) {
-                    for (let lib of ex.exported.filter(o => !(o instanceof TsExportableDeclaration))) {
+                    for (let lib of ex.exported.filter(
+                        o => !(o instanceof TsExportableDeclaration) && !(o instanceof TsTypedExportableDeclaration))
+                    ) {
                         this.processResourceExports(parsedResources, lib as TsResource, processedResources);
                     }
                     this.processAssignedExport(parsedResources, ex, resource);
@@ -500,11 +515,14 @@ export class ResolveIndex {
         exportingLib: TsResource
     ): void {
         tsExport.exported.forEach(exported => {
-            if (exported instanceof TsExportableDeclaration) {
+            if (exported instanceof TsExportableDeclaration || exported instanceof TsTypedExportableDeclaration) {
                 exportingLib.declarations.push(exported);
             } else {
                 exportingLib.declarations.push(
-                    ...exported.declarations.filter(o => o instanceof TsExportableDeclaration && o.isExported)
+                    ...exported.declarations.filter(
+                        o => (o instanceof TsExportableDeclaration || o instanceof TsTypedExportableDeclaration) &&
+                            o.isExported
+                    )
                 );
                 exported.declarations = [];
             }

@@ -1,3 +1,4 @@
+import { ObjectManager } from './ObjectManager';
 import { ResolveQuickPickItem } from '../models/QuickPickItems';
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
 import { ExtensionConfig } from '../ExtensionConfig';
@@ -24,6 +25,13 @@ import {
 } from '../utilities/ResolveIndexExtensions';
 import { InputBoxOptions, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
+/**
+ * String-Sort function.
+ * 
+ * @param {string} strA
+ * @param {string} strB
+ * @returns {number}
+ */
 function stringSort(strA: string, strB: string): number {
     if (strA < strB) {
         return -1;
@@ -33,6 +41,13 @@ function stringSort(strA: string, strB: string): number {
     return 0;
 }
 
+/**
+ * Order imports by library name.
+ * 
+ * @param {TsImport} i1
+ * @param {TsImport} i2
+ * @returns {number}
+ */
 function importSort(i1: TsImport, i2: TsImport): number {
     let strA = i1.libraryName.toLowerCase(),
         strB = i2.libraryName.toLowerCase();
@@ -40,18 +55,25 @@ function importSort(i1: TsImport, i2: TsImport): number {
     return stringSort(strA, strB);
 }
 
+/**
+ * Order specifiers by name.
+ * 
+ * @param {TsResolveSpecifier} i1
+ * @param {TsResolveSpecifier} i2
+ * @returns {number}
+ */
 function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
 }
 
 /**
- * Management class for a TextDocument. Can add and remove parts of the document
+ * Management class for the imports of a document. Can add and remove imports to the document
  * and commit the virtual document to the TextEditor.
  * 
  * @export
- * @class DocumentController
+ * @class ImportManager
  */
-export class DocumentController {
+export class ImportManager implements ObjectManager {
     private static get parser(): TsResourceParser {
         return Injector.get(TsResourceParser);
     }
@@ -69,33 +91,33 @@ export class DocumentController {
      * 
      * @readonly
      * @type {TsFile}
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     public get parsedDocument(): TsFile {
         return this._parsedDocument;
     }
 
-    private constructor(private readonly document: TextDocument, private _parsedDocument: TsFile) {
+    private constructor(public readonly document: TextDocument, private _parsedDocument: TsFile) {
         this.imports = _parsedDocument.imports.map(o => o.clone<TsImport>());
     }
 
     /**
-     * Creates an instance of a DocumentController.
+     * Creates an instance of an ImportManager.
      * Does parse the document text first and returns a promise that
-     * resolves to a DocumentController.
+     * resolves to an ImportManager.
      * 
      * @static
      * @param {TextDocument} document The document that should be managed
-     * @returns {Promise<DocumentController>}
+     * @returns {Promise<ImportManager>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
-    public static async create(document: TextDocument): Promise<DocumentController> {
-        let source = await DocumentController.parser.parseSource(document.getText());
+    public static async create(document: TextDocument): Promise<ImportManager> {
+        let source = await ImportManager.parser.parseSource(document.getText());
         source.imports = source.imports.map(
             o => o instanceof TsNamedImport || o instanceof TsDefaultImport ? new ImportProxy(o) : o
         );
-        return new DocumentController(document, source);
+        return new ImportManager(document, source);
     }
 
     /**
@@ -104,9 +126,9 @@ export class DocumentController {
      * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
      * 
      * @param {DeclarationInfo} declarationInfo The import that should be added to the document
-     * @returns {DocumentController}
+     * @returns {ImportManager}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
         // If there is something already imported, it must be a NamedImport or a DefaultImport
@@ -156,7 +178,7 @@ export class DocumentController {
      * @param {ResolveIndex} resolveIndex
      * @returns {this}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     public addMissingImports(resolveIndex: ResolveIndex): this {
         let declarations = getDeclarationsFilteredByImports(
@@ -184,9 +206,9 @@ export class DocumentController {
      * 1. string-only imports (e.g. import 'reflect-metadata')
      * 2. rest, but in alphabetical order
      * 
-     * @returns {DocumentController}
+     * @returns {ImportManager}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     public organizeImports(): this {
         this.organize = true;
@@ -229,7 +251,7 @@ export class DocumentController {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     public async commit(): Promise<boolean> {
         // Commit the documents imports:
@@ -244,9 +266,9 @@ export class DocumentController {
                 edits.push(TextEdit.delete(imp.getRange(this.document)));
             }
             edits.push(TextEdit.insert(
-                getImportInsertPosition(DocumentController.config.resolver.newImportLocation, window.activeTextEditor),
+                getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
                 this.imports.reduce(
-                    (all, cur) => all += cur.toImport(DocumentController.config.resolver.importOptions),
+                    (all, cur) => all += cur.toImport(ImportManager.config.resolver.importOptions),
                     ''
                 )
             ));
@@ -265,15 +287,15 @@ export class DocumentController {
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
                         imp.getRange(this.document),
-                        imp.toImport(DocumentController.config.resolver.importOptions)
+                        imp.toImport(ImportManager.config.resolver.importOptions)
                     ));
                 } else {
                     edits.push(TextEdit.insert(
                         getImportInsertPosition(
-                            DocumentController.config.resolver.newImportLocation,
+                            ImportManager.config.resolver.newImportLocation,
                             window.activeTextEditor
                         ),
-                        imp.toImport(DocumentController.config.resolver.importOptions)
+                        imp.toImport(ImportManager.config.resolver.importOptions)
                     ));
                 }
             }
@@ -286,7 +308,7 @@ export class DocumentController {
         let result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             delete this.organize;
-            this._parsedDocument = await DocumentController.parser.parseSource(this.document.getText());
+            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
         }
 
         return result;
@@ -299,7 +321,7 @@ export class DocumentController {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     private async resolveImportSpecifiers(): Promise<void> {
         let getSpecifiers = () => this.imports
@@ -355,7 +377,7 @@ export class DocumentController {
      * @private
      * @returns {Promise<string>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     private async getSpecifierAlias(): Promise<string> {
         let result = await this.vscodeInputBox({
@@ -373,7 +395,7 @@ export class DocumentController {
      * @param {string} declarationName
      * @returns {Promise<string>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string> {
         let result = await this.vscodeInputBox({
@@ -392,7 +414,7 @@ export class DocumentController {
      * @param {InputBoxOptions} options
      * @returns {Promise<string>}
      * 
-     * @memberOf DocumentController
+     * @memberOf ImportManager
      */
     private async vscodeInputBox(options: InputBoxOptions): Promise<string> {
         return await window.showInputBox(options);

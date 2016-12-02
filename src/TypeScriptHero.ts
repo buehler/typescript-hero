@@ -28,6 +28,12 @@ export class TypeScriptHero implements Disposable {
         this.extensions.forEach(o => o.initialize(context));
     }
 
+    /**
+     * Disposes TypeScript Hero.
+     * 
+     * 
+     * @memberOf TypeScriptHero
+     */
     public dispose(): void {
         this.logger.info('Deactivation event called. Disposing TypeScriptHero.');
         for (let ext of this.extensions) {
