@@ -450,7 +450,27 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add multiple properties in between properties');
+        it('should add multiple properties in between properties', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.addProperty('protProp', DeclarationVisibility.Protected, 'number')
+                    .addProperty('pubProp', DeclarationVisibility.Public, 'number')
+                    .addProperty('privProp', DeclarationVisibility.Private, 'number');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(22).text.should.equals(`    public foo: string;`);
+                document.lineAt(23).text.should.equals(`    public pubProp: number;`);
+                document.lineAt(24).text.should.equals(`    protected bar: string;`);
+                document.lineAt(25).text.should.equals(`    protected protProp: number;`);
+                document.lineAt(26).text.should.equals(`    private baz: string;`);
+                document.lineAt(27).text.should.equals(`    private privProp: number;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should remove multiple properties from a class', async done => {
             try {
@@ -468,7 +488,39 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should remove multiple properties to reach an empty class');
+        it('should remove multiple properties to reach an empty class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.removeProperty('foo')
+                    .removeProperty('bar')
+                    .removeProperty('baz');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(21).text.should.equals(`class ManagedClassWithProperties {`);
+                document.lineAt(22).text.should.equals(`}`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove one and add one property', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+
+                ctrl.removeProperty('foo')
+                    .addProperty('fooReplace', DeclarationVisibility.Public, 'type');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(22).text.should.equals(`    public fooReplace: type;`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add a method to a class');
 
