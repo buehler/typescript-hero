@@ -52,6 +52,7 @@ export class CodeFixExtension extends BaseExtension {
             (codeAction: CodeAction) => this.executeCodeAction(codeAction)
         ));
         context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this.codeActionProvider));
+        context.subscriptions.push(languages.registerCodeActionsProvider('typescriptreact', this.codeActionProvider));
         this.logger.info('Initialized.');
     }
 

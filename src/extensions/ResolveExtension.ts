@@ -154,8 +154,10 @@ export class ResolveExtension extends BaseExtension {
         context.subscriptions.push(
             commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex())
         );
-        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT, this.completionProvider));
-        context.subscriptions.push(languages.registerCompletionItemProvider(TYPESCRIPT_REACT, this.completionProvider));
+        context.subscriptions.push(languages.registerCompletionItemProvider('typescript', this.completionProvider));
+        context.subscriptions.push(
+            languages.registerCompletionItemProvider('typescriptreact', this.completionProvider)
+        );
         context.subscriptions.push(this.statusBarItem);
         context.subscriptions.push(this.fileWatcher);
 
