@@ -15,18 +15,7 @@ import { Position, Range, TextDocument, window, workspace } from 'vscode';
 let should = chai.should();
 chai.use(sinonChai);
 
-function lineRangeText(document: TextDocument, from: number, to: number): string {
-    let text = '';
-    for (from; from <= to; from++) {
-        text += document.lineAt(from).text;
-        if (from !== to) {
-            text += '\n';
-        }
-    }
-    return text;
-}
-
-describe.only('ClassManager', () => {
+describe('ClassManager', () => {
 
     const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
     let document: TextDocument,
@@ -336,7 +325,7 @@ describe.only('ClassManager', () => {
 
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(10).text.should.equals(`public fooobar(): string {   }`);
+                document.lineAt(10).text.should.equal(`public fooobar(): string {   }`);
 
                 done();
             } catch (e) {
@@ -351,7 +340,7 @@ describe.only('ClassManager', () => {
                 ctrl.addProperty('newProp', DeclarationVisibility.Private, 'myType');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(10).text.should.equals(`    private newProp: myType;`);
+                document.lineAt(10).text.should.equal(`    private newProp: myType;`);
 
                 done();
             } catch (e) {
@@ -366,7 +355,7 @@ describe.only('ClassManager', () => {
                 ctrl.addProperty('newProp', DeclarationVisibility.Public, 'taip');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(23).text.should.equals(`    public newProp: taip;`);
+                document.lineAt(23).text.should.equal(`    public newProp: taip;`);
 
                 done();
             } catch (e) {
@@ -381,7 +370,7 @@ describe.only('ClassManager', () => {
                 ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(46).text.should.equals(`    protected newProp: number;`);
+                document.lineAt(46).text.should.equal(`    protected newProp: number;`);
 
                 done();
             } catch (e) {
@@ -413,8 +402,8 @@ describe.only('ClassManager', () => {
                     .addProperty('pubProp', DeclarationVisibility.Public, 'string');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(10).text.should.equals(`    public pubProp: string;`);
-                document.lineAt(11).text.should.equals(`    protected newProp: number;`);
+                document.lineAt(10).text.should.equal(`    public pubProp: string;`);
+                document.lineAt(11).text.should.equal(`    protected newProp: number;`);
 
                 done();
             } catch (e) {
@@ -430,8 +419,8 @@ describe.only('ClassManager', () => {
                     .addProperty('pubProp', DeclarationVisibility.Public, 'string');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(46).text.should.equals(`    public pubProp: string;`);
-                document.lineAt(47).text.should.equals(`    protected newProp: number;`);
+                document.lineAt(46).text.should.equal(`    public pubProp: string;`);
+                document.lineAt(47).text.should.equal(`    protected newProp: number;`);
 
                 done();
             } catch (e) {
@@ -446,8 +435,8 @@ describe.only('ClassManager', () => {
                 ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(23).text.should.equals(`    protected bar: string;`);
-                document.lineAt(24).text.should.equals(`    protected newProp: number;`);
+                document.lineAt(23).text.should.equal(`    protected bar: string;`);
+                document.lineAt(24).text.should.equal(`    protected newProp: number;`);
 
                 done();
             } catch (e) {
@@ -464,12 +453,12 @@ describe.only('ClassManager', () => {
                     .addProperty('privProp', DeclarationVisibility.Private, 'number');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(22).text.should.equals(`    public foo: string;`);
-                document.lineAt(23).text.should.equals(`    public pubProp: number;`);
-                document.lineAt(24).text.should.equals(`    protected bar: string;`);
-                document.lineAt(25).text.should.equals(`    protected protProp: number;`);
-                document.lineAt(26).text.should.equals(`    private baz: string;`);
-                document.lineAt(27).text.should.equals(`    private privProp: number;`);
+                document.lineAt(22).text.should.equal(`    public foo: string;`);
+                document.lineAt(23).text.should.equal(`    public pubProp: number;`);
+                document.lineAt(24).text.should.equal(`    protected bar: string;`);
+                document.lineAt(25).text.should.equal(`    protected protProp: number;`);
+                document.lineAt(26).text.should.equal(`    private baz: string;`);
+                document.lineAt(27).text.should.equal(`    private privProp: number;`);
 
                 done();
             } catch (e) {
@@ -484,9 +473,9 @@ describe.only('ClassManager', () => {
                 ctrl.removeProperty('foo').removeProperty('baz');
                 (await ctrl.commit()).should.be.true;
 
-                lineRangeText(document, 21, 23).should.equal(`class ManagedClassWithProperties {
-    protected bar: string;
-}`);
+                document.lineAt(21).text.should.equal(`class ManagedClassWithProperties {`);
+                document.lineAt(22).text.should.equal(`    protected bar: string;`);
+                document.lineAt(23).text.should.equal(`}`);
                 done();
             } catch (e) {
                 done(e);
@@ -502,8 +491,8 @@ describe.only('ClassManager', () => {
                     .removeProperty('baz');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(21).text.should.equals(`class ManagedClassWithProperties {`);
-                document.lineAt(22).text.should.equals(`}`);
+                document.lineAt(21).text.should.equal(`class ManagedClassWithProperties {`);
+                document.lineAt(22).text.should.equal(`}`);
 
                 done();
             } catch (e) {
@@ -519,7 +508,7 @@ describe.only('ClassManager', () => {
                     .addProperty('fooReplace', DeclarationVisibility.Public, 'type');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(22).text.should.equals(`    public fooReplace: type;`);
+                document.lineAt(22).text.should.equal(`    public fooReplace: type;`);
 
                 done();
             } catch (e) {
@@ -534,9 +523,9 @@ describe.only('ClassManager', () => {
                 ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(20).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
-                document.lineAt(21).text.should.equals(`        throw new Error('Not implemented yet.');`);
-                document.lineAt(22).text.should.equals(`    }`);
+                document.lineAt(20).text.should.equal(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(21).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(22).text.should.equal(`    }`);
 
                 done();
             } catch (e) {
@@ -551,9 +540,9 @@ describe.only('ClassManager', () => {
                 ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(26).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
-                document.lineAt(27).text.should.equals(`        throw new Error('Not implemented yet.');`);
-                document.lineAt(28).text.should.equals(`    }`);
+                document.lineAt(26).text.should.equal(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(27).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(28).text.should.equal(`    }`);
 
                 done();
             } catch (e) {
@@ -584,13 +573,13 @@ describe.only('ClassManager', () => {
                     .addMethod('protMethod', DeclarationVisibility.Protected, 'type');
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(16).text.should.equals(`    protected protMethod(): type {`);
-                document.lineAt(17).text.should.equals(`        throw new Error('Not implemented yet.');`);
-                document.lineAt(18).text.should.equals(`    }`);
+                document.lineAt(16).text.should.equal(`    protected protMethod(): type {`);
+                document.lineAt(17).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(18).text.should.equal(`    }`);
 
-                document.lineAt(24).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
-                document.lineAt(25).text.should.equals(`        throw new Error('Not implemented yet.');`);
-                document.lineAt(26).text.should.equals(`    }`);
+                document.lineAt(24).text.should.equal(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(25).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(26).text.should.equal(`    }`);
 
                 done();
             } catch (e) {
@@ -614,7 +603,25 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should add a property and a method to a class');
+        it.only('should add a property and a method to a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassFull');
+
+                ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'FOOBAR')
+                    .addMethod('newMethod', DeclarationVisibility.Public);
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(29).text.should.equal('    public newProperty: FOOBAR;');
+
+                document.lineAt(37).text.should.equal(`    public newMethod() {`);
+                document.lineAt(38).text.should.equal(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(39).text.should.equal(`    }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should remove a property and a method from a class');
 
