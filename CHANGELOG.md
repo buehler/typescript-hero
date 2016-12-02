@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 #### Added
-- Classmanager that can modify classes in a document ([#123](https://github.com/buehler/typescript-hero/issues/123))
+- Classmanager that can modify classes in a document ([#127](https://github.com/buehler/typescript-hero/issues/127))
 
 ## [0.10.1]
 #### Added
