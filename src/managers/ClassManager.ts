@@ -285,14 +285,19 @@ export class ClassManager implements ObjectManager {
     private calculateMethodEdits(): TextEdit[] {
         let edits = [];
         for (let method of this.methods.filter(o => o.isDeleted)) {
+            let endPosition = this.document.positionAt(method.object.end),
+                endLine = endPosition.line;
+
+            if (this.document.lineAt(endLine + 1).isEmptyOrWhitespace) {
+                endLine++;
+            }
+
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
                         this.document.positionAt(method.object.start).line
                     ).rangeIncludingLineBreak.start,
-                    this.document.lineAt(
-                        this.document.positionAt(method.object.end).line
-                    ).rangeIncludingLineBreak.end,
+                    this.document.lineAt(endLine).rangeIncludingLineBreak.end,
                 )
             ));
         }

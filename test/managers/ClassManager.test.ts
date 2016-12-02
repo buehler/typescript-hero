@@ -544,11 +544,75 @@ describe.only('ClassManager', () => {
             }
         });
 
-        it('should remove a method from a class');
+        it('should add a method to a class without methods', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
-        it('should add multiple methods to a class');
+                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
+                (await ctrl.commit()).should.be.true;
 
-        it('should remove multiple methods from a class');
+                document.lineAt(26).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(27).text.should.equals(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(28).text.should.equals(`    }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove a method from a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.removeMethod('whatever');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(12).text.should.equal('    private ohyea(foo: string, bar: number): ManagedClass {');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should add multiple methods to a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')])
+                    .addMethod('protMethod', DeclarationVisibility.Protected, 'type');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(16).text.should.equals(`    protected protMethod(): type {`);
+                document.lineAt(17).text.should.equals(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(18).text.should.equals(`    }`);
+
+                document.lineAt(24).text.should.equals(`    private newMethod(foo, bar: baz): type {`);
+                document.lineAt(25).text.should.equals(`        throw new Error('Not implemented yet.');`);
+                document.lineAt(26).text.should.equals(`    }`);
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should remove multiple methods from a class', async done => {
+            try {
+                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+
+                ctrl.removeMethod('whatever').removeMethod('method').removeMethod('ohyea');
+                (await ctrl.commit()).should.be.true;
+
+                document.lineAt(9).text.should.equal('class ManagedClassWithMethods {');
+                document.lineAt(10).text.should.equal('}');
+
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
         it('should add a property and a method to a class');
 
