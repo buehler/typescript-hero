@@ -648,7 +648,7 @@ export class TsResourceParser {
                         getNodeVisibility(o),
                         o.getStart(),
                         o.getEnd(),
-                        o.modifiers.some(m => m.kind === SyntaxKind.AbstractKeyword)
+                        o.modifiers && o.modifiers.some(m => m.kind === SyntaxKind.AbstractKeyword)
                     );
                     method.parameters = this.parseMethodParams(o);
                     classDeclaration.methods.push(method);
