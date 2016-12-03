@@ -6,6 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Added
 - Classmanager that can modify classes in a document ([#127](https://github.com/buehler/typescript-hero/issues/127))
 - Support for light-bulb feature in tsx files ([#128](https://github.com/buehler/typescript-hero/issues/128))
+- CodeFix can now implement missing methods and properties from interfaces and abstract classes ([#114](https://github.com/buehler/typescript-hero/issues/114))
 
 ## [0.10.1]
 #### Added
