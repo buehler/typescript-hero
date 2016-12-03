@@ -2,11 +2,9 @@ import { CodeFixImplementAbstract, CodeFixImplementInterface } from './exportedO
 
 
 class InterfaceImplement implements CodeFixImplementInterface {
-
 }
 
 class AbstractImplement extends CodeFixImplementAbstract {
-
 }
 
 abstract class InternalAbstract {
@@ -20,9 +18,7 @@ interface InternalInterface {
 }
 
 class InternalInterfaceImplement implements InternalInterface {
-
 }
 
 class InternalAbstractImplement extends InternalAbstract {
-
 }
