@@ -34,55 +34,75 @@ describe('TypescriptCodeActionProvider', () => {
                 done();
             });
 
-            it('should resolve a missing import problem to a code action', () => {
-                let cmds = provider.provideCodeActions(
-                    document,
-                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-                    { diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
-                    null
-                );
-                cmds.should.have.lengthOf(2);
-                let action = cmds[0];
-                action.title.should.equal('Import "Class1" from "/resourceIndex".');
-                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+            it('should resolve a missing import problem to a code action', async done => {
+                try {
+                    let cmds = await provider.provideCodeActions(
+                        document,
+                        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                        { diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
+                        null
+                    );
+                    cmds.should.have.lengthOf(2);
+                    let action = cmds[0];
+                    action.title.should.equal('Import "Class1" from "/resourceIndex".');
+                    action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
             });
 
-            it('should resolve to a NOOP code action if the missing import is not found in the index', () => {
-                let cmds = provider.provideCodeActions(
-                    document,
-                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-                    { diagnostics: [{ message: `Cannot find name 'FOOOOBAR'.` }] },
-                    null
-                );
-                cmds.should.have.lengthOf(1);
-                cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index.');
+            it('should resolve to a NOOP code action if the missing import is not found in the index', async done => {
+                try {
+                    let cmds = await provider.provideCodeActions(
+                        document,
+                        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                        { diagnostics: [{ message: `Cannot find name 'FOOOOBAR'.` }] },
+                        null
+                    );
+                    cmds.should.have.lengthOf(1);
+                    cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index.');
+                    done();
+                } catch (e) {
+                    done(e);
+                }
             });
 
-            it('should not resolve to a code action if the problem is not recognized', () => {
-                let cmds = provider.provideCodeActions(
-                    document,
-                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-                    { diagnostics: [{ message: `I really do have a problem mate..` }] },
-                    null
-                );
-                cmds.should.have.lengthOf(0);
+            it('should not resolve to a code action if the problem is not recognized', async done => {
+                try {
+                    let cmds = await provider.provideCodeActions(
+                        document,
+                        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                        { diagnostics: [{ message: `I really do have a problem mate..` }] },
+                        null
+                    );
+                    cmds.should.have.lengthOf(0);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
             });
 
-            it('should add multiple code actions for multiple declarations found', () => {
-                let cmds = provider.provideCodeActions(
-                    document,
-                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-                    { diagnostics: [{ message: `Cannot find name 'FancierLibraryClass'.` }] },
-                    null
-                );
-                cmds.should.have.lengthOf(3);
-                let action = cmds[0];
-                action.title.should.equal('Import "FancierLibraryClass" from "/resourceIndex".');
-                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+            it('should add multiple code actions for multiple declarations found', async done => {
+                try {
+                    let cmds = await provider.provideCodeActions(
+                        document,
+                        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                        { diagnostics: [{ message: `Cannot find name 'FancierLibraryClass'.` }] },
+                        null
+                    );
+                    cmds.should.have.lengthOf(3);
+                    let action = cmds[0];
+                    action.title.should.equal('Import "FancierLibraryClass" from "/resourceIndex".');
+                    action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
 
-                action = cmds[1];
-                action.title.should.equal('Import "FancierLibraryClass" from "fancy-library/FancierLibraryClass".');
-                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+                    action = cmds[1];
+                    action.title.should.equal('Import "FancierLibraryClass" from "fancy-library/FancierLibraryClass".');
+                    action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+                    done();
+                } catch (e) {
+                    done(e);
+                }
             });
 
         });
