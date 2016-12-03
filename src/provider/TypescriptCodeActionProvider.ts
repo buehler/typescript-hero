@@ -1,3 +1,5 @@
+import { getAbsolutLibraryName } from '../utilities/ResolveIndexExtensions';
+import { TsNamedImport } from '../models/TsImport';
 import { TsResourceParser } from '../parser/TsResourceParser';
 import {
     AddImportCodeAction,
@@ -88,11 +90,14 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                     }
                     break;
                 case !!(match = isMissingDerivedImplementation(diagnostic)):
-                    // TODO check for the already imported interface
                     let parsedDocument = await this.parser.parseSource(document.getText()),
+                        alreadyImported = parsedDocument.imports.find(
+                            o => o instanceof TsNamedImport && o.specifiers.some(s => s.specifier === match[2])
+                        ),
                         declaration = parsedDocument.declarations.find(o => o.name === match[2]) ||
                             (this.resolveIndex.declarationInfos.find(
-                                o => o.declaration.name === match[2]
+                                o => o.declaration.name === match[2] &&
+                                    o.from === getAbsolutLibraryName(alreadyImported.libraryName, document.fileName)
                             ) || { declaration: undefined }).declaration;
 
                     if (!declaration) {
