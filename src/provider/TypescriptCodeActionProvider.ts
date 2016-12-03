@@ -101,6 +101,11 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                                     o.from === getAbsolutLibraryName(alreadyImported.libraryName, document.fileName)
                             ) || { declaration: undefined }).declaration;
 
+                    if (commands.some((o: Command) => o.title.indexOf(match[2]) >= 0)) {
+                        // Do leave the method when a command with the found class is already added.
+                        break;
+                    }
+
                     if (!declaration) {
                         commands.push(this.createCommand(
                             `Cannot find "${match[2]}" in the index or the actual file.`,
