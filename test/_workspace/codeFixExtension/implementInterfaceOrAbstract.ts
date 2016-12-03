@@ -1,11 +1,11 @@
-import { CodeFixImplementInterface } from './exportedObjects';
+import { CodeFixImplementAbstract, CodeFixImplementInterface } from './exportedObjects';
 
 
 class InterfaceImplement implements CodeFixImplementInterface {
 
 }
 
-class AbstractImplement {
+class AbstractImplement extends CodeFixImplementAbstract {
 
 }
 
@@ -19,7 +19,7 @@ interface InternalInterface {
     methodTwo();
 }
 
-class InternalInterfaceImplement {
+class InternalInterfaceImplement implements InternalInterface {
 
 }
 
