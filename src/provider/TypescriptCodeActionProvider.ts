@@ -65,7 +65,6 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
 
         for (let diagnostic of context.diagnostics) {
             switch (true) {
-                // When the problem is a missing import, add the import to the document.
                 case !!(match = isMissingImport(diagnostic)):
                     let infos = this.resolveIndex.declarationInfos.filter(o => o.declaration.name === match[1]);
                     if (infos.length > 0) {
