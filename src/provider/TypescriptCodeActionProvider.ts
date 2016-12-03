@@ -89,7 +89,8 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                         ));
                     }
                     break;
-                case !!(match = isMissingDerivedImplementation(diagnostic)):
+                case !!(match = isIncorrectlyImplementingInterface(diagnostic)):
+                case !!(match = isIncorrectlyImplementingAbstract(diagnostic)):
                     let parsedDocument = await this.parser.parseSource(document.getText()),
                         alreadyImported = parsedDocument.imports.find(
                             o => o instanceof TsNamedImport && o.specifiers.some(s => s.specifier === match[2])
@@ -109,7 +110,7 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                     }
 
                     commands.push(this.createCommand(
-                        `Implement missing methods for "${match[2]}"`,
+                        `Implement missing elements from "${match[2]}"`,
                         new ImplementPolymorphElements(document, match[1], declaration)
                     ));
 
@@ -152,12 +153,21 @@ function isMissingImport(diagnostic: Diagnostic): RegExpExecArray {
 }
 
 /**
- * Determines if the problem is an incorrect implementation of an interface, or missing
- * implementations of an abstract class.
+ * Determines if the problem is an incorrect implementation of an interface.
  * 
  * @param {Diagnostic} diagnostic
  * @returns {RegExpExecArray}
  */
-function isMissingDerivedImplementation(diagnostic: Diagnostic): RegExpExecArray {
+function isIncorrectlyImplementingInterface(diagnostic: Diagnostic): RegExpExecArray {
     return /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.exec(diagnostic.message);
+}
+
+/**
+ * Determines if the problem is missing implementations of an abstract class.
+ * 
+ * @param {Diagnostic} diagnostic
+ * @returns {RegExpExecArray}
+ */
+function isIncorrectlyImplementingAbstract(diagnostic: Diagnostic): RegExpExecArray {
+    return /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.exec(diagnostic.message);
 }
