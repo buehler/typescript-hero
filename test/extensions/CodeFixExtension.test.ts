@@ -19,7 +19,7 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe('CodeFixExtension', () => {
+describe.only('CodeFixExtension', () => {
 
     let extension: any,
         actionProvider: TypescriptCodeActionProvider;
@@ -141,6 +141,14 @@ describe('CodeFixExtension', () => {
             });
             done();
         });
+
+        it('should add interface elements to a class');
+
+        it('should add abstract class elements to a class');
+
+        it('should add local interface elements to a class');
+
+        it('should add local abstract class elements to a class');
 
     });
 

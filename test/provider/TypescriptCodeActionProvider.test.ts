@@ -3,6 +3,7 @@ import { AddImportCodeAction, CodeAction } from '../../src/models/CodeAction';
 import { TypescriptCodeActionProvider } from '../../src/provider/TypescriptCodeActionProvider';
 import * as chai from 'chai';
 import { join } from 'path';
+import { TextDocument } from 'vscode';
 import * as vscode from 'vscode';
 
 chai.should();
@@ -15,24 +16,35 @@ class NoopCodeAction implements CodeAction {
 
 describe('TypescriptCodeActionProvider', () => {
 
-    let provider: any;
+    const file = join(vscode.workspace.rootPath, 'codeFixExtension/empty.ts');
+    let provider: any,
+        document: TextDocument;
 
-    before(() => {
+    before(async done => {
         provider = Injector.get(TypescriptCodeActionProvider);
+        document = await vscode.workspace.openTextDocument(file);
+        await vscode.window.showTextDocument(document);
+        done();
     });
 
     describe('provideCodeActions()', () => {
 
-        describe('missing import actions', () => {
-
-            const file = join(vscode.workspace.rootPath, 'codeFixExtension/empty.ts');
-            let document: vscode.TextDocument;
-
-            before(async done => {
-                document = await vscode.workspace.openTextDocument(file);
-                await vscode.window.showTextDocument(document);
+        it('should not resolve to a code action if the problem is not recognized', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `I really do have a problem mate..` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(0);
                 done();
-            });
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        describe('missing import actions', () => {
 
             it('should resolve a missing import problem to a code action', async done => {
                 try {
@@ -68,21 +80,6 @@ describe('TypescriptCodeActionProvider', () => {
                 }
             });
 
-            it('should not resolve to a code action if the problem is not recognized', async done => {
-                try {
-                    let cmds = await provider.provideCodeActions(
-                        document,
-                        new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
-                        { diagnostics: [{ message: `I really do have a problem mate..` }] },
-                        null
-                    );
-                    cmds.should.have.lengthOf(0);
-                    done();
-                } catch (e) {
-                    done(e);
-                }
-            });
-
             it('should add multiple code actions for multiple declarations found', async done => {
                 try {
                     let cmds = await provider.provideCodeActions(
@@ -106,6 +103,18 @@ describe('TypescriptCodeActionProvider', () => {
             });
 
         });
+
+    });
+
+    describe('missing polymorphic elements actions', () => {
+
+        it('should resolve missing implementations of an interface to a code action');
+
+        it('should resolve missing implementations of an abstract class to a code action');
+
+        it('should resolve missing to a NOOP if the interface / class is not found');
+
+        it('should resolve missing implementations of an abstract class to a code action');
 
     });
 
