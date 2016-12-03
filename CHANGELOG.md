@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.11.0]
 #### Added
 - Classmanager that can modify classes in a document ([#127](https://github.com/buehler/typescript-hero/issues/127))
 - Support for light-bulb feature in tsx files ([#128](https://github.com/buehler/typescript-hero/issues/128))
@@ -128,8 +130,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.10.1...master
-[0.10.1]: https://github.com/buehler/typescript-hero/compare/v0.10.0...0.10.1
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.11.0...master
+[0.11.0]: https://github.com/buehler/typescript-hero/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/buehler/typescript-hero/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/buehler/typescript-hero/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/buehler/typescript-hero/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/buehler/typescript-hero/compare/v0.7.1...v0.8.0

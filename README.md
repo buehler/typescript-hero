@@ -10,13 +10,13 @@ work with typescript.
 
 ## Features at a glance
 
-Here is a brief list, of what TypeScript Hero is capable of:
+Here is a brief list, of what TypeScript Hero is capable of (more at the end):
 
 - Add imports of your project or libraries to your current file
 - Add an import for the current name under the cursor
 - Add all missing imports of a file with one command
 - Intellisense that suggests symbols and automatically adds the needed imports
-- "Light bulb feature" that fixes code you wrote (aka adds imports if you missed them, more to come.)
+- "Light bulb feature" that fixes code you wrote
 - Sort and organize your imports (sort and remove unused)
 - Restart your debug session when your code changes
 
@@ -91,6 +91,37 @@ The following settings do have the prefix `restartDebugger`. So an example setti
 | ------------ | ----------------------------------------------------------- |
 | watchFolders | Which output folders should be watched to trigger a restart |
 | active       | If true, the debug restart is activated on startup          |
+
+## Features (extended)
+
+### Import management
+
+TypeScript Hero can manage your imports. It is capable of:
+
+- Import something you select from a list of all possible indexed symbols
+- Import something that is beneath your current cursor position (and ask you if it's not sure which one)
+- Import all missing identifiers of the current file
+- Remove unused imports and sort the remaining ones by alphabet
+
+### Intellisense
+
+Intellisense is a common IDE feature. TypeScript Hero provides you with symbols as you type your code
+and does add the import to the top of the file, if you don't have already imported the symbol.
+
+### Code fixing
+
+The "light-bulb" feature of VSCode can provide some code-fix actions to take when you make mistakes.
+TypeScript Hero offers the following fix actions:
+
+- Detect a missing import and automatically add the import to the file
+- Detect a missing import and offer to add all missing imports to the file
+- Detect missing methods / properties of an interface that you implemented and implement them for you (implement interface refactoring)
+- Detect missing abstract methods of an extended abstract class and implement them for you (implement abstract class refactoring)
+
+### Debug restarter
+
+TypeScript Hero does detect changes to configurable directories in your workspace and restarts the
+debugger (if it's running) after a short delay (actually calls the `restartDebugger` command).
 
 ## Known Issues
 
