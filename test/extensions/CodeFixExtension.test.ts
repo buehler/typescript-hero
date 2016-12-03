@@ -1,3 +1,4 @@
+import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { CodeFixExtension } from '../../src/extensions/CodeFixExtension';
 import { Injector } from '../../src/IoC';
 import { CodeAction } from '../../src/models/CodeAction';
@@ -60,22 +61,6 @@ describe('CodeFixExtension', () => {
             }
         });
 
-        it('should add a missing import to a document', async done => {
-            try {
-                let cmds = actionProvider.provideCodeActions(
-                    document,
-                    new Range(new Position(0, 0), new Position(0, 0)),
-                    <any>{ diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
-                    null
-                );
-                await extension.executeCodeAction(cmds[0].arguments[0]);
-                document.lineAt(0).text.should.equal(`import { Class1 } from '../resourceIndex';`);
-                done();
-            } catch (e) {
-                done(e);
-            }
-        });
-
         it('should warn the user if the result is false', async done => {
             let stub = sinon.stub(window, 'showWarningMessage', (text) => {
                 return Promise.resolve();
@@ -90,6 +75,71 @@ describe('CodeFixExtension', () => {
             } finally {
                 stub.restore();
             }
+        });
+
+    });
+
+    describe('missingImport', () => {
+
+        const file = join(workspace.rootPath, 'codeFixExtension/empty.ts');
+        let document: TextDocument;
+
+        before(async done => {
+            document = await workspace.openTextDocument(file);
+            await window.showTextDocument(document);
+            done();
+        });
+
+        afterEach(async done => {
+            await window.activeTextEditor.edit(builder => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+            });
+            done();
+        });
+
+        it('should add a missing import to a document', async done => {
+            try {
+                let cmds = await actionProvider.provideCodeActions(
+                    document,
+                    new Range(new Position(0, 0), new Position(0, 0)),
+                    <any>{ diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
+                    null
+                );
+                await extension.executeCodeAction(cmds[0].arguments[0]);
+                document.lineAt(0).text.should.equal(`import { Class1 } from '../resourceIndex';`);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+    });
+
+    describe('missingPolymorphicElements', () => {
+
+        const file = join(workspace.rootPath, 'codeFixExtension/implementInterfaceOrAbstract.ts');
+        let document: TextDocument,
+            documentText: string;
+
+        before(async done => {
+            document = await workspace.openTextDocument(file);
+            await window.showTextDocument(document);
+            documentText = document.getText();
+            done();
+        });
+
+        afterEach(async done => {
+            await window.activeTextEditor.edit(builder => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+                builder.insert(new Position(0, 0), documentText);
+            });
+            done();
         });
 
     });
