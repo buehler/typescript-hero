@@ -18,7 +18,7 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe.only('CodeFixExtension', () => {
+describe('CodeFixExtension', () => {
 
     let extension: any,
         actionProvider: TypescriptCodeActionProvider;
