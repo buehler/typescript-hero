@@ -580,7 +580,8 @@ export class TsResourceParser {
                         getNodeType(o.type),
                         DeclarationVisibility.Public,
                         o.getStart(),
-                        o.getEnd()
+                        o.getEnd(),
+                        true
                     );
                     method.parameters = this.parseMethodParams(o);
                     interfaceDeclaration.methods.push(method);
@@ -642,7 +643,12 @@ export class TsResourceParser {
                     this.parseFunctionParts(tsResource, ctor, o);
                 } else if (isMethodDeclaration(o)) {
                     let method = new TshMethodDeclaration(
-                        (o.name as Identifier).text, getNodeType(o.type), getNodeVisibility(o), o.getStart(), o.getEnd()
+                        (o.name as Identifier).text,
+                        getNodeType(o.type),
+                        getNodeVisibility(o),
+                        o.getStart(),
+                        o.getEnd(),
+                        o.modifiers && o.modifiers.some(m => m.kind === SyntaxKind.AbstractKeyword)
                     );
                     method.parameters = this.parseMethodParams(o);
                     classDeclaration.methods.push(method);

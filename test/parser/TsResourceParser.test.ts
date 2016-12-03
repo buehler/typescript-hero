@@ -478,7 +478,10 @@ describe('TsResourceParser', () => {
                 parsedClass.properties[0].type.should.equal('string');
             });
 
-            it('should parse a methods visibility');
+            it('should parse a methods visibility', () => {
+                let parsedClass = parsed.declarations[1] as ClassDeclaration;
+                parsedClass.methods[0].visibility.should.equal(DeclarationVisibility.Public);
+            });
 
         });
 

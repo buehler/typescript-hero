@@ -218,7 +218,14 @@ export class MethodDeclaration extends TsTypedExportableCallableDeclaration {
         return CompletionItemKind.Method;
     }
 
-    constructor(name: string, type?: string, public visibility?: DeclarationVisibility, start?: number, end?: number) {
+    constructor(
+        name: string,
+        type?: string,
+        public visibility?: DeclarationVisibility,
+        start?: number,
+        end?: number,
+        public isAbstract: boolean = false
+    ) {
         super(name, type, start, end, false);
     }
 
