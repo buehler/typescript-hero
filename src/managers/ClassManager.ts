@@ -128,7 +128,7 @@ export class ClassManager implements ObjectManager {
             }
             declaration = nameOrDeclaration;
         } else {
-            if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
+            if (this.properties.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
                 throw new PropertyDuplicated(nameOrDeclaration, this.managedClass.name);
             }
             declaration = new PropertyDeclaration(nameOrDeclaration, visibility, type);
