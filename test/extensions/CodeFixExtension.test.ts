@@ -222,13 +222,10 @@ describe.only('CodeFixExtension', () => {
                 );
                 await extension.executeCodeAction(cmds[0].arguments[0]);
                 document.lineAt(22).text.should.equal(`class InternalAbstractImplement extends InternalAbstract {`);
-                document.lineAt(24).text.should.equal(`    public method(): void {`);
+                document.lineAt(24).text.should.equal(`    public abstractMethod(): void {`);
                 document.lineAt(25).text.should.equal(`        throw new Error('Not implemented yet.');`);
                 document.lineAt(26).text.should.equal(`    }`);
-                document.lineAt(28).text.should.equal(`    public abstractMethod(): void {`);
-                document.lineAt(29).text.should.equal(`        throw new Error('Not implemented yet.');`);
-                document.lineAt(30).text.should.equal(`    }`);
-                document.lineAt(31).text.should.equal(`}`);
+                document.lineAt(27).text.should.equal(`}`);
                 done();
             } catch (e) {
                 done(e);

@@ -117,7 +117,7 @@ export class ImplementPolymorphElements implements CodeAction {
             controller.addProperty(property);
         }
 
-        for (let method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name))) {
+        for (let method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
             controller.addMethod(method);
         }
 
