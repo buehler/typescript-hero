@@ -1,5 +1,5 @@
 import { Injector } from '../../src/IoC';
-import { AddImportCodeAction, CodeAction } from '../../src/models/CodeAction';
+import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../src/models/CodeAction';
 import { TypescriptCodeActionProvider } from '../../src/provider/TypescriptCodeActionProvider';
 import * as chai from 'chai';
 import { join } from 'path';
@@ -108,13 +108,101 @@ describe('TypescriptCodeActionProvider', () => {
 
     describe('missing polymorphic elements actions', () => {
 
-        it('should resolve missing implementations of an interface to a code action');
+        const implFile = join(vscode.workspace.rootPath, 'codeFixExtension/implementInterfaceOrAbstract.ts');
 
-        it('should resolve missing implementations of an abstract class to a code action');
+        before(async done => {
+            document = await vscode.workspace.openTextDocument(implFile);
+            await vscode.window.showTextDocument(document);
+            done();
+        });
 
-        it('should resolve missing to a NOOP if the interface / class is not found');
+        it('should resolve missing implementations of an interface to a code action', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'CodeFixImplementInterface'.` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(1);
+                let action = cmds[0];
+                action.title.should.equal('Implement missing elements from "CodeFixImplementInterface".');
+                action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
-        it('should resolve missing implementations of an abstract class to a code action');
+        it('should resolve missing implementations of an abstract class to a code action', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(1);
+                let action = cmds[0];
+                action.title.should.equal('Implement missing elements from "CodeFixImplementAbstract".');
+                action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should resolve missing implementations of a local interface to a code action', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'InternalInterface'.` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(1);
+                let action = cmds[0];
+                action.title.should.equal('Implement missing elements from "InternalInterface".');
+                action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should resolve missing implementations of a local abstract class to a code action', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(1);
+                let action = cmds[0];
+                action.title.should.equal('Implement missing elements from "InternalAbstract".');
+                action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
+
+        it('should resolve missing to a NOOP if the interface / class is not found', async done => {
+            try {
+                let cmds = await provider.provideCodeActions(
+                    document,
+                    new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 0)),
+                    { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'FOOOOBAR'.` }] },
+                    null
+                );
+                cmds.should.have.lengthOf(1);
+                cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index or the actual file.');
+                done();
+            } catch (e) {
+                done(e);
+            }
+        });
 
     });
 

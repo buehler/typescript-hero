@@ -1,4 +1,3 @@
-import { ResolveIndex } from '../../src/caches/ResolveIndex';
 import { CodeFixExtension } from '../../src/extensions/CodeFixExtension';
 import { Injector } from '../../src/IoC';
 import { CodeAction } from '../../src/models/CodeAction';
@@ -19,7 +18,7 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe.only('CodeFixExtension', () => {
+describe('CodeFixExtension', () => {
 
     let extension: any,
         actionProvider: TypescriptCodeActionProvider;

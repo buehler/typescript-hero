@@ -114,7 +114,7 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                     }
 
                     commands.push(this.createCommand(
-                        `Implement missing elements from "${match[2]}"`,
+                        `Implement missing elements from "${match[2]}".`,
                         new ImplementPolymorphElements(document, match[1], declaration)
                     ));
 
