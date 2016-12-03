@@ -94,26 +94,47 @@ export class ClassManager implements ObjectManager {
     }
 
     /**
-     * Add a property to the virtual class. Creates a Changeable<T> object with the .isNew flag set to true.
+     * Checks if a property with the given name exists on the virtual class.
      * 
      * @param {string} name
-     * @param {PropertyVisibility} visibility
-     * @param {string} type
+     * @returns {boolean}
+     * 
+     * @memberOf ClassManager
+     */
+    public hasProperty(name: string): boolean {
+        return this.properties.some(o => o.object.name === name && !o.isDeleted);
+    }
+
+    /**
+     * Add a property to the virtual class. Creates a Changeable<T> object with the .isNew flag set to true.
+     * 
+     * @param {(string | PropertyDeclaration)} nameOrDeclaration
+     * @param {DeclarationVisibility} [visibility]
+     * @param {string} [type]
      * @returns {this}
      * 
      * @memberOf ClassManager
      */
     public addProperty(
-        name: string,
-        visibility: DeclarationVisibility,
-        type: string
+        nameOrDeclaration: string | PropertyDeclaration,
+        visibility?: DeclarationVisibility,
+        type?: string
     ): this {
-        if (this.properties.some(o => o.object.name === name && !o.isDeleted)) {
-            throw new PropertyDuplicated(name, this.managedClass.name);
+        let declaration: PropertyDeclaration;
+
+        if (nameOrDeclaration instanceof PropertyDeclaration) {
+            if (this.properties.some(o => o.object.name === nameOrDeclaration.name && !o.isDeleted)) {
+                throw new PropertyDuplicated(nameOrDeclaration.name, this.managedClass.name);
+            }
+            declaration = nameOrDeclaration;
+        } else {
+            if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
+                throw new PropertyDuplicated(nameOrDeclaration, this.managedClass.name);
+            }
+            declaration = new PropertyDeclaration(nameOrDeclaration, visibility, type);
         }
 
-        let prop = new PropertyDeclaration(name, visibility, type);
-        this.properties.push(new Changeable(prop, true));
+        this.properties.push(new Changeable(declaration, true));
 
         return this;
     }
@@ -136,6 +157,18 @@ export class ClassManager implements ObjectManager {
             this.properties.splice(this.properties.indexOf(property), 1);
         }
         return this;
+    }
+
+    /**
+     * Checks if a method with the given name does exist on the virtual class.
+     * 
+     * @param {string} name
+     * @returns {boolean}
+     * 
+     * @memberOf ClassManager
+     */
+    public hasMethod(name: string): boolean {
+        return this.methods.some(o => o.object.name === name && !o.isDeleted);
     }
 
     /**
@@ -163,7 +196,7 @@ export class ClassManager implements ObjectManager {
             declaration = nameOrDeclaration;
         } else {
             if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
-                throw new MethodDeclaration(nameOrDeclaration, this.managedClass.name);
+                throw new MethodDuplicated(nameOrDeclaration, this.managedClass.name);
             }
             declaration = new MethodDeclaration(nameOrDeclaration, type, visibility);
             declaration.parameters = parameters || [];

@@ -1,5 +1,7 @@
 import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
+import { ClassManager } from '../managers/ClassManager';
 import { ImportManager } from '../managers/ImportManager';
+import { InterfaceDeclaration } from './TsDeclaration';
 import { TextDocument } from 'vscode';
 
 /**
@@ -84,5 +86,41 @@ export class NoopCodeAction implements CodeAction {
      */
     public execute(): Promise<boolean> {
         return Promise.resolve(true);
+    }
+}
+
+/**
+ * Code action that does implement missing properties and methods from interfaces or abstract classes.
+ * 
+ * @export
+ * @class ImplementPolymorphElements
+ * @implements {CodeAction}
+ */
+export class ImplementPolymorphElements implements CodeAction {
+    constructor(
+        private document: TextDocument,
+        private managedClass: string,
+        private polymorphObject: InterfaceDeclaration
+    ) { }
+
+    /**
+     * Executes the code action. Depending on the action, there are several actions performed.
+     * 
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ImplementPolymorphElements
+     */
+    public async execute(): Promise<boolean> {
+        let controller = await ClassManager.create(this.document, this.managedClass);
+
+        for (let property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
+            controller.addProperty(property);
+        }
+
+        for (let method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name))) {
+            controller.addMethod(method);
+        }
+
+        return controller.commit();
     }
 }

@@ -1,4 +1,11 @@
-import { AddImportCodeAction, AddMissingImportsCodeAction, CodeAction, NoopCodeAction } from '../models/CodeAction';
+import { TsResourceParser } from '../parser/TsResourceParser';
+import {
+    AddImportCodeAction,
+    AddMissingImportsCodeAction,
+    CodeAction,
+    ImplementPolymorphElements,
+    NoopCodeAction
+} from '../models/CodeAction';
 import { ResolveIndex } from '../caches/ResolveIndex';
 import { Logger, LoggerFactory } from '../utilities/Logger';
 import { inject, injectable } from 'inversify';
@@ -27,7 +34,8 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
 
     constructor(
         @inject('LoggerFactory') loggerFactory: LoggerFactory,
-        private resolveIndex: ResolveIndex
+        private resolveIndex: ResolveIndex,
+        private parser: TsResourceParser
     ) {
         this.logger = loggerFactory('TypescriptCodeActionProvider');
     }
@@ -39,16 +47,16 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
      * @param {Range} range
      * @param {CodeActionContext} context
      * @param {CancellationToken} token
-     * @returns {(Command[] | Thenable<Command[]>)}
+     * @returns {Promise<Command[]>}
      * 
      * @memberOf TypescriptCodeActionProvider
      */
-    public provideCodeActions(
+    public async provideCodeActions(
         document: TextDocument,
         range: Range,
         context: CodeActionContext,
         token: CancellationToken
-    ): Command[] {
+    ): Promise<Command[]> {
         let commands = [],
             match: RegExpExecArray,
             addAllMissingImportsAdded = false;
@@ -78,6 +86,28 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
                             new NoopCodeAction()
                         ));
                     }
+                    break;
+                case !!(match = isMissingDerivedImplementation(diagnostic)):
+                    // TODO check for the already imported interface
+                    let parsedDocument = await this.parser.parseSource(document.getText()),
+                        declaration = parsedDocument.declarations.find(o => o.name === match[2]) ||
+                            (this.resolveIndex.declarationInfos.find(
+                                o => o.declaration.name === match[2]
+                            ) || { declaration: undefined }).declaration;
+
+                    if (!declaration) {
+                        commands.push(this.createCommand(
+                            `Cannot find "${match[2]}" in the index or the actual file.`,
+                            new NoopCodeAction()
+                        ));
+                        break;
+                    }
+
+                    commands.push(this.createCommand(
+                        `Implement missing methods for "${match[2]}"`,
+                        new ImplementPolymorphElements(document, match[1], declaration)
+                    ));
+
                     break;
                 default:
                     break;
@@ -114,4 +144,15 @@ export class TypescriptCodeActionProvider implements CodeActionProvider {
  */
 function isMissingImport(diagnostic: Diagnostic): RegExpExecArray {
     return /cannot find name ['"](.*)['"]/ig.exec(diagnostic.message);
+}
+
+/**
+ * Determines if the problem is an incorrect implementation of an interface, or missing
+ * implementations of an abstract class.
+ * 
+ * @param {Diagnostic} diagnostic
+ * @returns {RegExpExecArray}
+ */
+function isMissingDerivedImplementation(diagnostic: Diagnostic): RegExpExecArray {
+    return /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.exec(diagnostic.message);
 }
