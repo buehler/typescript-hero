@@ -41,6 +41,17 @@ export abstract class TsDeclaration extends TsNode {
      */
     public abstract readonly itemKind: CompletionItemKind;
 
+    /**
+     * Returns the default sorting key for the autocompletion feature.
+     * 
+     * @readonly
+     * @type {string}
+     * @memberOf TsDeclaration
+     */
+    public get intellisenseSortKey(): string {
+        return `0_${this.name}`;
+    }
+
     constructor(public name: string, start?: number, end?: number) {
         super(start, end);
     }
@@ -317,6 +328,10 @@ export class EnumDeclaration extends TsExportableDeclaration {
 export class VariableDeclaration extends TsTypedExportableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
+    }
+
+    public get intellisenseSortKey(): string {
+        return `1_${this.name}`;
     }
 
     constructor(
