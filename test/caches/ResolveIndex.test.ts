@@ -115,6 +115,12 @@ describe('ResolveIndex', () => {
             resources['/MyReactTemplate'].declarations[0].name.should.equal('myComponent');
         });
 
+        it('should not filter node_modules / typings by pattern', () => {
+            let list = resolveIndex.index['NestedDistDeclaration'];
+            list.should.be.an('array').with.lengthOf(1);
+            list[0].from.should.equal('some-lib/dist/SomeDeclaration');
+        });
+
     });
 
 });
