@@ -81,6 +81,12 @@ describe('ResolveIndex', () => {
             list[1].declaration.should.be.an.instanceof(ClassDeclaration);
         });
 
+        it('should not contain a duplicate declaration (overloaded declarations)', () => {
+            let list = resolveIndex.index['execFile'];
+            list.should.be.an('array').with.lengthOf(1);
+            list[0].from.should.equal('child_process');
+        });
+
         it('should export * as correctly', () => {
             let idx: any = resolveIndex,
                 resources = idx.parsedResources;
