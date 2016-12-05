@@ -288,12 +288,14 @@ export class ResolveIndex {
             return;
         }
         let excludePatterns = this.config.resolver.ignorePatterns;
-        uris = uris.map(o => o.filter(
-            f => f.fsPath
-                .replace(workspace.rootPath, '')
-                .split(/\\|\//)
-                .every(p => excludePatterns.indexOf(p) < 0)
-        ));
+        uris = uris.map((o, idx) => idx === 0 ?
+            o.filter(
+                f => f.fsPath
+                    .replace(workspace.rootPath, '')
+                    .split(/\\|\//)
+                    .every(p => excludePatterns.indexOf(p) < 0)) :
+            o
+        );
         this.logger.info(`Found ${uris.reduce((sum, cur) => sum + cur.length, 0)} files.`);
         return uris.reduce((all, cur) => all.concat(cur), []);
     }
