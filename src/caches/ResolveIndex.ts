@@ -381,10 +381,15 @@ export class ResolveIndex {
                 if (!index[declaration.name]) {
                     index[declaration.name] = [];
                 }
-                index[declaration.name].push({
-                    declaration,
-                    from: key.replace(/[/]?index$/, '') || '/'
-                });
+                let from = key.replace(/[/]?index$/, '') || '/';
+                if (!index[declaration.name].some(
+                    o => o.declaration.constructor === declaration.constructor && o.from === from
+                )) {
+                    index[declaration.name].push({
+                        declaration,
+                        from
+                    });
+                }
             }
         }
         return index;
