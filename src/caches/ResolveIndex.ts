@@ -108,11 +108,11 @@ export class ResolveIndex {
      * Can be canceled with a cancellationToken.
      * 
      * @param {CancellationToken} [cancellationToken]
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>} true when the index was successful or sucessfully canceled
      * 
      * @memberOf ResolveIndex
      */
-    public async buildIndex(cancellationToken?: CancellationToken): Promise<void> {
+    public async buildIndex(cancellationToken?: CancellationToken): Promise<boolean> {
         if (this.cancelToken) {
             this.logger.info('Refresh already running, canceling first.');
             this.cancelRefresh();
@@ -126,7 +126,7 @@ export class ResolveIndex {
 
             if (cancellationToken && cancellationToken.onCancellationRequested) {
                 this.cancelRequested();
-                return;
+                return true;
             }
 
             this.logger.info(`Finding finished. Found ${files.length} files.`);
@@ -135,20 +135,21 @@ export class ResolveIndex {
 
             if (cancellationToken && cancellationToken.onCancellationRequested) {
                 this.cancelRequested();
-                return;
+                return true;
             }
 
             this.parsedResources = await this.parseResources(parsed, cancellationToken);
             this._index = await this.createIndex(this.parsedResources, cancellationToken);
+            return true;
         } catch (e) {
             this.logger.error('Catched an error during buildIndex()', e);
+            return false;
         } finally {
             if (this.cancelToken) {
                 this.cancelToken.dispose();
                 this.cancelToken = null;
             }
         }
-
     }
 
     /**
@@ -157,11 +158,11 @@ export class ResolveIndex {
      * stuff from the given file and are rebuilt as well.
      * 
      * @param {string} filePath
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      * 
      * @memberOf ResolveIndex
      */
-    public async rebuildForFile(filePath: string): Promise<void> {
+    public async rebuildForFile(filePath: string): Promise<boolean> {
         let rebuildResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = [<Uri>{ fsPath: filePath }, ...this.getExportedResources(rebuildResource)];
 
@@ -172,8 +173,10 @@ export class ResolveIndex {
                 this.parsedResources[key] = resources[key];
             }
             this._index = await this.createIndex(this.parsedResources);
+            return true;
         } catch (e) {
             this.logger.error('Catched an error during rebuildForFile()', e);
+            return false;
         }
     }
 
@@ -186,7 +189,7 @@ export class ResolveIndex {
      * 
      * @memberOf ResolveIndex
      */
-    public async removeForFile(filePath: string): Promise<void> {
+    public async removeForFile(filePath: string): Promise<boolean> {
         let removeResource = '/' + workspace.asRelativePath(filePath).replace(/[.]tsx?/g, ''),
             rebuildFiles = this.getExportedResources(removeResource);
 
@@ -198,8 +201,10 @@ export class ResolveIndex {
                 this.parsedResources[key] = resources[key];
             }
             this._index = await this.createIndex(this.parsedResources);
+            return true;
         } catch (e) {
             this.logger.error('Catched an error during removeForFile()', e);
+            return false;
         }
     }
 
