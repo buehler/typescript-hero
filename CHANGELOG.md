@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Changed
+- Default value of `typescriptHero.resolver.ignorePatterns` does not contain node_modules anymore
+
+#### Fixed
+- Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
+- Only real workspace files are filtered by the exclude pattern (node_modules and typings are parsed) ([#103](https://github.com/buehler/typescript-hero/issues/103))
 
 ## [0.11.0]
 #### Added

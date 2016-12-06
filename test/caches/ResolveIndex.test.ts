@@ -4,7 +4,7 @@ import { Injector } from '../../src/IoC';
 import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
 import * as chai from 'chai';
 
-chai.should();
+let should = chai.should();
 
 describe('ResolveIndex', () => {
 
@@ -81,6 +81,12 @@ describe('ResolveIndex', () => {
             list[1].declaration.should.be.an.instanceof(ClassDeclaration);
         });
 
+        it('should not contain a duplicate declaration (overloaded declarations)', () => {
+            let list = resolveIndex.index['execFile'];
+            list.should.be.an('array').with.lengthOf(1);
+            list[0].from.should.equal('child_process');
+        });
+
         it('should export * as correctly', () => {
             let idx: any = resolveIndex,
                 resources = idx.parsedResources;
@@ -107,6 +113,17 @@ describe('ResolveIndex', () => {
                 resources = idx.parsedResources;
             resources['/MyReactTemplate'].declarations.length.should.equal(1);
             resources['/MyReactTemplate'].declarations[0].name.should.equal('myComponent');
+        });
+
+        it('should not filter node_modules / typings by pattern', () => {
+            let list = resolveIndex.index['NestedDistDeclaration'];
+            list.should.be.an('array').with.lengthOf(1);
+            list[0].from.should.equal('some-lib/dist/SomeDeclaration');
+        });
+
+        it('should not contain filtered directories', () => {
+            let list = resolveIndex.index['MyCompiledClass'];
+            should.not.exist(list);
         });
 
     });
