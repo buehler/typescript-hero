@@ -164,10 +164,6 @@
           },
           "uniqueItems": true,
           "default": [
-            "typescript",
-            "tslint",
-            "node_modules/typings",
-            "node_modules/typings-core",
             "build",
             "out",
             "dist"
