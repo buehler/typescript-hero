@@ -121,6 +121,11 @@ describe('ResolveIndex', () => {
             list[0].from.should.equal('some-lib/dist/SomeDeclaration');
         });
 
+        it('should not contain filtered directories', () => {
+            let list = resolveIndex.index['MyCompiledClass'];
+            list.should.be.an('array').with.lengthOf(0);
+        });
+
     });
 
 });
