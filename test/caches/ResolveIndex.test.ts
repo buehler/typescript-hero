@@ -4,7 +4,7 @@ import { Injector } from '../../src/IoC';
 import { ClassDeclaration, FunctionDeclaration } from '../../src/models/TsDeclaration';
 import * as chai from 'chai';
 
-chai.should();
+let should = chai.should();
 
 describe('ResolveIndex', () => {
 
@@ -123,7 +123,7 @@ describe('ResolveIndex', () => {
 
         it('should not contain filtered directories', () => {
             let list = resolveIndex.index['MyCompiledClass'];
-            list.should.be.an('array').with.lengthOf(0);
+            should.not.exist(list);
         });
 
     });
