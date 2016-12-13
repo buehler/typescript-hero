@@ -201,7 +201,7 @@ describe('ImportProxy', () => {
             proxy.toImport(options).should.equal(`import { bar, default as ALIAS } from 'foo';\n`);
         });
 
-        it('should ommit semicolons if configured', () => {
+        it('should omit semicolons if configured', () => {
             const optionsClone = Object.assign({}, options);
             optionsClone.eol = '';
             proxy.defaultAlias = 'ALIAS';

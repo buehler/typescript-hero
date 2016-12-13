@@ -5,6 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Changed
 - Default value of `typescriptHero.resolver.ignorePatterns` does not contain node_modules anymore
+- Added setting `typescriptHero.resolver.insertSemicolons` to make disabling of semicolon emit possible (defaults to true)
 
 #### Fixed
 - Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
