@@ -89,8 +89,8 @@ export class TsStringImport extends TsImport {
      * 
      * @memberOf TsStringImport
      */
-    public toImport({pathDelimiter}: TsImportOptions): string {
-        return `import ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    public toImport({pathDelimiter, eol}: TsImportOptions): string {
+        return `import ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
     }
 
     /**
@@ -126,12 +126,12 @@ export class TsNamedImport extends TsImport {
      * @memberOf TsNamedImport
      */
     public toImport(options: TsImportOptions): string {
-        let {pathDelimiter, spaceBraces, multiLineWrapThreshold} = options,
+        let {eol, pathDelimiter, spaceBraces, multiLineWrapThreshold} = options,
             space = spaceBraces ? ' ' : '',
             specifiers = this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', '),
             lib = this.libraryName;
 
-        let importString = `import {${space}${specifiers}${space}} from ${pathDelimiter}${lib}${pathDelimiter};\n`;
+        let importString = `import {${space}${specifiers}${space}} from ${pathDelimiter}${lib}${pathDelimiter}${eol}\n`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
         }
@@ -159,11 +159,11 @@ export class TsNamedImport extends TsImport {
      * 
      * @memberOf TsNamedImport
      */
-    public toMultiLineImport({pathDelimiter, tabSize}: TsImportOptions): string {
+    public toMultiLineImport({eol, pathDelimiter, tabSize}: TsImportOptions): string {
         let spacings = Array(tabSize + 1).join(' ');
         return `import {
 ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.toImport()}`).join(',\n')}
-} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+} from ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
     }
 
     /**
@@ -205,8 +205,8 @@ export class TsNamespaceImport extends TsAliasedImport {
      * 
      * @memberOf TsStringImport
      */
-    public toImport({pathDelimiter}: TsImportOptions): string {
-        return `import * as ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    public toImport({eol, pathDelimiter}: TsImportOptions): string {
+        return `import * as ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
     }
 
     /**
@@ -238,8 +238,8 @@ export class TsExternalModuleImport extends TsAliasedImport {
      * 
      * @memberOf TsStringImport
      */
-    public toImport({pathDelimiter}: TsImportOptions): string {
-        return `import ${this.alias} = require(${pathDelimiter}${this.libraryName}${pathDelimiter});\n`;
+    public toImport({eol, pathDelimiter}: TsImportOptions): string {
+        return `import ${this.alias} = require(${pathDelimiter}${this.libraryName}${pathDelimiter})${eol}\n`;
     }
 
     /**
@@ -271,8 +271,8 @@ export class TsDefaultImport extends TsAliasedImport {
      * 
      * @memberOf TsStringImport
      */
-    public toImport({pathDelimiter}: TsImportOptions): string {
-        return `import ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter};\n`;
+    public toImport({eol, pathDelimiter}: TsImportOptions): string {
+        return `import ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
     }
 
     /**

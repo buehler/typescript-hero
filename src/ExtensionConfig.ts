@@ -80,6 +80,18 @@ class ResolverConfig {
     }
 
     /**
+     * Defines, if there should be a semicolon at the end of a statement.
+     * import Symbol from 'symbol' vs import Symbol from 'symbol';
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberOf ResolverConfig
+     */
+    public get insertSemicolons(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
+    }
+
+    /**
      * Defines the quote style (' or ").
      * 
      * @readonly
@@ -145,6 +157,7 @@ class ResolverConfig {
      */
     public get importOptions(): TsImportOptions {
         return {
+            eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,
             pathDelimiter: this.pathStringDelimiter,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,

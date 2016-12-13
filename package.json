@@ -149,6 +149,11 @@
           "default": true,
           "description": "Defines if there should be a space inside the curly braces of an import statement."
         },
+        "typescriptHero.resolver.insertSemicolons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if there should be a semicolon at the end of a statement."
+        },
         "typescriptHero.resolver.pathStringDelimiter": {
           "enum": [
             "'",
