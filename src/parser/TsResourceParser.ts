@@ -67,6 +67,8 @@ import {
     Node,
     TypeNode,
     NodeFlags,
+    ModifierFlags,
+    getCombinedModifierFlags,
     ObjectBindingPattern,
     ParameterDeclaration,
     ScriptTarget,
@@ -218,7 +220,7 @@ export class TsResourceParser {
      */
     public async parseSource(source: string): Promise<TsFile> {
         try {
-            return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES6, true));
+            return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES2015, true));
         } catch (e) {
             this.logger.error('Error happend during source parsing (parseSource())', { error: e });
         }
@@ -257,7 +259,7 @@ export class TsResourceParser {
 
         try {
             let parsed = filePathes
-                .map(o => createSourceFile(o.fsPath, readFileSync(o.fsPath).toString(), ScriptTarget.ES6, true))
+                .map(o => createSourceFile(o.fsPath, readFileSync(o.fsPath).toString(), ScriptTarget.ES2015, true))
                 .map(o => this.parseTypescript(o, cancellationToken));
             if (cancellationToken && cancellationToken.onCancellationRequested) {
                 this.cancelRequested();
@@ -774,8 +776,9 @@ export class TsResourceParser {
                     )
                 );
             } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
-                let identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
-                ctor.parameters = ctor.parameters.concat(identifiers.elements.map((bind: BindingElement) => {
+                let identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern,
+                    elements = [...identifiers.elements];
+                ctor.parameters = ctor.parameters.concat(elements.map((bind: BindingElement) => {
                     if (isIdentifier(bind.name)) {
                         return new TshParameterDeclaration(
                             (bind.name as Identifier).text, undefined, bind.getStart(), bind.getEnd()
@@ -804,8 +807,9 @@ export class TsResourceParser {
                     (cur.name as Identifier).text, getNodeType(cur.type), cur.getStart(), cur.getEnd()
                 ));
             } else if (isObjectBindingPattern(cur.name) || isArrayBindingPattern(cur.name)) {
-                let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern;
-                all = all.concat(identifiers.elements.map((o: BindingElement) => {
+                let identifiers = cur.name as ObjectBindingPattern | ArrayBindingPattern,
+                    elements = [...identifiers.elements];
+                all = all.concat(elements.map((o: BindingElement) => {
                     if (isIdentifier(o.name)) {
                         return new TshParameterDeclaration(
                             (o.name as Identifier).text, undefined, o.getStart(), o.getEnd()
@@ -828,7 +832,8 @@ export class TsResourceParser {
      * @memberOf TsResourceParser
      */
     private checkExported(node: Node): boolean {
-        return (node.flags & NodeFlags.Export) === NodeFlags.Export;
+        let flags = getCombinedModifierFlags(node);
+        return (flags & ModifierFlags.Export) === ModifierFlags.Export;
     }
 
     /**
@@ -842,7 +847,8 @@ export class TsResourceParser {
      * @memberOf TsResourceParser
      */
     private checkDefaultExport(node: Node): boolean {
-        return (node.flags & NodeFlags.Default) === NodeFlags.Default;
+        let flags = getCombinedModifierFlags(node);
+        return (flags & ModifierFlags.Default) === ModifierFlags.Default;
     }
 
     /**
