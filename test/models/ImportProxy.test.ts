@@ -166,6 +166,7 @@ describe('ImportProxy', () => {
     describe('toImport()', () => {
 
         const options: TsImportOptions = {
+            eol: ';',
             multiLineWrapThreshold: 120,
             pathDelimiter: `'`,
             spaceBraces: true,
@@ -198,6 +199,13 @@ describe('ImportProxy', () => {
             proxy.defaultAlias = 'ALIAS';
             proxy.addSpecifier('bar');
             proxy.toImport(options).should.equal(`import { bar, default as ALIAS } from 'foo';\n`);
+        });
+
+        it('should omit semicolons if configured', () => {
+            const optionsClone = Object.assign({}, options);
+            optionsClone.eol = '';
+            proxy.defaultAlias = 'ALIAS';
+            proxy.toImport(optionsClone).should.equal(`import ALIAS from 'foo'\n`);
         });
 
     });

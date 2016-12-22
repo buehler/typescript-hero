@@ -66,7 +66,7 @@
     "inversify": "^2.0.0",
     "inversify-inject-decorators": "^2.0.0",
     "reflect-metadata": "^0.1.8",
-    "typescript": "^2.0.3"
+    "typescript": "~2.1.4"
   },
   "activationEvents": [
     "onCommand:typescriptHero.showCmdGui",
@@ -149,6 +149,11 @@
           "default": true,
           "description": "Defines if there should be a space inside the curly braces of an import statement."
         },
+        "typescriptHero.resolver.insertSemicolons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if there should be a semicolon at the end of a statement."
+        },
         "typescriptHero.resolver.pathStringDelimiter": {
           "enum": [
             "'",
@@ -164,10 +169,6 @@
           },
           "uniqueItems": true,
           "default": [
-            "typescript",
-            "tslint",
-            "node_modules/typings",
-            "node_modules/typings-core",
             "build",
             "out",
             "dist"

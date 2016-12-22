@@ -97,6 +97,7 @@ export class ResolveCompletionItemProvider implements CompletionItemProvider {
             .map(o => {
                 let item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
                 item.detail = o.from;
+                item.sortText = o.declaration.intellisenseSortKey;
                 item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
                 return item;
             });
