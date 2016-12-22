@@ -3,9 +3,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- Added setting `typescriptHero.resolver.insertSemicolons` to make disabling of semicolon emit possible (defaults to true)
+
 #### Changed
 - Default value of `typescriptHero.resolver.ignorePatterns` does not contain node_modules anymore
-- Added setting `typescriptHero.resolver.insertSemicolons` to make disabling of semicolon emit possible (defaults to true)
+- Upgraded to TS2.1.4 ([#148](https://github.com/buehler/typescript-hero/issues/148))
 
 #### Fixed
 - Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
