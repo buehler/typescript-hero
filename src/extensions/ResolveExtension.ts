@@ -330,18 +330,18 @@ export class ResolveExtension extends BaseExtension {
      * 
      * @memberOf ResolveExtension
      */
-    private refreshIndex(file?: Uri): void {
+    private async refreshIndex(file?: Uri): Promise<void> {
         this.statusBarItem.text = resolverSyncing;
 
+        let result: boolean;
+
         if (file) {
-            this.index.rebuildForFile(file.fsPath)
-                .then(() => this.statusBarItem.text = resolverOk)
-                .catch(() => this.statusBarItem.text = resolverErr);
+            result = await this.index.rebuildForFile(file.fsPath);
         } else {
-            this.index.buildIndex()
-                .then(() => this.statusBarItem.text = resolverOk)
-                .catch(() => this.statusBarItem.text = resolverErr);
+            result = await this.index.buildIndex();
         }
+
+        this.statusBarItem.text = result ? resolverOk : resolverErr;
     }
 
     /**

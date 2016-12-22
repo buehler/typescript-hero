@@ -11,6 +11,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Upgraded to TS2.1.4 ([#148](https://github.com/buehler/typescript-hero/issues/148))
 
 #### Fixed
+- "Flame" - state (error) should be shown correctly when indexing
 - Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
 - Only real workspace files are filtered by the exclude pattern (node_modules and typings are parsed) ([#103](https://github.com/buehler/typescript-hero/issues/103))
 - Variables are sorted to the top to reduce auto import for `console` ([#99](https://github.com/buehler/typescript-hero/issues/99))
