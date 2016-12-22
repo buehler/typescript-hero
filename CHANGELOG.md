@@ -4,6 +4,18 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 #### Added
+- Added setting `typescriptHero.resolver.insertSemicolons` to make disabling of semicolon emit possible (defaults to true)
+
+#### Changed
+- Default value of `typescriptHero.resolver.ignorePatterns` does not contain node_modules anymore
+- Upgraded to TS2.1.4 ([#148](https://github.com/buehler/typescript-hero/issues/148))
+
+#### Fixed
+- Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
+- Only real workspace files are filtered by the exclude pattern (node_modules and typings are parsed) ([#103](https://github.com/buehler/typescript-hero/issues/103))
+
+## [0.11.0]
+#### Added
 - Classmanager that can modify classes in a document ([#127](https://github.com/buehler/typescript-hero/issues/127))
 - Support for light-bulb feature in tsx files ([#128](https://github.com/buehler/typescript-hero/issues/128))
 - CodeFix can now implement missing methods and properties from interfaces and abstract classes ([#114](https://github.com/buehler/typescript-hero/issues/114))
@@ -128,8 +140,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.10.1...master
-[0.10.1]: https://github.com/buehler/typescript-hero/compare/v0.10.0...0.10.1
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.11.0...master
+[0.11.0]: https://github.com/buehler/typescript-hero/compare/v0.10.1...v0.11.0
+[0.10.1]: https://github.com/buehler/typescript-hero/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/buehler/typescript-hero/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/buehler/typescript-hero/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/buehler/typescript-hero/compare/v0.7.1...v0.8.0
