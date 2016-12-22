@@ -55,7 +55,7 @@ export class ResolveIndex {
     private logger: Logger;
     private cancelToken: CancellationTokenSource;
 
-    private parsedResources: Resources;
+    private parsedResources: Resources = {};
     private _index: ResourceIndex;
 
     /**
