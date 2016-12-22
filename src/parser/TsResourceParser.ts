@@ -68,6 +68,7 @@ import {
     TypeNode,
     NodeFlags,
     ModifierFlags,
+    getCombinedModifierFlags,
     ObjectBindingPattern,
     ParameterDeclaration,
     ScriptTarget,
@@ -831,7 +832,8 @@ export class TsResourceParser {
      * @memberOf TsResourceParser
      */
     private checkExported(node: Node): boolean {
-        return (node.flags & ModifierFlags.Export) === ModifierFlags.Export;
+        let flags = getCombinedModifierFlags(node);
+        return (flags & ModifierFlags.Export) === ModifierFlags.Export;
     }
 
     /**
@@ -845,7 +847,8 @@ export class TsResourceParser {
      * @memberOf TsResourceParser
      */
     private checkDefaultExport(node: Node): boolean {
-        return (node.flags & ModifierFlags.Default) === ModifierFlags.Default;
+        let flags = getCombinedModifierFlags(node);
+        return (flags & ModifierFlags.Default) === ModifierFlags.Default;
     }
 
     /**
