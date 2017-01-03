@@ -15,6 +15,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Duplicate declarations are filtered (overloads from declarations) ([#105](https://github.com/buehler/typescript-hero/issues/105))
 - Only real workspace files are filtered by the exclude pattern (node_modules and typings are parsed) ([#103](https://github.com/buehler/typescript-hero/issues/103))
 - Variables are sorted to the top to reduce auto import for `console` ([#99](https://github.com/buehler/typescript-hero/issues/99))
+- Extension does not crash with prototype methods (thanks @gund) ([#79](https://github.com/buehler/typescript-hero/issues/79))
 
 ## [0.11.0]
 #### Added
