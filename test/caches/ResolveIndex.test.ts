@@ -126,6 +126,16 @@ describe('ResolveIndex', () => {
             should.not.exist(list);
         });
 
+        it('should not crash on prototype methods (i.e. toString, hasOwnProperty)', () => {
+            let list = resolveIndex.index['toString'];
+            list.should.be.an('array').with.lengthOf(1);
+            list[0].from.should.equal('/prototypeFunctions/proto');
+
+            let list2 = resolveIndex.index['hasOwnProperty'];
+            list2.should.be.an('array').with.lengthOf(1);
+            list2[0].from.should.equal('/prototypeFunctions/proto');
+        });
+
     });
 
 });
