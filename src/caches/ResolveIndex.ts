@@ -55,7 +55,7 @@ export class ResolveIndex {
     private logger: Logger;
     private cancelToken: CancellationTokenSource;
 
-    private parsedResources: Resources = {};
+    private parsedResources: Resources = Object.create(null);
     private _index: ResourceIndex;
 
     /**
@@ -369,7 +369,9 @@ export class ResolveIndex {
             return;
         }
 
-        let index: ResourceIndex = {};
+        // Use an empty object without a prototype, so that "toString" (for example) can be indexed
+        // Thanks to @gund in https://github.com/buehler/typescript-hero/issues/79
+        let index: ResourceIndex = Object.create(null);
 
         for (let key of Object.keys(resources)) {
             let resource = resources[key];
