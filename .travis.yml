@@ -2,7 +2,6 @@ sudo: false
 
 language: node_js
 node_js:
-- '6'
 - '7'
 
 env:
@@ -45,7 +44,6 @@ deploy:
     tags: true
     repo: buehler/typescript-hero
     condition: $TRAVIS_OS_NAME = linux
-    node: '7'
 
 notifications:
   email: false
