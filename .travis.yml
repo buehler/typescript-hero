@@ -17,7 +17,6 @@ os:
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
-    echo "NODEVER! $TRAVIS_NODE_VERSION";
     export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
     sh -e /etc/init.d/xvfb start; 
     sleep 3; 
@@ -46,6 +45,7 @@ deploy:
     tags: true
     repo: buehler/typescript-hero
     condition: $TRAVIS_OS_NAME = linux
+    node: '7'
 
 notifications:
   email: false
