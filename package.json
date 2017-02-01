@@ -18,7 +18,7 @@
     "Other",
     "Languages"
   ],
-  "main": "./out/src/extension",
+  "main": "./out/src/extension/extension",
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "contributors": [
     {
@@ -47,26 +47,26 @@
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.32",
-    "@types/node": "^6.0.45",
+    "@types/mocha": "^2.2.38",
+    "@types/node": "^7.0.4",
     "@types/reflect-metadata": "0.0.5",
-    "@types/sinon": "^1.16.31",
+    "@types/sinon": "^1.16.34",
     "@types/sinon-chai": "^2.7.27",
     "chai": "^3.5.0",
-    "del-cli": "^0.2.0",
+    "del-cli": "^0.2.1",
     "filewalker": "^0.1.3",
     "mocha-testdata": "^1.2.0",
-    "sinon": "^1.17.6",
+    "sinon": "^1.17.7",
     "sinon-chai": "^2.8.0",
-    "tslint": "^3.15.1",
+    "tslint": "^4.4.2",
     "tslint-jsdoc-rules": "^0.1.2",
-    "vscode": "^1.0.0"
+    "vscode": "^1.0.3"
   },
   "dependencies": {
-    "inversify": "^2.0.0",
-    "inversify-inject-decorators": "^2.0.0",
-    "reflect-metadata": "^0.1.8",
-    "typescript": "~2.1.4"
+    "inversify": "^3.0.0",
+    "inversify-inject-decorators": "^3.0.1",
+    "reflect-metadata": "^0.1.9",
+    "typescript": "~2.1.5"
   },
   "activationEvents": [
     "onCommand:typescriptHero.showCmdGui",
