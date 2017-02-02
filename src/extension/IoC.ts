@@ -41,5 +41,13 @@ container
         };
     });
 
+/**
+ * Injection container. IoC baby.
+ */
 export const Container = container;
-export const InjectorDecorators = getDecorators(container);
+
+/**
+ * IocDecorators to lazy inject stuff into properties or something. Useful when normal injection via the
+ * constructor is not possible.
+ */
+export const IocDecorators = getDecorators(container);
