@@ -29,7 +29,7 @@ export abstract class BaseExtension implements Disposable {
      * 
      * @memberOf BaseExtension
      */
-    //public abstract getGuiCommands(): CommandQuickPickItem[];
+    // public abstract getGuiCommands(): CommandQuickPickItem[];
 
     /**
      * Initialize the extension. Should register disposables to the extension context

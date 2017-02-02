@@ -26,6 +26,10 @@
         "max-classes-per-file": [
             false
         ],
+        "arrow-parens": [
+            true,
+            "ban-single-arg-parens"
+        ],
         "no-trailing-whitespace": false,
         "member-ordering": [
             true,

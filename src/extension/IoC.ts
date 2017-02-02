@@ -9,9 +9,10 @@ import getDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
 const iocSymbols = {
-    extensionContext: Symbol('context'),
     configuration: Symbol('config'),
-    extensions: Symbol('extensions')
+    extensionContext: Symbol('context'),
+    extensions: Symbol('extensions'),
+    loggerFactory: Symbol('loggerFactory')
 };
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
@@ -33,13 +34,15 @@ container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonSc
 // injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 
 // Logging
-container.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((context: interfaces.Context) => {
-    return (prefix?: string) => {
-        const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext),
-            config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
-        return new VscodeLogger(extContext, config, prefix);
-    };
-});
+container
+    .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)
+    .toFactory<Logger>((context: interfaces.Context) => {
+        return (prefix?: string) => {
+            const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext),
+                config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            return new VscodeLogger(extContext, config, prefix);
+        };
+    });
 
 export const Container = container;
 export const InjectorDecorators = getDecorators(container);
