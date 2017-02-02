@@ -1,11 +1,21 @@
+import { ExtensionConfig } from '../common/config';
+import { Logger } from '../common/utilities';
 import { TypeScriptHero } from './TypeScriptHero';
-import { Container as IoCContainer } from 'inversify';
+import { VscodeLogger } from './utilities/VscodeLogger';
+import { VscodeExtensionConfig } from './VscodeExtensionConfig';
+import { Container as IoCContainer, interfaces } from 'inversify';
+import { ExtensionContext } from 'vscode';
 import getDecorators from 'inversify-inject-decorators';
 
-let container = new IoCContainer();
+const container = new IoCContainer();
+const iocSymbols = {
+    extensionContext: Symbol('context'),
+    configuration: Symbol('config'),
+    extensions: Symbol('extensions')
+};
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
-// container.bind(ExtensionConfig).to(ExtensionConfig).inSingletonScope();
+container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 
 // // Providers
 // injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
@@ -22,14 +32,15 @@ container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 
-// // Logging
-// injector.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((context: interfaces.Context) => {
-//     return (prefix?: string) => {
-//         let extContext = context.kernel.get<ExtensionContext>('context'),
-//             config = context.kernel.get<ExtensionConfig>(ExtensionConfig);
-//         return new Logger(extContext, config, prefix);
-//     };
-// });
+// Logging
+container.bind<interfaces.Factory<Logger>>('LoggerFactory').toFactory<Logger>((context: interfaces.Context) => {
+    return (prefix?: string) => {
+        const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext),
+            config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+        return new VscodeLogger(extContext, config, prefix);
+    };
+});
 
 export const Container = container;
 export const InjectorDecorators = getDecorators(container);
+export const Symbols = iocSymbols;

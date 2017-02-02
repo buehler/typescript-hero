@@ -12,7 +12,9 @@
         "experimentalDecorators": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "strictNullChecks": true
+        "strictNullChecks": true,
+        "importHelpers": true,
+        "removeComments": true
     },
     "exclude": [
         "node_modules",

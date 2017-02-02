@@ -72,11 +72,11 @@ These settings do not have a prefix.
 ### Import resolver
 
 The following settings do have the prefix `resolver`. So an example setting could be
-`typescriptHero.resolver.pathStringDelimiter`.
+`typescriptHero.resolver.stringQuoteStyle`.
 
 | Setting                               | Description                                                                          |
 | ------------------------------------- | ------------------------------------------------------------------------------------ |
-| pathStringDelimiter                   | The string delimiter to use for the imports                                          |
+| stringQuoteStyle                      | The string delimiter to use for the imports                                          |
 | ignorePatterns                        | If any of these strings is part of a file path, the file is ignored                  |
 | insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`) |
 | insertSemicolons                      | If the extension should add a semicolon to the end of a statement                    |
