@@ -36,8 +36,8 @@
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "vscode:prepublish": "npm install && npm run build && npm prune --production",
-    "precompile": "del ./out",
-    "compile": "tsc -w --sourceMap",
+    "predevelop": "del ./out",
+    "develop": "tsc -w --sourceMap",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "npm run lint",
     "test": "node ./node_modules/vscode/bin/test",
@@ -69,9 +69,6 @@
     "typescript": "~2.1.5"
   },
   "activationEvents": [
-    "onCommand:typescriptHero.showCmdGui",
-    "onCommand:typescriptHero.addImport",
-    "onCommand:typescriptHero.organizeImports",
     "onLanguage:typescript",
     "onLanguage:typescriptreact"
   ],

@@ -9,12 +9,17 @@
         "sourceMap": false,
         "rootDir": ".",
         "emitDecoratorMetadata": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "strictNullChecks": true
     },
     "exclude": [
         "node_modules",
         ".vscode-test",
         "out",
-        "test/_workspace"
+        "test/_workspace",
+        "test",
+        "src/_old"
     ]
 }

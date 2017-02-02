@@ -1,5 +1,5 @@
-import { ImportLocation, TsImportOptions } from './models/TsImportOptions';
-import { LogLevel } from './utilities/Logger';
+import { ExtensionConfig, ResolverConfig, RestartDebuggerConfig } from '../common/config';
+import { ImportLocation, ImportOptions } from '../common/ts-generation';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
@@ -10,32 +10,22 @@ const sectionKey = 'typescriptHero';
  * Contains all exposed config endpoints.
  * 
  * @export
- * @class ExtensionConfig
+ * @class VscodeExtensionConfig
  */
 @injectable()
-export class ExtensionConfig {
-    private resolverConfig: ResolverConfig = new ResolverConfig();
-    private restartDebuggerConfig: RestartDebuggerConfig = new RestartDebuggerConfig();
+export class VscodeExtensionConfig implements ExtensionConfig {
+    private resolverConfig: ResolverConfig = new VscodeResolverConfig();
+    private restartDebuggerConfig: RestartDebuggerConfig = new VscodeRestartDebuggerConfig();
 
     /**
      * The actual log level.
      * 
      * @readonly
-     * @type {LogLevel}
-     * @memberOf ExtensionConfig
+     * @type {string}
+     * @memberOf VscodeExtensionConfig
      */
-    public get logLevel(): LogLevel {
-        let optString = workspace.getConfiguration(sectionKey).get<string>('verbosity');
-        switch (optString) {
-            case 'Nothing':
-                return LogLevel.Nothing;
-            case 'Errors':
-                return LogLevel.Errors;
-            case 'All':
-                return LogLevel.All;
-            default:
-                return LogLevel.Warnings;
-        }
+    public get verbosity(): string {
+        return workspace.getConfiguration(sectionKey).get<string>('verbosity');
     }
 
     /**
@@ -43,7 +33,7 @@ export class ExtensionConfig {
      * 
      * @readonly
      * @type {ResolverConfig}
-     * @memberOf ExtensionConfig
+     * @memberOf VscodeExtensionConfig
      */
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
@@ -54,7 +44,7 @@ export class ExtensionConfig {
      * 
      * @readonly
      * @type {RestartDebuggerConfig}
-     * @memberOf ExtensionConfig
+     * @memberOf VscodeExtensionConfig
      */
     public get restartDebugger(): RestartDebuggerConfig {
         return this.restartDebuggerConfig;
@@ -64,16 +54,16 @@ export class ExtensionConfig {
 /**
  * Configuration class for the resolver extension.
  * 
- * @class ResolverConfig
+ * @class VscodeResolverConfig
  */
-class ResolverConfig {
+class VscodeResolverConfig implements ResolverConfig {
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
@@ -85,7 +75,7 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
@@ -96,10 +86,10 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
-    public get pathStringDelimiter(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('resolver.pathStringDelimiter');
+    public get stringQuoteStyle(): string {
+        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle');
     }
 
     /**
@@ -108,7 +98,7 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
         return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
@@ -119,7 +109,7 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
         return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
@@ -130,7 +120,7 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {ImportLocation}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get newImportLocation(): ImportLocation {
         let configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
@@ -153,7 +143,7 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
     public get tabSize(): number {
         return workspace.getConfiguration().get<number>('editor.tabSize');
@@ -164,14 +154,14 @@ class ResolverConfig {
      * 
      * @readonly
      * @type {TsImportOptions}
-     * @memberOf ResolverConfig
+     * @memberOf VscodeResolverConfig
      */
-    public get importOptions(): TsImportOptions {
+    public get importOptions(): ImportOptions {
         return {
             eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,
-            pathDelimiter: this.pathStringDelimiter,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
+            stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize
         };
     }
@@ -180,15 +170,15 @@ class ResolverConfig {
 /**
  * Configuration class for the restart debugger extension.
  * 
- * @class RestartDebuggerConfig
+ * @class VscodeRestartDebuggerConfig
  */
-class RestartDebuggerConfig {
+class VscodeRestartDebuggerConfig implements RestartDebuggerConfig {
     /**
      * Defines the folder pathes, which are watched for changes.
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf RestartDebuggerConfig
+     * @memberOf VscodeRestartDebuggerConfig
      */
     public get watchFolders(): string[] {
         return workspace.getConfiguration(sectionKey).get<string[]>('restartDebugger.watchFolders');
@@ -200,7 +190,7 @@ class RestartDebuggerConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf RestartDebuggerConfig
+     * @memberOf VscodeRestartDebuggerConfig
      */
     public get active(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('restartDebugger.active');

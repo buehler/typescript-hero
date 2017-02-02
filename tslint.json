@@ -19,6 +19,13 @@
             true,
             "check-accessor"
         ],
+        "ordered-imports": [
+            false
+        ],
+        "object-literal-sort-keys": false,
+        "max-classes-per-file": [
+            false
+        ],
         "member-ordering": [
             true,
             {
@@ -47,12 +54,13 @@
             "allow-declarations"
         ],
         "no-string-literal": false,
-        "no-unused-variable": true,
         "object-literal-key-quotes": [
             false,
             "as-needed"
         ],
-        "one-variable-per-declaration": false,
+        "one-variable-per-declaration": [
+            false
+        ],
         "only-arrow-functions": [
             true,
             "allow-declarations"
@@ -62,7 +70,9 @@
             "single",
             "avoid-escape"
         ],
-        "trailing-comma": false,
+        "trailing-comma": [
+            false
+        ],
         "triple-equals": true,
         "typedef": [
             true,

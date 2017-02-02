@@ -1,6 +1,8 @@
 import 'reflect-metadata';
-import { Injector } from '../src/IoC';
+import { Container } from '../src/extension/IoC';
 import { ExtensionContext, Memento } from 'vscode';
+
+// tslint:disable
 
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -26,7 +28,7 @@ class ContextMock implements ExtensionContext {
     }
 }
 
-Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
+Container.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
 
 const testRunner = require('vscode/lib/testrunner');
 

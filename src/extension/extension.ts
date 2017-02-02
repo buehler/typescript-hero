@@ -1,6 +1,4 @@
 import 'reflect-metadata';
-import { Injector } from './IoC';
-import { TypeScriptHero } from './TypeScriptHero';
 import { Disposable, ExtensionContext } from 'vscode';
 
 let extension: Disposable;
@@ -12,11 +10,12 @@ let extension: Disposable;
  * @param {ExtensionContext} context
  */
 export function activate(context: ExtensionContext): void {
-    if (Injector.isBound('context')) {
-        Injector.unbind('context');
-    }
-    Injector.bind<ExtensionContext>('context').toConstantValue(context);
-    extension = Injector.get(TypeScriptHero);
+    // if (Injector.isBound('context')) {
+    //     Injector.unbind('context');
+    // }
+    // Injector.bind<ExtensionContext>('context').toConstantValue(context);
+    console.log(context);
+    extension = '' as any;
 }
 
 /**
@@ -25,6 +24,6 @@ export function activate(context: ExtensionContext): void {
  * @export
  */
 export function deactivate(): void {
-    extension.dispose();
-    extension = null;
+    // extension.dispose();
+    // extension = null;
 }

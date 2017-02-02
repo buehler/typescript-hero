@@ -1,8 +1,5 @@
-import { BaseExtension } from './extensions/BaseExtension';
-import { GuiProvider } from './provider/GuiProvider';
-import { Logger, LoggerFactory } from './utilities/Logger';
-import { inject, injectable, multiInject } from 'inversify';
-import { Disposable, ExtensionContext } from 'vscode';
+import { injectable } from 'inversify';
+import { Disposable } from 'vscode';
 
 /**
  * TypeScript Hero vscode extension.
@@ -14,18 +11,18 @@ import { Disposable, ExtensionContext } from 'vscode';
  */
 @injectable()
 export class TypeScriptHero implements Disposable {
-    private logger: Logger;
+    // private logger: Logger;
 
     constructor(
-        @inject('LoggerFactory') loggerFactory: LoggerFactory,
-        private guiProvider: GuiProvider,
-        @multiInject('Extension') private extensions: BaseExtension[],
-        @inject('context') context: ExtensionContext
+        // @inject('LoggerFactory') loggerFactory: LoggerFactory,
+        // private guiProvider: GuiProvider,
+        // @multiInject('Extension') private extensions: BaseExtension[],
+        // @inject('context') context: ExtensionContext
     ) {
-        this.logger = loggerFactory('TypescriptHero');
-        this.logger.info('Activation event called. TypeScriptHero instantiated.');
+        // this.logger = loggerFactory('TypescriptHero');
+        // this.logger.info('Activation event called. TypeScriptHero instantiated.');
 
-        this.extensions.forEach(o => o.initialize(context));
+        // this.extensions.forEach(o => o.initialize(context));
     }
 
     /**
@@ -35,9 +32,9 @@ export class TypeScriptHero implements Disposable {
      * @memberOf TypeScriptHero
      */
     public dispose(): void {
-        this.logger.info('Deactivation event called. Disposing TypeScriptHero.');
-        for (let ext of this.extensions) {
-            ext.dispose();
-        }
+        // this.logger.info('Deactivation event called. Disposing TypeScriptHero.');
+        // for (let ext of this.extensions) {
+        //     ext.dispose();
+        // }
     }
 }
