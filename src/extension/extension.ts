@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import { Container, Symbols } from './IoC';
+import { Container } from './IoC';
+import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { Disposable, ExtensionContext } from 'vscode';
 
@@ -12,10 +13,10 @@ let extension: Disposable;
  * @param {ExtensionContext} context
  */
 export function activate(context: ExtensionContext): void {
-    if (Container.isBound(Symbols.extensionContext)) {
-        Container.unbind(Symbols.extensionContext);
+    if (Container.isBound(iocSymbols.extensionContext)) {
+        Container.unbind(iocSymbols.extensionContext);
     }
-    Container.bind<ExtensionContext>(Symbols.extensionContext).toConstantValue(context);
+    Container.bind<ExtensionContext>(iocSymbols.extensionContext).toConstantValue(context);
     extension = Container.get(TypeScriptHero);
 }
 

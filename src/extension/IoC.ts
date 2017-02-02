@@ -1,5 +1,8 @@
 import { ExtensionConfig } from '../common/config';
 import { Logger } from '../common/utilities';
+import { BaseExtension } from './extensions/BaseExtension';
+import { ImportResolveExtension } from './extensions/ImportResolveExtension';
+import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
@@ -8,12 +11,6 @@ import { ExtensionContext } from 'vscode';
 import getDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
-const iocSymbols = {
-    configuration: Symbol('config'),
-    extensionContext: Symbol('context'),
-    extensions: Symbol('extensions'),
-    loggerFactory: Symbol('loggerFactory')
-};
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
@@ -28,8 +25,8 @@ container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonSc
 // injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
 // injector.bind(TsResourceParser).to(TsResourceParser);
 
-// // Extensions
-// injector.bind<BaseExtension>('Extension').to(ResolveExtension).inSingletonScope();
+// Extensions
+container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 
@@ -46,4 +43,3 @@ container
 
 export const Container = container;
 export const InjectorDecorators = getDecorators(container);
-export const Symbols = iocSymbols;

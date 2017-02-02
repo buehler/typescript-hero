@@ -1,6 +1,6 @@
 import { Logger, LoggerFactory } from '../common/utilities';
 import { BaseExtension } from './extensions/BaseExtension';
-import { Symbols } from './IoC';
+import { iocSymbols } from './IoCSymbols';
 import { inject, injectable, multiInject } from 'inversify';
 import { Disposable } from 'vscode';
 
@@ -17,8 +17,8 @@ export class TypeScriptHero implements Disposable {
     private logger: Logger;
 
     constructor(
-        @inject(Symbols.loggerFactory) loggerFactory: LoggerFactory,
-        @multiInject(Symbols.extensions) private extensions: BaseExtension[]
+        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @multiInject(iocSymbols.extensions) private extensions: BaseExtension[]
     ) {
         this.logger = loggerFactory('TypescriptHero');
         this.logger.info('Activation event called. TypeScriptHero instantiated.');

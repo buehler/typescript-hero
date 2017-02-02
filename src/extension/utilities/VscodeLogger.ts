@@ -85,8 +85,13 @@ export class VscodeLogger implements Logger {
     private log(level: LogLevel, severity: string, message: string, data?: any): void {
         if (this.getLogLevel() >= level) {
             let msg = `[${severity} - ${this.getDate()}] ${this.prefix ? this.prefix + ' - ' : ''}${message}`;
-            // tslint:disable-next-line
-            console.log(msg, data);
+            // tslint:disable
+            if (data) {
+                console.log(msg, data);
+            } else {
+                console.log(msg);
+            }
+            // tslint:enable
             VscodeLogger.channel.appendLine(msg);
             if (data) {
                 VscodeLogger.channel.appendLine(`\tData:\t${inspect(data, {})}`);
