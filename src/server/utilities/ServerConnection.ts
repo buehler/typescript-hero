@@ -1,7 +1,8 @@
 import { ExtensionConfig } from '../../common/config';
 import { ServerExtension } from '../extensions/ServerExtension';
+import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { multiInject } from 'inversify';
+import { injectable } from 'inversify';
 import { createConnection, IConnection, IPCMessageReader, IPCMessageWriter } from 'vscode-languageserver';
 
 /**
@@ -11,21 +12,14 @@ import { createConnection, IConnection, IPCMessageReader, IPCMessageWriter } fro
  * @export
  * @class ServerConnection
  */
+@injectable()
 export class ServerConnection {
     private handler: { [key: string]: Function[] } = {};
     private connection: IConnection;
+    private started: boolean;
 
-    constructor( @multiInject(iocSymbols.extensions) private extensions: ServerExtension[]) {
+    constructor() {
         this.connection = createConnection(new IPCMessageReader(process), new IPCMessageWriter(process));
-        this.connection.onInitialize(params => {
-            this.extensions.forEach(o => o.initialize(this, params));
-            return {
-                capabilities: {}
-            };
-        });
-        this.connection.onShutdown(() => {
-            this.extensions.forEach(o => o.exit());
-        });
     }
 
     /**
@@ -34,7 +28,24 @@ export class ServerConnection {
      * @memberOf ServerConnection
      */
     public start(): void {
+        if (this.started) {
+            throw new Error('Server already started.');
+        }
+
+        const extensions = Container.getAll<ServerExtension>(iocSymbols.extensions);
+
+        this.connection.onInitialize(params => {
+            extensions.forEach(o => o.initialize(this, params));
+            return {
+                capabilities: {}
+            };
+        });
+        this.connection.onShutdown(() => {
+            extensions.forEach(o => o.exit());
+        });
+
         this.connection.listen();
+        this.started = true;
     }
 
     /**

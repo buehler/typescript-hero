@@ -1,6 +1,8 @@
+import { Logger, LoggerFactory } from '../../common/utilities';
+import { iocSymbols } from '../IoCSymbols';
 import { ServerConnection } from '../utilities/ServerConnection';
 import { ServerExtension } from './ServerExtension';
-import { injectable } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { InitializeParams } from 'vscode-languageserver';
 
 /**
@@ -14,6 +16,11 @@ import { InitializeParams } from 'vscode-languageserver';
 @injectable()
 export class ImportResolveExtension implements ServerExtension {
     private rootUri: string | null;
+    private logger: Logger;
+
+    constructor( @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory) {
+        this.logger = loggerFactory('ImportResolveExtension');
+    }
 
     /**
      * Method that is called by the main entry point of the server. Initializes the given part
@@ -26,6 +33,7 @@ export class ImportResolveExtension implements ServerExtension {
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
         this.rootUri = params.rootUri;
+        this.logger.info('Initialized');
     }
 
     /**

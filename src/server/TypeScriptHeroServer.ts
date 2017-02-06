@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { Container } from './IoC';
 import { ServerConnection } from './utilities/ServerConnection';
 

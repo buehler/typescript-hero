@@ -1,4 +1,5 @@
-//import { Logger } from '../common/utilities';
+import { ServerLogger } from './utilities/ServerLogger';
+import { Logger } from '../common/utilities';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { ServerExtension } from './extensions/ServerExtension';
 import { iocSymbols } from './IoCSymbols';
@@ -12,17 +13,16 @@ container.bind(ServerConnection).to(ServerConnection).inSingletonScope();
 container.bind<ServerExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 
 // Logging
-// container
-//     .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)
-//     .toFactory<Logger>((context: interfaces.Context) => {
-//         context;
-//         return (prefix?: string) => {
-//             return prefix as any;
-//         };
-//     });
+container
+    .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)
+    .toFactory<Logger>((context: interfaces.Context) => {
+        const connection = context.container.get(ServerConnection);
+        return (prefix?: string) => {
+            return new ServerLogger(connection, prefix);
+        };
+    });
 
 /**
  * Injection container. IoC baby.
  */
 export const Container = container;
-
