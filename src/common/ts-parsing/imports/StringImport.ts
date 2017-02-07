@@ -1,6 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
-import { Import } from './Import';
-import { Position, Range, TextDocument } from 'vscode-languageserver-types';
+import { Import, importRange } from './Import';
+import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
  * Simple string import (i.e. import "reflect-metadata";).
@@ -39,12 +39,7 @@ export class StringImport implements Import {
      * @memberOf StringImport
      */
     public getRange(document: TextDocument): Range {
-        return this.isNew ?
-            Range.create(
-                Position.create(document.positionAt(this.start!).line, 0),
-                Position.create(document.positionAt(this.end + 1).line, 0)
-            ) :
-            Range.create(Position.create(0, 0), Position.create(0, 0));
+        return importRange(document, this.start, this.end);
     }
 
     /**

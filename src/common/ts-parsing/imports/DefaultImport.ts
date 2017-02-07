@@ -1,32 +1,56 @@
+import { GenerationOptions } from '../../ts-generation';
+import { AliasedImport, importRange } from './Import';
+import { Range, TextDocument } from 'vscode-languageserver-types';
+
 /**
  * Default import. Imports the default exports of a file.
  * (i.e. import foobar from ...).
  * 
  * @export
- * @class TsDefaultImport
- * @extends {TsAliasedImport}
+ * @class DefaultImport
+ * @implements {AliasedImport}
  */
-export class DefaultImport extends TsAliasedImport {
+export class DefaultImport implements AliasedImport {
+    public readonly _type: string = 'DefaultImport';
+
+    public get isNew(): boolean {
+        return this.start !== undefined && this.end !== undefined;
+    }
+
+    constructor(public libraryName: string, public alias: string, public start?: number, public end?: number) { }
+
     /**
-     * Generate TypeScript (import notation).
+     * Generates typescript code out of the actual import.
      * 
-     * @param {TsImportOptions}
+     * @param {GenerationOptions} {stringQuoteStyle, eol}
      * @returns {string}
      * 
-     * @memberOf TsStringImport
+     * @memberOf DefaultImport
      */
-    public toImport({eol, pathDelimiter}: TsImportOptions): string {
-        return `import ${this.alias} from ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
+    public generateTypescript({stringQuoteStyle, eol}: GenerationOptions): string {
+        return `import ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
+    }
+
+    /**
+     * Calculates the document range of the node in the given document.
+     * 
+     * @param {TextDocument} document
+     * @returns {Range}
+     * 
+     * @memberOf DefaultImport
+     */
+    public getRange(document: TextDocument): Range {
+        return importRange(document, this.start, this.end);
     }
 
     /**
      * Clone the current import object.
      * 
-     * @returns {TsDefaultImport}
+     * @returns {DefaultImport}
      * 
-     * @memberOf TsDefaultImport
+     * @memberOf DefaultImport
      */
-    public clone(): TsDefaultImport {
-        return new TsDefaultImport(this.libraryName, this.alias, this.start, this.end);
+    public clone(): DefaultImport {
+        return new DefaultImport(this.libraryName, this.alias, this.start, this.end);
     }
 }

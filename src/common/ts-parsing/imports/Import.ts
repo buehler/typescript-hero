@@ -1,6 +1,25 @@
-import { Generatable } from '../ts-generation';
-import { Clonable } from '../utilities';
-import { Node } from './Node';
+import { Generatable } from '../../ts-generation';
+import { Clonable } from '../../utilities';
+import { Node } from '../Node';
+import { Position, Range, TextDocument } from 'vscode-languageserver-types';
+
+/**
+ * Function that calculates the range object for an import.
+ * 
+ * @export
+ * @param {TextDocument} document
+ * @param {number} [start]
+ * @param {number} [end]
+ * @returns {Range}
+ */
+export function importRange(document: TextDocument, start?: number, end?: number): Range {
+    return start !== undefined && end !== undefined ?
+        Range.create(
+            Position.create(document.positionAt(start).line, 0),
+            Position.create(document.positionAt(end + 1).line, 0)
+        ) :
+        Range.create(Position.create(0, 0), Position.create(0, 0));
+}
 
 /**
  * Basic import interface. Defines an import in a document.

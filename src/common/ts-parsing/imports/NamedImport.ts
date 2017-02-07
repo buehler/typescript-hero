@@ -1,30 +1,43 @@
+import { GenerationOptions } from '../../ts-generation';
+import { Import, importRange } from './Import';
+import { ImportSymbol } from './ImportSymbol';
+import { Range, TextDocument } from 'vscode-languageserver-types';
+
 /**
  * Basic typescript import (ES6 style). Does contain multiple symbols of a file and converts
  * itself to a multiline import if the threshold is reached.
  * (i.e. import {Foobar} from ...).
  * 
  * @export
- * @class TsNamedImport
- * @extends {TsImport}
+ * @class NamedImport
+ * @implements {Import}
  */
-export class NamedImport extends TsImport {
-    public specifiers: TsResolveSpecifier[] = [];
+export class NamedImport implements Import {
+    public readonly _type: string = 'NamedImport';
+    public specifiers: ImportSymbol[] = [];
+
+    public get isNew(): boolean {
+        return this.start !== undefined && this.end !== undefined;
+    }
+
+    constructor(public libraryName: string, public start?: number, public end?: number) { }
 
     /**
-     * Generate TypeScript (import notation).
+     * Generates typescript code out of the actual import.
      * 
-     * @param {TsImportOptions} options
+     * @param {GenerationOptions} options
      * @returns {string}
      * 
-     * @memberOf TsNamedImport
+     * @memberOf NamedImport
      */
-    public toImport(options: TsImportOptions): string {
-        let {eol, pathDelimiter, spaceBraces, multiLineWrapThreshold} = options,
+    public generateTypescript(options: GenerationOptions): string {
+        let {eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold} = options,
             space = spaceBraces ? ' ' : '',
-            specifiers = this.specifiers.sort(this.specifierSort).map(o => o.toImport()).join(', '),
+            specifiers = this.specifiers.sort(this.specifierSort).map(o => o.generateTypescript()).join(', '),
             lib = this.libraryName;
 
-        let importString = `import {${space}${specifiers}${space}} from ${pathDelimiter}${lib}${pathDelimiter}${eol}\n`;
+        let importString =
+            `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}\n`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
         }
@@ -32,14 +45,26 @@ export class NamedImport extends TsImport {
     }
 
     /**
+     * Calculates the document range of the node in the given document.
+     * 
+     * @param {TextDocument} document
+     * @returns {Range}
+     * 
+     * @memberOf NamedImport
+     */
+    public getRange(document: TextDocument): Range {
+        return importRange(document, this.start, this.end);
+    }
+
+    /**
      * Clone the current import object.
      * 
-     * @returns {TsNamedImport}
+     * @returns {NamedImport}
      * 
-     * @memberOf TsNamedImport
+     * @memberOf NamedImport
      */
-    public clone(): TsNamedImport {
-        let clone = new TsNamedImport(this.libraryName, this.start, this.end);
+    public clone(): NamedImport {
+        let clone = new NamedImport(this.libraryName, this.start, this.end);
         clone.specifiers = this.specifiers.map(o => o.clone());
         return clone;
     }
@@ -47,29 +72,29 @@ export class NamedImport extends TsImport {
     /**
      * Converts the named import into a multiline import.
      * 
-     * @param {TsImportOptions} {pathDelimiter, tabSize}
+     * @param {GenerationOptions} {eol, stringQuoteStyle, tabSize}
      * @returns {string}
      * 
      * @memberOf TsNamedImport
      */
-    public toMultiLineImport({eol, pathDelimiter, tabSize}: TsImportOptions): string {
+    public toMultiLineImport({eol, stringQuoteStyle, tabSize}: GenerationOptions): string {
         let spacings = Array(tabSize + 1).join(' ');
         return `import {
-${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.toImport()}`).join(',\n')}
-} from ${pathDelimiter}${this.libraryName}${pathDelimiter}${eol}\n`;
+${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n')}
+} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
     }
 
     /**
      * Sorts the specifiers by name. Sorting function that is passed to [].sort().
      * 
      * @private
-     * @param {TsResolveSpecifier} i1
-     * @param {TsResolveSpecifier} i2
+     * @param {ImportSymbol} i1
+     * @param {ImportSymbol} i2
      * @returns {number} - Sort index
      * 
      * @memberOf TsNamedImport
      */
-    private specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
+    private specifierSort(i1: ImportSymbol, i2: ImportSymbol): number {
         let strA = i1.specifier.toLowerCase(),
             strB = i2.specifier.toLowerCase();
 

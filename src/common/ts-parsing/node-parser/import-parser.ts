@@ -1,4 +1,11 @@
-import { DefaultImport, ExternalModuleImport, NamedImport, NamespaceImport, StringImport } from '../imports';
+import {
+    DefaultImport,
+    ExternalModuleImport,
+    ImportSymbol,
+    NamedImport,
+    NamespaceImport,
+    StringImport
+} from '../imports';
 import { Resource } from '../resources';
 import {
     isExternalModuleReference,
@@ -21,7 +28,7 @@ import {
  * Parses an import node into the declaration.
  * 
  * @export
- * @param {TsResource} tsResource
+ * @param {Resource} resource
  * @param {(ImportDeclaration | ImportEqualsDeclaration)} node
  */
 export function parseImport(resource: Resource, node: ImportDeclaration | ImportEqualsDeclaration): void {
@@ -36,8 +43,8 @@ export function parseImport(resource: Resource, node: ImportDeclaration | Import
                 tsImport = new NamedImport(lib.text, node.getStart(), node.getEnd());
             tsImport.specifiers = bindings.elements.map(
                 o => o.propertyName && o.name ?
-                    new TsResolveSpecifier(o.propertyName.text, o.name.text) :
-                    new TsResolveSpecifier(o.name.text)
+                    new ImportSymbol(o.propertyName.text, o.name.text) :
+                    new ImportSymbol(o.name.text)
             );
 
             resource.imports.push(tsImport);
