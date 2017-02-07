@@ -10,7 +10,6 @@ import { Position, Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Import}
  */
 export class StringImport implements Import {
-
     public readonly _type: string = 'StringImport';
 
     public get isNew(): boolean {
