@@ -28,3 +28,20 @@ export interface Import extends Clonable, Node, Generatable {
      */
     libraryName: string;
 }
+
+/**
+ * Basic interface for aliased imports. Defines an alias for namespace imports and other aliased imports.
+ * 
+ * @export
+ * @interface AliasedImport
+ * @extends {Import}
+ */
+export interface AliasedImport extends Import {
+    /**
+     * Alias for the given import. E.g. for a "* as ..." import.
+     * 
+     * @type {string}
+     * @memberOf AliasedImport
+     */
+    alias: string;
+}

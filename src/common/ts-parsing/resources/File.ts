@@ -1,5 +1,5 @@
-import { Import } from './Import';
-import { Node } from './Node';
+import { Import } from '../imports';
+import { Node } from '../Node';
 import { Resource } from './Resource';
 import { relative } from 'path';
 import { Range, TextDocument } from 'vscode-languageserver-types';

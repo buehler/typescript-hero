@@ -1,4 +1,4 @@
-import { Import } from './Import';
+import { Import } from '../imports';
 
 /**
  * Base interface for resources. All resources share the same properties.

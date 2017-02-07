@@ -1,4 +1,4 @@
-import { GenerationOptions } from '../ts-generation';
+import { GenerationOptions } from '../../ts-generation';
 import { Import } from './Import';
 import { Position, Range, TextDocument } from 'vscode-languageserver-types';
 

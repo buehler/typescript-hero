@@ -1,4 +1,4 @@
-import { ImportLocation, ImportOptions } from '../ts-generation';
+import { GenerationOptions, ImportLocation } from '../ts-generation';
 /**
  * Configuration interface for the resolver extension.
  * 
@@ -75,8 +75,8 @@ export interface ResolverConfig {
      * All information that are needed to print an import.
      * 
      * @readonly
-     * @type {ImportOptions}
+     * @type {GenerationOptions}
      * @memberOf ResolverConfig
      */
-    importOptions: ImportOptions;
+    generationOptions: GenerationOptions;
 }

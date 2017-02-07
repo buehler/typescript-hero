@@ -1,6 +1,5 @@
-import { File } from './File';
 import { parseImport } from './node-parser';
-import { Resource } from './Resource';
+import { File, Resource } from './resources';
 import { readFileSync } from 'fs';
 import { injectable } from 'inversify';
 import {

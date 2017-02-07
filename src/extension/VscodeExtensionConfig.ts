@@ -1,5 +1,5 @@
 import { ExtensionConfig, ResolverConfig, RestartDebuggerConfig } from '../common/config';
-import { ImportLocation, ImportOptions } from '../common/ts-generation';
+import { ImportLocation, GenerationOptions } from '../common/ts-generation';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
@@ -156,7 +156,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @type {TsImportOptions}
      * @memberOf VscodeResolverConfig
      */
-    public get importOptions(): ImportOptions {
+    public get generationOptions(): GenerationOptions {
         return {
             eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,
