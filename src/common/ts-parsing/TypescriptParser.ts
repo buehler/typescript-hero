@@ -1,4 +1,17 @@
+import { File } from './File';
+import { parseImport } from './node-parser';
+import { Resource } from './Resource';
+import { readFileSync } from 'fs';
 import { injectable } from 'inversify';
+import {
+    createSourceFile,
+    ImportDeclaration,
+    ImportEqualsDeclaration,
+    Node,
+    ScriptTarget,
+    SourceFile,
+    SyntaxKind
+} from 'typescript';
 
 /**
  * Magic.happens('here');
@@ -11,88 +24,119 @@ import { injectable } from 'inversify';
  */
 @injectable()
 export class TypescriptParser {
-    
-    
-    
-    // /**
-    //  * Parses the given source into an anonymous TsFile resource.
-    //  * Mainly used to parse source code of a document.
-    //  * 
-    //  * @param {string} source
-    //  * @returns {Promise<TsFile>}
-    //  * 
-    //  * @memberOf TsResourceParser
-    //  */
-    // public async parseSource(source: string): Promise<TsFile> {
-    //     return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES2015, true));
-    // }
+    /**
+     * Parses the given source into an anonymous File resource.
+     * Mainly used to parse source code of a document.
+     * 
+     * @param {string} source
+     * @returns {Promise<File>}
+     * 
+     * @memberOf TsResourceParser
+     */
+    public async parseSource(source: string): Promise<File> {
+        return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES2015, true), '/');
+    }
 
-    // /**
-    //  * Parses a single file into a TsFile.
-    //  * 
-    //  * @param {Uri} file
-    //  * @returns {Promise<TsFile>}
-    //  * 
-    //  * @memberOf TsResourceParser
-    //  */
-    // public async parseFile(file: Uri): Promise<TsFile> {
-    //     let parse = await this.parseFiles([file]);
-    //     if (!parse || parse.length <= 0) {
-    //         throw new Error(`Could not parse file "${file.fsPath}"`);
-    //     }
-    //     return parse[0];
-    // }
+    /**
+     * Parses a single file into a parsed file.
+     * 
+     * @param {string} filePath
+     * @param {string} rootPath
+     * @returns {Promise<File>}
+     * 
+     * @memberOf TsResourceParser
+     */
+    public async parseFile(filePath: string, rootPath: string): Promise<File> {
+        let parse = await this.parseFiles([filePath], rootPath);
+        return parse[0];
+    }
 
-    // /**
-    //  * Parses multiple files into TsFiles. Can be canceled with the token.
-    //  * 
-    //  * @param {Uri[]} filePathes
-    //  * @param {CancellationToken} [cancellationToken]
-    //  * @returns {Promise<TsFile[]>}
-    //  * 
-    //  * @memberOf TsResourceParser
-    //  */
-    // public async parseFiles(filePathes: Uri[], cancellationToken?: CancellationToken): Promise<TsFile[]> {
-    //     if (cancellationToken && cancellationToken.onCancellationRequested) {
-    //         this.cancelRequested();
-    //         return;
-    //     }
+    /**
+     * Parses multiple files into parsed files.
+     * 
+     * @param {string[]} filePathes
+     * @param {string} rootPath
+     * @returns {Promise<File[]>}
+     * 
+     * @memberOf TsResourceParser
+     */
+    public async parseFiles(filePathes: string[], rootPath: string): Promise<File[]> {
+        return filePathes
+            .map(o => createSourceFile(o, readFileSync(o).toString(), ScriptTarget.ES2015, true))
+            .map(o => this.parseTypescript(o, rootPath));
+    }
 
-    //     try {
-    //         let parsed = filePathes
-    //             .map(o => createSourceFile(o.fsPath, readFileSync(o.fsPath).toString(), ScriptTarget.ES2015, true))
-    //             .map(o => this.parseTypescript(o, cancellationToken));
-    //         if (cancellationToken && cancellationToken.onCancellationRequested) {
-    //             this.cancelRequested();
-    //             return;
-    //         }
-    //         return parsed;
-    //     } catch (e) {
-    //         this.logger.error('Error happend during file parsing', { error: e });
-    //     }
-    // }
+    /**
+     * Parses the typescript source into the file instance. Calls .parse afterwards to
+     * get the declarations and other information about the source.
+     * 
+     * @private
+     * @param {SourceFile} source
+     * @param {string} rootPath
+     * @returns {TsFile}
+     * 
+     * @memberOf TsResourceParser
+     */
+    private parseTypescript(source: SourceFile, rootPath: string): File {
+        const file = new File(source.fileName, rootPath, source.getStart(), source.getEnd());
+        const syntaxList = source.getChildAt(0);
+        
+        this.parse(file, syntaxList);
 
-    // /**
-    //  * Parses the typescript source into the TsFile instance. Calls .parse afterwards to
-    //  * get the declarations and other information about the source.
-    //  * 
-    //  * @private
-    //  * @param {SourceFile} source
-    //  * @param {CancellationToken} [cancellationToken]
-    //  * @returns {TsFile}
-    //  * 
-    //  * @memberOf TsResourceParser
-    //  */
-    // private parseTypescript(source: SourceFile, cancellationToken?: CancellationToken): TsFile {
-    //     let tsFile = new TsFile(source.fileName, source.getStart(), source.getEnd());
+        return file;
+    }
 
-    //     let syntaxList = source.getChildAt(0);
-    //     if (cancellationToken && cancellationToken.onCancellationRequested) {
-    //         this.cancelRequested();
-    //         return;
-    //     }
-    //     this.parse(tsFile, syntaxList, cancellationToken);
-
-    //     return tsFile;
-    // }
+    /**
+     * Recursive function that runs through the AST of a source and parses the nodes.
+     * Creates the class / function / etc declarations and instanciates a new module / namespace
+     * resource if needed.
+     * 
+     * @private
+     * @param {Resource} resource
+     * @param {Node} node
+     * 
+     * @memberOf TsResourceParser
+     */
+    private parse(resource: Resource, node: Node): void {
+        for (let child of node.getChildren()) {
+            switch (child.kind) {
+                case SyntaxKind.ImportDeclaration:
+                case SyntaxKind.ImportEqualsDeclaration:
+                    parseImport(resource, <ImportDeclaration | ImportEqualsDeclaration>child);
+                    break;
+                // case SyntaxKind.ExportDeclaration:
+                // case SyntaxKind.ExportAssignment:
+                //     this.parseExport(tsResource, <ExportAssignment | ExportDeclaration>child);
+                //     break;
+                // case SyntaxKind.EnumDeclaration:
+                //     this.parseEnum(tsResource, <EnumDeclaration>child);
+                //     break;
+                // case SyntaxKind.TypeAliasDeclaration:
+                //     this.parseTypeAlias(tsResource, <TypeAliasDeclaration>child);
+                //     break;
+                // case SyntaxKind.FunctionDeclaration:
+                //     this.parseFunction(tsResource, <FunctionDeclaration>child);
+                //     continue;
+                // case SyntaxKind.VariableStatement:
+                //     this.parseVariable(tsResource, <VariableStatement>child);
+                //     break;
+                // case SyntaxKind.InterfaceDeclaration:
+                //     this.parseInterface(tsResource, <InterfaceDeclaration>child);
+                //     break;
+                // case SyntaxKind.ClassDeclaration:
+                //     this.parseClass(tsResource, <ClassDeclaration>child);
+                //     continue;
+                // case SyntaxKind.Identifier:
+                //     this.parseIdentifier(tsResource, <Identifier>child);
+                //     break;
+                // case SyntaxKind.ModuleDeclaration:
+                //     let resource = this.parseModule(tsResource, <ModuleDeclaration>child);
+                //     this.parse(resource, child, cancellationToken);
+                //     continue;
+                default:
+                    break;
+            }
+            this.parse(resource, child);
+        }
+    }
 }
