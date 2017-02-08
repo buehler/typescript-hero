@@ -1,0 +1,53 @@
+import { NotImplementedYetError } from '../../errors';
+import { nodeRange } from '../Node';
+import { Declaration } from './Declaration';
+import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+
+/**
+ * Module (namespace) declaration. Does export a whole module or namespace that is mainly used by
+ * external declaration files.
+ * 
+ * @export
+ * @class ModuleDeclaration
+ * @implements {Declaration}
+ */
+export class ModuleDeclaration implements Declaration {
+    public readonly _type: string = 'ModuleDeclaration';
+
+    public get itemKind(): CompletionItemKind {
+        return CompletionItemKind.Module;
+    }
+
+    public get intellisenseSortKey(): string {
+        return `0_${this.name}`;
+    }
+
+    constructor(
+        public name: string,
+        public start?: number,
+        public end?: number
+    ) { }
+
+    /**
+     * Calculates the document range of the node in the given document.
+     * 
+     * @param {TextDocument} document
+     * @returns {Range}
+     * 
+     * @memberOf ModuleDeclaration
+     */
+    public getRange(document: TextDocument): Range {
+        return nodeRange(document, this.start, this.end);
+    }
+
+    /**
+     * Generates typescript code out of the actual import.
+     * 
+     * @returns {string}
+     * 
+     * @memberOf ModuleDeclaration
+     */
+    public generateTypescript(): string {
+        throw new NotImplementedYetError();
+    }
+}

@@ -1,3 +1,4 @@
+import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
 
@@ -25,9 +26,30 @@ export interface Resource {
      */
     exports: Export[];
 
-    // declarations: TsDeclaration[];
-    // resources: TsResource[];
-    // usages: string[];
+    /**
+     * List of declarations that are contained in this resource.
+     * 
+     * @type {Declaration[]}
+     * @memberOf Resource
+     */
+    declarations: Declaration[];
+
+    /**
+     * List of subresources (like namespaces in a file) of this resource.
+     * 
+     * @type {Resource[]}
+     * @memberOf Resource
+     */
+    resources: Resource[];
+    
+    /**
+     * List of used identifiers in this resource.
+     * (i.e. actual used string identifiers to calculate missing imports and stuff.)
+     * 
+     * @type {string[]}
+     * @memberOf Resource
+     */
+    usages: string[];
 
     /**
      * "Unique" identifier for this resource. Can be the filepath for files or

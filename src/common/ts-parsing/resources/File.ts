@@ -1,3 +1,4 @@
+import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
 import { Node } from '../Node';
@@ -18,6 +19,9 @@ export class File implements Resource, Node {
 
     public imports: Import[] = [];
     public exports: Export[] = [];
+    public declarations: Declaration[] = [];
+    public resources: Resource[] = [];
+    public usages: string[] = [];
 
     public get identifier(): string {
         return '/' + relative(this.rootPath, this.filePath).replace(/([.]d)?[.]tsx?/g, '');

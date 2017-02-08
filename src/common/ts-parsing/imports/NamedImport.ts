@@ -75,7 +75,7 @@ export class NamedImport implements Import {
      * @param {GenerationOptions} {eol, stringQuoteStyle, tabSize}
      * @returns {string}
      * 
-     * @memberOf TsNamedImport
+     * @memberOf NamedImport
      */
     public toMultiLineImport({eol, stringQuoteStyle, tabSize}: GenerationOptions): string {
         let spacings = Array(tabSize + 1).join(' ');
@@ -92,7 +92,7 @@ ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateType
      * @param {SymbolSpecifier} i2
      * @returns {number} - Sort index
      * 
-     * @memberOf TsNamedImport
+     * @memberOf NamedImport
      */
     private specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
         let strA = i1.specifier.toLowerCase(),
