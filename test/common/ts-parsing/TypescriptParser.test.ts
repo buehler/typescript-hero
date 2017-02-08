@@ -1,4 +1,5 @@
 import { TypescriptParser } from '../../../src/common/ts-parsing';
+import { DefaultDeclaration } from '../../../src/common/ts-parsing/declarations';
 import { AllExport, AssignedExport, NamedExport } from '../../../src/common/ts-parsing/exports';
 import {
     DefaultImport,
@@ -135,9 +136,9 @@ describe('common / TypescriptParser', () => {
                 .that.equals('Foo');
         });
 
-        it.skip('should parse default export', () => {
-            // parsed.declarations[0].should.be.an.instanceOf(DefaultDeclaration);
-            // parsed.declarations[0].name.should.equal('DefaultExport');
+        it('should parse default export', () => {
+            parsed.declarations[0].should.be.an.instanceOf(DefaultDeclaration);
+            parsed.declarations[0].name.should.equal('DefaultExport');
         });
 
     });

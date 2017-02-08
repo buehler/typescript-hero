@@ -1,8 +1,23 @@
+import { DefaultDeclaration } from '../declarations';
 import { AllExport, AssignedExport, NamedExport } from '../exports';
+import { File, Resource } from '../resources';
 import { SymbolSpecifier } from '../SymbolSpecifier';
-import { Resource } from '../resources';
 import { isExportDeclaration, isNamedExports, isStringLiteral } from '../TypeGuards';
 import { ExportAssignment, ExportDeclaration, Identifier, StringLiteral } from 'typescript';
+
+/**
+ * Function that calculates the default name of a resource.
+ * This is used when a default export has no name (i.e. export class {}).
+ * 
+ * @param {TsResource} resource
+ * @returns {string}
+ */
+function getDefaultResourceIdentifier(resource: Resource): string {
+    if (resource instanceof File && resource.isWorkspaceFile) {
+        return resource.parsedPath.name;
+    }
+    return resource.identifier;
+}
 
 /**
  * Parses an export node into the declaration.
@@ -39,9 +54,8 @@ export function parseExport(resource: Resource, node: ExportDeclaration | Export
         if (node.isExportEquals) {
             resource.exports.push(new AssignedExport(node.getStart(), node.getEnd(), literal.text, resource));
         } else {
-            // TODO
-            // let name = (literal && literal.text) ? literal.text : getDefaultResourceIdentifier(resource);
-            // resource.declarations.push(new DefaultDeclaration(name, resource));
+            let name = (literal && literal.text) ? literal.text : getDefaultResourceIdentifier(resource);
+            resource.declarations.push(new DefaultDeclaration(name, resource));
         }
     }
 }

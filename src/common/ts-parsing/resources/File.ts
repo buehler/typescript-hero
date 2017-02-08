@@ -3,7 +3,7 @@ import { Export } from '../exports';
 import { Import } from '../imports';
 import { Node } from '../Node';
 import { Resource } from './Resource';
-import { relative } from 'path';
+import { parse, ParsedPath, relative } from 'path';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -25,6 +25,28 @@ export class File implements Resource, Node {
 
     public get identifier(): string {
         return '/' + relative(this.rootPath, this.filePath).replace(/([.]d)?[.]tsx?/g, '');
+    }
+
+    /**
+     * Returns the parsed path of a resource.
+     * 
+     * @readonly
+     * @type {ParsedPath}
+     * @memberOf TsFile
+     */
+    public get parsedPath(): ParsedPath {
+        return parse(this.filePath);
+    }
+
+    /**
+     * Determines if a file is a workspace file or an external resource.
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberOf TsFile
+     */
+    public get isWorkspaceFile(): boolean {
+        return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);
     }
 
     constructor(public filePath: string, private rootPath: string, public start: number, public end: number) { }
