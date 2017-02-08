@@ -1,12 +1,23 @@
+import { Export } from '../exports';
 import { Import } from '../imports';
 import { Node } from '../Node';
 import { Resource } from './Resource';
 import { relative } from 'path';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
+/**
+ * TypeScript resource. Basically a file that is located somewhere.
+ * 
+ * @export
+ * @class File
+ * @implements {Resource}
+ * @implements {Node}
+ */
 export class File implements Resource, Node {
     public readonly _type: string = 'File';
+
     public imports: Import[] = [];
+    public exports: Export[] = [];
 
     public get identifier(): string {
         return '/' + relative(this.rootPath, this.filePath).replace(/([.]d)?[.]tsx?/g, '');

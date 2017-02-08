@@ -1,3 +1,4 @@
+import { Export } from '../exports';
 import { Import } from '../imports';
 
 /**
@@ -15,8 +16,16 @@ export interface Resource {
      * @memberOf Resource
      */
     imports: Import[];
+
+    /**
+     * List of exports contained in this resource.
+     * 
+     * @type {Export[]}
+     * @memberOf Resource
+     */
+    exports: Export[];
+
     // declarations: TsDeclaration[];
-    // exports: TsExport[];
     // resources: TsResource[];
     // usages: string[];
 

@@ -1,4 +1,5 @@
 import { TypescriptParser } from '../../../src/common/ts-parsing';
+import { AllExport, AssignedExport, NamedExport } from '../../../src/common/ts-parsing/exports';
 import {
     DefaultImport,
     ExternalModuleImport,
@@ -83,7 +84,7 @@ describe('common / TypescriptParser', () => {
             tsImport.libraryName.should.equal('multiLineImport');
             tsImport.specifiers[0].specifier.should.equal('Spec1');
             tsImport.specifiers[1].specifier.should.equal('Spec2');
-            tsImport.specifiers[1].alias!.should.equal('Alias2');
+            should.equal(tsImport.specifiers[1].alias, 'Alias2');
         });
 
         it('should parse a default import', () => {
@@ -92,6 +93,51 @@ describe('common / TypescriptParser', () => {
             tsImport.should.be.an.instanceOf(DefaultImport);
             tsImport.libraryName.should.equal('aFile');
             tsImport.alias.should.equal('Foobar');
+        });
+
+    });
+
+    describe('Export parsing', () => {
+
+        const file = join(vscode.workspace.rootPath, 'common/ts-parsing/exportsOnly.ts');
+
+        beforeEach(async done => {
+            parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+            done();
+        });
+
+        it('should parse export all from another file', () => {
+            parsed.exports[0].should.be.an.instanceOf(AllExport)
+                .with.property('from')
+                .that.equals('./OtherFile');
+        });
+
+        it('should parse export named from another file', () => {
+            parsed.exports[1].should.be.an.instanceOf(NamedExport)
+                .with.property('from')
+                .that.equals('./AnotherFile');
+        });
+
+        it('should parse aliased export named from another file', () => {
+            parsed.exports[1].should.be.an.instanceOf(NamedExport);
+            let exp = parsed.exports[1] as NamedExport;
+
+            exp.specifiers.should.be.an('array').with.lengthOf(2);
+
+            let spec = exp.specifiers[1];
+            spec.specifier.should.equal('Specifier');
+            should.equal(spec.alias, 'Alias');
+        });
+
+        it('should parse export assignment', () => {
+            parsed.exports[2].should.be.an.instanceOf(AssignedExport)
+                .with.property('declarationIdentifier')
+                .that.equals('Foo');
+        });
+
+        it.skip('should parse default export', () => {
+            // parsed.declarations[0].should.be.an.instanceOf(DefaultDeclaration);
+            // parsed.declarations[0].name.should.equal('DefaultExport');
         });
 
     });
