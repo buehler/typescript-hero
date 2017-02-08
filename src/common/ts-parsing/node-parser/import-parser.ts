@@ -1,12 +1,6 @@
-import {
-    DefaultImport,
-    ExternalModuleImport,
-    ImportSymbol,
-    NamedImport,
-    NamespaceImport,
-    StringImport
-} from '../imports';
+import { DefaultImport, ExternalModuleImport, NamedImport, NamespaceImport, StringImport } from '../imports';
 import { Resource } from '../resources';
+import { SymbolSpecifier } from '../SymbolSpecifier';
 import {
     isExternalModuleReference,
     isImportDeclaration,
@@ -43,8 +37,8 @@ export function parseImport(resource: Resource, node: ImportDeclaration | Import
                 tsImport = new NamedImport(lib.text, node.getStart(), node.getEnd());
             tsImport.specifiers = bindings.elements.map(
                 o => o.propertyName && o.name ?
-                    new ImportSymbol(o.propertyName.text, o.name.text) :
-                    new ImportSymbol(o.name.text)
+                    new SymbolSpecifier(o.propertyName.text, o.name.text) :
+                    new SymbolSpecifier(o.name.text)
             );
 
             resource.imports.push(tsImport);

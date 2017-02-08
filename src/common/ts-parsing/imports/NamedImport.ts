@@ -1,6 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
+import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Import, importRange } from './Import';
-import { ImportSymbol } from './ImportSymbol';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -14,7 +14,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  */
 export class NamedImport implements Import {
     public readonly _type: string = 'NamedImport';
-    public specifiers: ImportSymbol[] = [];
+    public specifiers: SymbolSpecifier[] = [];
 
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;
@@ -88,13 +88,13 @@ ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateType
      * Sorts the specifiers by name. Sorting function that is passed to [].sort().
      * 
      * @private
-     * @param {ImportSymbol} i1
-     * @param {ImportSymbol} i2
+     * @param {SymbolSpecifier} i1
+     * @param {SymbolSpecifier} i2
      * @returns {number} - Sort index
      * 
      * @memberOf TsNamedImport
      */
-    private specifierSort(i1: ImportSymbol, i2: ImportSymbol): number {
+    private specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
         let strA = i1.specifier.toLowerCase(),
             strB = i2.specifier.toLowerCase();
 

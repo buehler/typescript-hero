@@ -1,5 +1,5 @@
 import { AllExport, AssignedExport, NamedExport } from '../exports';
-import { ImportSymbol } from '../imports';
+import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Resource } from '../resources';
 import { isExportDeclaration, isNamedExports, isStringLiteral } from '../TypeGuards';
 import { ExportAssignment, ExportDeclaration, Identifier, StringLiteral } from 'typescript';
@@ -28,8 +28,8 @@ export function parseExport(resource: Resource, node: ExportDeclaration | Export
                 ex = new NamedExport(node.getStart(), node.getEnd(), lib.text);
             ex.specifiers = tsExport.exportClause.elements.map(
                 o => o.propertyName && o.name ?
-                    new ImportSymbol(o.propertyName.text, o.name.text) :
-                    new ImportSymbol(o.name.text)
+                    new SymbolSpecifier(o.propertyName.text, o.name.text) :
+                    new SymbolSpecifier(o.name.text)
             );
 
             resource.exports.push(ex);

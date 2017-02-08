@@ -1,15 +1,15 @@
-import { Generatable } from '../../ts-generation';
-import { Clonable } from '../../utilities';
+import { Generatable } from '../ts-generation';
+import { Clonable } from '../utilities';
 
 /**
- * Class for symbols that are contained in a named import.
+ * Class for symbols that are contained in a named import or export or anywhere. Basically an aliased object.
  * (i.e. import {SYMBOL} from '...').
  * 
  * @export
- * @class ImportSymbol
+ * @class SymbolSpecifier
  * @implements {Clonable}
  */
-export class ImportSymbol implements Clonable, Generatable {
+export class SymbolSpecifier implements Clonable, Generatable {
     constructor(public specifier: string, public alias?: string) { }
 
     /**
@@ -26,11 +26,11 @@ export class ImportSymbol implements Clonable, Generatable {
     /**
      * Clones the current resolve specifier and returns a new instance with the same properties.
      * 
-     * @returns {ImportSymbol}
+     * @returns {SymbolSpecifier}
      * 
-     * @memberOf ImportSymbol
+     * @memberOf SymbolSpecifier
      */
-    public clone(): ImportSymbol {
-        return new ImportSymbol(this.specifier, this.alias);
+    public clone(): SymbolSpecifier {
+        return new SymbolSpecifier(this.specifier, this.alias);
     }
 }

@@ -1,5 +1,5 @@
-import { ImportSymbol } from '../imports';
 import { nodeRange } from '../Node';
+import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Export } from './Export';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
@@ -13,7 +13,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
 export class NamedExport implements Export {
     public readonly _type: string = 'NamedExport';
 
-    public specifiers: ImportSymbol[];
+    public specifiers: SymbolSpecifier[];
 
     constructor(public start: number, public end: number, public from: string) { }
 
