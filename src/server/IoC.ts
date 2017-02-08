@@ -14,7 +14,6 @@ container.bind(TypescriptParser).to(TypescriptParser);
 
 container.bind<ServerExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 
-
 // Logging
 container
     .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)

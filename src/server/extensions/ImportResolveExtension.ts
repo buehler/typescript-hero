@@ -46,5 +46,6 @@ export class ImportResolveExtension implements ServerExtension {
      * @memberOf ImportResolveExtension
      */
     public exit(): void {
+        this.logger.info('Exit');
     }
 }
