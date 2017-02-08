@@ -33,6 +33,9 @@ export class ImportResolveExtension implements ServerExtension {
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
         this.rootUri = params.rootUri;
+        // tslint:disable-next-line
+        connection;
+
         this.logger.info('Initialized');
     }
 
