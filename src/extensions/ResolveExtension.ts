@@ -63,7 +63,7 @@ export class ResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
-        '{**/*.ts,**/package.json,**/typings.json}', true
+        '{**/*.ts,**/*.tsx,**/package.json,**/typings.json}', true
     );
     private ignorePatterns: string[];
 

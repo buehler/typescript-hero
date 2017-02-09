@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Fixed
+- Imports from newly added tsx files aren't seen by resolver ([#169](https://github.com/buehler/typescript-hero/pull/169))
 
 ## [0.12.0]
 #### Added
