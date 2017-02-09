@@ -143,55 +143,6 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
 }
 
 /**
- * Function that calculates the default name of a resource.
- * This is used when a default export has no name (i.e. export class {}).
- * 
- * @param {TsResource} resource
- * @returns {string}
- */
-function getDefaultResourceIdentifier(resource: TsResource): string {
-    if (resource instanceof TsFile && resource.isWorkspaceFile) {
-        return resource.parsedPath.name;
-    }
-    return resource.getIdentifier();
-}
-
-/**
- * Returns the type text (type information) for a given node.
- * 
- * @param {TypeNode} node
- * @returns {(string|undefined)}
- */
-function getNodeType(node: TypeNode): string | undefined {
-    return node ? node.getText() : undefined;
-}
-
-/**
- * Returns the enum value (visibility) of a node.
- * 
- * @param {Node} node
- * @returns
- */
-function getNodeVisibility(node: Node): DeclarationVisibility | undefined {
-    if (!node.modifiers) {
-        return undefined;
-    }
-
-    for (let modifier of node.modifiers) {
-        switch (modifier.kind) {
-            case SyntaxKind.PublicKeyword:
-                return DeclarationVisibility.Public;
-            case SyntaxKind.ProtectedKeyword:
-                return DeclarationVisibility.Protected;
-            case SyntaxKind.PrivateKeyword:
-                return DeclarationVisibility.Private;
-            default:
-                break;
-        }
-    }
-}
-
-/**
  * Magic.happen('here');
  * This class is the parser of the whole extension. It uses the typescript compiler to parse a file or given
  * source code into the token stream and therefore into the AST of the source. Afterwards an array of
@@ -219,37 +170,6 @@ export class TsResourceParser {
         }
     }
 
-    /**
-     * Parses an enum node into the declaration.
-     * 
-     * @private
-     * @param {TsResource} tsResource
-     * @param {EnumDeclaration} node
-     * 
-     * @memberOf TsResourceParser
-     */
-    private parseEnum(tsResource: TsResource, node: EnumDeclaration): void {
-        let declaration = new TshEnumDeclaration(
-            node.name.text, node.getStart(), node.getEnd(), this.checkExported(node)
-        );
-        declaration.members = node.members.map(o => o.name.getText());
-        tsResource.declarations.push(declaration);
-    }
-
-    /**
-     * Parses a type alias into the declaration.
-     * 
-     * @private
-     * @param {TsResource} tsResource
-     * @param {TypeAliasDeclaration} node
-     * 
-     * @memberOf TsResourceParser
-     */
-    private parseTypeAlias(tsResource: TsResource, node: TypeAliasDeclaration): void {
-        tsResource.declarations.push(
-            new TshTypeAliasDeclaration(node.name.text, node.getStart(), node.getEnd(), this.checkExported(node))
-        );
-    }
 
     /**
      * Parses a function into its declaration.
@@ -273,40 +193,6 @@ export class TsResourceParser {
         func.parameters = this.parseMethodParams(node);
         tsResource.declarations.push(func);
         this.parseFunctionParts(tsResource, func, node);
-    }
-
-    /**
-     * Parse a variable. Information such as "is the variable const" are calculated here.
-     * 
-     * @private
-     * @param {(TsResource | TsExportableCallableDeclaration)} parent
-     * @param {VariableStatement} node
-     * 
-     * @memberOf TsResourceParser
-     */
-    private parseVariable(
-        parent: TsResource | TsExportableCallableDeclaration | TsTypedExportableCallableDeclaration,
-        node: VariableStatement
-    ): void {
-        let isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
-        if (node.declarationList && node.declarationList.declarations) {
-            node.declarationList.declarations.forEach(o => {
-                let declaration = new TshVariableDeclaration(
-                    o.name.getText(),
-                    this.checkExported(node),
-                    isConst,
-                    getNodeType(o.type),
-                    node.getStart(),
-                    node.getEnd()
-                );
-                if (parent instanceof TsExportableCallableDeclaration ||
-                    parent instanceof TsTypedExportableCallableDeclaration) {
-                    parent.variables.push(declaration);
-                } else {
-                    parent.declarations.push(declaration);
-                }
-            });
-        }
     }
 
     /**
@@ -451,25 +337,6 @@ export class TsResourceParser {
     }
 
     /**
-     * Parse a module to its declaration. Create a new namespace or module declaration and return it to
-     * be used as the new "container".
-     * 
-     * @private
-     * @param {TsResource} tsResource
-     * @param {ModuleDeclaration} node
-     * @returns {TsResource}
-     * 
-     * @memberOf TsResourceParser
-     */
-    private parseModule(tsResource: TsResource, node: ModuleDeclaration): TsResource {
-        let resource = (node.flags & NodeFlags.Namespace) === NodeFlags.Namespace ?
-            new TsNamespace((node.name as Identifier).text, node.getStart(), node.getEnd()) :
-            new TsModule((node.name as Identifier).text, node.getStart(), node.getEnd());
-        tsResource.resources.push(resource);
-        return resource;
-    }
-
-    /**
      * Parse the parts of a function. All functions / methods contain various information about used variables
      * and parameters.
      * 
@@ -583,36 +450,6 @@ export class TsResourceParser {
             }
             return all;
         }, []);
-    }
-
-    /**
-     * Check if the given typescript node has the exported flag.
-     * (e.g. export class Foobar).
-     * 
-     * @private
-     * @param {Node} node
-     * @returns {boolean}
-     * 
-     * @memberOf TsResourceParser
-     */
-    private checkExported(node: Node): boolean {
-        let flags = getCombinedModifierFlags(node);
-        return (flags & ModifierFlags.Export) === ModifierFlags.Export;
-    }
-
-    /**
-     * Check if the given typescript node has the default flag.
-     * (e.g. export default class Foobar).
-     * 
-     * @private
-     * @param {Node} node
-     * @returns {boolean}
-     * 
-     * @memberOf TsResourceParser
-     */
-    private checkDefaultExport(node: Node): boolean {
-        let flags = getCombinedModifierFlags(node);
-        return (flags & ModifierFlags.Default) === ModifierFlags.Default;
     }
 
 }

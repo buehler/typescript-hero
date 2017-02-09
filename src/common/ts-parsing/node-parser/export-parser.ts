@@ -1,14 +1,14 @@
+import { isExportDeclaration, isNamedExports, isStringLiteral } from '../../type-guards';
 import { DefaultDeclaration } from '../declarations';
 import { AllExport, AssignedExport, NamedExport } from '../exports';
 import { File, Resource } from '../resources';
 import { SymbolSpecifier } from '../SymbolSpecifier';
-import { isExportDeclaration, isNamedExports, isStringLiteral } from '../TypeGuards';
 import { ExportAssignment, ExportDeclaration, Identifier, StringLiteral } from 'typescript';
 
 /**
  * Function that calculates the default name of a resource.
  * This is used when a default export has no name (i.e. export class {}).
- * 
+ *
  * @param {TsResource} resource
  * @returns {string}
  */

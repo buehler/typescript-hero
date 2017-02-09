@@ -23,6 +23,7 @@ export class VariableDeclaration implements ExportableDeclaration, TypedDeclarat
 
     constructor(
         public name: string,
+        public isConst: boolean,
         public isExported: boolean,
         public type: string | undefined,
         public start?: number,

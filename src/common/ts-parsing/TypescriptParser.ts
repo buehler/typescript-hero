@@ -1,9 +1,10 @@
-import { parseExport, parseImport } from './node-parser';
+import { parseEnum, parseExport, parseImport } from './node-parser';
 import { File, Resource } from './resources';
 import { readFileSync } from 'fs';
 import { injectable } from 'inversify';
 import {
     createSourceFile,
+    EnumDeclaration,
     ExportAssignment,
     ExportDeclaration,
     ImportDeclaration,
@@ -109,9 +110,9 @@ export class TypescriptParser {
                 case SyntaxKind.ExportAssignment:
                     parseExport(resource, <ExportAssignment | ExportDeclaration>child);
                     break;
-                // case SyntaxKind.EnumDeclaration:
-                //     this.parseEnum(tsResource, <EnumDeclaration>child);
-                //     break;
+                case SyntaxKind.EnumDeclaration:
+                    parseEnum(resource, <EnumDeclaration>child);
+                    break;
                 // case SyntaxKind.TypeAliasDeclaration:
                 //     this.parseTypeAlias(tsResource, <TypeAliasDeclaration>child);
                 //     break;

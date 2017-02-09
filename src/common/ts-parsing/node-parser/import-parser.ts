@@ -1,13 +1,13 @@
-import { DefaultImport, ExternalModuleImport, NamedImport, NamespaceImport, StringImport } from '../imports';
-import { Resource } from '../resources';
-import { SymbolSpecifier } from '../SymbolSpecifier';
 import {
     isExternalModuleReference,
     isImportDeclaration,
     isNamedImports,
     isNamespaceImport,
     isStringLiteral
-} from '../TypeGuards';
+} from '../../type-guards';
+import { DefaultImport, ExternalModuleImport, NamedImport, NamespaceImport, StringImport } from '../imports';
+import { Resource } from '../resources';
+import { SymbolSpecifier } from '../SymbolSpecifier';
 import {
     ExternalModuleReference,
     Identifier,
