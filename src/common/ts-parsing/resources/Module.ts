@@ -2,22 +2,20 @@ import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
 import { Node } from '../Node';
-import { Module } from './Module';
 import { Namespace } from './Namespace';
 import { Resource } from './Resource';
-import { parse, ParsedPath, relative } from 'path';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
- * TypeScript resource. Basically a file that is located somewhere.
+ * TypeScript resource. Declaration of a typescript module (i.e. declare module "foobar").
  * 
  * @export
- * @class File
+ * @class Module
  * @implements {Resource}
  * @implements {Node}
  */
-export class File implements Resource, Node {
-    public readonly _type: string = 'File';
+export class Module implements Resource, Node {
+    public readonly _type: string = 'Module';
 
     public imports: Import[] = [];
     public exports: Export[] = [];
@@ -26,7 +24,7 @@ export class File implements Resource, Node {
     public usages: string[] = [];
 
     public get identifier(): string {
-        return '/' + relative(this.rootPath, this.filePath).replace(/([.]d)?[.]tsx?/g, '');
+        return this.name;
     }
 
     public get nonLocalUsages(): string[] {
@@ -36,29 +34,7 @@ export class File implements Resource, Node {
         );
     }
 
-    /**
-     * Returns the parsed path of a resource.
-     * 
-     * @readonly
-     * @type {ParsedPath}
-     * @memberOf File
-     */
-    public get parsedPath(): ParsedPath {
-        return parse(this.filePath);
-    }
-
-    /**
-     * Determines if a file is a workspace file or an external resource.
-     * 
-     * @readonly
-     * @type {boolean}
-     * @memberOf File
-     */
-    public get isWorkspaceFile(): boolean {
-        return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);
-    }
-
-    constructor(public filePath: string, private rootPath: string, public start: number, public end: number) { }
+    constructor(public name: string, public start: number, public end: number) { }
 
     /**
      * Calculates the document range of the node in the given document.
@@ -70,5 +46,23 @@ export class File implements Resource, Node {
      */
     public getRange(document: TextDocument): Range {
         return Range.create(document.positionAt(this.start), document.positionAt(this.end));
+    }
+
+    /**
+     * Function that calculates the alias name of a namespace.
+     * Removes all underlines and dashes and camelcases the name.
+     * 
+     * @returns {string}
+     * 
+     * @memberOf Module
+     */
+    public getNamespaceAlias(): string {
+        return this.name.split(/[-_]/).reduce((all, cur, idx) => {
+            if (idx === 0) {
+                return all + cur.toLowerCase();
+            } else {
+                return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
+            }
+        }, '');
     }
 }

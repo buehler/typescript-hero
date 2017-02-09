@@ -59,4 +59,13 @@ export interface Resource {
      * @memberOf Resource
      */
     readonly identifier: string;
+
+    /**
+     * Returns an array of usages (a usage is a used symbol name in the resource)
+     * that are not covered by its own declarations. 
+     * 
+     * @type {string[]}
+     * @memberOf Resource
+     */
+    readonly nonLocalUsages: string[];
 }
