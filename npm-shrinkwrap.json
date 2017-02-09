@@ -1,0 +1,51 @@
+{
+  "name": "typescript-hero",
+  "version": "0.12.0",
+  "dependencies": {
+    "inversify": {
+      "version": "3.1.0",
+      "from": "inversify@>=3.1.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/inversify/-/inversify-3.1.0.tgz"
+    },
+    "inversify-inject-decorators": {
+      "version": "3.0.1",
+      "from": "inversify-inject-decorators@>=3.0.1 <4.0.0",
+      "resolved": "https://registry.npmjs.org/inversify-inject-decorators/-/inversify-inject-decorators-3.0.1.tgz"
+    },
+    "reflect-metadata": {
+      "version": "0.1.9",
+      "from": "reflect-metadata@>=0.1.9 <0.2.0",
+      "resolved": "https://registry.npmjs.org/reflect-metadata/-/reflect-metadata-0.1.9.tgz"
+    },
+    "tslib": {
+      "version": "1.5.0",
+      "from": "tslib@latest",
+      "resolved": "https://registry.npmjs.org/tslib/-/tslib-1.5.0.tgz"
+    },
+    "typescript": {
+      "version": "2.1.6",
+      "from": "typescript@>=2.1.6 <2.2.0",
+      "resolved": "https://registry.npmjs.org/typescript/-/typescript-2.1.6.tgz"
+    },
+    "vscode-jsonrpc": {
+      "version": "3.0.4",
+      "from": "vscode-jsonrpc@>=3.0.3 <4.0.0",
+      "resolved": "https://registry.npmjs.org/vscode-jsonrpc/-/vscode-jsonrpc-3.0.4.tgz"
+    },
+    "vscode-languageclient": {
+      "version": "3.0.3",
+      "from": "vscode-languageclient@latest",
+      "resolved": "https://registry.npmjs.org/vscode-languageclient/-/vscode-languageclient-3.0.3.tgz"
+    },
+    "vscode-languageserver": {
+      "version": "3.0.4",
+      "from": "vscode-languageserver@latest",
+      "resolved": "https://registry.npmjs.org/vscode-languageserver/-/vscode-languageserver-3.0.4.tgz"
+    },
+    "vscode-languageserver-types": {
+      "version": "3.0.3",
+      "from": "vscode-languageserver-types@latest",
+      "resolved": "https://registry.npmjs.org/vscode-languageserver-types/-/vscode-languageserver-types-3.0.3.tgz"
+    }
+  }
+}
