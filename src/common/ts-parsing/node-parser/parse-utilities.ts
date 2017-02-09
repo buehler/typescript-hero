@@ -1,4 +1,5 @@
 import { DeclarationVisibility } from '../declarations';
+import { File, Resource } from '../resources';
 import { getCombinedModifierFlags, ModifierFlags, Node, SyntaxKind, TypeNode } from 'typescript';
 
 /**
@@ -62,4 +63,19 @@ export function getNodeVisibility(node: Node): DeclarationVisibility | undefined
                 break;
         }
     }
+}
+
+/**
+ * Function that calculates the default name of a resource.
+ * This is used when a default export has no name (i.e. export class {}).
+ *
+ * @export
+ * @param {TsResource} resource
+ * @returns {string}
+ */
+export function getDefaultResourceIdentifier(resource: Resource): string {
+    if (resource instanceof File && resource.isWorkspaceFile) {
+        return resource.parsedPath.name;
+    }
+    return resource.identifier;
 }

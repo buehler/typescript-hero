@@ -1,18 +1,34 @@
-import { parseEnum, parseExport, parseImport } from './node-parser';
+import {
+    parseClass,
+    parseEnum,
+    parseExport,
+    parseFunction,
+    parseImport,
+    parseInterface,
+    parseModule,
+    parseTypeAlias,
+    parseVariable
+} from './node-parser';
 import { File, Resource } from './resources';
 import { readFileSync } from 'fs';
 import { injectable } from 'inversify';
 import {
+    ClassDeclaration,
     createSourceFile,
     EnumDeclaration,
     ExportAssignment,
     ExportDeclaration,
+    FunctionDeclaration,
     ImportDeclaration,
     ImportEqualsDeclaration,
+    InterfaceDeclaration,
+    ModuleDeclaration,
     Node,
     ScriptTarget,
     SourceFile,
-    SyntaxKind
+    SyntaxKind,
+    TypeAliasDeclaration,
+    VariableStatement
 } from 'typescript';
 
 /**
@@ -82,7 +98,7 @@ export class TypescriptParser {
     private parseTypescript(source: SourceFile, rootPath: string): File {
         const file = new File(source.fileName, rootPath, source.getStart(), source.getEnd());
         const syntaxList = source.getChildAt(0);
-        
+
         this.parse(file, syntaxList);
 
         return file;
@@ -113,28 +129,25 @@ export class TypescriptParser {
                 case SyntaxKind.EnumDeclaration:
                     parseEnum(resource, <EnumDeclaration>child);
                     break;
-                // case SyntaxKind.TypeAliasDeclaration:
-                //     this.parseTypeAlias(tsResource, <TypeAliasDeclaration>child);
-                //     break;
-                // case SyntaxKind.FunctionDeclaration:
-                //     this.parseFunction(tsResource, <FunctionDeclaration>child);
-                //     continue;
-                // case SyntaxKind.VariableStatement:
-                //     this.parseVariable(tsResource, <VariableStatement>child);
-                //     break;
-                // case SyntaxKind.InterfaceDeclaration:
-                //     this.parseInterface(tsResource, <InterfaceDeclaration>child);
-                //     break;
-                // case SyntaxKind.ClassDeclaration:
-                //     this.parseClass(tsResource, <ClassDeclaration>child);
-                //     continue;
-                // case SyntaxKind.Identifier:
-                //     this.parseIdentifier(tsResource, <Identifier>child);
-                //     break;
-                // case SyntaxKind.ModuleDeclaration:
-                //     let resource = this.parseModule(tsResource, <ModuleDeclaration>child);
-                //     this.parse(resource, child, cancellationToken);
-                //     continue;
+                case SyntaxKind.TypeAliasDeclaration:
+                    parseTypeAlias(resource, <TypeAliasDeclaration>child);
+                    break;
+                case SyntaxKind.FunctionDeclaration:
+                    parseFunction(resource, <FunctionDeclaration>child);
+                    continue;
+                case SyntaxKind.VariableStatement:
+                    parseVariable(resource, <VariableStatement>child);
+                    break;
+                case SyntaxKind.InterfaceDeclaration:
+                    parseInterface(resource, <InterfaceDeclaration>child);
+                    break;
+                case SyntaxKind.ClassDeclaration:
+                    parseClass(resource, <ClassDeclaration>child);
+                    continue;
+                case SyntaxKind.Identifier:
+                    const newResource = parseModule(resource, <ModuleDeclaration>child);
+                    this.parse(newResource, child);
+                    continue;
                 default:
                     break;
             }
