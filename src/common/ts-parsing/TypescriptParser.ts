@@ -3,6 +3,7 @@ import {
     parseEnum,
     parseExport,
     parseFunction,
+    parseIdentifier,
     parseImport,
     parseInterface,
     parseModule,
@@ -19,6 +20,7 @@ import {
     ExportAssignment,
     ExportDeclaration,
     FunctionDeclaration,
+    Identifier,
     ImportDeclaration,
     ImportEqualsDeclaration,
     InterfaceDeclaration,
@@ -145,6 +147,9 @@ export class TypescriptParser {
                     parseClass(resource, <ClassDeclaration>child);
                     continue;
                 case SyntaxKind.Identifier:
+                    parseIdentifier(resource, <Identifier>child);
+                    break;
+                case SyntaxKind.ModuleDeclaration:
                     const newResource = parseModule(resource, <ModuleDeclaration>child);
                     this.parse(newResource, child);
                     continue;

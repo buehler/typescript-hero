@@ -42,7 +42,7 @@ import {
  * @param {Resource} tsResource
  * @param {Node} node
  */
-export function parseClassIdentifiers(tsResource: ResØource, node: Node): void {
+export function parseClassIdentifiers(tsResource: Resource, node: Node): void {
     for (let child of node.getChildren()) {
         switch (child.kind) {
             case SyntaxKind.Identifier:

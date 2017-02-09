@@ -327,18 +327,18 @@ describe('common / TypescriptParser', () => {
 
             it('should parse an exported scope variable', () => {
                 const parsedVar = parsed.declarations[4] as VariableDeclaration;
-                parsedVar.name.should.equal('Exportedconst');
+                parsedVar.name.should.equal('ExportedLet');
                 parsedVar.isExported.should.be.true;
                 parsedVar.isConst.should.be.false;
             });
 
             it('should parse an exported multiline variable', () => {
                 let parsedVar = parsed.declarations[5] as VariableDeclaration;
-                parsedVar.name.should.equal('Multiconst1');
+                parsedVar.name.should.equal('MultiLet1');
                 parsedVar.isExported.should.be.true;
                 parsedVar.isConst.should.be.false;
                 parsedVar = parsed.declarations[6] as VariableDeclaration;
-                parsedVar.name.should.equal('Multiconst2');
+                parsedVar.name.should.equal('MultiLet2');
                 parsedVar.isExported.should.be.true;
                 parsedVar.isConst.should.be.false;
             });
