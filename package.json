@@ -47,10 +47,10 @@
   },
   "devDependencies": {
     "@types/chai": "^3.4.34",
-    "@types/mocha": "^2.2.38",
-    "@types/node": "^7.0.4",
+    "@types/mocha": "^2.2.39",
+    "@types/node": "^7.0.5",
     "@types/reflect-metadata": "0.0.5",
-    "@types/sinon": "^1.16.34",
+    "@types/sinon": "^1.16.35",
     "@types/sinon-chai": "^2.7.27",
     "chai": "^3.5.0",
     "del-cli": "^0.2.1",
@@ -63,11 +63,11 @@
     "vscode": "^1.0.3"
   },
   "dependencies": {
-    "inversify": "^3.0.0",
+    "inversify": "^3.1.0",
     "inversify-inject-decorators": "^3.0.1",
     "reflect-metadata": "^0.1.9",
     "tslib": "^1.5.0",
-    "typescript": "~2.1.5",
+    "typescript": "~2.1.6",
     "vscode-languageclient": "^3.0.3",
     "vscode-languageserver": "^3.0.4",
     "vscode-languageserver-types": "^3.0.3"
