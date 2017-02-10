@@ -1,3 +1,4 @@
+import { DeclarationIndex } from '../indices/DeclarationIndex';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ServerConnection } from '../utilities/ServerConnection';
@@ -18,7 +19,10 @@ export class ImportResolveExtension implements ServerExtension {
     private rootUri: string | null;
     private logger: Logger;
 
-    constructor( @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory) {
+    constructor(
+        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        private index: DeclarationIndex
+    ) {
         this.logger = loggerFactory('ImportResolveExtension');
     }
 
@@ -34,7 +38,7 @@ export class ImportResolveExtension implements ServerExtension {
     public initialize(connection: ServerConnection, params: InitializeParams): void {
         this.rootUri = params.rootUri;
         // tslint:disable-next-line
-        connection;
+        connection; this.index;
 
         this.logger.info('Initialized');
     }

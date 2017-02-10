@@ -1,6 +1,7 @@
 export * from './ClassDeclaration';
 export * from './ConstructorDeclaration';
 export * from './Declaration';
+export * from './DeclarationInfo';
 export * from './DeclarationVisibility';
 export * from './DefaultDeclaration';
 export * from './EnumDeclaration';

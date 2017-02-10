@@ -14,18 +14,11 @@ import { inject, injectable } from 'inversify';
 import { join, normalize, resolve } from 'path';
 import { CancellationToken, CancellationTokenSource, Uri, workspace } from 'vscode';
 
-/**
- * Type that defines information about a declaration.
- * Contains the declaration and the origin of the declaration.
- */
-export type DeclarationInfo = { declaration: TsDeclaration, from: string };
 
-/**
- * Type for the reverse index of all declarations
- */
-export type ResourceIndex = { [declaration: string]: DeclarationInfo[] };
 
-type Resources = { [name: string]: TsResource };
+
+
+
 
 /**
  * Returns the name of the node folder. Is used as the library name for indexing.
@@ -43,66 +36,9 @@ function getNodeLibraryName(path: string): string {
         .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]}|${dirs[dirs.length - 2]})$`), '');
 }
 
-/**
- * Global index of typescript declarations. Contains declarations and origins.
- * Provides reverse index for search and declaration info for imports.
- * 
- * @export
- * @class ResolveIndex
- */
+
 @injectable()
 export class ResolveIndex {
-    private logger: Logger;
-    private cancelToken: CancellationTokenSource;
-
-    private parsedResources: Resources = Object.create(null);
-    private _index: ResourceIndex;
-
-    /**
-     * Indicator if the first index was loaded and calculated or not.
-     * 
-     * @readonly
-     * @type {boolean}
-     * @memberOf ResolveIndex
-     */
-    public get indexReady(): boolean {
-        return !!this._index;
-    }
-
-    /**
-     * Reverse index of the declarations.
-     * 
-     * @readonly
-     * @type {ResourceIndex}
-     * @memberOf ResolveIndex
-     */
-    public get index(): ResourceIndex {
-        return this._index;
-    }
-
-    /**
-     * List of all declaration information. Contains the typescript declaration and the
-     * "from" information (from where the symbol is imported). 
-     * 
-     * @readonly
-     * @type {DeclarationInfo[]}
-     * @memberOf ResolveIndex
-     */
-    public get declarationInfos(): DeclarationInfo[] {
-        return Object
-            .keys(this.index)
-            .sort()
-            .reduce((all, key) => all.concat(this.index[key]), []);
-    }
-
-    constructor(
-        @inject('LoggerFactory') loggerFactory: LoggerFactory,
-        private parser: TsResourceParser,
-        private config: ExtensionConfig
-    ) {
-        this.logger = loggerFactory('ResolveIndex');
-    }
-
     /**
      * Tells the index to build a new index.
      * Can be canceled with a cancellationToken.
@@ -208,29 +144,7 @@ export class ResolveIndex {
         }
     }
 
-    /**
-     * Possibility to cancel a scheduled index refresh. Does dispose the cancellationToken
-     * to indicate a cancellation.
-     * 
-     * @memberOf ResolveIndex
-     */
-    public cancelRefresh(): void {
-        if (this.cancelToken) {
-            this.logger.info('Canceling refresh.');
-            this.cancelToken.dispose();
-            this.cancelToken = null;
-        }
-    }
-
-    /**
-     * Resets the whole index. Does delete everything. Period.
-     * 
-     * @memberOf ResolveIndex
-     */
-    public reset(): void {
-        this.parsedResources = null;
-        this._index = null;
-    }
+    
 
     /**
      * Searches through all workspace files to return those, that need to be indexed.
@@ -591,16 +505,5 @@ export class ResolveIndex {
         }
 
         return exportsResource;
-    }
-
-    /**
-     * Loggs the requested cancellation.
-     * 
-     * @private
-     * 
-     * @memberOf ResolveIndex
-     */
-    private cancelRequested(): void {
-        this.logger.info('Cancellation requested.');
     }
 }

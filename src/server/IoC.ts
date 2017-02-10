@@ -1,3 +1,4 @@
+import { DeclarationIndex } from './indices/DeclarationIndex';
 import { TypescriptParser } from '../common/ts-parsing/TypescriptParser';
 import { ServerLogger } from './utilities/ServerLogger';
 import { Logger } from '../common/utilities';
@@ -10,6 +11,7 @@ import { Container as IoCContainer, interfaces } from 'inversify';
 const container = new IoCContainer();
 
 container.bind(ServerConnection).to(ServerConnection).inSingletonScope();
+container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
 
 container.bind<ServerExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
