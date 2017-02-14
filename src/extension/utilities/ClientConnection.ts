@@ -1,5 +1,6 @@
 import { join } from 'path';
 import { ExtensionContext, workspace } from 'vscode';
+import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-jsonrpc';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient';
 
 /**
@@ -10,6 +11,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
  * @class ClientConnection
  */
 export class ClientConnection {
+    private handler: { [key: string]: Function[] } = {};
 
     constructor(private endpoint: LanguageClient) { }
 
@@ -36,7 +38,7 @@ export class ClientConnection {
             synchronize: {
                 configurationSection: 'typescriptHero',
                 fileEvents: [
-                    workspace.createFileSystemWatcher('{**/*.ts,**/package.json,**/typings.json}', true)
+                    workspace.createFileSystemWatcher('{**/*.ts,**/*.tsx,**/package.json,**/typings.json}', true)
                 ]
             }
         };
@@ -76,37 +78,38 @@ export class ClientConnection {
         return this.endpoint.sendRequest(method, params);
     }
 
-    // /**
-    //  * TODO
-    //  * 
-    //  * @template T
-    //  * @param {string} method
-    //  * @returns {Observable<T>}
-    //  * 
-    //  * @memberOf ClientConnection
-    //  */
-    // public onNotification<T>(method: string): Observable<T> {
-    //     if (!this.handler[method]) {
-    //         this.handler[method] = new Subject<T>();
-    //         this.endpoint.onNotification(method, param => this.handler[method].next(param));
-    //     }
-    //     return this.handler[method];
-    // }
+    /**
+     * Registers a notification handler to the connection. All notification handler
+     * are called when a notification is hit.
+     * 
+     * @param {string} method
+     * @param {GenericNotificationHandler} handler
+     * 
+     * @memberOf ClientConnection
+     */
+    public onNotification(method: string, handler: GenericNotificationHandler): void {
+        if (!this.handler[method]) {
+            this.handler[method] = [];
+            this.endpoint.onNotification(
+                method,
+                params => this.handler[method].forEach(o => o(params))
+            );
+        }
+        this.handler[method].push(handler);
+    }
 
-    // /**
-    //  * TODO
-    //  * 
-    //  * @template TResult
-    //  * @template TError
-    //  * @param {string} method
-    //  * @param {GenericRequestHandler<TResult, TError>} handler
-    //  * 
-    //  * @memberOf ClientConnection
-    //  */
-    // public onRequest<TResult, TError>(
-    //     method: string,
-    //     handler: GenericRequestHandler<TResult, TError>
-    // ): void {
-    //     this.endpoint.onRequest(method, handler);
-    // }
+    /**
+     * Registers a request handler to the connection. When another request handler
+     * with the same method is registered, the old one is overwritten.
+     *
+     * @template TResult
+     * @template TError
+     * @param {string} method
+     * @param {GenericRequestHandler<TResult, TError>} handler
+     * 
+     * @memberOf ClientConnection
+     */
+    public onRequest<TResult, TError>(method: string, handler: GenericRequestHandler<TResult, TError>): void {
+        this.endpoint.onRequest(method, handler);
+    }
 }
