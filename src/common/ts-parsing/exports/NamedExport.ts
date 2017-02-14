@@ -11,8 +11,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Export}
  */
 export class NamedExport implements Export {
-    public readonly _type: string = 'NamedExport';
-
     public specifiers: SymbolSpecifier[];
 
     constructor(public start: number, public end: number, public from: string) { }

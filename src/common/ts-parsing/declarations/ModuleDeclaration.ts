@@ -12,8 +12,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {Declaration}
  */
 export class ModuleDeclaration implements Declaration {
-    public readonly _type: string = 'ModuleDeclaration';
-
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Module;
     }

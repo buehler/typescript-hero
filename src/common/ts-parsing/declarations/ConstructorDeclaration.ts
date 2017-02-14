@@ -13,8 +13,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {CallableDeclaration}
  */
 export class ConstructorDeclaration implements CallableDeclaration {
-    public readonly _type: string = 'ConstructorDeclaration';
-
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 

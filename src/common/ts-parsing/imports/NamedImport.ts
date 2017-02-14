@@ -13,7 +13,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Import}
  */
 export class NamedImport implements Import {
-    public readonly _type: string = 'NamedImport';
     public specifiers: SymbolSpecifier[] = [];
 
     public get isNew(): boolean {

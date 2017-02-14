@@ -11,8 +11,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {TypedDeclaration}
  */
 export class VariableDeclaration implements ExportableDeclaration, TypedDeclaration {
-    public readonly _type: string = 'VariableDeclaration';
-
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
     }

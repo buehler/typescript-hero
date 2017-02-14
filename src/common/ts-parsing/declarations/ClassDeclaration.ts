@@ -14,8 +14,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ExportableDeclaration}
  */
 export class ClassDeclaration implements ExportableDeclaration {
-    public readonly _type: string = 'ClassDeclaration';
-
     public ctor: ConstructorDeclaration;    
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];

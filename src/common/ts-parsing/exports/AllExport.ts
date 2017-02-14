@@ -10,8 +10,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Export}
  */
 export class AllExport implements Export {
-    public readonly _type: string = 'AllExport';
-
     constructor(public start: number, public end: number, public from: string) { }
 
     /**

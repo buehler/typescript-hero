@@ -17,8 +17,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {TypedDeclaration}
  */
 export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration, TypedDeclaration {
-    public readonly _type: string = 'MethodDeclaration';
-
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 

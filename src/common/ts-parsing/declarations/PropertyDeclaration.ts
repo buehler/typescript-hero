@@ -13,8 +13,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {TypedDeclaration}
  */
 export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration {
-    public readonly _type: string = 'PropertyDeclaration';
-
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Property;
     }

@@ -11,8 +11,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ExportableDeclaration}
  */
 export class EnumDeclaration implements ExportableDeclaration {
-    public readonly _type: string = 'EnumDeclaration';
-
     public members: string[] = [];
 
     public get itemKind(): CompletionItemKind {

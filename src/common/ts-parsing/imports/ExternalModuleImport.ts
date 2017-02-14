@@ -11,8 +11,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {AliasedImport}
  */
 export class ExternalModuleImport implements AliasedImport {
-    public readonly _type: string = 'ExternalModuleImport';
-
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;
     }

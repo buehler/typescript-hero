@@ -15,8 +15,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ExportableDeclaration}
  */
 export class FunctionDeclaration implements CallableDeclaration, ExportableDeclaration {
-    public readonly _type: string = 'FunctionDeclaration';
-
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 

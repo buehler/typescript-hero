@@ -11,8 +11,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {AliasedImport}
  */
 export class DefaultImport implements AliasedImport {
-    public readonly _type: string = 'DefaultImport';
-
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;
     }

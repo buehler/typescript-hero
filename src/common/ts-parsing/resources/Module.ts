@@ -15,8 +15,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Node}
  */
 export class Module implements Resource, Node {
-    public readonly _type: string = 'Module';
-
     public imports: Import[] = [];
     public exports: Export[] = [];
     public declarations: Declaration[] = [];

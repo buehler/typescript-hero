@@ -25,17 +25,6 @@ export function nodeRange(document: TextDocument, start?: number, end?: number):
  */
 export interface Node {
     /**
-     * A special field to indicate the type that is used to this node. Mainly used for determination of interfaces
-     * and recreating objects after serialization / deserialization.
-     *
-     * @example "DefaultDeclaration"
-     * 
-     * @type {string}
-     * @memberOf Node
-     */
-    _type: string;
-
-    /**
      * The starting character of the node in the document.
      * 
      * @type {number}

@@ -17,8 +17,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Node}
  */
 export class File implements Resource, Node {
-    public readonly _type: string = 'File';
-
     public imports: Import[] = [];
     public exports: Export[] = [];
     public declarations: Declaration[] = [];

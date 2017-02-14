@@ -13,8 +13,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Export}
  */
 export class AssignedExport implements Export {
-    public readonly _type: string = 'AssignedExport';
-
     /**
      * Returns a list of exported objects of this export.
      * This returns a list of possible exportable declarations or further exported resources.

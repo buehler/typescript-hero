@@ -10,8 +10,6 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {AliasedImport}
  */
 export class NamespaceImport implements AliasedImport {
-    public readonly _type: string = 'NamespaceImport';
-
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;
     }

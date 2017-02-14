@@ -1,3 +1,4 @@
+import { Serializable } from 'ts-json-serializer';
 import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
@@ -5,6 +6,22 @@ import { Node } from '../Node';
 import { Module } from './Module';
 import { Resource } from './Resource';
 import { Range, TextDocument } from 'vscode-languageserver-types';
+
+// /**
+//  * Factory for deserializer. Creates a {@link Namespace}.
+//  * 
+//  * @param {*} json
+//  * @returns {Namespace}
+//  */
+// function namespaceFactory(json: any): Namespace {
+//     const obj = new Namespace(json.name, json.start, json.end);
+//     obj.imports = json.imports;
+//     obj.exports = json.exports;
+//     obj.declarations = json.declarations;
+//     obj.resources = json.resources;
+//     obj.usages = json.usages;
+//     return obj;
+// }
 
 /**
  * TypeScript resource. Declaration of a typescript namespace (i.e. declare foobar).
@@ -14,9 +31,8 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Resource}
  * @implements {Node}
  */
+// @Serializable({ factory: namespaceFactory })
 export class Namespace implements Resource, Node {
-    public readonly _type: string = 'Namespace';
-
     public imports: Import[] = [];
     public exports: Export[] = [];
     public declarations: Declaration[] = [];

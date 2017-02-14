@@ -12,8 +12,6 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ExportableDeclaration}
  */
 export class TypeAliasDeclaration implements ExportableDeclaration {
-    public readonly _type: string = 'TypeAliasDeclaration';
-
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Keyword;
     }
