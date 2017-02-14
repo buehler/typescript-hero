@@ -11,9 +11,6 @@ import { inject, injectable } from 'inversify';
  */
 type Resources = { [name: string]: Resource };
 
-// TODO: build index "cache": store "orders" to build for certain files and stuff to a cache if
-// a build is already running.
-
 /**
  * Global index of typescript declarations. Contains declarations and origins.
  * Provides reverse index for search and declaration info for imports.

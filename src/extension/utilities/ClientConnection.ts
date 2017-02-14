@@ -51,7 +51,7 @@ export class ClientConnection {
     }
 
     /**
-     * TODO
+     * Sends a notification to the server.
      * 
      * @param {string} method
      * @param {...any[]} args
@@ -63,7 +63,7 @@ export class ClientConnection {
     }
 
     /**
-     * TODO
+     * Sends a request to the server.
      * 
      * @template T
      * @param {string} method

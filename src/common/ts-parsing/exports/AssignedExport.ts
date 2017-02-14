@@ -1,5 +1,7 @@
+import { isExportableDeclaration } from '../../type-guards';
+import { ExportableDeclaration } from '../declarations';
 import { nodeRange } from '../Node';
-import { Resource } from '../resources';
+import { Module, Namespace, Resource } from '../resources';
 import { Export } from './Export';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
@@ -13,17 +15,23 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
 export class AssignedExport implements Export {
     public readonly _type: string = 'AssignedExport';
 
-    public get exported(): (Resource)[] {
-        // TsExportableDeclaration
-        throw new Error(`TODO ${this.resource}`);
-        // return <(TsExportableDeclaration | TsResource)[]>[
-        //     ...this._resource.declarations
-        //         .filter(o =>
-        //             o instanceof TsExportableDeclaration && o.isExported && o.name === this.declarationIdentifier),
-        //     ...this._resource.resources
-        //         .filter(o =>
-        //             (o instanceof TsNamespace || o instanceof TsModule) && o.name === this.declarationIdentifier)
-        // ];
+    /**
+     * Returns a list of exported objects of this export.
+     * This returns a list of possible exportable declarations or further exported resources.
+     * 
+     * @readonly
+     * @type {((ExportableDeclaration | Resource)[])}
+     * @memberOf AssignedExport
+     */
+    public get exported(): (ExportableDeclaration | Resource)[] {
+        return <(ExportableDeclaration | Resource)[]>[
+            ...this.resource.declarations
+                .filter(o =>
+                    isExportableDeclaration(o) && o.isExported && o.name === this.declarationIdentifier),
+            ...this.resource.resources
+                .filter(o =>
+                    (o instanceof Namespace || o instanceof Module) && o.name === this.declarationIdentifier)
+        ];
     }
 
     constructor(
