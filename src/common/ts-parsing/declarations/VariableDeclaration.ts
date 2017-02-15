@@ -1,5 +1,6 @@
 import { nodeRange } from '../Node';
 import { ExportableDeclaration, TypedDeclaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -10,6 +11,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ExportableDeclaration}
  * @implements {TypedDeclaration}
  */
+@Serializable({
+    factory: json => new VariableDeclaration(
+        json.name, json.isConst, json.isExported, json.type, json.start, json.end
+    )
+})
 export class VariableDeclaration implements ExportableDeclaration, TypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;

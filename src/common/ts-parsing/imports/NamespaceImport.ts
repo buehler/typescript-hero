@@ -1,5 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
 import { AliasedImport, importRange } from './Import';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -9,6 +10,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class TsNamespaceImport
  * @implements {AliasedImport}
  */
+@Serializable({ factory: json => new NamespaceImport(json.libraryName, json.alias, json.start, json.end) })
 export class NamespaceImport implements AliasedImport {
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;

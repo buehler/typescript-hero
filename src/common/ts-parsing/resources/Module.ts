@@ -4,7 +4,24 @@ import { Import } from '../imports';
 import { Node } from '../Node';
 import { Namespace } from './Namespace';
 import { Resource } from './Resource';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
+
+/**
+ * Factory for deserializer. Creates a {@link Module}.
+ * 
+ * @param {*} json
+ * @returns {Module}
+ */
+function typeFactory(json: any): Module {
+    const obj = new Module(json.name, json.start, json.end);
+    obj.imports = json.imports;
+    obj.exports = json.exports;
+    obj.declarations = json.declarations;
+    obj.resources = json.resources;
+    obj.usages = json.usages;
+    return obj;
+}
 
 /**
  * TypeScript resource. Declaration of a typescript module (i.e. declare module "foobar").
@@ -14,6 +31,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Resource}
  * @implements {Node}
  */
+@Serializable({ factory: typeFactory })
 export class Module implements Resource, Node {
     public imports: Import[] = [];
     public exports: Export[] = [];

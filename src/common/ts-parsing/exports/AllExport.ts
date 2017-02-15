@@ -1,5 +1,6 @@
 import { nodeRange } from '../Node';
 import { Export } from './Export';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -9,6 +10,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class AllExport
  * @implements {Export}
  */
+@Serializable({ factory: json => new AllExport(json.start, json.end, json.from) })
 export class AllExport implements Export {
     constructor(public start: number, public end: number, public from: string) { }
 

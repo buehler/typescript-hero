@@ -1,6 +1,7 @@
 import { NotImplementedYetError } from '../../errors';
 import { nodeRange } from '../Node';
 import { ExportableDeclaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -11,6 +12,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class TypeAliasDeclaration
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => new TypeAliasDeclaration(
+        json.name, json.isExported, json.start, json.end
+    )
+})
 export class TypeAliasDeclaration implements ExportableDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Keyword;

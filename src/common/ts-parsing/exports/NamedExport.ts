@@ -1,6 +1,7 @@
 import { nodeRange } from '../Node';
 import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Export } from './Export';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -10,6 +11,13 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class NamedExport
  * @implements {Export}
  */
+@Serializable({
+    factory: json => {
+        const obj = new NamedExport(json.start, json.end, json.from);
+        obj.specifiers = json.specifiers;
+        return obj;
+    }
+})
 export class NamedExport implements Export {
     public specifiers: SymbolSpecifier[];
 

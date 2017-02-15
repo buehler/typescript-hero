@@ -2,6 +2,7 @@ import { GenerationOptions } from '../../ts-generation';
 import { nodeRange } from '../Node';
 import { ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -12,6 +13,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ScopedDeclaration}
  * @implements {TypedDeclaration}
  */
+@Serializable({
+    factory: json => new PropertyDeclaration(
+        json.name, json.visibility, json.type, json.start, json.end
+    )
+})
 export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Property;

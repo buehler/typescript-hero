@@ -1,6 +1,7 @@
 import { NotImplementedYetError } from '../../errors';
 import { nodeRange } from '../Node';
 import { ExportableDeclaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -10,6 +11,13 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class EnumDeclaration
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => {
+        const obj = new EnumDeclaration(json.name, json.isExported, json.start, json.end);
+        obj.members = json.members;
+        return obj;
+    }
+})
 export class EnumDeclaration implements ExportableDeclaration {
     public members: string[] = [];
 

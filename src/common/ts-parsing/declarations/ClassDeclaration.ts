@@ -4,6 +4,7 @@ import { ConstructorDeclaration } from './ConstructorDeclaration';
 import { ExportableDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -13,8 +14,17 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class ClassDeclaration
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => {
+        const obj = new ClassDeclaration(json.name, json.isExported, json.start, json.end);
+        obj.ctor = json.ctor;
+        obj.properties = json.properties;
+        obj.methods = json.methods;
+        return obj;
+    }
+})
 export class ClassDeclaration implements ExportableDeclaration {
-    public ctor: ConstructorDeclaration;    
+    public ctor: ConstructorDeclaration;
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];
 

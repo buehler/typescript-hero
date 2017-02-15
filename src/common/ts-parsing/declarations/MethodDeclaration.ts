@@ -1,3 +1,4 @@
+import { Serializable } from 'ts-json-serializer';
 import { GenerationOptions } from '../../ts-generation';
 import { nodeRange } from '../Node';
 import { CallableDeclaration, ScopedDeclaration, TypedDeclaration } from './Declaration';
@@ -16,6 +17,14 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {ScopedDeclaration}
  * @implements {TypedDeclaration}
  */
+@Serializable({
+    factory: json => {
+        const obj = new MethodDeclaration(json.name, json.isExported, json.visibility, json.type, json.start, json.end);
+        obj.parameters = json.parameters;
+        obj.variables = json.variables;
+        return obj;
+    }
+})
 export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration, TypedDeclaration {
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];

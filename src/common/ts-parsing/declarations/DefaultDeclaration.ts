@@ -1,7 +1,8 @@
-import { Resource } from '../resources';
 import { NotImplementedYetError } from '../../errors';
 import { nodeRange } from '../Node';
+import { Resource } from '../resources';
 import { Declaration, ExportableDeclaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -13,6 +14,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class DefaultDeclaration
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => new DefaultDeclaration(
+        json.name, json.resource, json.start, json.end
+    )
+})
 export class DefaultDeclaration implements ExportableDeclaration {
     public readonly isExported: boolean = true;
 
@@ -20,7 +26,7 @@ export class DefaultDeclaration implements ExportableDeclaration {
 
     public get exportedDeclaration(): Declaration {
         if (!this.exported) {
-            this.exported = this.resource.declarations.find(o => o.name === this.name)!;
+            this.exported = this.resource.declarations.find(o => o.name === this.name) !;
         }
 
         return this.exported;

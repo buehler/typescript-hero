@@ -1,6 +1,7 @@
 import { GenerationOptions } from '../../ts-generation';
 import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Import, importRange } from './Import';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -12,6 +13,13 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class NamedImport
  * @implements {Import}
  */
+@Serializable({
+    factory: json => {
+        const obj = new NamedImport(json.libraryName, json.start, json.end);
+        obj.specifiers = json.specifiers;
+        return obj;
+    }
+})
 export class NamedImport implements Import {
     public specifiers: SymbolSpecifier[] = [];
 

@@ -1,6 +1,7 @@
 import { NotImplementedYetError } from '../../errors';
 import { nodeRange } from '../Node';
 import { Declaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -11,6 +12,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class ModuleDeclaration
  * @implements {Declaration}
  */
+@Serializable({
+    factory: json => new ModuleDeclaration(
+        json.name, json.start, json.end
+    )
+})
 export class ModuleDeclaration implements Declaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Module;

@@ -1,5 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
 import { Import, importRange } from './Import';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -9,6 +10,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class StringImport
  * @implements {Import}
  */
+@Serializable({ factory: json => new StringImport(json.libraryName, json.start, json.end) })
 export class StringImport implements Import {
     public get isNew(): boolean {
         return this.start !== undefined && this.end !== undefined;

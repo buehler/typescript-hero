@@ -3,6 +3,7 @@ import { nodeRange } from '../Node';
 import { ExportableDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -12,6 +13,14 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class InterfaceDeclaration
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => {
+        const obj = new InterfaceDeclaration(json.name, json.isExported, json.start, json.end);
+        obj.properties = json.properties;
+        obj.methods = json.methods;
+        return obj;
+    }
+})
 export class InterfaceDeclaration implements ExportableDeclaration {
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];

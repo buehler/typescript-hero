@@ -3,6 +3,7 @@ import { nodeRange } from '../Node';
 import { CallableDeclaration, ExportableDeclaration } from './Declaration';
 import { ParameterDeclaration } from './ParameterDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -14,6 +15,14 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @implements {CallableDeclaration}
  * @implements {ExportableDeclaration}
  */
+@Serializable({
+    factory: json => {
+        const obj = new FunctionDeclaration(json.name, json.isExported, json.type, json.start, json.end);
+        obj.parameters = json.parameters;
+        obj.variables = json.variables;
+        return obj;
+    }
+})
 export class FunctionDeclaration implements CallableDeclaration, ExportableDeclaration {
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];

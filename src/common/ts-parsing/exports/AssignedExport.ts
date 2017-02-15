@@ -3,6 +3,7 @@ import { ExportableDeclaration } from '../declarations';
 import { nodeRange } from '../Node';
 import { Module, Namespace, Resource } from '../resources';
 import { Export } from './Export';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -12,6 +13,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @class AssignedExport
  * @implements {Export}
  */
+@Serializable({ factory: json => new AssignedExport(json.start, json.end, json.declarationIdentifier, json.resource) })
 export class AssignedExport implements Export {
     /**
      * Returns a list of exported objects of this export.

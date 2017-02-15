@@ -6,7 +6,24 @@ import { Module } from './Module';
 import { Namespace } from './Namespace';
 import { Resource } from './Resource';
 import { parse, ParsedPath, relative } from 'path';
+import { Serializable } from 'ts-json-serializer';
 import { Range, TextDocument } from 'vscode-languageserver-types';
+
+/**
+ * Factory for deserializer. Creates a {@link File}.
+ * 
+ * @param {*} json
+ * @returns {File}
+ */
+function typeFactory(json: any): File {
+    const obj = new File(json.filePath, json.rootPath, json.start, json.end);
+    obj.imports = json.imports;
+    obj.exports = json.exports;
+    obj.declarations = json.declarations;
+    obj.resources = json.resources;
+    obj.usages = json.usages;
+    return obj;
+}
 
 /**
  * TypeScript resource. Basically a file that is located somewhere.
@@ -16,6 +33,7 @@ import { Range, TextDocument } from 'vscode-languageserver-types';
  * @implements {Resource}
  * @implements {Node}
  */
+@Serializable({ factory: typeFactory })
 export class File implements Resource, Node {
     public imports: Import[] = [];
     public exports: Export[] = [];

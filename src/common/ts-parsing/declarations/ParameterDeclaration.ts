@@ -1,5 +1,6 @@
 import { nodeRange } from '../Node';
 import { TypedDeclaration } from './Declaration';
+import { Serializable } from 'ts-json-serializer';
 import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
 
 /**
@@ -10,6 +11,11 @@ import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-t
  * @class ParameterDeclaration
  * @implements {TypedDeclaration}
  */
+@Serializable({
+    factory: json => new ParameterDeclaration(
+        json.name, json.type, json.start, json.end
+    )
+})
 export class ParameterDeclaration implements TypedDeclaration {
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Variable;
