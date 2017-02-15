@@ -1,10 +1,10 @@
-import { AssignedExport } from '../../common/ts-parsing/exports/AssignedExport';
-import { isExportableDeclaration } from '../../common/type-guards';
 import { DeclarationInfoIndex } from '../../common/indices';
 import { TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo, ModuleDeclaration } from '../../common/ts-parsing/declarations';
 import { AllExport, NamedExport } from '../../common/ts-parsing/exports';
-import { File, Resource, Namespace, Module } from '../../common/ts-parsing/resources';
+import { AssignedExport } from '../../common/ts-parsing/exports/AssignedExport';
+import { File, Module, Namespace, Resource } from '../../common/ts-parsing/resources';
+import { isExportableDeclaration } from '../../common/type-guards';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { inject, injectable } from 'inversify';
