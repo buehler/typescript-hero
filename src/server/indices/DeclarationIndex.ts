@@ -367,7 +367,7 @@ export class DeclarationIndex {
                 if (sourceLib.indexOf('node_modules') > -1) {
                     sourceLib = getNodeLibraryName(sourceLib);
                 } else {
-                    sourceLib = '/' + resolve(rootPath, sourceLib).replace(/([.]d)?[.]tsx?/g, '');
+                    sourceLib = '/' + relative(rootPath, sourceLib).replace(/([.]d)?[.]tsx?/g, '');
                 }
 
                 if (!parsedResources[sourceLib]) {

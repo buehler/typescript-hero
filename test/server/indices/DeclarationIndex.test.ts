@@ -79,6 +79,7 @@ describe('DeclarationIndex', () => {
         });
 
         it('should contain a declaration name with multiple declarations', () => {
+            
             let list = declarationIndex.index!['FancierLibraryClass'];
             list.should.be.an('array').with.lengthOf(2);
 
@@ -118,8 +119,8 @@ describe('DeclarationIndex', () => {
         it('should contain declaration from *.tsx file', () => {
             let idx: any = declarationIndex,
                 resources = Object.assign({}, idx.parsedResources);
-            resources['/MyReactTemplate'].declarations.length.should.equal(1);
-            resources['/MyReactTemplate'].declarations[0].name.should.equal('myComponent');
+            resources['/server/indices/MyReactTemplate'].declarations.length.should.equal(1);
+            resources['/server/indices/MyReactTemplate'].declarations[0].name.should.equal('myComponent');
         });
 
         it('should not filter node_modules / typings by pattern', () => {
@@ -136,11 +137,11 @@ describe('DeclarationIndex', () => {
         it('should not crash on prototype methods (i.e. toString, hasOwnProperty)', () => {
             let list = declarationIndex.index!['toString'];
             list.should.be.an('array').with.lengthOf(1);
-            list[0].from.should.equal('/prototypeFunctions/proto');
+            list[0].from.should.equal('/server/indices/proto');
 
             let list2 = declarationIndex.index!['hasOwnProperty'];
             list2.should.be.an('array').with.lengthOf(1);
-            list2[0].from.should.equal('/prototypeFunctions/proto');
+            list2[0].from.should.equal('/server/indices/proto');
         });
 
     });
