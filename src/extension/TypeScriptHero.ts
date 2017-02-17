@@ -1,4 +1,3 @@
-import { ExtensionConfig } from '../common/config';
 import { Logger, LoggerFactory } from '../common/utilities';
 import { BaseExtension } from './extensions/BaseExtension';
 import { iocSymbols } from './IoCSymbols';
@@ -19,7 +18,6 @@ export class TypeScriptHero implements Disposable {
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) c: ExtensionConfig,
         @multiInject(iocSymbols.extensions) private extensions: BaseExtension[]
     ) {
         this.logger = loggerFactory('TypescriptHero');

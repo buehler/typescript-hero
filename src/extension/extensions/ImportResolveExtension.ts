@@ -1,3 +1,5 @@
+import { Notification } from '../../common/communication';
+import { ClientConnection } from '../utilities/ClientConnection';
 import { ExtensionConfig } from '../../common/config';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -5,7 +7,7 @@ import { BaseExtension } from './BaseExtension';
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
-import { ExtensionContext, Uri, workspace } from 'vscode';
+import { ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 /**
  * Search for typescript / typescript react files in the workspace and return the path to them.
@@ -69,6 +71,10 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
 }
 
+const resolverOk = 'TSH Resolver $(check)',
+    resolverSyncing = 'TSH Resolver $(sync)',
+    resolverErr = 'TSH Resolver $(flame)';
+
 /**
  * Extension that resolves imports. Contains various actions to add imports to a document, add missing
  * imports and organize imports. Also can rebuild the symbol cache.
@@ -80,10 +86,13 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
 @injectable()
 export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
+    private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory
+        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        private connection: ClientConnection
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
@@ -95,6 +104,21 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     public initialize(): void {
+        this.context.subscriptions.push(this.statusBarItem);
+        this.statusBarItem.text = resolverOk;
+        this.statusBarItem.tooltip = 'Click to manually reindex all files.';
+        this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
+        this.statusBarItem.show();
+
+        this.connection.onNotification(
+            Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk
+        );
+        this.connection.onNotification(
+            Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr
+        );
+
+        this.buildIndex();
+
         this.logger.info('Initialized');
     }
 
@@ -105,5 +129,20 @@ export class ImportResolveExtension extends BaseExtension {
      */
     public dispose(): void {
         this.logger.info('Disposed');
+    }
+
+    /**
+     * 
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async buildIndex(): Promise<void> {
+        this.statusBarItem.text = resolverSyncing;
+
+        const files = await findFiles(this.config);
+        this.connection.sendNotification(Notification.CreateIndexForFiles, files);
     }
 }
