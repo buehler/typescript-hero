@@ -1,3 +1,4 @@
+import { injectable } from 'inversify';
 import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-jsonrpc';
 
 /**
@@ -38,6 +39,7 @@ type ConnectionEndpoint = {
  * @class Connection
  * @template T
  */
+@injectable()
 export abstract class Connection<T extends ConnectionEndpoint> {
     protected handler: { [key: string]: Function[] } = {};
 

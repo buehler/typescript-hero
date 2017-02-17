@@ -1,3 +1,4 @@
+import { Notification } from '../../common/communication';
 import { DeclarationIndex } from '../indices/DeclarationIndex';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -18,6 +19,7 @@ import { InitializeParams } from 'vscode-languageserver';
 export class ImportResolveExtension implements ServerExtension {
     private rootUri: string | null;
     private logger: Logger;
+    private connection: ServerConnection;
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
@@ -37,8 +39,9 @@ export class ImportResolveExtension implements ServerExtension {
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
         this.rootUri = params.rootUri;
-        // tslint:disable-next-line
-        connection; this.index;
+        this.connection = connection;
+        
+        connection.onNotification(Notification.CreateIndexForFiles, files => this.buildIndex(files));
 
         this.logger.info('Initialized');
     }
@@ -51,5 +54,33 @@ export class ImportResolveExtension implements ServerExtension {
      */
     public exit(): void {
         this.logger.info('Exit');
+    }
+
+    /**
+     * 
+     * 
+     * @private
+     * @param {string[]} files
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async buildIndex(files: string[]): Promise<void> {
+        if (!this.rootUri) {
+            this.logger.warning('No workspace opened, will not proceed.');
+            this.connection.sendNotification(Notification.IndexCreationSuccessful);
+            return;
+        }
+
+        this.logger.info(`Build new index for ${files.length} files.`);
+        
+        try {
+            await this.index.buildIndex(files, this.rootUri);
+            this.logger.info('Index successfully built.');
+            this.connection.sendNotification(Notification.IndexCreationSuccessful);
+        } catch (e) {
+            this.logger.error('There was an error during the build of the index.', e);
+            this.connection.sendNotification(Notification.IndexCreationFailed);
+        }
     }
 }

@@ -10,7 +10,7 @@ import { Container as IoCContainer, interfaces } from 'inversify';
 
 const container = new IoCContainer();
 
-container.bind(ServerConnection).to(ServerConnection).inSingletonScope();
+container.bind(ServerConnection).toConstantValue(new ServerConnection());
 container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
 
