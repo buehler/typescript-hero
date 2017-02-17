@@ -116,6 +116,9 @@ export class ImportResolveExtension extends BaseExtension {
         this.connection.onNotification(
             Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr
         );
+        this.connection.onNotification(
+            Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing
+        );
 
         this.buildIndex();
 

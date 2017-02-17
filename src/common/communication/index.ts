@@ -9,6 +9,7 @@ import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-jsonrp
  */
 export enum Notification {
     CreateIndexForFiles,
+    IndexCreationRunning,
     IndexCreationSuccessful,
     IndexCreationFailed
 }

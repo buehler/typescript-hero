@@ -5,7 +5,7 @@ import { iocSymbols } from '../IoCSymbols';
 import { ServerConnection } from '../utilities/ServerConnection';
 import { ServerExtension } from './ServerExtension';
 import { inject, injectable } from 'inversify';
-import { InitializeParams } from 'vscode-languageserver';
+import { InitializeParams, FileEvent } from 'vscode-languageserver';
 
 /**
  * Server part of the import resolver extension. Contains the symbol index and response to the
@@ -42,6 +42,7 @@ export class ImportResolveExtension implements ServerExtension {
         this.connection = connection;
         
         connection.onNotification(Notification.CreateIndexForFiles, files => this.buildIndex(files));
+        connection.onDidChangeWatchedFiles(changes => this.watchedFilesChanged(changes));
 
         this.logger.info('Initialized');
     }
@@ -54,6 +55,26 @@ export class ImportResolveExtension implements ServerExtension {
      */
     public exit(): void {
         this.logger.info('Exit');
+    }
+
+    /**
+     * Called when the watched files are changed so new / modified ones can be reindexed and deleted ones removed.
+     */
+    private async watchedFilesChanged(changes: FileEvent[]): Promise<void> {
+        if (!this.rootUri) {
+            this.logger.warning('No workspace opened, will not proceed.');
+            return;
+        }
+        try {
+            this.logger.info(`Watched files have changed, processing ${changes.length} changes.`);
+            this.connection.sendNotification(Notification.IndexCreationRunning);
+            await this.index.reindexForChanges(changes, this.rootUri);
+            this.connection.sendNotification(Notification.IndexCreationSuccessful);
+            this.logger.info('Index rebuild successful.');
+        } catch (e) {
+            this.logger.error('There was an error during reprocessing changed files.', e);
+            this.connection.sendNotification(Notification.IndexCreationFailed);
+        }
     }
 
     /**

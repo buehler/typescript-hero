@@ -9,6 +9,7 @@ import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { inject, injectable } from 'inversify';
 import { join, normalize, relative, resolve } from 'path';
+import { FileChangeType, FileEvent } from 'vscode-languageserver';
 
 /**
  * Returns the name of the node folder. Is used as the library name for indexing.
@@ -154,50 +155,103 @@ export class DeclarationIndex {
     }
 
     /**
-     * Rebuild the cache for one specific file. This can happen if a file is changed (saved)
-     * and contains a new symbol. All resources are searched for files that possibly export
-     * stuff from the given file and are rebuilt as well.
      * 
-     * @param {string} filePath
-     * @param {string} rootPath
+     * 
+     * @param {FileEvent[]} changes
      * @returns {Promise<void>}
      * 
      * @memberOf DeclarationIndex
      */
-    public async rebuildForFile(filePath: string, rootPath: string): Promise<void> {
-        const rebuildResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
-            rebuildFiles = [filePath, ...this.getExportedResources(rebuildResource, rootPath)];
+    public async reindexForChanges(changes: FileEvent[], rootPath: string): Promise<void> {
+        const rebuildResources: string[] = [],
+            removeResources: string[] = [],
+            rebuildFiles: string[] = [];
+
+        for (let change of changes) {
+            const filePath = change.uri.replace('file://', ''),
+                resource = '/' + relative(rootPath, change.uri).replace(/[.]tsx?/g, '');
+
+            if (change.type === FileChangeType.Deleted) {
+                if (removeResources.indexOf(resource) < 0) {
+                    removeResources.push(resource);
+                }
+            } else {
+                if (rebuildResources.indexOf(resource) < 0) {
+                    rebuildResources.push(resource);
+                }
+                if (rebuildFiles.indexOf(filePath) < 0) {
+                    rebuildFiles.push(filePath);
+                }
+            }
+
+            for (let file of this.getExportedResources(resource, rootPath)) {
+                if (rebuildFiles.indexOf(file) < 0) {
+                    rebuildFiles.push(file);
+                }
+            }
+        }
+
+        this.logger.info('Files have changed, going to rebuild', {
+            update: rebuildResources,
+            delete: removeResources,
+            reindex: rebuildFiles
+        });
 
         const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
-
+        for (let del of removeResources) {
+            delete this.parsedResources[del];
+        }
         for (let key of Object.keys(resources)) {
             this.parsedResources[key] = resources[key];
         }
         this._index = await this.createIndex(this.parsedResources);
     }
 
-    /**
-     * Removes the definitions and symbols for a specific file. This happens when
-     * a file is deleted. All files that export symbols from this file are rebuilt as well.
-     * 
-     * @param {string} filePath
-     * @param {string} rootPath
-     * @returns {Promise<void>}
-     * 
-     * @memberOf DeclarationIndex
-     */
-    public async removeForFile(filePath: string, rootPath: string): Promise<void> {
-        const removeResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
-            rebuildFiles = this.getExportedResources(removeResource, rootPath);
+    // /**
+    //  * Rebuild the cache for one specific file. This can happen if a file is changed (saved)
+    //  * and contains a new symbol. All resources are searched for files that possibly export
+    //  * stuff from the given file and are rebuilt as well.
+    //  * 
+    //  * @param {string} filePath
+    //  * @param {string} rootPath
+    //  * @returns {Promise<void>}
+    //  * 
+    //  * @memberOf DeclarationIndex
+    //  */
+    // public async rebuildForFile(filePath: string, rootPath: string): Promise<void> {
+    //     const rebuildResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
+    //         rebuildFiles = [filePath, ...this.getExportedResources(rebuildResource, rootPath)];
 
-        const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
+    //     const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
 
-        delete this.parsedResources[removeResource];
-        for (let key of Object.keys(resources)) {
-            this.parsedResources[key] = resources[key];
-        }
-        this._index = await this.createIndex(this.parsedResources);
-    }
+    //     for (let key of Object.keys(resources)) {
+    //         this.parsedResources[key] = resources[key];
+    //     }
+    //     this._index = await this.createIndex(this.parsedResources);
+    // }
+
+    // /**
+    //  * Removes the definitions and symbols for a specific file. This happens when
+    //  * a file is deleted. All files that export symbols from this file are rebuilt as well.
+    //  * 
+    //  * @param {string} filePath
+    //  * @param {string} rootPath
+    //  * @returns {Promise<void>}
+    //  * 
+    //  * @memberOf DeclarationIndex
+    //  */
+    // public async removeForFile(filePath: string, rootPath: string): Promise<void> {
+    //     const removeResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
+    //         rebuildFiles = this.getExportedResources(removeResource, rootPath);
+
+    //     const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
+
+    //     delete this.parsedResources[removeResource];
+    //     for (let key of Object.keys(resources)) {
+    //         this.parsedResources[key] = resources[key];
+    //     }
+    //     this._index = await this.createIndex(this.parsedResources);
+    // }
 
     /**
      * Returns a list of files that export a certain resource (declaration).

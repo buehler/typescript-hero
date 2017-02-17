@@ -4,7 +4,7 @@ import { ServerExtension } from '../extensions/ServerExtension';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { injectable } from 'inversify';
-import { createConnection, IConnection, IPCMessageReader, IPCMessageWriter } from 'vscode-languageserver';
+import { createConnection, IConnection, IPCMessageReader, IPCMessageWriter, FileEvent } from 'vscode-languageserver';
 
 /**
  * Serverside connection to the client. Masks the {IConnection} with some convenience methods
@@ -48,7 +48,7 @@ export class ServerConnection extends Connection<IConnection> {
     }
 
     /**
-     * Registers a handler for the onDidChangeConfiguration() notification.
+     * Registers a handler for the onDidChangeConfiguration notification.
      * 
      * @memberOf ServerConnection
      */
@@ -60,5 +60,22 @@ export class ServerConnection extends Connection<IConnection> {
             );
         }
         this.handler['onDidChangeConfiguration'].push(handler);
+    }
+
+    /**
+     * Registers a handler for the onDidChangeWatchedFiles notification.
+     * 
+     * @param {(changes: FileEvent[]) => void} handler
+     * 
+     * @memberOf ServerConnection
+     */
+    public onDidChangeWatchedFiles(handler: (changes: FileEvent[]) => void): void {
+        if (!this.handler['onDidChangeWatchedFiles']) {
+            this.handler['onDidChangeWatchedFiles'] = [];
+            this.connection.onDidChangeWatchedFiles(
+                params => this.handler['onDidChangeWatchedFiles'].forEach(o => o(params.changes))
+            );
+        }
+        this.handler['onDidChangeWatchedFiles'].push(handler);
     }
 }
