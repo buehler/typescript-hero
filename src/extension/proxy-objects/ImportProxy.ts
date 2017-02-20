@@ -1,28 +1,28 @@
-import { TsDefaultImport, TsNamedImport } from './TsImport';
-import { TsImportOptions } from './TsImportOptions';
-import { TsResolveSpecifier } from './TsResolveSpecifier';
+import { GenerationOptions } from '../../common/ts-generation';
+import { SymbolSpecifier } from '../../common/ts-parsing';
+import { DefaultImport, NamedImport } from '../../common/ts-parsing/imports';
 
 /**
- * Proxy class that wraps a TsNamedImport or a TsDefaultImport. Is used by the DocumentController to
+ * Proxy class that wraps a NamedImport or a DefaultImport. Is used by the DocumentController to
  * determine if a default import or a named import is used.
  * 
  * @export
  * @class ImportProxy
- * @extends {TsNamedImport}
+ * @extends {NamedImport}
  */
-export class ImportProxy extends TsNamedImport {
+export class ImportProxy extends NamedImport {
     public defaultPurposal: string;
-    public defaultAlias: string;
+    public defaultAlias: string | undefined;
 
-    constructor(library: TsNamedImport | TsDefaultImport | string, start?: number, end?: number) {
+    constructor(library: NamedImport | DefaultImport | string, start?: number, end?: number) {
         super(typeof library !== 'string' ? library.libraryName : library, start, end);
 
         if (typeof library !== 'string') {
             this.start = library.start;
             this.end = library.end;
-            if (library instanceof TsNamedImport) {
+            if (library instanceof NamedImport) {
                 this.specifiers = library.specifiers;
-                let defaultSpec = this.specifiers.find(o => o.specifier === 'default');
+                const defaultSpec = this.specifiers.find(o => o.specifier === 'default');
                 if (defaultSpec) {
                     this.specifiers.splice(this.specifiers.indexOf(defaultSpec), 1);
                     this.defaultAlias = defaultSpec.alias;
@@ -42,7 +42,7 @@ export class ImportProxy extends TsNamedImport {
      */
     public addSpecifier(name: string): void {
         if (!this.specifiers.some(o => o.specifier === name)) {
-            this.specifiers.push(new TsResolveSpecifier(name));
+            this.specifiers.push(new SymbolSpecifier(name));
         }
     }
 
@@ -71,7 +71,7 @@ export class ImportProxy extends TsNamedImport {
      * @memberOf ImportProxy
      */
     public isEqual(imp: ImportProxy): boolean {
-        let sameSpecifiers = (specs1: TsResolveSpecifier[], specs2: TsResolveSpecifier[]) => {
+        let sameSpecifiers = (specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]) => {
             for (let spec of specs1) {
                 let spec2 = specs2[specs1.indexOf(spec)];
                 if (!spec2 ||
@@ -95,18 +95,20 @@ export class ImportProxy extends TsNamedImport {
      * specifier is used, a normal default import string is returned, otherwise a TsNamedImport with (or without)
      * the default import is returned.
      * 
-     * @param {TsImportOptions} options
+     * @param {GenerationOptions} options
      * @returns {string}
      * 
      * @memberOf ImportProxy
      */
-    public toImport(options: TsImportOptions): string {
+    public generateTypescript(options: GenerationOptions): string {
         if (this.specifiers.length <= 0) {
-            return new TsDefaultImport(this.libraryName, this.defaultAlias, this.start, this.end).toImport(options);
+            return new DefaultImport(
+                this.libraryName, this.defaultAlias!, this.start, this.end
+            ).generateTypescript(options);
         }
         if (this.defaultAlias) {
-            this.specifiers.push(new TsResolveSpecifier('default', this.defaultAlias));
+            this.specifiers.push(new SymbolSpecifier('default', this.defaultAlias));
         }
-        return super.toImport(options);
+        return super.generateTypescript(options);
     }
 }
