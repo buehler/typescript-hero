@@ -1,4 +1,8 @@
 import 'reflect-metadata';
+import '../common/ts-parsing/declarations';
+import '../common/ts-parsing/exports';
+import '../common/ts-parsing/imports';
+import '../common/ts-parsing/resources';
 import { Container } from './IoC';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';

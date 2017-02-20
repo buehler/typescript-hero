@@ -177,20 +177,28 @@ export class ImportResolveExtension extends BaseExtension {
             if (!!!selectedSymbol) {
                 return;
             }
-            const declarations = await this.connection.sendSerializedRequest<DeclarationInfo[]>(
+            const resolveItems = await this.connection.sendSerializedRequest<DeclarationInfo[]>(
                 Request.DeclarationInfosForImport, {
                     cursorSymbol: selectedSymbol,
                     documentSource: window.activeTextEditor.document.getText(),
                     documentPath: window.activeTextEditor.document.fileName
                 }
             );
-            console.log(declarations);
-            // let newImport = await this.pickProvider.addImportPick(window.activeTextEditor.document);
-            // if (newImport) {
-            //     this.logger.info('Add import to document', { resolveItem: newImport });
-            //     this.addImportToDocument(newImport);
-            // }
 
+            if (resolveItems.length < 1) {
+                window.showInformationMessage(
+                    `The symbol '${selectedSymbol}' was not found in the index or is already imported.`
+                );
+            } else if (resolveItems.length === 1 && resolveItems[0].declaration.name === selectedSymbol) {
+                // this.addImportToDocument(resolveItem[0]);
+            } else {
+                // return window.showQuickPick(resolveItems, { placeHolder: 'Multiple declarations found:' });
+                // let newImport = await this.pickProvider.addImportPick(window.activeTextEditor.document);
+                // if (newImport) {
+                //     this.logger.info('Add import to document', { resolveItem: newImport });
+                //     this.addImportToDocument(newImport);
+                // }
+            }
         } catch (e) {
             this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
