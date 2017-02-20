@@ -1,4 +1,5 @@
 import { injectable } from 'inversify';
+import { TsSerializer } from 'ts-json-serializer';
 import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-jsonrpc';
 
 /**
@@ -21,7 +22,8 @@ export enum Notification {
  * @enum {number}
  */
 export enum Request {
-
+    DeclarationIndexReady,
+    DeclarationInfosForImport
 }
 
 type ConnectionEndpoint = {
@@ -43,6 +45,7 @@ type ConnectionEndpoint = {
 @injectable()
 export abstract class Connection<T extends ConnectionEndpoint> {
     protected handler: { [key: string]: Function[] } = {};
+    private serializer: TsSerializer = new TsSerializer();
 
     constructor(protected connection: T) { }
 
@@ -72,6 +75,22 @@ export abstract class Connection<T extends ConnectionEndpoint> {
     public sendRequest<T>(request: Request | string, params?: any): Thenable<T> {
         const method = typeof request === 'string' ? request : Request[request];
         return this.connection.sendRequest(method, params);
+    }
+
+    /**
+     * Sends a request to the other endpoint. The response is serialized and deserialized.
+     * 
+     * @template T
+     * @param {(Request | string)} request
+     * @param {*} [params]
+     * @returns {Promise<T>}
+     * 
+     * @memberOf Connection
+     */
+    public async sendSerializedRequest<T>(request: Request | string, params?: any): Promise<T> {
+        const method = typeof request === 'string' ? request : Request[request],
+            json = await this.connection.sendRequest<string>(method, params);
+        return this.serializer.deserialize<T>(json);
     }
 
     /**
@@ -112,5 +131,33 @@ export abstract class Connection<T extends ConnectionEndpoint> {
     ): void {
         const method = typeof request === 'string' ? request : Request[request];
         this.connection.onRequest(method, handler);
+    }
+
+    /**
+     * Registers a request handler to the connection. When another request handler
+     * with the same method is registered, the old one is overwritten.
+     *
+     * @template TResult
+     * @template TError
+     * @param {(Request | string)} request
+     * @param {GenericRequestHandler<TResult, TError>} handler
+     * 
+     * @memberOf Connection
+     */
+    public onSerializedRequest<TResult, TError>(
+        request: Request | string,
+        handler: GenericRequestHandler<TResult, TError>
+    ): void {
+        const method = typeof request === 'string' ? request : Request[request];
+        this.connection.onRequest(method, async params => {
+            const result = handler(params);
+
+            if (result instanceof Promise) {
+                const promiseResult = await result;
+                return this.serializer.serialize(promiseResult);
+            }
+
+            return this.serializer.serialize(result);
+        });
     }
 }

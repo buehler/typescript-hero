@@ -364,10 +364,10 @@ export class DeclarationIndex {
                 if (!index[resource.name]) {
                     index[resource.name] = [];
                 }
-                index[resource.name].push({
-                    declaration: new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
-                    from: resource.name
-                });
+                index[resource.name].push(new DeclarationInfo(
+                    new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
+                    resource.name
+                ));
             }
             for (let declaration of resource.declarations) {
                 if (!index[declaration.name]) {
@@ -377,10 +377,7 @@ export class DeclarationIndex {
                 if (!index[declaration.name].some(
                     o => o.declaration.constructor === declaration.constructor && o.from === from
                 )) {
-                    index[declaration.name].push({
-                        declaration,
-                        from
-                    });
+                    index[declaration.name].push(new DeclarationInfo(declaration, from));
                 }
             }
         }

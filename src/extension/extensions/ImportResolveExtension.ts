@@ -1,13 +1,14 @@
-import { Notification } from '../../common/communication';
-import { ClientConnection } from '../utilities/ClientConnection';
+import { Notification, Request } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
+import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
+import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
-import { ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 /**
  * Search for typescript / typescript react files in the workspace and return the path to them.
@@ -120,6 +121,13 @@ export class ImportResolveExtension extends BaseExtension {
             Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing
         );
 
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addImportUnderCursor',
+                () => this.addImportUnderCursor()
+            )
+        );
+
         this.buildIndex();
 
         this.logger.info('Initialized');
@@ -135,7 +143,8 @@ export class ImportResolveExtension extends BaseExtension {
     }
 
     /**
-     * 
+     * Instructs the tsh-server to build an index for the found files (actually searches for all files in the
+     * current workspace).
      * 
      * @private
      * @returns {Promise<void>}
@@ -147,5 +156,73 @@ export class ImportResolveExtension extends BaseExtension {
 
         const files = await findFiles(this.config);
         this.connection.sendNotification(Notification.CreateIndexForFiles, files);
+    }
+
+    /**
+     * Add an import from the whole list. Calls the vscode gui, where the user can
+     * select a symbol to import.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async addImportUnderCursor(): Promise<void> {
+        if (!(await this.connection.sendRequest<boolean>(Request.DeclarationIndexReady))) {
+            this.showCacheWarning();
+            return;
+        }
+        try {
+            const selectedSymbol = this.getSymbolUnderCursor();
+            if (!!!selectedSymbol) {
+                return;
+            }
+            const declarations = await this.connection.sendSerializedRequest<DeclarationInfo[]>(
+                Request.DeclarationInfosForImport, {
+                    cursorSymbol: selectedSymbol,
+                    documentSource: window.activeTextEditor.document.getText(),
+                    documentPath: window.activeTextEditor.document.fileName
+                }
+            );
+            console.log(declarations);
+            // let newImport = await this.pickProvider.addImportPick(window.activeTextEditor.document);
+            // if (newImport) {
+            //     this.logger.info('Add import to document', { resolveItem: newImport });
+            //     this.addImportToDocument(newImport);
+            // }
+
+        } catch (e) {
+            this.logger.error('An error happend during import picking', e);
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
+        }
+    }
+
+    /**
+     * Returns the string under the cursor.
+     * 
+     * @private
+     * @returns {string}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private getSymbolUnderCursor(): string {
+        let editor = window.activeTextEditor;
+        if (!editor) {
+            return '';
+        }
+        let selection = editor.selection,
+            word = editor.document.getWordRangeAtPosition(selection.active);
+        return word && !word.isEmpty ? editor.document.getText(word) : '';
+    }
+
+    /**
+     * Shows a user warning if the resolve index is not ready yet.
+     * 
+     * @private
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private showCacheWarning(): void {
+        window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
     }
 }

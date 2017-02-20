@@ -10,3 +10,4 @@ declare namespace Namespace {
         MemberB
     }
 }
+MyClass
