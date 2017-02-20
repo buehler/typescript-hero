@@ -1,28 +1,5 @@
+import { Import } from '../../common/ts-parsing/imports';
 import { ObjectManager } from './ObjectManager';
-import { ResolveQuickPickItem } from '../models/QuickPickItems';
-import { DeclarationInfo, ResolveIndex } from '../caches/ResolveIndex';
-import { ExtensionConfig } from '../ExtensionConfig';
-import { Injector } from '../IoC';
-import { ImportProxy } from '../models/ImportProxy';
-import { DefaultDeclaration, ModuleDeclaration } from '../models/TsDeclaration';
-import {
-    TsAliasedImport,
-    TsDefaultImport,
-    TsExternalModuleImport,
-    TsImport,
-    TsNamedImport,
-    TsNamespaceImport,
-    TsStringImport
-} from '../models/TsImport';
-import { TsResolveSpecifier } from '../models/TsResolveSpecifier';
-import { TsFile } from '../models/TsResource';
-import { TsResourceParser } from '../parser/TsResourceParser';
-import {
-    getAbsolutLibraryName,
-    getDeclarationsFilteredByImports,
-    getImportInsertPosition,
-    getRelativeLibraryName
-} from '../utilities/ResolveIndexExtensions';
 import { InputBoxOptions, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 /**
@@ -48,7 +25,7 @@ function stringSort(strA: string, strB: string): number {
  * @param {TsImport} i2
  * @returns {number}
  */
-function importSort(i1: TsImport, i2: TsImport): number {
+function importSort(i1: Import, i2: Import): number {
     let strA = i1.libraryName.toLowerCase(),
         strB = i2.libraryName.toLowerCase();
 

@@ -1,8 +1,10 @@
 import { Notification, Request } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
+import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
+import { ImportManager } from '../managers';
 import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
 import { existsSync } from 'fs';
@@ -190,19 +192,35 @@ export class ImportResolveExtension extends BaseExtension {
                     `The symbol '${selectedSymbol}' was not found in the index or is already imported.`
                 );
             } else if (resolveItems.length === 1 && resolveItems[0].declaration.name === selectedSymbol) {
-                // this.addImportToDocument(resolveItem[0]);
+                this.logger.info('Add import to document', { resolveItem: resolveItems[0] });
+                this.addImportToDocument(resolveItems[0]);
             } else {
-                // return window.showQuickPick(resolveItems, { placeHolder: 'Multiple declarations found:' });
-                // let newImport = await this.pickProvider.addImportPick(window.activeTextEditor.document);
-                // if (newImport) {
-                //     this.logger.info('Add import to document', { resolveItem: newImport });
-                //     this.addImportToDocument(newImport);
-                // }
+                const selectedItem = await window.showQuickPick(
+                    resolveItems.map(o => new ResolveQuickPickItem(o)), { placeHolder: 'Multiple declarations found:' }
+                );
+                if (selectedItem) {
+                    this.logger.info('Add import to document', { resolveItem: selectedItem });
+                    this.addImportToDocument(selectedItem.declarationInfo);
+                }
             }
         } catch (e) {
             this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         }
+    }
+
+    /**
+     * Effectifely adds an import quick pick item to a document
+     * 
+     * @private
+     * @param {DeclarationInfo} declaration
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
+        let ctrl = await ImportManager.create(window.activeTextEditor.document);
+        return await ctrl.addDeclarationImport(declaration).commit();
     }
 
     /**

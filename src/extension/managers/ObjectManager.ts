@@ -1,4 +1,4 @@
-import { TsFile } from '../models/TsResource';
+import { File } from '../../common/ts-parsing/resources';
 import { TextDocument } from 'vscode';
 
 /**
@@ -10,7 +10,7 @@ import { TextDocument } from 'vscode';
  */
 export interface ObjectManager {
     readonly document: TextDocument;
-    readonly parsedDocument: TsFile;
+    readonly parsedDocument: File;
 
     /**
      * Commits the changes made to the given document.
