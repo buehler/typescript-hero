@@ -1,6 +1,28 @@
-import { Import } from '../../common/ts-parsing/imports';
+import { ExtensionConfig } from '../../common/config';
+import {
+    getAbsolutLibraryName,
+    getDeclarationsFilteredByImports,
+    getImportInsertPosition,
+    getRelativeLibraryName
+} from '../../common/helpers';
+import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
+import { DeclarationInfo, DefaultDeclaration, ModuleDeclaration } from '../../common/ts-parsing/declarations';
+import {
+    DefaultImport,
+    ExternalModuleImport,
+    Import,
+    NamedImport,
+    NamespaceImport,
+    StringImport
+} from '../../common/ts-parsing/imports';
+import { File } from '../../common/ts-parsing/resources';
+import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
+import { Container } from '../IoC';
+import { iocSymbols } from '../IoCSymbols';
+import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import { InputBoxOptions, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import { InputBoxOptions, TextDocument as CodeTextDocument, window, workspace, WorkspaceEdit } from 'vscode';
+import { TextDocument, TextEdit } from 'vscode-languageserver-types';
 
 /**
  * String-Sort function.
@@ -21,7 +43,7 @@ function stringSort(strA: string, strB: string): number {
 /**
  * Order imports by library name.
  * 
- * @param {TsImport} i1
+ * @param {Import} i1
  * @param {TsImport} i2
  * @returns {number}
  */
@@ -35,11 +57,11 @@ function importSort(i1: Import, i2: Import): number {
 /**
  * Order specifiers by name.
  * 
- * @param {TsResolveSpecifier} i1
- * @param {TsResolveSpecifier} i2
+ * @param {SymbolSpecifier} i1
+ * @param {SymbolSpecifier} i2
  * @returns {number}
  */
-function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
+function specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
 }
 
@@ -51,15 +73,15 @@ function specifierSort(i1: TsResolveSpecifier, i2: TsResolveSpecifier): number {
  * @class ImportManager
  */
 export class ImportManager implements ObjectManager {
-    private static get parser(): TsResourceParser {
-        return Injector.get(TsResourceParser);
+    private static get parser(): TypescriptParser {
+        return Container.get(TypescriptParser);
     }
 
     private static get config(): ExtensionConfig {
-        return Injector.get(ExtensionConfig);
+        return Container.get<ExtensionConfig>(iocSymbols.configuration);
     }
 
-    private imports: TsImport[] = [];
+    private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
     private organize: boolean;
 
@@ -67,15 +89,15 @@ export class ImportManager implements ObjectManager {
      * Document resource for this controller. Contains the parsed document.
      * 
      * @readonly
-     * @type {TsFile}
+     * @type {File}
      * @memberOf ImportManager
      */
-    public get parsedDocument(): TsFile {
+    public get parsedDocument(): File {
         return this._parsedDocument;
     }
 
-    private constructor(public readonly document: TextDocument, private _parsedDocument: TsFile) {
-        this.imports = _parsedDocument.imports.map(o => o.clone<TsImport>());
+    private constructor(public readonly document: TextDocument, private _parsedDocument: File) {
+        this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
     }
 
     /**
@@ -89,12 +111,18 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberOf ImportManager
      */
-    public static async create(document: TextDocument): Promise<ImportManager> {
-        let source = await ImportManager.parser.parseSource(document.getText());
+    public static async create(document: CodeTextDocument): Promise<ImportManager> {
+        const source = await ImportManager.parser.parseSource(document.getText()),
+            textDocument = TextDocument.create(
+                document.uri.toString(),
+                document.languageId,
+                document.version,
+                document.getText()
+            );
         source.imports = source.imports.map(
-            o => o instanceof TsNamedImport || o instanceof TsDefaultImport ? new ImportProxy(o) : o
+            o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o
         );
-        return new ImportManager(document, source);
+        return new ImportManager(textDocument, source);
     }
 
     /**
@@ -109,9 +137,12 @@ export class ImportManager implements ObjectManager {
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
         // If there is something already imported, it must be a NamedImport or a DefaultImport
-        let alreadyImported: ImportProxy = this.imports.find(
-            o => declarationInfo.from === getAbsolutLibraryName(o.libraryName, this.document.fileName) &&
-                o instanceof ImportProxy
+        const alreadyImported: ImportProxy = this.imports.find(
+            o => declarationInfo.from === getAbsolutLibraryName(
+                o.libraryName,
+                this.document.uri,
+                workspace.rootPath
+            ) && o instanceof ImportProxy
         ) as ImportProxy;
 
         if (alreadyImported) {
@@ -124,23 +155,25 @@ export class ImportManager implements ObjectManager {
             }
         } else {
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
-                this.imports.push(new TsNamespaceImport(
+                this.imports.push(new NamespaceImport(
                     declarationInfo.from,
                     declarationInfo.declaration.name
                 ));
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-                let imp = new ImportProxy(getRelativeLibraryName(
+                const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    this.document.fileName
+                    this.document.uri,
+                    workspace.rootPath
                 ));
                 imp.defaultPurposal = declarationInfo.declaration.name;
                 this.imports.push(imp);
             } else {
-                let imp = new ImportProxy(getRelativeLibraryName(
+                const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    this.document.fileName
+                    this.document.uri,
+                    workspace.rootPath
                 ));
-                imp.specifiers.push(new TsResolveSpecifier(declarationInfo.declaration.name));
+                imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
                 this.imports.push(imp);
             }
         }
@@ -152,15 +185,16 @@ export class ImportManager implements ObjectManager {
      * Adds all missing imports to the actual document. If multiple declarations are found for one missing
      * specifier, the user is asked when the commit() function is executed.
      * 
-     * @param {ResolveIndex} resolveIndex
+     * @param {DeclarationIndex} index
      * @returns {this}
      * 
      * @memberOf ImportManager
      */
-    public addMissingImports(resolveIndex: ResolveIndex): this {
+    public addMissingImports(index: DeclarationIndex): this {
         let declarations = getDeclarationsFilteredByImports(
-            resolveIndex,
-            this.document.fileName,
+            index.declarationInfos,
+            this.document.uri,
+            workspace.rootPath,
             this.imports
         );
 
@@ -189,11 +223,11 @@ export class ImportManager implements ObjectManager {
      */
     public organizeImports(): this {
         this.organize = true;
-        let keep: TsImport[] = [];
+        let keep: Import[] = [];
 
         for (let actImport of this.imports) {
-            if (actImport instanceof TsNamespaceImport ||
-                actImport instanceof TsExternalModuleImport) {
+            if (actImport instanceof NamespaceImport ||
+                actImport instanceof ExternalModuleImport) {
                 if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
                     keep.push(actImport);
                 }
@@ -206,16 +240,16 @@ export class ImportManager implements ObjectManager {
                     (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec))) {
                     keep.push(actImport);
                 }
-            } else if (actImport instanceof TsStringImport) {
+            } else if (actImport instanceof StringImport) {
                 keep.push(actImport);
             }
         }
 
         if (!ImportManager.config.resolver.disableImportsSorting) {
-            keep = [
-                ...keep.filter(o => o instanceof TsStringImport).sort(importSort),
-                ...keep.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-            ];
+        keep = [
+            ...keep.filter(o => o instanceof StringImport).sort(importSort),
+            ...keep.filter(o => !(o instanceof StringImport)).sort(importSort)
+        ];
         }
 
         this.imports = keep;
@@ -236,13 +270,13 @@ export class ImportManager implements ObjectManager {
         // Commit the documents imports:
         // 1. Remove imports that are in the document, but not anymore
         // 2. Update existing / insert new ones
-        let edits = [];
+        const edits: TextEdit[] = [];
 
         await this.resolveImportSpecifiers();
 
         if (this.organize) {
             for (let imp of this._parsedDocument.imports) {
-                edits.push(TextEdit.delete(imp.getRange(this.document)));
+                edits.push(TextEdit.del(imp.getRange(this.document)));
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
@@ -254,7 +288,7 @@ export class ImportManager implements ObjectManager {
         } else {
             for (let imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
-                    edits.push(TextEdit.delete(imp.getRange(this.document)));
+                    edits.push(TextEdit.del(imp.getRange(this.document)));
                 }
             }
             let proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
@@ -354,12 +388,12 @@ export class ImportManager implements ObjectManager {
      * Does resolve a duplicate specifier issue.
      * 
      * @private
-     * @returns {Promise<string>}
+     * @returns {Promise<string | undefined>}
      * 
      * @memberOf ImportManager
      */
-    private async getSpecifierAlias(): Promise<string> {
-        let result = await this.vscodeInputBox({
+    private async getSpecifierAlias(): Promise<string | undefined> {
+        const result = await this.vscodeInputBox({
             placeHolder: 'Alias for specifier',
             prompt: 'Please enter an alias for the specifier..',
             validateInput: s => !!s ? '' : 'Please enter a variable name'
@@ -372,12 +406,12 @@ export class ImportManager implements ObjectManager {
      * 
      * @private
      * @param {string} declarationName
-     * @returns {Promise<string>}
+     * @returns {Promise<string | undefined>}
      * 
      * @memberOf ImportManager
      */
-    private async getDefaultIdentifier(declarationName: string): Promise<string> {
-        let result = await this.vscodeInputBox({
+    private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
+        const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export..',
             validateInput: s => !!s ? '' : 'Please enter a variable name',

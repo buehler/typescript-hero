@@ -1,5 +1,5 @@
 import { File } from '../../common/ts-parsing/resources';
-import { TextDocument } from 'vscode';
+import { TextDocument } from 'vscode-languageserver-types';
 
 /**
  * Base interface for all object managers. Those managers can modify a class / imports / and any other
@@ -16,7 +16,7 @@ export interface ObjectManager {
      * Commits the changes made to the given document.
      * 
      * @returns {Promise<boolean>}
-     * 
+     * Ø
      * @memberOf ObjectManager
      */
     commit(): Promise<boolean>;
