@@ -1,3 +1,4 @@
+import { AliasedImport } from '../ts-parsing/imports';
 import { CallableDeclaration, ExportableDeclaration } from '../ts-parsing/declarations';
 
 /**
@@ -12,7 +13,7 @@ export function isCallableDeclaration(obj: any): obj is CallableDeclaration {
 }
 
 /**
- * Determines if the given object is a ExportableDeclaration.
+ * Determines if the given object is an ExportableDeclaration.
  * 
  * @export
  * @param {*} obj
@@ -20,4 +21,15 @@ export function isCallableDeclaration(obj: any): obj is CallableDeclaration {
  */
 export function isExportableDeclaration(obj: any): obj is ExportableDeclaration {
     return obj && Object.keys(obj).indexOf('isExported') >= 0;
+}
+
+/**
+ * Determines if the given object is an AliasedImport.
+ * 
+ * @export
+ * @param {*} obj
+ * @returns {obj is AliasedImport}
+ */
+export function isAliasedImport(obj: any): obj is AliasedImport {
+    return obj && Object.keys(obj).indexOf('alias') >= 0;
 }

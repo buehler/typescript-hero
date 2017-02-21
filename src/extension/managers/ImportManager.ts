@@ -5,6 +5,7 @@ import {
     getImportInsertPosition,
     getRelativeLibraryName
 } from '../../common/helpers';
+import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo, DefaultDeclaration, ModuleDeclaration } from '../../common/ts-parsing/declarations';
 import {
@@ -16,12 +17,21 @@ import {
     StringImport
 } from '../../common/ts-parsing/imports';
 import { File } from '../../common/ts-parsing/resources';
+import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
 import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import { InputBoxOptions, TextDocument as CodeTextDocument, window, workspace, WorkspaceEdit } from 'vscode';
+import {
+    InputBoxOptions,
+    TextDocument as CodeTextDocument,
+    TextEdit as CodeTextEdit,
+    Uri,
+    window,
+    workspace,
+    WorkspaceEdit
+} from 'vscode';
 import { TextDocument, TextEdit } from 'vscode-languageserver-types';
 
 /**
@@ -281,7 +291,7 @@ export class ImportManager implements ObjectManager {
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
                 this.imports.reduce(
-                    (all, cur) => all += cur.toImport(ImportManager.config.resolver.importOptions),
+                    (all, cur) => all += cur.generateTypescript(ImportManager.config.resolver.generationOptions),
                     ''
                 )
             ));
@@ -291,7 +301,7 @@ export class ImportManager implements ObjectManager {
                     edits.push(TextEdit.del(imp.getRange(this.document)));
                 }
             }
-            let proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
+            const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
             for (let imp of this.imports) {
                 if (imp instanceof ImportProxy &&
                     proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
@@ -300,7 +310,7 @@ export class ImportManager implements ObjectManager {
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
                         imp.getRange(this.document),
-                        imp.toImport(ImportManager.config.resolver.importOptions)
+                        imp.generateTypescript(ImportManager.config.resolver.generationOptions)
                     ));
                 } else {
                     edits.push(TextEdit.insert(
@@ -308,7 +318,7 @@ export class ImportManager implements ObjectManager {
                             ImportManager.config.resolver.newImportLocation,
                             window.activeTextEditor
                         ),
-                        imp.toImport(ImportManager.config.resolver.importOptions)
+                        imp.generateTypescript(ImportManager.config.resolver.generationOptions)
                     ));
                 }
             }
@@ -316,9 +326,9 @@ export class ImportManager implements ObjectManager {
 
         // Later, more edits will come (like add methods to a class or so.) 
 
-        let workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, edits);
-        let result = await workspace.applyEdit(workspaceEdit);
+        const workspaceEdit = new WorkspaceEdit();
+        workspaceEdit.set(<Uri>{ fsPath: this.document.uri }, <CodeTextEdit[]>edits);
+        const result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             delete this.organize;
             this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
@@ -337,7 +347,7 @@ export class ImportManager implements ObjectManager {
      * @memberOf ImportManager
      */
     private async resolveImportSpecifiers(): Promise<void> {
-        let getSpecifiers = () => this.imports
+        const getSpecifiers = () => this.imports
             .reduce((all, cur) => {
                 if (cur instanceof ImportProxy) {
                     all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
@@ -345,20 +355,20 @@ export class ImportManager implements ObjectManager {
                         all.push(cur.defaultAlias);
                     }
                 }
-                if (cur instanceof TsAliasedImport) {
+                if (isAliasedImport(cur)) {
                     all.push(cur.alias);
                 }
                 return all;
-            }, []) as string[];
+            }, <string[]>[]);
 
         for (let decision of Object.keys(
             this.userImportDecisions
         ).filter(o => this.userImportDecisions[o].length > 0)) {
-            let declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
+            const declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
                 o => new ResolveQuickPickItem(o)
             );
 
-            let result = await window.showQuickPick(declarations, {
+            const result = await window.showQuickPick(declarations, {
                 placeHolder: `Multiple declarations for "${decision}" found.`
             });
 
@@ -367,7 +377,7 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        let proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
+        const proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
 
         for (let imp of proxies) {
             if (imp.defaultPurposal && !imp.defaultAlias) {
