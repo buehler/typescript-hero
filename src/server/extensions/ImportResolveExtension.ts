@@ -44,7 +44,7 @@ export class ImportResolveExtension implements ServerExtension {
      * @memberOf ImportResolveExtension
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
-        this.rootUri = params.rootUri;
+        this.rootUri = (params.rootUri || '').replace('file://', '');
         this.connection = connection;
 
         connection.onDidChangeWatchedFiles(changes => this.watchedFilesChanged(changes));

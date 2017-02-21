@@ -150,7 +150,7 @@ export class ImportManager implements ObjectManager {
         const alreadyImported: ImportProxy = this.imports.find(
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
-                this.document.uri,
+                Uri.parse(this.document.uri).fsPath,
                 workspace.rootPath
             ) && o instanceof ImportProxy
         ) as ImportProxy;
@@ -172,7 +172,7 @@ export class ImportManager implements ObjectManager {
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    this.document.uri,
+                    Uri.parse(this.document.uri).fsPath,
                     workspace.rootPath
                 ));
                 imp.defaultPurposal = declarationInfo.declaration.name;
@@ -180,7 +180,7 @@ export class ImportManager implements ObjectManager {
             } else {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    this.document.uri,
+                    Uri.parse(this.document.uri).fsPath,
                     workspace.rootPath
                 ));
                 imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
@@ -201,9 +201,9 @@ export class ImportManager implements ObjectManager {
      * @memberOf ImportManager
      */
     public addMissingImports(index: DeclarationIndex): this {
-        let declarations = getDeclarationsFilteredByImports(
+        const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
-            this.document.uri,
+            Uri.parse(this.document.uri).fsPath,
             workspace.rootPath,
             this.imports
         );
@@ -327,7 +327,7 @@ export class ImportManager implements ObjectManager {
         // Later, more edits will come (like add methods to a class or so.) 
 
         const workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(<Uri>{ fsPath: this.document.uri }, <CodeTextEdit[]>edits);
+        workspaceEdit.set(Uri.parse(this.document.uri), <CodeTextEdit[]>edits);
         const result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             delete this.organize;
@@ -386,7 +386,7 @@ export class ImportManager implements ObjectManager {
             }
 
             for (let spec of imp.specifiers) {
-                let specifiers = getSpecifiers();
+                const specifiers = getSpecifiers();
                 if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
                     spec.alias = await this.getSpecifierAlias();
                 }

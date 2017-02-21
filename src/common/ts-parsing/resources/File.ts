@@ -41,6 +41,8 @@ export class File implements Resource, Node {
     public resources: Resource[] = [];
     public usages: string[] = [];
 
+    private rootPath: string;
+
     public get identifier(): string {
         return '/' + relative(this.rootPath, this.filePath).replace(/([.]d)?[.]tsx?/g, '');
     }
@@ -74,7 +76,9 @@ export class File implements Resource, Node {
         return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);
     }
 
-    constructor(public filePath: string, private rootPath: string, public start: number, public end: number) { }
+    constructor(public filePath: string, rootPath: string, public start: number, public end: number) {
+        this.rootPath = rootPath.replace('file://', '');
+    }
 
     /**
      * Calculates the document range of the node in the given document.

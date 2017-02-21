@@ -1,4 +1,5 @@
 import { ExtensionConfig } from '../common/config';
+import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
 import { BaseExtension } from './extensions/BaseExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
@@ -14,6 +15,7 @@ const container = new IoCContainer();
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
+container.bind(TypescriptParser).to(TypescriptParser);
 
 // // Providers
 // injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
