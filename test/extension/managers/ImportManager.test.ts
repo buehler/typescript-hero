@@ -226,7 +226,7 @@ describe('ImportManager', () => {
                 ctrl.addDeclarationImport(declaration!);
 
                 (ctrl as any).imports.should.have.lengthOf(2);
-                (ctrl as any).imports[1].libraryName.should.equal('../resourceIndex/NotBarelExported');
+                (ctrl as any).imports[1].libraryName.should.equal('../../server/indices/NotBarelExported');
                 (ctrl as any).imports[1].specifiers[0].specifier.should.equal('NotBarelExported');
 
                 done();
@@ -260,7 +260,9 @@ describe('ImportManager', () => {
                 ctrl.addDeclarationImport(declaration!);
 
                 (ctrl as any).imports.should.have.lengthOf(2);
-                (ctrl as any).imports[1].libraryName.should.equal('../defaultExport/lateDefaultExportedElement');
+                (ctrl as any).imports[1].libraryName.should.equal(
+                    '../../server/indices/defaultExport/lateDefaultExportedElement'
+                );
                 (ctrl as any).imports[1].defaultPurposal.should.equal('myDefaultExportedFunction');
                 should.not.exist((ctrl as any).imports[1].defaultAlias);
 
@@ -364,7 +366,7 @@ describe('ImportManager', () => {
                 (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
                 (ctrl as any).imports[0].specifiers[1].specifier.should.equal('Class2');
                 (ctrl as any).imports[0].specifiers[2].specifier.should.equal('Class3');
-                (ctrl as any).imports[1].libraryName.should.equal('../resourceIndex/NotBarelExported');
+                (ctrl as any).imports[1].libraryName.should.equal('../../server/indices/NotBarelExported');
                 (ctrl as any).imports[1].specifiers[0].specifier.should.equal('NotBarelExported');
 
                 done();
@@ -463,17 +465,17 @@ describe('ImportManager', () => {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(
                         new Position(1, 0),
-                        `import { AddImportSameDirectory } from '../resolveExtension/sameDirectory';\n`
+                        `import { AddImportSameDirectory } from '../../../server/indices';\n`
                     );
                     builder.insert(new Position(6, 0), `const foo = AddImportSameDirectory;\n`);
                 });
                 const ctrl = await ImportManager.create(document);
 
-                (ctrl as any).imports[0].libraryName.should.equal('../resourceIndex');
+                (ctrl as any).imports[0].libraryName.should.equal('../../server/indices');
 
                 ctrl.organizeImports();
 
-                (ctrl as any).imports[0].libraryName.should.equal('../resolveExtension/sameDirectory');
+                (ctrl as any).imports[0].libraryName.should.equal('../../../server/indices');
 
                 done();
             } catch (e) {
@@ -556,7 +558,7 @@ describe('ImportManager', () => {
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(0).text.should.equals(
-                    `import { NotBarelExported } from '../resourceIndex/NotBarelExported';`
+                    `import { NotBarelExported } from '../../server/indices/NotBarelExported';`
                 );
 
                 done();
