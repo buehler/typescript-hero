@@ -19,19 +19,13 @@ import {
 import { File } from '../../common/ts-parsing/resources';
 import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
 import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
+import { importRange } from '../helpers';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import {
-    InputBoxOptions,
-    TextDocument as CodeTextDocument,
-    TextEdit as CodeTextEdit,
-    window,
-    workspace,
-    WorkspaceEdit
-} from 'vscode';
-import { TextDocument, TextEdit } from 'vscode-languageserver-types';
+import { InputBoxOptions, TextDocument, TextEdit as CodeTextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import { TextEdit } from 'vscode-languageserver-types';
 
 /**
  * String-Sort function.
@@ -105,17 +99,8 @@ export class ImportManager implements ObjectManager {
         return this._parsedDocument;
     }
 
-    private get simpleDocument(): TextDocument {
-        return TextDocument.create(
-            this.document.uri.toString(),
-            this.document.languageId,
-            this.document.version,
-            this.document.getText()
-        );
-    }
-
     private constructor(
-        public readonly document: CodeTextDocument,
+        public readonly document: TextDocument,
         private _parsedDocument: File
     ) {
         this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
@@ -132,7 +117,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberOf ImportManager
      */
-    public static async create(document: CodeTextDocument): Promise<ImportManager> {
+    public static async create(document: TextDocument): Promise<ImportManager> {
         const source = await ImportManager.parser.parseSource(document.getText());
         source.imports = source.imports.map(
             o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o
@@ -291,7 +276,7 @@ export class ImportManager implements ObjectManager {
 
         if (this.organize) {
             for (let imp of this._parsedDocument.imports) {
-                edits.push(TextEdit.del(imp.getRange(this.simpleDocument)));
+                edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
@@ -303,7 +288,7 @@ export class ImportManager implements ObjectManager {
         } else {
             for (let imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
-                    edits.push(TextEdit.del(imp.getRange(this.simpleDocument)));
+                    edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
                 }
             }
             const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
@@ -314,7 +299,7 @@ export class ImportManager implements ObjectManager {
                 }
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
-                        imp.getRange(this.simpleDocument),
+                        importRange(this.document, imp.start, imp.end),
                         imp.generateTypescript(ImportManager.config.resolver.generationOptions)
                     ));
                 } else {
