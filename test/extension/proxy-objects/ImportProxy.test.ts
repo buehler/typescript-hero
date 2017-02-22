@@ -1,7 +1,7 @@
-import { ImportProxy } from '../../src/models/ImportProxy';
-import { TsDefaultImport, TsNamedImport } from '../../src/models/TsImport';
-import { TsImportOptions } from '../../src/models/TsImportOptions';
-import { TsResolveSpecifier } from '../../src/models/TsResolveSpecifier';
+import { GenerationOptions } from '../../../src/common/ts-generation';
+import { SymbolSpecifier } from '../../../src/common/ts-parsing';
+import { DefaultImport, NamedImport } from '../../../src/common/ts-parsing/imports';
+import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
 import * as chai from 'chai';
 import { given } from 'mocha-testdata';
 
@@ -12,35 +12,35 @@ describe('ImportProxy', () => {
     describe('constructor()', () => {
 
         it('should create a descendent of a TsNamedImport', () => {
-            let proxy = new ImportProxy('foo');
+            const proxy = new ImportProxy('foo');
 
             proxy.should.be.an.instanceof(ImportProxy);
             proxy.libraryName.should.equal('foo');
         });
 
         it('should use the values of a given TsNamedImport', () => {
-            let imp = new TsNamedImport('foo', 42, 1337),
+            const imp = new NamedImport('foo', 42, 1337),
                 proxy = new ImportProxy(imp);
 
             proxy.libraryName.should.equal(imp.libraryName);
-            proxy.start.should.equal(imp.start);
-            proxy.end.should.equal(imp.end);
+            proxy.start!.should.equal(imp.start);
+            proxy.end!.should.equal(imp.end);
         });
 
         it('should duplicate the specifiers of a TsNamedImport', () => {
-            let imp = new TsNamedImport('foo');
-            imp.specifiers.push(new TsResolveSpecifier('bar'));
+            const imp = new NamedImport('foo');
+            imp.specifiers.push(new SymbolSpecifier('bar'));
 
-            let proxy = new ImportProxy(imp);
+            const proxy = new ImportProxy(imp);
             proxy.specifiers.should.be.an('array').with.lengthOf(1);
             proxy.specifiers[0].specifier.should.equal('bar');
         });
 
         it('should add a default alias from a TsDefaultImport', () => {
-            let imp = new TsDefaultImport('foo', 'ALIAS'),
+            const imp = new DefaultImport('foo', 'ALIAS'),
                 proxy = new ImportProxy(imp);
 
-            proxy.defaultAlias.should.equal('ALIAS');
+            proxy.defaultAlias!.should.equal('ALIAS');
         });
 
     });
@@ -71,11 +71,11 @@ describe('ImportProxy', () => {
     describe('clone()', () => {
 
         it('should clone the whole ImportProxy element', () => {
-            let p1 = new ImportProxy('foo');
+            const p1 = new ImportProxy('foo');
             p1.addSpecifier('bar');
             p1.defaultAlias = 'ALIAS';
 
-            let p2 = p1.clone();
+            const p2 = p1.clone();
 
             (p1.isEqual(p2)).should.be.true;
         });
@@ -85,7 +85,7 @@ describe('ImportProxy', () => {
     describe('isEqual()', () => {
 
         it('should return true if another proxy is equal', () => {
-            let p1 = new ImportProxy('foo'),
+            const p1 = new ImportProxy('foo'),
                 p2 = new ImportProxy('foo');
 
             p1.addSpecifier('bar');
@@ -100,59 +100,59 @@ describe('ImportProxy', () => {
         given(
             [
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     return p;
                 })(),
                 (() => {
-                    let p = new ImportProxy('bar');
+                    const p = new ImportProxy('bar');
                     return p;
                 })()
             ],
             [
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.defaultAlias = 'ALIAS';
                     return p;
                 })(),
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.defaultAlias = 'ALIAS_2';
                     return p;
                 })()
             ],
             [
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.defaultPurposal = 'MyDefaultExport';
                     return p;
                 })(),
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.defaultPurposal = 'MyDefaultExport_2';
                     return p;
                 })()
             ],
             [
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.addSpecifier('bar');
                     p.addSpecifier('baz');
                     return p;
                 })(),
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.addSpecifier('bar');
                     return p;
                 })()
             ],
             [
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.addSpecifier('bar');
                     return p;
                 })(),
                 (() => {
-                    let p = new ImportProxy('foo');
+                    const p = new ImportProxy('foo');
                     p.addSpecifier('baz');
                     return p;
                 })()
@@ -165,10 +165,10 @@ describe('ImportProxy', () => {
 
     describe('toImport()', () => {
 
-        const options: TsImportOptions = {
+        const options: GenerationOptions = {
             eol: ';',
             multiLineWrapThreshold: 120,
-            pathDelimiter: `'`,
+            stringQuoteStyle: `'`,
             spaceBraces: true,
             tabSize: 4
         };
@@ -180,32 +180,32 @@ describe('ImportProxy', () => {
 
         it('should generate a TsDefaultImport when no specifiers are provided', () => {
             proxy.defaultAlias = 'ALIAS';
-            proxy.toImport(options).should.equal(`import ALIAS from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import ALIAS from 'foo';\n`);
         });
 
         it('should generate a normal TsNamedImport when no default import is provided', () => {
             proxy.addSpecifier('bar');
             proxy.addSpecifier('baz');
-            proxy.toImport(options).should.equal(`import { bar, baz } from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import { bar, baz } from 'foo';\n`);
         });
 
         it('should generate a normal TsNamedImport with aliases when no default import is provided', () => {
             proxy.addSpecifier('bar');
-            proxy.specifiers.push(new TsResolveSpecifier('baz', 'blub'));
-            proxy.toImport(options).should.equal(`import { bar, baz as blub } from 'foo';\n`);
+            proxy.specifiers.push(new SymbolSpecifier('baz', 'blub'));
+            proxy.generateTypescript(options).should.equal(`import { bar, baz as blub } from 'foo';\n`);
         });
 
         it('should generate a TsNamedImport with default import', () => {
             proxy.defaultAlias = 'ALIAS';
             proxy.addSpecifier('bar');
-            proxy.toImport(options).should.equal(`import { bar, default as ALIAS } from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import { bar, default as ALIAS } from 'foo';\n`);
         });
 
         it('should omit semicolons if configured', () => {
             const optionsClone = Object.assign({}, options);
             optionsClone.eol = '';
             proxy.defaultAlias = 'ALIAS';
-            proxy.toImport(optionsClone).should.equal(`import ALIAS from 'foo'\n`);
+            proxy.generateTypescript(optionsClone).should.equal(`import ALIAS from 'foo'\n`);
         });
 
     });
