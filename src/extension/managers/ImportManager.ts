@@ -106,8 +106,14 @@ export class ImportManager implements ObjectManager {
         return this._parsedDocument;
     }
 
-    private constructor(public readonly document: TextDocument, private _parsedDocument: File) {
-        this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
+    private constructor(
+        public document: TextDocument,
+        private readonly originalDocument: CodeTextDocument,
+        private _parsedDocument: File
+    ) {
+        for (let imp of _parsedDocument.imports) {
+            this.imports.push(imp.clone<Import>());
+        }
     }
 
     /**
@@ -132,7 +138,7 @@ export class ImportManager implements ObjectManager {
         source.imports = source.imports.map(
             o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o
         );
-        return new ImportManager(textDocument, source);
+        return new ImportManager(textDocument, document, source);
     }
 
     /**
@@ -331,7 +337,13 @@ export class ImportManager implements ObjectManager {
         const result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             delete this.organize;
-            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            this._parsedDocument = await ImportManager.parser.parseSource(this.originalDocument.getText());
+            this.document = TextDocument.create(
+                this.originalDocument.uri.toString(),
+                this.originalDocument.languageId,
+                this.originalDocument.version,
+                this.originalDocument.getText()
+            );
         }
 
         return result;
