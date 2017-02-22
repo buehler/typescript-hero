@@ -1,22 +1,36 @@
-import { ResolveExtension } from '../../src/extensions/ResolveExtension';
-import { Injector } from '../../src/IoC';
+import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../src/extension/IoC';
+import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
 
 chai.should();
 
-describe('ResolveExtension', () => {
+describe.skip('ImportResolveExtension', () => {
 
     let extension: any;
 
-    before(() => {
-        extension = Injector.getAll<ResolveExtension>('Extension').find(o => o instanceof ResolveExtension);
+    before(async done => {
+        const file = join(
+            vscode.workspace.rootPath,
+            'extension/extensions/ImportResolveExtension/addImportToDocument.ts'
+        ),
+            document = await vscode.workspace.openTextDocument(file);
+        await vscode.window.showTextDocument(document);
+
+        extension = Container.getAll<ImportResolveExtension>(iocSymbols.extensions)
+            .find(o => o instanceof ImportResolveExtension);
+
+        done();
     });
 
     describe('addImportToDocument', () => {
 
-        const file = join(vscode.workspace.rootPath, 'resolveExtension/addImportToDocument.ts');
+        const file = join(
+            vscode.workspace.rootPath,
+            'extension/extensions/ImportResolveExtension/addImportToDocument.ts'
+        );
         let document: vscode.TextDocument;
 
         before(async done => {
@@ -106,7 +120,7 @@ describe('ResolveExtension', () => {
 
     describe('organizeImports', () => {
 
-        const file = join(vscode.workspace.rootPath, 'resolveExtension/organizeImports.ts');
+        const file = join(vscode.workspace.rootPath, 'extension/extensions/ImportResolveExtension/organizeImports.ts');
         let document: vscode.TextDocument;
         let documentText: string;
 

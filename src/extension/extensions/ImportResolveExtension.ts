@@ -129,6 +129,17 @@ export class ImportResolveExtension extends BaseExtension {
                 () => this.addImportUnderCursor()
             )
         );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports()
+            )
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports())
+        );
+        this.context.subscriptions.push(
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex())
+        );
 
         this.buildIndex();
 
@@ -206,6 +217,48 @@ export class ImportResolveExtension extends BaseExtension {
         } catch (e) {
             this.logger.error('An error happend during import picking', e);
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
+        }
+    }
+
+    /**
+     * Adds all missing imports to the actual document if possible. If multiple declarations are found,
+     * a quick pick list is shown to the user and he needs to decide, which import to use.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async addMissingImports(): Promise<void> {
+        if (!(await this.connection.sendRequest<boolean>(Request.DeclarationIndexReady))) {
+            this.showCacheWarning();
+            return;
+        }
+        try {
+            // TODO: calculate missing imports in server and return the declarations.
+            // const ctrl = await ImportManager.create(window.activeTextEditor.document);
+            // await ctrl.addMissingImports(this.index).commit();
+        } catch (e) {
+            this.logger.error('An error happend during import fixing', e);
+            window.showErrorMessage('The operation cannot be completed, there was an error during the process.');
+        }
+    }
+
+    /**
+     * Organizes the imports of the actual document. Sorts and formats them correctly.
+     * 
+     * @private
+     * @returns {Promise<boolean>}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async organizeImports(): Promise<boolean> {
+        try {
+            let ctrl = await ImportManager.create(window.activeTextEditor.document);
+            return await ctrl.organizeImports().commit();
+        } catch (e) {
+            this.logger.error('An error happend during "organize imports".', { error: e });
+            return false;
         }
     }
 

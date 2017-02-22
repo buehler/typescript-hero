@@ -133,25 +133,7 @@ export class ResolveExtension extends BaseExtension {
      * @memberOf ResolveExtension
      */
     public initialize(context: ExtensionContext): void {
-        context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
-        );
-        context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addImportUnderCursor', () => this.addImportUnderCursor()
-            )
-        );
-        context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports()
-            )
-        );
-        context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports())
-        );
-        context.subscriptions.push(
-            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.refreshIndex())
-        );
+        
         context.subscriptions.push(languages.registerCompletionItemProvider('typescript', this.completionProvider));
         context.subscriptions.push(
             languages.registerCompletionItemProvider('typescriptreact', this.completionProvider)
