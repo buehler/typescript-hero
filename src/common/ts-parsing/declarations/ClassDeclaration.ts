@@ -1,11 +1,11 @@
 import { NotImplementedYetError } from '../../errors';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { ConstructorDeclaration } from './ConstructorDeclaration';
 import { ExportableDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Class declaration that contains methods, properties and a constructor
@@ -46,12 +46,12 @@ export class ClassDeclaration implements ExportableDeclaration {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf ClassDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

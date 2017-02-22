@@ -1,8 +1,8 @@
 import { NotImplementedYetError } from '../../errors';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { Declaration } from './Declaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Module (namespace) declaration. Does export a whole module or namespace that is mainly used by
@@ -35,12 +35,12 @@ export class ModuleDeclaration implements Declaration {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf ModuleDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

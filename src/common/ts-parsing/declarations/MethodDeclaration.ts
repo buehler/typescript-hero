@@ -1,11 +1,11 @@
-import { Serializable } from 'ts-json-serializer';
 import { GenerationOptions } from '../../ts-generation';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { CallableDeclaration, ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
 import { ParameterDeclaration } from './ParameterDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { Serializable } from 'ts-json-serializer';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Method declaration. A method is contained in an interface or a class.
@@ -49,12 +49,12 @@ export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf MethodDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

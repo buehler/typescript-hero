@@ -1,8 +1,8 @@
 import { NotImplementedYetError } from '../../errors';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { ExportableDeclaration } from './Declaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Enum declaration.
@@ -39,12 +39,12 @@ export class EnumDeclaration implements ExportableDeclaration {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf EnumDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

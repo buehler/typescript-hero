@@ -1,7 +1,8 @@
 import { GenerationOptions } from '../../ts-generation';
+import { DocumentLike } from '../Node';
 import { AliasedImport, importRange } from './Import';
 import { Serializable } from 'ts-json-serializer';
-import { Range, TextDocument } from 'vscode-languageserver-types';
+import { Range } from 'vscode-languageserver-types';
 
 /**
  * Import that imports a whole namespace (i.e. import * as foobar from 'foobar';).
@@ -33,12 +34,12 @@ export class NamespaceImport implements AliasedImport {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf NamespaceImport
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return importRange(document, this.start, this.end);
     }
 

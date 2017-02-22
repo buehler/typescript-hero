@@ -1,9 +1,9 @@
 import { NotImplementedYetError } from '../../errors';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { Resource } from '../resources';
 import { Declaration, ExportableDeclaration } from './Declaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Default declaration. Is used when a file exports something as its default.
@@ -50,12 +50,12 @@ export class DefaultDeclaration implements ExportableDeclaration {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf DefaultDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

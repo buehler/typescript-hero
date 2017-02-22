@@ -1,10 +1,10 @@
 import { NotImplementedYetError } from '../../errors';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { CallableDeclaration, ExportableDeclaration } from './Declaration';
 import { ParameterDeclaration } from './ParameterDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Function declaration. Like the MethodDeclaration it contains the base info about the function
@@ -46,12 +46,12 @@ export class FunctionDeclaration implements CallableDeclaration, ExportableDecla
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf FunctionDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 

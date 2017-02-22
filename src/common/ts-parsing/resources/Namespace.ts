@@ -1,11 +1,11 @@
 import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
-import { Node } from '../Node';
+import { DocumentLike, Node } from '../Node';
 import { Module } from './Module';
 import { Resource } from './Resource';
 import { Serializable } from 'ts-json-serializer';
-import { Range, TextDocument } from 'vscode-languageserver-types';
+import { Range } from 'vscode-languageserver-types';
 
 /**
  * Factory for deserializer. Creates a {@link Namespace}.
@@ -55,12 +55,12 @@ export class Namespace implements Resource, Node {
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf StringImport
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return Range.create(document.positionAt(this.start), document.positionAt(this.end));
     }
 

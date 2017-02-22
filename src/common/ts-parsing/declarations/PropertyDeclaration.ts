@@ -1,9 +1,9 @@
 import { GenerationOptions } from '../../ts-generation';
-import { nodeRange } from '../Node';
+import { DocumentLike, nodeRange } from '../Node';
 import { ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range, TextDocument } from 'vscode-languageserver-types';
+import { CompletionItemKind, Range } from 'vscode-languageserver-types';
 
 /**
  * Property declaration that contains its visibility.
@@ -38,12 +38,12 @@ export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration 
     /**
      * Calculates the document range of the node in the given document.
      * 
-     * @param {TextDocument} document
+     * @param {DocumentLike} document
      * @returns {Range}
      * 
      * @memberOf PropertyDeclaration
      */
-    public getRange(document: TextDocument): Range {
+    public getRange(document: DocumentLike): Range {
         return nodeRange(document, this.start, this.end);
     }
 
