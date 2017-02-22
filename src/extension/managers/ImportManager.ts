@@ -27,7 +27,6 @@ import {
     InputBoxOptions,
     TextDocument as CodeTextDocument,
     TextEdit as CodeTextEdit,
-    Uri,
     window,
     workspace,
     WorkspaceEdit
@@ -106,14 +105,20 @@ export class ImportManager implements ObjectManager {
         return this._parsedDocument;
     }
 
+    private get simpleDocument(): TextDocument {
+        return TextDocument.create(
+            this.document.uri.toString(),
+            this.document.languageId,
+            this.document.version,
+            this.document.getText()
+        );
+    }
+
     private constructor(
-        public document: TextDocument,
-        private readonly originalDocument: CodeTextDocument,
+        public readonly document: CodeTextDocument,
         private _parsedDocument: File
     ) {
-        for (let imp of _parsedDocument.imports) {
-            this.imports.push(imp.clone<Import>());
-        }
+        this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
     }
 
     /**
@@ -128,17 +133,11 @@ export class ImportManager implements ObjectManager {
      * @memberOf ImportManager
      */
     public static async create(document: CodeTextDocument): Promise<ImportManager> {
-        const source = await ImportManager.parser.parseSource(document.getText()),
-            textDocument = TextDocument.create(
-                document.uri.toString(),
-                document.languageId,
-                document.version,
-                document.getText()
-            );
+        const source = await ImportManager.parser.parseSource(document.getText());
         source.imports = source.imports.map(
             o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o
         );
-        return new ImportManager(textDocument, document, source);
+        return new ImportManager(document, source);
     }
 
     /**
@@ -156,7 +155,7 @@ export class ImportManager implements ObjectManager {
         const alreadyImported: ImportProxy = this.imports.find(
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
-                Uri.parse(this.document.uri).fsPath,
+                this.document.fileName,
                 workspace.rootPath
             ) && o instanceof ImportProxy
         ) as ImportProxy;
@@ -178,7 +177,7 @@ export class ImportManager implements ObjectManager {
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    Uri.parse(this.document.uri).fsPath,
+                    this.document.fileName,
                     workspace.rootPath
                 ));
                 imp.defaultPurposal = declarationInfo.declaration.name;
@@ -186,7 +185,7 @@ export class ImportManager implements ObjectManager {
             } else {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
-                    Uri.parse(this.document.uri).fsPath,
+                    this.document.fileName,
                     workspace.rootPath
                 ));
                 imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
@@ -209,7 +208,7 @@ export class ImportManager implements ObjectManager {
     public addMissingImports(index: DeclarationIndex): this {
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
-            Uri.parse(this.document.uri).fsPath,
+            this.document.fileName,
             workspace.rootPath,
             this.imports
         );
@@ -292,7 +291,7 @@ export class ImportManager implements ObjectManager {
 
         if (this.organize) {
             for (let imp of this._parsedDocument.imports) {
-                edits.push(TextEdit.del(imp.getRange(this.document)));
+                edits.push(TextEdit.del(imp.getRange(this.simpleDocument)));
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
@@ -304,7 +303,7 @@ export class ImportManager implements ObjectManager {
         } else {
             for (let imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
-                    edits.push(TextEdit.del(imp.getRange(this.document)));
+                    edits.push(TextEdit.del(imp.getRange(this.simpleDocument)));
                 }
             }
             const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
@@ -315,7 +314,7 @@ export class ImportManager implements ObjectManager {
                 }
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
-                        imp.getRange(this.document),
+                        imp.getRange(this.simpleDocument),
                         imp.generateTypescript(ImportManager.config.resolver.generationOptions)
                     ));
                 } else {
@@ -333,17 +332,11 @@ export class ImportManager implements ObjectManager {
         // Later, more edits will come (like add methods to a class or so.) 
 
         const workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(Uri.parse(this.document.uri), <CodeTextEdit[]>edits);
+        workspaceEdit.set(this.document.uri, <CodeTextEdit[]>edits);
         const result = await workspace.applyEdit(workspaceEdit);
         if (result) {
             delete this.organize;
-            this._parsedDocument = await ImportManager.parser.parseSource(this.originalDocument.getText());
-            this.document = TextDocument.create(
-                this.originalDocument.uri.toString(),
-                this.originalDocument.languageId,
-                this.originalDocument.version,
-                this.originalDocument.getText()
-            );
+            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
         }
 
         return result;

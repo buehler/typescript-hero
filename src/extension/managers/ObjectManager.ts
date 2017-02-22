@@ -1,5 +1,5 @@
 import { File } from '../../common/ts-parsing/resources';
-import { TextDocument } from 'vscode-languageserver-types';
+import { TextDocument } from 'vscode';
 
 /**
  * Base interface for all object managers. Those managers can modify a class / imports / and any other
