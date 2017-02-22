@@ -1,10 +1,8 @@
 import { isExportableDeclaration } from '../../type-guards';
 import { ExportableDeclaration } from '../declarations';
-import { DocumentLike, nodeRange } from '../Node';
 import { Module, Namespace, Resource } from '../resources';
 import { Export } from './Export';
 import { Serializable } from 'ts-json-serializer';
-import { Range } from 'vscode-languageserver-types';
 
 /**
  * Declares an all export (i.e. export * from ...).
@@ -40,16 +38,4 @@ export class AssignedExport implements Export {
         public declarationIdentifier: string,
         private resource: Resource
     ) { }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf StringImport
-     */
-    public getRange(document: DocumentLike): Range {
-        return nodeRange(document, this.start, this.end);
-    }
 }

@@ -49,14 +49,4 @@ export interface Node {
      * @memberOf Node
      */
     end?: number;
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf Node
-     */
-    getRange(document: DocumentLike): Range;
 }

@@ -1,8 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
-import { DocumentLike } from '../Node';
-import { Import, importRange } from './Import';
+import { Import } from './Import';
 import { Serializable } from 'ts-json-serializer';
-import { Range } from 'vscode-languageserver-types';
 
 /**
  * Simple string import (i.e. import "reflect-metadata";).
@@ -29,18 +27,6 @@ export class StringImport implements Import {
      */
     public generateTypescript({stringQuoteStyle, eol}: GenerationOptions): string {
         return `import ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
-    }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf StringImport
-     */
-    public getRange(document: DocumentLike): Range {
-        return importRange(document, this.start, this.end);
     }
 
     /**

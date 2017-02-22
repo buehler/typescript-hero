@@ -1,7 +1,6 @@
-import { DocumentLike, nodeRange } from '../Node';
 import { ExportableDeclaration, TypedDeclaration } from './Declaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range } from 'vscode-languageserver-types';
+import { CompletionItemKind } from 'vscode-languageserver-types';
 
 /**
  * Variable declaration. Is contained in a method or function, or can be exported.
@@ -33,18 +32,6 @@ export class VariableDeclaration implements ExportableDeclaration, TypedDeclarat
         public start?: number,
         public end?: number
     ) { }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf VariableDeclaration
-     */
-    public getRange(document: DocumentLike): Range {
-        return nodeRange(document, this.start, this.end);
-    }
 
     /**
      * Generates typescript code out of the actual import.

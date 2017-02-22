@@ -1,11 +1,10 @@
 import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
-import { DocumentLike, Node } from '../Node';
+import { Node } from '../Node';
 import { Namespace } from './Namespace';
 import { Resource } from './Resource';
 import { Serializable } from 'ts-json-serializer';
-import { Range } from 'vscode-languageserver-types';
 
 /**
  * Factory for deserializer. Creates a {@link Module}.
@@ -51,18 +50,6 @@ export class Module implements Resource, Node {
     }
 
     constructor(public name: string, public start: number, public end: number) { }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf StringImport
-     */
-    public getRange(document: DocumentLike): Range {
-        return Range.create(document.positionAt(this.start), document.positionAt(this.end));
-    }
 
     /**
      * Function that calculates the alias name of a namespace.

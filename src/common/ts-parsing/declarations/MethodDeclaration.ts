@@ -1,11 +1,10 @@
 import { GenerationOptions } from '../../ts-generation';
-import { DocumentLike, nodeRange } from '../Node';
 import { CallableDeclaration, ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
 import { ParameterDeclaration } from './ParameterDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range } from 'vscode-languageserver-types';
+import { CompletionItemKind } from 'vscode-languageserver-types';
 
 /**
  * Method declaration. A method is contained in an interface or a class.
@@ -45,18 +44,6 @@ export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration
         public start?: number,
         public end?: number
     ) { }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf MethodDeclaration
-     */
-    public getRange(document: DocumentLike): Range {
-        return nodeRange(document, this.start, this.end);
-    }
 
     /**
      * Generates typescript code out of the actual import.

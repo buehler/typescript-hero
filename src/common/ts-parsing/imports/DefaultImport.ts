@@ -1,8 +1,6 @@
 import { GenerationOptions } from '../../ts-generation';
-import { DocumentLike } from '../Node';
-import { AliasedImport, importRange } from './Import';
+import { AliasedImport } from './Import';
 import { Serializable } from 'ts-json-serializer';
-import { Range } from 'vscode-languageserver-types';
 
 /**
  * Default import. Imports the default exports of a file.
@@ -30,18 +28,6 @@ export class DefaultImport implements AliasedImport {
      */
     public generateTypescript({stringQuoteStyle, eol}: GenerationOptions): string {
         return `import ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
-    }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf DefaultImport
-     */
-    public getRange(document: DocumentLike): Range {
-        return importRange(document, this.start, this.end);
     }
 
     /**

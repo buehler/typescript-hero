@@ -1,9 +1,8 @@
 import { GenerationOptions } from '../../ts-generation';
-import { DocumentLike, nodeRange } from '../Node';
 import { ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
 import { Serializable } from 'ts-json-serializer';
-import { CompletionItemKind, Range } from 'vscode-languageserver-types';
+import { CompletionItemKind } from 'vscode-languageserver-types';
 
 /**
  * Property declaration that contains its visibility.
@@ -34,18 +33,6 @@ export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration 
         public start?: number,
         public end?: number
     ) { }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf PropertyDeclaration
-     */
-    public getRange(document: DocumentLike): Range {
-        return nodeRange(document, this.start, this.end);
-    }
 
     /**
      * Generates typescript code out of the actual import.

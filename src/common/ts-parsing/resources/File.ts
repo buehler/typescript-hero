@@ -1,13 +1,12 @@
 import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
-import { DocumentLike, Node } from '../Node';
+import { Node } from '../Node';
 import { Module } from './Module';
 import { Namespace } from './Namespace';
 import { Resource } from './Resource';
 import { parse, ParsedPath, relative } from 'path';
 import { Serializable } from 'ts-json-serializer';
-import { Range } from 'vscode-languageserver-types';
 
 /**
  * Factory for deserializer. Creates a {@link File}.
@@ -78,17 +77,5 @@ export class File implements Resource, Node {
 
     constructor(public filePath: string, rootPath: string, public start: number, public end: number) {
         this.rootPath = rootPath.replace('file://', '');
-    }
-
-    /**
-     * Calculates the document range of the node in the given document.
-     * 
-     * @param {DocumentLike} document
-     * @returns {Range}
-     * 
-     * @memberOf StringImport
-     */
-    public getRange(document: DocumentLike): Range {
-        return Range.create(document.positionAt(this.start), document.positionAt(this.end));
     }
 }
