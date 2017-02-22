@@ -39,7 +39,6 @@ export function getDeclarationsFilteredByImports(
     return declarations;
 }
 
-
 /**
  * Returns the absolut workspace specific library path.
  * If the library is a node module or a typings module, the name
