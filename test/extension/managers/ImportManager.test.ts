@@ -843,8 +843,8 @@ describe('ImportManager', () => {
             try {
                 await window.activeTextEditor.edit(builder => {
                     builder.insert(
-                        new Position(1, 0),
-                        `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`
+                        new Position(0, 0),
+                        `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';\n`
                     );
                     builder.insert(new Position(5, 0), 'const foobar = new MultiExportClass();\n');
                 });
@@ -852,10 +852,10 @@ describe('ImportManager', () => {
 
                 await ctrl.organizeImports().commit();
 
-                document.lineAt(0).text.should.equals(
+                document.lineAt(1).text.should.equals(
                     `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`
                 );
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import { Class1 } from '../../server/indices';`
                 );
                 done();
