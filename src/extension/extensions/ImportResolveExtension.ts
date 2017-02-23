@@ -13,6 +13,29 @@ import { join } from 'path';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 /**
+ * Compares the ignorepatterns (if they have the same elements ignored).
+ * 
+ * @param {string[]} local
+ * @param {string[]} config
+ * @returns {boolean}
+ */
+function compareIgnorePatterns(local: string[], config: string[]): boolean {
+    if (local.length !== config.length) {
+        return false;
+    }
+    let localSorted = local.sort(),
+        configSorted = config.sort();
+
+    for (let x = 0; x < configSorted.length; x++) {
+        if (configSorted[x] !== localSorted[x]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * Search for typescript / typescript react files in the workspace and return the path to them.
  * This is needed for the initial load of the index.
  * 
@@ -90,6 +113,7 @@ const resolverOk = 'TSH Resolver $(check)',
 export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
+    private ignorePatterns: string[];
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
@@ -140,6 +164,14 @@ export class ImportResolveExtension extends BaseExtension {
         this.context.subscriptions.push(
             commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex())
         );
+
+        this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+            if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
+                this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
+                this.buildIndex();
+                this.ignorePatterns = this.config.resolver.ignorePatterns;
+            }
+        }));
 
         this.buildIndex();
 
@@ -254,7 +286,7 @@ export class ImportResolveExtension extends BaseExtension {
      */
     private async organizeImports(): Promise<boolean> {
         try {
-            let ctrl = await ImportManager.create(window.activeTextEditor.document);
+            const ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
         } catch (e) {
             this.logger.error('An error happend during "organize imports".', { error: e });
@@ -272,7 +304,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
-        let ctrl = await ImportManager.create(window.activeTextEditor.document);
+        const ctrl = await ImportManager.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(declaration).commit();
     }
 
@@ -285,11 +317,11 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private getSymbolUnderCursor(): string {
-        let editor = window.activeTextEditor;
+        const editor = window.activeTextEditor;
         if (!editor) {
             return '';
         }
-        let selection = editor.selection,
+        const selection = editor.selection,
             word = editor.document.getWordRangeAtPosition(selection.active);
         return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
