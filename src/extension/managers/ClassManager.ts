@@ -1,13 +1,12 @@
-import { ExtensionConfig } from '../ExtensionConfig';
-import { Injector } from '../IoC';
-import { Changeable } from '../models/Changeable';
+import { ExtensionConfig } from '../../common/config';
 import {
     ClassNotFoundError,
     MethodDuplicated,
     MethodNotFound,
     PropertyDuplicated,
     PropertyNotFound
-} from '../models/Errors';
+} from '../../common/errors';
+import { TypescriptParser } from '../../common/ts-parsing';
 import {
     ClassDeclaration,
     ConstructorDeclaration,
@@ -15,9 +14,11 @@ import {
     MethodDeclaration,
     ParameterDeclaration,
     PropertyDeclaration
-} from '../models/TsDeclaration';
-import { TsFile } from '../models/TsResource';
-import { TsResourceParser } from '../parser/TsResourceParser';
+} from '../../common/ts-parsing/declarations';
+import { File } from '../../common/ts-parsing/resources';
+import { Container } from '../IoC';
+import { iocSymbols } from '../IoCSymbols';
+import { Changeable } from '../proxy-objects/Changeable';
 import { ObjectManager } from './ObjectManager';
 import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
 
@@ -31,7 +32,7 @@ type VisibleObject = { visibility?: DeclarationVisibility };
  * @returns {number}
  */
 function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleObject>): number {
-    let left = o1.object.visibility,
+    const left = o1.object.visibility,
         right = o2.object.visibility;
 
     if ((left === undefined && right === undefined) || (left === right)) {
@@ -44,16 +45,16 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
         return 1;
     }
 
-    return right - left;
+    return right! - left!;
 }
 
 export class ClassManager implements ObjectManager {
-    private static get parser(): TsResourceParser {
-        return Injector.get(TsResourceParser);
+    private static get parser(): TypescriptParser {
+        return Container.get(TypescriptParser);
     }
 
     private static get config(): ExtensionConfig {
-        return Injector.get(ExtensionConfig);
+        return Container.get<ExtensionConfig>(iocSymbols.configuration);
     }
 
     private ctor: Changeable<ConstructorDeclaration>;
@@ -62,7 +63,7 @@ export class ClassManager implements ObjectManager {
 
     private constructor(
         public readonly document: TextDocument,
-        public readonly parsedDocument: TsFile,
+        public readonly parsedDocument: File,
         private readonly managedClass: ClassDeclaration
     ) {
         this.ctor = new Changeable(managedClass.ctor);
@@ -83,7 +84,7 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
-        let source = await ClassManager.parser.parseSource(document.getText()),
+        const source = await ClassManager.parser.parseSource(document.getText()),
             managedClass = source.declarations.find(
                 o => o.name === className && o instanceof ClassDeclaration
             ) as ClassDeclaration;
@@ -151,7 +152,10 @@ export class ClassManager implements ObjectManager {
         if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
             throw new PropertyNotFound(name, this.managedClass.name);
         }
-        let property = this.properties.find(o => o.object.name === name);
+        const property = this.properties.find(o => o.object.name === name);
+        if (!property) {
+            return this;
+        }
         property.isDeleted = true;
         if (property.isNew) {
             this.properties.splice(this.properties.indexOf(property), 1);
@@ -189,6 +193,7 @@ export class ClassManager implements ObjectManager {
         parameters?: ParameterDeclaration[]
     ): this {
         let declaration: MethodDeclaration;
+
         if (nameOrDeclaration instanceof MethodDeclaration) {
             if (this.methods.some(o => o.object.name === nameOrDeclaration.name && !o.isDeleted)) {
                 throw new MethodDuplicated(nameOrDeclaration.name, this.managedClass.name);
@@ -198,7 +203,7 @@ export class ClassManager implements ObjectManager {
             if (this.methods.some(o => o.object.name === nameOrDeclaration && !o.isDeleted)) {
                 throw new MethodDuplicated(nameOrDeclaration, this.managedClass.name);
             }
-            declaration = new MethodDeclaration(nameOrDeclaration, type, visibility);
+            declaration = new MethodDeclaration(nameOrDeclaration, false, visibility, type);
             declaration.parameters = parameters || [];
         }
 
@@ -219,7 +224,10 @@ export class ClassManager implements ObjectManager {
         if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
             throw new MethodNotFound(name, this.managedClass.name);
         }
-        let method = this.methods.find(o => o.object.name === name);
+        const method = this.methods.find(o => o.object.name === name);
+        if (!method) {
+            return this;
+        }
         method.isDeleted = true;
         if (method.isNew) {
             this.methods.splice(this.methods.indexOf(method), 1);
@@ -239,12 +247,12 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public async commit(): Promise<boolean> {
-        let edits = [
+        const edits = [
             ...this.calculatePropertyEdits(),
             ...this.calculateMethodEdits()
         ];
 
-        let workspaceEdit = new WorkspaceEdit();
+        const workspaceEdit = new WorkspaceEdit();
         workspaceEdit.set(this.document.uri, edits);
         return workspace.applyEdit(workspaceEdit);
     }
@@ -264,7 +272,7 @@ export class ClassManager implements ObjectManager {
             return false;
         }
 
-        return property.start >= this.ctor.object.start && property.end <= this.ctor.object.end;
+        return property.start! >= this.ctor.object.start! && property.end! <= this.ctor.object.end!;
     }
 
     /**
@@ -276,16 +284,16 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     private calculatePropertyEdits(): TextEdit[] {
-        let edits = [];
+        const edits: TextEdit[] = [];
 
         for (let property of this.properties.filter(o => o.isDeleted)) {
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
-                        this.document.positionAt(property.object.start).line
+                        this.document.positionAt(property.object.start!).line
                     ).rangeIncludingLineBreak.start,
                     this.document.lineAt(
-                        this.document.positionAt(property.object.end).line
+                        this.document.positionAt(property.object.end!).line
                     ).rangeIncludingLineBreak.end,
                 )
             ));
@@ -294,18 +302,18 @@ export class ClassManager implements ObjectManager {
         // TODO update
 
         for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
-            let lastProperty = this.properties.filter(
+            const lastProperty = this.properties.filter(
                 o => !o.isNew &&
                     !o.isDeleted &&
                     !this.isInConstructor(o.object) &&
                     o.object.visibility === property.object.visibility
             ).pop();
-            let lastPosition = lastProperty ?
-                this.document.positionAt(lastProperty.object.end).line + 1 :
-                this.document.positionAt(this.managedClass.start).line + 1;
+            const lastPosition = lastProperty ?
+                this.document.positionAt(lastProperty.object.end!).line + 1 :
+                this.document.positionAt(this.managedClass.start!).line + 1;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                property.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })
+                property.object.generateTypescript(ClassManager.config.resolver.generationOptions)
             ));
         }
 
@@ -321,9 +329,10 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     private calculateMethodEdits(): TextEdit[] {
-        let edits = [];
+        const edits: TextEdit[] = [];
+
         for (let method of this.methods.filter(o => o.isDeleted)) {
-            let endPosition = this.document.positionAt(method.object.end),
+            let endPosition = this.document.positionAt(method.object.end!),
                 endLine = endPosition.line;
 
             if (this.document.lineAt(endLine + 1).isEmptyOrWhitespace) {
@@ -333,7 +342,7 @@ export class ClassManager implements ObjectManager {
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
-                        this.document.positionAt(method.object.start).line
+                        this.document.positionAt(method.object.start!).line
                     ).rangeIncludingLineBreak.start,
                     this.document.lineAt(endLine).rangeIncludingLineBreak.end,
                 )
@@ -343,15 +352,15 @@ export class ClassManager implements ObjectManager {
         // TODO update
 
         for (let method of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
-            let lastMethod = this.methods.filter(
+            const lastMethod = this.methods.filter(
                 o => !o.isNew && !o.isDeleted && o.object.visibility === method.object.visibility
             ).pop();
-            let lastPosition = lastMethod ?
-                this.document.positionAt(lastMethod.object.end).line + 1 :
-                this.document.positionAt(this.managedClass.end).line;
+            const lastPosition = lastMethod ?
+                this.document.positionAt(lastMethod.object.end!).line + 1 :
+                this.document.positionAt(this.managedClass.end!).line;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '\n' + method.object.toTypescript({ tabSize: ClassManager.config.resolver.tabSize })
+                '\n' + method.object.generateTypescript(ClassManager.config.resolver.generationOptions)
             ));
         }
 
