@@ -1,3 +1,5 @@
+import { ExtensionConfig } from '../../../src/common/config';
+import { LoggerFactory } from '../../../src/common/utilities';
 import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -7,7 +9,7 @@ import * as vscode from 'vscode';
 
 chai.should();
 
-describe.skip('ImportResolveExtension', () => {
+describe('ImportResolveExtension', () => {
 
     let extension: any;
 
@@ -19,13 +21,16 @@ describe.skip('ImportResolveExtension', () => {
             document = await vscode.workspace.openTextDocument(file);
         await vscode.window.showTextDocument(document);
 
-        extension = Container.getAll<ImportResolveExtension>(iocSymbols.extensions)
-            .find(o => o instanceof ImportResolveExtension);
+        const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext),
+            logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory),
+            config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+
+        extension = new ImportResolveExtension(ctx, logger, config, <any>null);
 
         done();
     });
 
-    describe('addImportToDocument', () => {
+    describe.skip('addImportToDocument', () => {
 
         const file = join(
             vscode.workspace.rootPath,
