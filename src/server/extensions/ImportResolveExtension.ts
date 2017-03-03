@@ -1,5 +1,6 @@
 import { Notification, Request } from '../../common/communication';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
+import { ImportUserDecision } from '../../common/transport-models';
 import { TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
@@ -11,6 +12,7 @@ import { inject, injectable } from 'inversify';
 import { FileEvent, InitializeParams } from 'vscode-languageserver';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
+type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
 
 /**
  * Server part of the import resolver extension. Contains the symbol index and response to the
@@ -52,6 +54,10 @@ export class ImportResolveExtension implements ServerExtension {
         connection.onRequest(Request.DeclarationIndexReady, () => this.index.indexReady);
         connection.onSerializedRequest(
             Request.DeclarationInfosForImport, options => this.getDeclarationsForImport(options)
+        );
+        connection.onSerializedRequest(
+            Request.MissingDeclarationInfosForDocument,
+            options => this.getMissingDeclarationsForFile(options)
         );
 
         this.logger.info('Initialized');
@@ -155,5 +161,41 @@ export class ImportResolveExtension implements ServerExtension {
             ...declarations.filter(o => o.from.startsWith('/')),
             ...declarations.filter(o => !o.from.startsWith('/'))
         ].filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1);
+    }
+
+    /**
+     * Calculates the missing imports of a document. Parses the documents source and then
+     * tries to resolve all possible declaration infos for the usages (used identifiers).
+     * 
+     * @private
+     * @param {MissingDeclarationsForFileOptions} {documentSource, documentPath}
+     * @returns {(Promise<(DeclarationInfo | ImportUserDecision)[]>)}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async getMissingDeclarationsForFile(
+        {documentSource, documentPath}: MissingDeclarationsForFileOptions
+    ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
+        const parsedDocument = await this.parser.parseSource(documentSource),
+            missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [],
+            declarations = getDeclarationsFilteredByImports(
+                this.index.declarationInfos,
+                documentPath,
+                this.rootUri || '',
+                parsedDocument.imports
+            );
+
+        for (let usage of parsedDocument.nonLocalUsages) {
+            const foundDeclarations = declarations.filter(o => o.declaration.name === usage);
+            if (foundDeclarations.length <= 0) {
+                continue;
+            } else if (foundDeclarations.length === 1) {
+                missingDeclarations.push(foundDeclarations[0]);
+            } else {
+                missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
+            }
+        }
+
+        return missingDeclarations;
     }
 }

@@ -267,9 +267,17 @@ export class ImportResolveExtension extends BaseExtension {
             return;
         }
         try {
-            // TODO: calculate missing imports in server and return the declarations.
-            // const ctrl = await ImportManager.create(window.activeTextEditor.document);
-            // await ctrl.addMissingImports(this.index).commit();
+            const missing = await this.connection
+                .sendSerializedRequest<DeclarationInfo[]>(Request.MissingDeclarationInfosForDocument, {
+                    documentSource: window.activeTextEditor.document.getText(),
+                    documentPath: window.activeTextEditor.document.fileName
+                });
+            
+            if (missing && missing.length) {
+                const ctrl = await ImportManager.create(window.activeTextEditor.document);
+                missing.forEach(o => ctrl.addDeclarationImport(o));
+                await ctrl.commit();
+            }
         } catch (e) {
             this.logger.error('An error happend during import fixing', e);
             window.showErrorMessage('The operation cannot be completed, there was an error during the process.');

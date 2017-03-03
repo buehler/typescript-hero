@@ -80,14 +80,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "typescriptHero.showCmdGui",
-        "title": "Typescript: Show the command gui of typescripthero"
-      },
-      {
-        "command": "typescriptHero.resolve.addImport",
-        "title": "Typescript: Add import to current file"
-      },
-      {
         "command": "typescriptHero.resolve.addImportUnderCursor",
         "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
       },
@@ -104,26 +96,18 @@
         "title": "Typescript: Rebuild the resolver cache"
       },
       {
-        "command": "typescriptHero.restartDebugger.toggle",
-        "title": "Typescript: Toggles the debug restarter"
-      },
-      {
         "command": "typescriptHero.codeFix.executeCodeAction",
         "title": "Typescript: Execute a code action"
       }
     ],
     "keybindings": [
       {
-        "command": "typescriptHero.showCmdGui",
-        "key": "ctrl+alt+g"
-      },
-      {
-        "command": "typescriptHero.resolve.addImport",
+        "command": "typescriptHero.resolve.addImportUnderCursor",
         "key": "ctrl+alt+i",
         "when": "editorTextFocus"
       },
       {
-        "command": "typescriptHero.resolve.addImportUnderCursor",
+        "command": "typescriptHero.resolve.addMissingImports",
         "key": "ctrl+alt+shift+i",
         "when": "editorTextFocus"
       },

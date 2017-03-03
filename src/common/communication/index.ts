@@ -23,7 +23,8 @@ export enum Notification {
  */
 export enum Request {
     DeclarationIndexReady,
-    DeclarationInfosForImport
+    DeclarationInfosForImport,
+    MissingDeclarationInfosForDocument
 }
 
 type ConnectionEndpoint = {
