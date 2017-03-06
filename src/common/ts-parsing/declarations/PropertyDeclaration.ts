@@ -42,8 +42,9 @@ export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration 
      * 
      * @memberOf PropertyDeclaration
      */
-    public generateTypescript({tabSize}: GenerationOptions): string {
-        return `${Array(tabSize + 1).join(' ')}${this.visibility ? getVisibilityText(this.visibility) + ' ' : ''}` +
+    public generateTypescript({ tabSize }: GenerationOptions): string {
+        return `${Array(tabSize + 1).join(' ')}` +
+            `${this.visibility !== undefined ? getVisibilityText(this.visibility) + ' ' : ''}` +
             `${this.name}${this.type ? `: ${this.type}` : ''};\n`;
     }
 }

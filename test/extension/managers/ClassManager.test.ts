@@ -3,27 +3,35 @@ import {
     DeclarationVisibility,
     MethodDeclaration,
     ParameterDeclaration
-} from '../../src/models/TsDeclaration';
-import { ClassManager } from '../../src/managers/ClassManager';
-import { ResolveIndex } from '../../src/caches/ResolveIndex';
-import { Injector } from '../../src/IoC';
+} from '../../../src/common/ts-parsing/declarations';
+import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
+import { ClassManager } from '../../../src/extension/managers/ClassManager';
+import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
+import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
+import { Container } from '../../../src/server/IoC';
 import * as chai from 'chai';
 import { join } from 'path';
 import sinonChai = require('sinon-chai');
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-let should = chai.should();
+const should = chai.should();
 chai.use(sinonChai);
 
 describe('ClassManager', () => {
 
-    const file = join(workspace.rootPath, 'managers/ClassManagerFile.ts');
+    const file = join(workspace.rootPath, 'extension/managers/ClassManagerFile.ts');
     let document: TextDocument,
-        documentText: string;
+        documentText: string,
+        index: DeclarationIndex,
+        files: string[];
 
     before(async done => {
-        let index = Injector.get(ResolveIndex);
-        await index.buildIndex();
+        const config = new VscodeExtensionConfig();
+        files = await findFiles(config);
+
+        index = Container.get(DeclarationIndex);
+        await index.buildIndex(files, workspace.rootPath);
+
         document = await workspace.openTextDocument(file);
         await window.showTextDocument(document);
         documentText = document.getText();
@@ -204,7 +212,7 @@ describe('ClassManager', () => {
         it('should add a method to the class array with a declaration', async done => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods'),
-                    decl = new MethodDeclaration('newMethod');
+                    decl = new MethodDeclaration('newMethod', false, DeclarationVisibility.Public, 'string');
 
                 (ctrl as any).methods.should.have.lengthOf(3);
                 ctrl.addMethod(decl);
@@ -520,7 +528,15 @@ describe('ClassManager', () => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
+                ctrl.addMethod(
+                    'newMethod',
+                    DeclarationVisibility.Private,
+                    'type',
+                    [
+                        new ParameterDeclaration('foo', undefined),
+                        new ParameterDeclaration('bar', 'baz')
+                    ]
+                );
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(20).text.should.equal(`    private newMethod(foo, bar: baz): type {`);
@@ -537,7 +553,15 @@ describe('ClassManager', () => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
-                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')]);
+                ctrl.addMethod(
+                    'newMethod',
+                    DeclarationVisibility.Private,
+                    'type',
+                    [
+                        new ParameterDeclaration('foo', undefined),
+                        new ParameterDeclaration('bar', 'baz')
+                    ]
+                );
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(26).text.should.equal(`    private newMethod(foo, bar: baz): type {`);
@@ -569,7 +593,14 @@ describe('ClassManager', () => {
             try {
                 let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-                ctrl.addMethod('newMethod', DeclarationVisibility.Private, 'type', [new ParameterDeclaration('foo'), new ParameterDeclaration('bar', 'baz')])
+                ctrl.addMethod(
+                    'newMethod',
+                    DeclarationVisibility.Private,
+                    'type',
+                    [
+                        new ParameterDeclaration('foo', undefined),
+                        new ParameterDeclaration('bar', 'baz')
+                    ])
                     .addMethod('protMethod', DeclarationVisibility.Protected, 'type');
                 (await ctrl.commit()).should.be.true;
 
