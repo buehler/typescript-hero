@@ -53,9 +53,10 @@ export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration
      * 
      * @memberOf MethodDeclaration
      */
-    public generateTypescript({tabSize}: GenerationOptions): string {
+    public generateTypescript({ tabSize }: GenerationOptions): string {
         let intend = Array(tabSize + 1).join(' ');
-        return `${intend}${this.visibility ? getVisibilityText(this.visibility) + ' ' : ''}${this.name}(` +
+        return `${intend}` +
+            `${this.visibility !== undefined ? getVisibilityText(this.visibility) + ' ' : ''}${this.name}(` +
             `${this.parameters.map(o => o.generateTypescript()).join(', ')})` +
             `${this.type ? `: ${this.type}` : ''} {
 ${intend}${intend}throw new Error('Not implemented yet.');
