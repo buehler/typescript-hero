@@ -1,6 +1,6 @@
 # TypeScript Hero
 
-TypeScript Hero is a vscode extension that makes your live easier.
+TypeScript Hero is a vscode extension that makes your life easier.
 When you are coding a lot of `TypeScript` you may want vscode to automatically
 include your imports.
 
