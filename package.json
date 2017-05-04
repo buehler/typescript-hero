@@ -190,6 +190,11 @@
           "default": "TopOfFile",
           "description": "Defines the location of new imports."
         },
+        "typescriptHero.resolver.disableImportsSorting": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defines if sorting is disable during organize imports"
+        },
         "typescriptHero.restartDebugger.watchFolders": {
           "type": "array",
           "items": {
