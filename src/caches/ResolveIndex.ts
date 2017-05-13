@@ -40,7 +40,7 @@ function getNodeLibraryName(path: string): string {
 
     return dirs.slice(nodeIndex + 1).join('/')
         .replace(/([.]d)?([.]tsx?)?/g, '')
-        .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]})$`), '');
+        .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]}|${dirs[dirs.length - 2]})$`), '');
 }
 
 /**
