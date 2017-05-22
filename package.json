@@ -192,7 +192,7 @@
         },
         "typescriptHero.resolver.disableImportsSorting": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Defines if sorting is disable during organize imports"
         },
         "typescriptHero.restartDebugger.watchFolders": {
