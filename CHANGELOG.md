@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Fixed
 - Imports from newly added tsx files aren't seen by resolver ([#169](https://github.com/buehler/typescript-hero/pull/169))
+- Imports from modules with index file as the same name as containing folder no longer double up import path (i.e. Angular)
+- Files without exports are no longer added to the index
 
 ## [0.12.0]
 #### Added
