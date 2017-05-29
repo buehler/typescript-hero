@@ -40,7 +40,7 @@ function getNodeLibraryName(path: string): string {
 
     return dirs.slice(nodeIndex + 1).join('/')
         .replace(/([.]d)?([.]tsx?)?/g, '')
-        .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]})$`), '');
+        .replace(new RegExp(`/(index|${dirs[nodeIndex + 1]}|${dirs[dirs.length - 2]})$`), '');
 }
 
 /**
@@ -418,7 +418,7 @@ export class ResolveIndex {
         resource: TsResource,
         processedResources: TsResource[] = []
     ): void {
-        if (processedResources.indexOf(resource) >= 0) {
+        if (processedResources.indexOf(resource) >= 0 || resource.exports.length === 0) {
             return;
         }
         processedResources.push(resource);
