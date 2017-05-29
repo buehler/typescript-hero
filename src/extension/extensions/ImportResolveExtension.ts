@@ -1,11 +1,12 @@
-import { getDeclarationsFilteredByImports } from '../../common/helpers';
-import { TypescriptParser } from '../../common/ts-parsing';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
-import { Notification, Request } from '../../common/communication';
+import { Notification } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
+import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
+import { ImportUserDecision } from '../../common/transport-models';
+import { TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
+import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { ClientConnection } from '../utilities/ClientConnection';
@@ -16,6 +17,7 @@ import { join } from 'path';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
+type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
 
 /**
  * Compares the ignorepatterns (if they have the same elements ignored).
@@ -154,7 +156,10 @@ export class ImportResolveExtension extends BaseExtension {
             Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing
         );
 
-        // TODO: readd add Import.
+        // TODO: readd add Import. 
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
+        );
         this.context.subscriptions.push(
             commands.registerTextEditorCommand(
                 'typescriptHero.resolve.addImportUnderCursor',
@@ -209,6 +214,35 @@ export class ImportResolveExtension extends BaseExtension {
 
         const files = await findFiles(this.config);
         this.connection.sendNotification(Notification.CreateIndexForFiles, files);
+    }
+
+    /**
+     * Add an import from the whole list. Calls the vscode gui, where the user can
+     * select a symbol to import.
+     * 
+     * @private
+     * @returns {Promise<void>}
+     * 
+     * @memberOf ResolveExtension
+     */
+    private async addImport(): Promise<void> {
+        if (!this.index.indexReady) {
+            this.showCacheWarning();
+            return;
+        }
+        try {
+            const selectedItem = await window.showQuickPick(
+                this.index.declarationInfos.map(o => new ResolveQuickPickItem(o)),
+                { placeHolder: 'Add import to document:' }
+            );
+            if (selectedItem) {
+                this.logger.info('Add import to document', { resolveItem: selectedItem });
+                this.addImportToDocument(selectedItem.declarationInfo);
+            }
+        } catch (e) {
+            this.logger.error('An error happend during import picking', e);
+            window.showErrorMessage('The import cannot be completed, there was an error during the process.');
+        }
     }
 
     /**
@@ -273,15 +307,14 @@ export class ImportResolveExtension extends BaseExtension {
             return;
         }
         try {
-            const missing = await this.connection
-                .sendSerializedRequest<DeclarationInfo[]>(Request.MissingDeclarationInfosForDocument, {
-                    documentSource: window.activeTextEditor.document.getText(),
-                    documentPath: window.activeTextEditor.document.fileName
-                });
-            
+            const missing = await this.getMissingDeclarationsForFile({
+                documentSource: window.activeTextEditor.document.getText(),
+                documentPath: window.activeTextEditor.document.fileName
+            });
+
             if (missing && missing.length) {
                 const ctrl = await ImportManager.create(window.activeTextEditor.document);
-                missing.forEach(o => ctrl.addDeclarationImport(o));
+                missing.filter(o => o instanceof DeclarationInfo).forEach(o => ctrl.addDeclarationImport(o));
                 await ctrl.commit();
             }
         } catch (e) {
@@ -351,8 +384,18 @@ export class ImportResolveExtension extends BaseExtension {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
     }
 
+    /**
+     * Calculates the possible imports for a given document source with a filter for the given symbol.
+     * Returns a list of declaration infos that may be used for select picker or something.
+     * 
+     * @private
+     * @param {DeclarationsForImportOptions} {cursorSymbol, documentSource, documentPath}
+     * @returns {(Promise<DeclarationInfo[] | undefined>)}
+     * 
+     * @memberOf ImportResolveExtension
+     */
     private async getDeclarationsForImport(
-        {cursorSymbol, documentSource, documentPath}: DeclarationsForImportOptions
+        { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions
     ): Promise<DeclarationInfo[]> {
         this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
 
@@ -369,5 +412,42 @@ export class ImportResolveExtension extends BaseExtension {
             ...declarations.filter(o => o.from.startsWith('/')),
             ...declarations.filter(o => !o.from.startsWith('/'))
         ].filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1);
+    }
+
+    /**
+     * Calculates the missing imports of a document. Parses the documents source and then
+     * tries to resolve all possible declaration infos for the usages (used identifiers).
+     * 
+     * @private
+     * @param {MissingDeclarationsForFileOptions} {documentSource, documentPath}
+     * @returns {(Promise<(DeclarationInfo | ImportUserDecision)[]>)}
+     * 
+     * @memberOf ImportResolveExtension
+     */
+    private async getMissingDeclarationsForFile(
+        { documentSource, documentPath }: MissingDeclarationsForFileOptions
+    ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
+        const parsedDocument = await this.parser.parseSource(documentSource),
+            missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [],
+            declarations = getDeclarationsFilteredByImports(
+                this.index.declarationInfos,
+                documentPath,
+                workspace.rootPath,
+                parsedDocument.imports
+            );
+
+        for (let usage of parsedDocument.nonLocalUsages) {
+            const foundDeclarations = declarations.filter(o => o.declaration.name === usage);
+            if (foundDeclarations.length <= 0) {
+                continue;
+            } else if (foundDeclarations.length === 1) {
+                missingDeclarations.push(foundDeclarations[0]);
+            } else {
+                // TODO handle decisions.
+                missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
+            }
+        }
+
+        return missingDeclarations;
     }
 }
