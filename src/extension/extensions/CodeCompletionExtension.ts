@@ -186,5 +186,6 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
                 )
             ];
         }
+        return [];
     }
 }

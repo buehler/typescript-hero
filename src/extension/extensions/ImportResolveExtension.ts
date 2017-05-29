@@ -314,7 +314,7 @@ export class ImportResolveExtension extends BaseExtension {
 
             if (missing && missing.length) {
                 const ctrl = await ImportManager.create(window.activeTextEditor.document);
-                missing.filter(o => o instanceof DeclarationInfo).forEach(o => ctrl.addDeclarationImport(o));
+                missing.filter(o => o instanceof DeclarationInfo).forEach(o => ctrl.addDeclarationImport(<any>o));
                 await ctrl.commit();
             }
         } catch (e) {
