@@ -138,6 +138,17 @@ class ResolverConfig {
     }
 
     /**
+     * Defines, if sorting is obligatory during organize imports
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberOf ResolverConfig
+     */
+    public get disableImportsSorting(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
+    }
+
+    /**
      * Returns the tab size that is configured in vscode.
      * 
      * @readonly

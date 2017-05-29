@@ -234,10 +234,12 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        keep = [
-            ...keep.filter(o => o instanceof TsStringImport).sort(importSort),
-            ...keep.filter(o => !(o instanceof TsStringImport)).sort(importSort)
-        ];
+        if (!ImportManager.config.resolver.disableImportsSorting) {
+            keep = [
+                ...keep.filter(o => o instanceof TsStringImport).sort(importSort),
+                ...keep.filter(o => !(o instanceof TsStringImport)).sort(importSort)
+            ];
+        }
 
         this.imports = keep;
 
