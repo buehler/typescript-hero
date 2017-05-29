@@ -35,11 +35,11 @@ before_install:
   fi
 
 install:
- - npm install
- - npm run build
+ - yarn install
+ - yarn run build
 
 script:
-- npm test --silent
+- yarn test --silent
 
 after_success:
 - npm install -g vsce;
@@ -47,7 +47,6 @@ after_success:
 
 after_failure:
 - echo "There was a problem with the deployment."
-- cat $TRAVIS_BUILD_DIR/npm-debug.log
 
 deploy:
   provider: script
