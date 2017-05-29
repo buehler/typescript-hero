@@ -2,6 +2,7 @@ import { ExtensionConfig } from '../common/config';
 import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
 import { BaseExtension } from './extensions/BaseExtension';
+import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
@@ -23,12 +24,9 @@ container.bind(TypescriptParser).to(TypescriptParser);
 // injector.bind(ResolveCompletionItemProvider).to(ResolveCompletionItemProvider).inSingletonScope();
 // injector.bind(TypescriptCodeActionProvider).to(TypescriptCodeActionProvider).inSingletonScope();
 
-// // Symbol resolving
-// injector.bind(ResolveIndex).to(ResolveIndex).inSingletonScope();
-// injector.bind(TsResourceParser).to(TsResourceParser);
-
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 
