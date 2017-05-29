@@ -16,6 +16,7 @@ The whole refactoring is part of ([#143](https://github.com/buehler/typescript-h
 #### Changed
 - Setting `pathStringDelimiter` is now called `stringQuoteStyle`. It just makes more sense.
 - Whole extension is now divided to an extension part and a language-server part. (YAY PERFORMANCE!)
+- Parsing is done in the server, the rest should stay in the extension part so that one can access the stuff directly.
 
 ## [0.12.0]
 #### Added
