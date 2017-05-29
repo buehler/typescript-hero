@@ -14,7 +14,7 @@ export class VscodeLogger implements Logger {
 
     constructor(context: ExtensionContext, private config: ExtensionConfig, public readonly prefix?: string) {
         if (!VscodeLogger.channel) {
-            VscodeLogger.channel = window.createOutputChannel('Typescript Hero Extension');
+            VscodeLogger.channel = window.createOutputChannel('TypeScript Hero Extension');
             context.subscriptions.push(VscodeLogger.channel);
         }
     }

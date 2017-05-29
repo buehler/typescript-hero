@@ -12,7 +12,8 @@ export enum Notification {
     CreateIndexForFiles,
     IndexCreationRunning,
     IndexCreationSuccessful,
-    IndexCreationFailed
+    IndexCreationFailed,
+    PartialIndexResult,
 }
 
 /**
