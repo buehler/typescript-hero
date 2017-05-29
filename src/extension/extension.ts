@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import '../common/transport-models';
 import '../common/ts-parsing/declarations';
 import '../common/ts-parsing/exports';
 import '../common/ts-parsing/imports';

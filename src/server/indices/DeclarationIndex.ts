@@ -207,52 +207,6 @@ export class DeclarationIndex {
         this._index = await this.createIndex(this.parsedResources);
     }
 
-    // /**
-    //  * Rebuild the cache for one specific file. This can happen if a file is changed (saved)
-    //  * and contains a new symbol. All resources are searched for files that possibly export
-    //  * stuff from the given file and are rebuilt as well.
-    //  * 
-    //  * @param {string} filePath
-    //  * @param {string} rootPath
-    //  * @returns {Promise<void>}
-    //  * 
-    //  * @memberOf DeclarationIndex
-    //  */
-    // public async rebuildForFile(filePath: string, rootPath: string): Promise<void> {
-    //     const rebuildResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
-    //         rebuildFiles = [filePath, ...this.getExportedResources(rebuildResource, rootPath)];
-
-    //     const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
-
-    //     for (let key of Object.keys(resources)) {
-    //         this.parsedResources[key] = resources[key];
-    //     }
-    //     this._index = await this.createIndex(this.parsedResources);
-    // }
-
-    // /**
-    //  * Removes the definitions and symbols for a specific file. This happens when
-    //  * a file is deleted. All files that export symbols from this file are rebuilt as well.
-    //  * 
-    //  * @param {string} filePath
-    //  * @param {string} rootPath
-    //  * @returns {Promise<void>}
-    //  * 
-    //  * @memberOf DeclarationIndex
-    //  */
-    // public async removeForFile(filePath: string, rootPath: string): Promise<void> {
-    //     const removeResource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, ''),
-    //         rebuildFiles = this.getExportedResources(removeResource, rootPath);
-
-    //     const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
-
-    //     delete this.parsedResources[removeResource];
-    //     for (let key of Object.keys(resources)) {
-    //         this.parsedResources[key] = resources[key];
-    //     }
-    //     this._index = await this.createIndex(this.parsedResources);
-    // }
-
     /**
      * Returns a list of files that export a certain resource (declaration).
      * 

@@ -1,3 +1,4 @@
+import { Serializable } from 'ts-json-serializer';
 import { Generatable } from '../ts-generation';
 import { Clonable } from '../utilities';
 
@@ -9,6 +10,7 @@ import { Clonable } from '../utilities';
  * @class SymbolSpecifier
  * @implements {Clonable}
  */
+@Serializable({ factory: json => new SymbolSpecifier(json.specifier, json.alias) })
 export class SymbolSpecifier implements Clonable, Generatable {
     constructor(public specifier: string, public alias?: string) { }
 

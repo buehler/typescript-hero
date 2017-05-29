@@ -1,3 +1,4 @@
+import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { ExtensionConfig } from '../common/config';
 import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
@@ -16,6 +17,7 @@ const container = new IoCContainer();
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
+container.bind(CalculatedDeclarationIndex).to(CalculatedDeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
 
 // // Providers

@@ -1,3 +1,4 @@
+import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { Notification, Request } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
@@ -119,6 +120,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        private index: CalculatedDeclarationIndex,
         private connection: ClientConnection
     ) {
         super(context);
@@ -147,6 +149,7 @@ export class ImportResolveExtension extends BaseExtension {
             Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing
         );
 
+        // TODO: readd add Import.
         this.context.subscriptions.push(
             commands.registerTextEditorCommand(
                 'typescriptHero.resolve.addImportUnderCursor',
@@ -213,7 +216,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private async addImportUnderCursor(): Promise<void> {
-        if (!(await this.connection.sendRequest<boolean>(Request.DeclarationIndexReady))) {
+        if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
         }
@@ -262,7 +265,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private async addMissingImports(): Promise<void> {
-        if (!(await this.connection.sendRequest<boolean>(Request.DeclarationIndexReady))) {
+        if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
         }

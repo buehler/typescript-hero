@@ -64,6 +64,12 @@ export abstract class Connection<T extends ConnectionEndpoint> {
         this.connection.sendNotification(method, args);
     }
 
+    public sendSerializedNotification(notification: Notification | string, ...args: any[]): void {
+        const method = typeof notification === 'string' ? notification : Notification[notification];
+        const json = this.serializer.serialize(args);
+        this.connection.sendNotification(method, json);
+    }
+
     /**
      * Sends a request to the other endpoint.
      * 
@@ -114,6 +120,16 @@ export abstract class Connection<T extends ConnectionEndpoint> {
             );
         }
         this.handler[method].push(handler);
+    }
+    
+    public onSerializedNotification(notification: Notification | string, handler: GenericNotificationHandler): void {
+        this.onNotification(notification, (...params: any[]) => {
+            if (params) {
+                handler(...(params.map(p => this.serializer.deserialize(p))));
+                return;
+            }
+            handler();
+        });
     }
 
     /**
