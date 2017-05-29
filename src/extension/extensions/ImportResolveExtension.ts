@@ -1,3 +1,5 @@
+import { getDeclarationsFilteredByImports } from '../../common/helpers';
+import { TypescriptParser } from '../../common/ts-parsing';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { Notification, Request } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
@@ -12,6 +14,8 @@ import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+
+type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 
 /**
  * Compares the ignorepatterns (if they have the same elements ignored).
@@ -121,6 +125,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private index: CalculatedDeclarationIndex,
+        private parser: TypescriptParser,
         private connection: ClientConnection
     ) {
         super(context);
@@ -225,13 +230,11 @@ export class ImportResolveExtension extends BaseExtension {
             if (!!!selectedSymbol) {
                 return;
             }
-            const resolveItems = await this.connection.sendSerializedRequest<DeclarationInfo[]>(
-                Request.DeclarationInfosForImport, {
-                    cursorSymbol: selectedSymbol,
-                    documentSource: window.activeTextEditor.document.getText(),
-                    documentPath: window.activeTextEditor.document.fileName
-                }
-            );
+            const resolveItems = await this.getDeclarationsForImport({
+                cursorSymbol: selectedSymbol,
+                documentSource: window.activeTextEditor.document.getText(),
+                documentPath: window.activeTextEditor.document.fileName
+            });
 
             if (resolveItems.length < 1) {
                 window.showInformationMessage(
@@ -346,5 +349,25 @@ export class ImportResolveExtension extends BaseExtension {
      */
     private showCacheWarning(): void {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
+    }
+
+    private async getDeclarationsForImport(
+        {cursorSymbol, documentSource, documentPath}: DeclarationsForImportOptions
+    ): Promise<DeclarationInfo[]> {
+        this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
+
+        const parsedSource = await this.parser.parseSource(documentSource),
+            activeDocumentDeclarations = parsedSource.declarations.map(o => o.name),
+            declarations = getDeclarationsFilteredByImports(
+                this.index.declarationInfos,
+                documentPath,
+                workspace.rootPath,
+                parsedSource.imports
+            ).filter(o => o.declaration.name.startsWith(cursorSymbol));
+
+        return [
+            ...declarations.filter(o => o.from.startsWith('/')),
+            ...declarations.filter(o => !o.from.startsWith('/'))
+        ].filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1);
     }
 }

@@ -80,6 +80,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "typescriptHero.resolve.addImport",
+        "title": "Typescript: Add an import to current file"
+      },
+      {
         "command": "typescriptHero.resolve.addImportUnderCursor",
         "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
       },
@@ -101,6 +105,11 @@
       }
     ],
     "keybindings": [
+      {
+        "command": "typescriptHero.resolve.addImport",
+        "key": "ctrl+shift+i",
+        "when": "editorTextFocus"
+      },
       {
         "command": "typescriptHero.resolve.addImportUnderCursor",
         "key": "ctrl+alt+i",
