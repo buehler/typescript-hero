@@ -37,9 +37,8 @@ describe('common / TypescriptParser', () => {
 
         const file = join(vscode.workspace.rootPath, 'common/ts-parsing/importsOnly.ts');
 
-        beforeEach(async done => {
+        beforeEach(async () => {
             parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-            done();
         });
 
         it('should parse imports', () => {
@@ -111,9 +110,8 @@ describe('common / TypescriptParser', () => {
 
         const file = join(vscode.workspace.rootPath, 'common/ts-parsing/exportsOnly.ts');
 
-        beforeEach(async done => {
+        beforeEach(async () => {
             parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-            done();
         });
 
         it('should parse export all from another file', () => {
@@ -158,9 +156,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/enum.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -189,9 +186,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/typeAlias.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -216,9 +212,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/function.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -288,9 +283,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/variable.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -349,9 +343,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/interface.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -407,9 +400,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/class.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -482,9 +474,8 @@ describe('common / TypescriptParser', () => {
 
             const file = join(vscode.workspace.rootPath, 'common/ts-parsing/module.ts');
 
-            beforeEach(async done => {
+            beforeEach(async () => {
                 parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-                done();
             });
 
             it('should parse a file', () => {
@@ -512,9 +503,8 @@ describe('common / TypescriptParser', () => {
 
         const file = join(vscode.workspace.rootPath, 'common/ts-parsing/usagesOnly.ts');
 
-        beforeEach(async done => {
+        beforeEach(async () => {
             parsed = await parser.parseFile(file, vscode.workspace.rootPath);
-            done();
         });
 
         it('should parse decorator usages', () => {

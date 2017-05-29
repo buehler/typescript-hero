@@ -14,50 +14,40 @@ describe('DeclarationIndex', () => {
     let declarationIndex: DeclarationIndex,
         files: string[];
 
-    before(async done => {
+    before(async () => {
         const config = new VscodeExtensionConfig();
         declarationIndex = Container.get(DeclarationIndex);
         files = await findFiles(config);
-        done();
+
     });
 
     beforeEach(() => {
         declarationIndex.reset();
     });
 
-    it('should not process a circular export cycle', async done => {
-        try {
-            await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
-            done();
-        } catch (e) {
-            done(e);
-        }
+    it('should not process a circular export cycle', async () => {
+        await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
     });
 
-    it('should resolve the build process', async done => {
-        try {
-            await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
-            done();
-        } catch (e) {
-            done(e);
-        }
+    it('should resolve the build process', async () => {
+        await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
     });
 
     it('should not have an index ready without build', () => {
         declarationIndex.indexReady.should.be.false;
     });
 
-    it('should have an index ready after build', async done => {
+    it('should have an index ready after build', async () => {
         await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
         declarationIndex.indexReady.should.be.true;
-        done();
+
     });
 
     describe('buildIndex()', () => {
 
-        beforeEach(async done => {
+        beforeEach(async () => {
             await declarationIndex.buildIndex(files, vscode.workspace.rootPath);
-            done();
+
         });
 
         it('should contain certain parsedResources', () => {
@@ -79,7 +69,7 @@ describe('DeclarationIndex', () => {
         });
 
         it('should contain a declaration name with multiple declarations', () => {
-            
+
             let list = declarationIndex.index!['FancierLibraryClass'];
             list.should.be.an('array').with.lengthOf(2);
 
