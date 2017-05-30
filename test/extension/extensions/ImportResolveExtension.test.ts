@@ -1,6 +1,6 @@
 import { ExtensionConfig } from '../../../src/common/config';
 import { LoggerFactory } from '../../../src/common/utilities';
-import { ImportResolveExtension } from '../../../src/extension/extensions/importResolveExtension';
+import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import * as chai from 'chai';
