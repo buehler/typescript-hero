@@ -1,6 +1,9 @@
 import 'reflect-metadata';
-import { Injector } from '../src/IoC';
+import { Container } from '../src/extension/IoC';
+import { iocSymbols } from '../src/extension/IoCSymbols';
 import { ExtensionContext, Memento } from 'vscode';
+
+// tslint:disable
 
 //
 // PLEASE DO NOT MODIFY / DELETE UNLESS YOU KNOW WHAT YOU ARE DOING
@@ -21,19 +24,19 @@ class ContextMock implements ExtensionContext {
     globalState: Memento;
     extensionPath: string = '';
     storagePath: string = '';
-    asAbsolutePath(relativePath: string): string {
+    asAbsolutePath(): string {
         return '';
     }
 }
 
-Injector.bind<ExtensionContext>('context').toConstantValue(new ContextMock());
+Container.bind<ExtensionContext>(iocSymbols.extensionContext).toConstantValue(new ContextMock());
 
 const testRunner = require('vscode/lib/testrunner');
 
 // You can directly control Mocha options by uncommenting the following lines
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
 testRunner.configure({
-    ui: 'bdd', 		// the TDD UI is being used in extension.test.ts (suite, test, etc.)
+    ui: 'bdd',      // the TDD UI is being used in extension.test.ts (suite, test, etc.)
     useColors: true // colored output from test results
 });
 

@@ -1,0 +1,109 @@
+{
+    "extends": "tslint:recommended",
+    "rulesDirectory": [
+        "node_modules/tslint-jsdoc-rules/lib"
+    ],
+    "rules": {
+        "adjacent-overload-signatures": true,
+        "interface-name": [
+            true,
+            "never-prefix"
+        ],
+        "jsdoc-require": [
+            true,
+            "no-constructors",
+            "no-properties",
+            "no-private-properties"
+        ],
+        "member-access": [
+            true,
+            "check-accessor"
+        ],
+        "ordered-imports": [
+            false
+        ],
+        "object-literal-sort-keys": false,
+        "max-classes-per-file": [
+            false
+        ],
+        "array-type": [
+            true,
+            "array"
+        ],
+        "arrow-parens": [
+            true,
+            "ban-single-arg-parens"
+        ],
+        "no-trailing-whitespace": false,
+        "member-ordering": [
+            true,
+            {
+                "order": [
+                    "public-static-field",
+                    "protected-static-field",
+                    "private-static-field",
+                    "public-instance-field",
+                    "protected-instance-field",
+                    "private-instance-field",
+                    "constructor",
+                    "public-static-method",
+                    "protected-static-method",
+                    "private-static-method",
+                    "public-instance-method",
+                    "protected-instance-method",
+                    "private-instance-method"
+                ]
+            }
+        ],
+        "no-bitwise": false,
+        "no-default-export": true,
+        "no-invalid-this": true,
+        "no-namespace": [
+            true,
+            "allow-declarations"
+        ],
+        "no-string-literal": false,
+        "object-literal-key-quotes": [
+            false,
+            "as-needed"
+        ],
+        "one-variable-per-declaration": [
+            false
+        ],
+        "only-arrow-functions": [
+            true,
+            "allow-declarations"
+        ],
+        "quotemark": [
+            true,
+            "single",
+            "avoid-escape"
+        ],
+        "trailing-comma": [
+            false
+        ],
+        "triple-equals": true,
+        "typedef": [
+            true,
+            "call-signature",
+            "parameter",
+            "property-declaration",
+            "member-variable-declaration"
+        ],
+        "variable-name": [
+            true,
+            "ban-keywords",
+            "check-format",
+            "allow-pascal-case",
+            "allow-leading-underscore"
+        ],
+        "whitespace": [
+            true,
+            "check-branch",
+            "check-decl",
+            "check-operator",
+            "check-separator",
+            "check-type"
+        ]
+    }
+}

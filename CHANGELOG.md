@@ -3,10 +3,20 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+### Big refactoring.
+The whole refactoring is part of ([#143](https://github.com/buehler/typescript-hero/issues/143))
+
 #### Fixed
 - Imports from newly added tsx files aren't seen by resolver ([#169](https://github.com/buehler/typescript-hero/pull/169))
 - Imports from modules with index file as the same name as containing folder no longer double up import path (i.e. Angular)
 - Files without exports are no longer added to the index
+
+#### Added
+
+#### Changed
+- Setting `pathStringDelimiter` is now called `stringQuoteStyle`. It just makes more sense.
+- Whole extension is now divided to an extension part and a language-server part. (YAY PERFORMANCE!)
+- Parsing is done in the server, the rest should stay in the extension part so that one can access the stuff directly.
 
 ## [0.12.0]
 #### Added
