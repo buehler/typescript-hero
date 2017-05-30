@@ -1,5 +1,5 @@
+import { DeclarationInfo, DeclarationVisibility, InterfaceDeclaration } from '../../common/ts-parsing/declarations';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
-import { DeclarationInfo, InterfaceDeclaration } from '../../common/ts-parsing/declarations';
 import { ClassManager } from '../managers/ClassManager';
 import { ImportManager } from '../managers/ImportManager';
 import { TextDocument } from 'vscode';
@@ -114,10 +114,16 @@ export class ImplementPolymorphElements implements CodeAction {
         let controller = await ClassManager.create(this.document, this.managedClass);
 
         for (let property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
+            if (!property.visibility) {
+                property.visibility = DeclarationVisibility.Public;
+            }
             controller.addProperty(property);
         }
 
         for (let method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
+            if (!method.visibility) {
+                method.visibility = DeclarationVisibility.Public;
+            }
             controller.addMethod(method);
         }
 
