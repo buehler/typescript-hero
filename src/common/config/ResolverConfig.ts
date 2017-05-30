@@ -1,4 +1,5 @@
 import { GenerationOptions, ImportLocation } from '../ts-generation';
+
 /**
  * Configuration interface for the resolver extension.
  * 
@@ -70,6 +71,14 @@ export interface ResolverConfig {
      * @memberOf ResolverConfig
      */
     tabSize: number;
+
+    /**
+     * Disables sorting of the imports on organize.
+     * 
+     * @type {boolean}
+     * @memberof ResolverConfig
+     */
+    disableImportSorting: boolean;
 
     /**
      * All information that are needed to print an import.

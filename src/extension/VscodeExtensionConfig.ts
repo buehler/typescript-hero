@@ -134,7 +134,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @type {boolean}
      * @memberOf ResolverConfig
      */
-    public get disableImportsSorting(): boolean {
+    public get disableImportSorting(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
     }
 

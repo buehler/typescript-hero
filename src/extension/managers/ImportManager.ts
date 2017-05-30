@@ -246,11 +246,11 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        if (!ImportManager.config.resolver.disableImportsSorting) {
-        keep = [
-            ...keep.filter(o => o instanceof StringImport).sort(importSort),
-            ...keep.filter(o => !(o instanceof StringImport)).sort(importSort)
-        ];
+        if (!ImportManager.config.resolver.disableImportSorting) {
+            keep = [
+                ...keep.filter(o => o instanceof StringImport).sort(importSort),
+                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort)
+            ];
         }
 
         this.imports = keep;
