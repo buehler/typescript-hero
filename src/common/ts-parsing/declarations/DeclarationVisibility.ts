@@ -26,5 +26,5 @@ export function getVisibilityText(visibility?: DeclarationVisibility): string {
 export const enum DeclarationVisibility {
     Private,
     Protected,
-    Public
+    Public,
 }

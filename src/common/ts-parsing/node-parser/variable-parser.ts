@@ -15,13 +15,13 @@ export function parseVariable(parent: Resource | CallableDeclaration, node: Vari
     const isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
     if (node.declarationList && node.declarationList.declarations) {
         node.declarationList.declarations.forEach(o => {
-            let declaration = new VariableDeclaration(
+            const declaration = new VariableDeclaration(
                 o.name.getText(),
                 isConst,
                 isNodeExported(node),
                 getNodeType(o.type),
                 node.getStart(),
-                node.getEnd()
+                node.getEnd(),
             );
             if (isCallableDeclaration(parent)) {
                 parent.variables.push(declaration);

@@ -4,7 +4,7 @@ import {
     DefaultDeclaration,
     InterfaceDeclaration as TshInterface,
     MethodDeclaration,
-    PropertyDeclaration
+    PropertyDeclaration,
 } from '../declarations';
 import { Resource } from '../resources';
 import { parseMethodParams } from './function-parser';
@@ -22,7 +22,7 @@ import { Identifier, InterfaceDeclaration } from 'typescript';
 export function parseInterface(resource: Resource, node: InterfaceDeclaration): void {
     const name = node.name ? node.name.text : getDefaultResourceIdentifier(resource),
         interfaceDeclaration = new TshInterface(
-            name, isNodeExported(node), node.getStart(), node.getEnd()
+            name, isNodeExported(node), node.getStart(), node.getEnd(),
         );
 
     if (isNodeDefaultExported(node)) {
@@ -39,17 +39,17 @@ export function parseInterface(resource: Resource, node: InterfaceDeclaration): 
                         DeclarationVisibility.Public,
                         getNodeType(o.type),
                         o.getStart(),
-                        o.getEnd()
-                    )
+                        o.getEnd(),
+                    ),
                 );
             } else if (isMethodSignature(o)) {
-                let method = new MethodDeclaration(
+                const method = new MethodDeclaration(
                     (o.name as Identifier).text,
                     true,
                     DeclarationVisibility.Public,
                     getNodeType(o.type),
                     o.getStart(),
-                    o.getEnd()
+                    o.getEnd(),
                 );
                 method.parameters = parseMethodParams(o);
                 interfaceDeclaration.methods.push(method);

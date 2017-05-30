@@ -6,5 +6,5 @@
  */
 export enum ImportLocation {
     TopOfFile,
-    AtCursorLocation
+    AtCursorLocation,
 }

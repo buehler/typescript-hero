@@ -20,7 +20,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         obj.properties = json.properties;
         obj.methods = json.methods;
         return obj;
-    }
+    },
 })
 export class ClassDeclaration implements ExportableDeclaration {
     public ctor: ConstructorDeclaration;
@@ -39,7 +39,7 @@ export class ClassDeclaration implements ExportableDeclaration {
         public name: string,
         public isExported: boolean,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

@@ -74,7 +74,7 @@ export class CalculatedDeclarationIndex {
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        private connection: ClientConnection
+        private connection: ClientConnection,
     ) {
         this.logger = loggerFactory('DeclarationIndex');
         this.logger.info('Instantiated.');

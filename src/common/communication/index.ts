@@ -26,7 +26,7 @@ export enum Notification {
 export enum Request {
     DeclarationIndexReady,
     DeclarationInfosForImport,
-    MissingDeclarationInfosForDocument
+    MissingDeclarationInfosForDocument,
 }
 
 type ConnectionEndpoint = {
@@ -97,8 +97,9 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @memberOf Connection
      */
     public async sendSerializedRequest<T>(request: Request | string, params?: any): Promise<T> {
-        const method = typeof request === 'string' ? request : Request[request],
-            json = await this.connection.sendRequest<string>(method, params);
+        const method = typeof request === 'string' ? request : Request[request];
+        const json = await this.connection.sendRequest<string>(method, params);
+
         return this.serializer.deserialize<T>(json);
     }
 
@@ -117,7 +118,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
             this.handler[method] = [];
             this.connection.onNotification(
                 method,
-                params => this.handler[method].forEach(o => o(params))
+                params => this.handler[method].forEach(o => o(params)),
             );
         }
         this.handler[method].push(handler);
@@ -146,7 +147,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      */
     public onRequest<TResult, TError>(
         request: Request | string,
-        handler: GenericRequestHandler<TResult, TError>
+        handler: GenericRequestHandler<TResult, TError>,
     ): void {
         const method = typeof request === 'string' ? request : Request[request];
         this.connection.onRequest(method, handler);
@@ -165,10 +166,10 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      */
     public onSerializedRequest<TResult, TError>(
         request: Request | string,
-        handler: GenericRequestHandler<TResult, TError>
+        handler: GenericRequestHandler<TResult, TError>,
     ): void {
         const method = typeof request === 'string' ? request : Request[request];
-        this.connection.onRequest(method, async params => {
+        this.connection.onRequest(method, async (params) => {
             const result = handler(params);
 
             if (result instanceof Promise) {

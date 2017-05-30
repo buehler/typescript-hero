@@ -11,7 +11,7 @@ import { getCombinedModifierFlags, ModifierFlags, Node, SyntaxKind, TypeNode } f
  * @returns {boolean}
  */
 export function isNodeExported(node: Node): boolean {
-    let flags = getCombinedModifierFlags(node);
+    const flags = getCombinedModifierFlags(node);
     return (flags & ModifierFlags.Export) === ModifierFlags.Export;
 }
 
@@ -24,7 +24,7 @@ export function isNodeExported(node: Node): boolean {
  * @returns {boolean}
  */
 export function isNodeDefaultExported(node: Node): boolean {
-    let flags = getCombinedModifierFlags(node);
+    const flags = getCombinedModifierFlags(node);
     return (flags & ModifierFlags.Default) === ModifierFlags.Default;
 }
 
@@ -51,7 +51,7 @@ export function getNodeVisibility(node: Node): DeclarationVisibility | undefined
         return undefined;
     }
 
-    for (let modifier of node.modifiers) {
+    for (const modifier of node.modifiers) {
         switch (modifier.kind) {
             case SyntaxKind.PublicKeyword:
                 return DeclarationVisibility.Public;

@@ -8,7 +8,7 @@ import {
     AddMissingImportsCodeAction,
     CodeAction,
     ImplementPolymorphElements,
-    NoopCodeAction
+    NoopCodeAction,
 } from '../code-actions/CodeAction';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
@@ -26,7 +26,7 @@ import {
     Range,
     TextDocument,
     window,
-    workspace
+    workspace,
 } from 'vscode';
 
 /**
@@ -60,7 +60,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     public initialize(): void {
         this.context.subscriptions.push(commands.registerCommand(
             'typescriptHero.codeFix.executeCodeAction',
-            (codeAction: CodeAction) => this.executeCodeAction(codeAction)
+            (codeAction: CodeAction) => this.executeCodeAction(codeAction),
         ));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescriptreact', this));
@@ -107,38 +107,38 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         document: TextDocument,
         _range: Range,
         context: CodeActionContext,
-        _token: CancellationToken
+        _token: CancellationToken,
     ): Promise<Command[]> {
         let commands: Command[] = [],
             matchfoo: RegExpExecArray | null,
             addAllMissingImportsAdded = false;
 
-        for (let diagnostic of context.diagnostics) {
+        for (const diagnostic of context.diagnostics) {
             switch (true) {
                 case !!(matchfoo = isMissingImport(diagnostic)):
                     const match = isMissingImport(diagnostic)!;
                     if (!match) {
                         break;
                     }
-                    let infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
+                    const infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
                     if (infos.length > 0) {
-                        for (let info of infos) {
+                        for (const info of infos) {
                             commands.push(this.createCommand(
                                 `Import "${info.declaration.name}" from "${info.from}".`,
-                                new AddImportCodeAction(document, info)
+                                new AddImportCodeAction(document, info),
                             ));
                         }
                         if (!addAllMissingImportsAdded) {
                             commands.push(this.createCommand(
                                 'Add all missing imports if possible.',
-                                new AddMissingImportsCodeAction(document, this.index)
+                                new AddMissingImportsCodeAction(document, this.index),
                             ));
                             addAllMissingImportsAdded = true;
                         }
                     } else {
                         commands.push(this.createCommand(
                             `Cannot find "${match[1]}" in the index.`,
-                            new NoopCodeAction()
+                            new NoopCodeAction(),
                         ));
                     }
                     break;
@@ -148,14 +148,14 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                     if (!match2) {
                         break;
                     }
-                    let parsedDocument = await this.parser.parseSource(document.getText()),
+                    const parsedDocument = await this.parser.parseSource(document.getText()),
                         alreadyImported = parsedDocument.imports.find(
-                            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2])
+                            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2]),
                         ),
                         declaration = parsedDocument.declarations.find(o => o.name === match2[2]) ||
                             (this.index.declarationInfos.find(
                                 o => o.declaration.name === match2[2] &&
-                                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath)
+                                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
                             ) || { declaration: undefined }).declaration;
 
                     if (commands.some((o: Command) => o.title.indexOf(match2[2]) >= 0)) {
@@ -166,14 +166,14 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                     if (!declaration) {
                         commands.push(this.createCommand(
                             `Cannot find "${match2[2]}" in the index or the actual file.`,
-                            new NoopCodeAction()
+                            new NoopCodeAction(),
                         ));
                         break;
                     }
 
                     commands.push(this.createCommand(
                         `Implement missing elements from "${match2[2]}".`,
-                        new ImplementPolymorphElements(document, match2[1], <InterfaceDeclaration>declaration)
+                        new ImplementPolymorphElements(document, match2[1], <InterfaceDeclaration>declaration),
                     ));
 
                     break;
@@ -199,7 +199,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         return {
             arguments: [codeAction],
             command: 'typescriptHero.codeFix.executeCodeAction',
-            title
+            title,
         };
     }
 }

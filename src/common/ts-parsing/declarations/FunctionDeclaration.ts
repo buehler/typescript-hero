@@ -20,7 +20,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         obj.parameters = json.parameters;
         obj.variables = json.variables;
         return obj;
-    }
+    },
 })
 export class FunctionDeclaration implements CallableDeclaration, ExportableDeclaration {
     public parameters: ParameterDeclaration[] = [];
@@ -39,7 +39,7 @@ export class FunctionDeclaration implements CallableDeclaration, ExportableDecla
         public isExported: boolean,
         public type?: string,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

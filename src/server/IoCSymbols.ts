@@ -4,5 +4,5 @@
 export const iocSymbols = {
     configuration: Symbol('config'),
     extensions: Symbol('extensions'),
-    loggerFactory: Symbol('loggerFactory')
+    loggerFactory: Symbol('loggerFactory'),
 };

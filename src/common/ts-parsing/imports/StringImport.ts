@@ -25,7 +25,7 @@ export class StringImport implements Import {
      * 
      * @memberOf StringImport
      */
-    public generateTypescript({stringQuoteStyle, eol}: GenerationOptions): string {
+    public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
         return `import ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
     }
 

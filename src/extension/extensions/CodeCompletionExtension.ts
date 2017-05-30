@@ -3,7 +3,7 @@ import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
     getImportInsertPosition,
-    getRelativeLibraryName
+    getRelativeLibraryName,
 } from '../../common/helpers';
 import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo, DefaultDeclaration, ModuleDeclaration } from '../../common/ts-parsing/declarations';
@@ -25,7 +25,7 @@ import {
     TextDocument,
     TextEdit,
     window,
-    workspace
+    workspace,
 } from 'vscode';
 
 /**
@@ -45,7 +45,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private parser: TypescriptParser,
-        private index: CalculatedDeclarationIndex
+        private index: CalculatedDeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
@@ -85,7 +85,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     public async provideCompletionItems(
         document: TextDocument,
         position: Position,
-        token: CancellationToken
+        token: CancellationToken,
     ): Promise<CompletionItem[] | null> {
         const wordAtPosition = document.getWordRangeAtPosition(position),
             lineText = document.lineAt(position.line).text;
@@ -111,11 +111,11 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
         const parsed = await this.parser.parseSource(document.getText());
 
-        let declarations = getDeclarationsFilteredByImports(
+        const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             document.fileName,
             workspace.rootPath,
-            parsed.imports
+            parsed.imports,
         )
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
@@ -123,7 +123,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         return declarations
             .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
             .map(o => {
-                let item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
+                const item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
                 item.detail = o.from;
                 item.sortText = o.declaration.intellisenseSortKey;
                 item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
@@ -145,7 +145,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: File): TextEdit[] {
         const imp = parsedSource.imports.find(o => {
             if (o instanceof NamedImport) {
-                let importedLib = getAbsolutLibraryName(o.libraryName, document.fileName, workspace.rootPath);
+                const importedLib = getAbsolutLibraryName(o.libraryName, document.fileName, workspace.rootPath);
                 return importedLib === declaration.from;
             }
             return false;
@@ -158,32 +158,32 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             return [
                 TextEdit.replace(
                     importRange(document, imp.start, imp.end),
-                    modifiedImp.generateTypescript(this.config.resolver.generationOptions)
-                )
+                    modifiedImp.generateTypescript(this.config.resolver.generationOptions),
+                ),
             ];
         } else if (declaration.declaration instanceof ModuleDeclaration) {
-            let mod = new NamespaceImport(declaration.from, declaration.declaration.name);
+            const mod = new NamespaceImport(declaration.from, declaration.declaration.name);
             return [
                 TextEdit.insert(
                     getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor
+                        this.config.resolver.newImportLocation, window.activeTextEditor,
                     ),
-                    mod.generateTypescript(this.config.resolver.generationOptions)
-                )
+                    mod.generateTypescript(this.config.resolver.generationOptions),
+                ),
             ];
         } else if (declaration.declaration instanceof DefaultDeclaration) {
             // TODO: when the completion starts, the command should add the text edit.
         } else {
-            let library = getRelativeLibraryName(declaration.from, document.fileName, workspace.rootPath);
-            let named = new NamedImport(library);
+            const library = getRelativeLibraryName(declaration.from, document.fileName, workspace.rootPath);
+            const named = new NamedImport(library);
             named.specifiers.push(new SymbolSpecifier(declaration.declaration.name));
             return [
                 TextEdit.insert(
                     getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor
+                        this.config.resolver.newImportLocation, window.activeTextEditor,
                     ),
-                    named.generateTypescript(this.config.resolver.generationOptions)
-                )
+                    named.generateTypescript(this.config.resolver.generationOptions),
+                ),
             ];
         }
         return [];

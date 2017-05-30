@@ -30,7 +30,7 @@ export class ClientConnection extends Connection<LanguageClient> {
 
         const serverOptions: ServerOptions = {
             run: { module, transport: TransportKind.ipc },
-            debug: { module, transport: TransportKind.ipc, options }
+            debug: { module, transport: TransportKind.ipc, options },
         };
 
         const clientOptions: LanguageClientOptions = {
@@ -38,13 +38,13 @@ export class ClientConnection extends Connection<LanguageClient> {
             synchronize: {
                 configurationSection: 'typescriptHero',
                 fileEvents: [
-                    workspace.createFileSystemWatcher('{**/*.ts,**/*.tsx,**/package.json,**/typings.json}', true)
-                ]
-            }
+                    workspace.createFileSystemWatcher('{**/*.ts,**/*.tsx,**/package.json,**/typings.json}', true),
+                ],
+            },
         };
 
         const client = new LanguageClient(
-            'typescriptHeroServer', 'TypeScript Hero Server', serverOptions, clientOptions
+            'typescriptHeroServer', 'TypeScript Hero Server', serverOptions, clientOptions,
         );
 
         context.subscriptions.push(client.start());

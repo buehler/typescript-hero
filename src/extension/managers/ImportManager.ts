@@ -3,7 +3,7 @@ import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
     getImportInsertPosition,
-    getRelativeLibraryName
+    getRelativeLibraryName,
 } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
@@ -14,7 +14,7 @@ import {
     Import,
     NamedImport,
     NamespaceImport,
-    StringImport
+    StringImport,
 } from '../../common/ts-parsing/imports';
 import { File } from '../../common/ts-parsing/resources';
 import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
@@ -52,7 +52,7 @@ function stringSort(strA: string, strB: string): number {
  * @returns {number}
  */
 function importSort(i1: Import, i2: Import): number {
-    let strA = i1.libraryName.toLowerCase(),
+    const strA = i1.libraryName.toLowerCase(),
         strB = i2.libraryName.toLowerCase();
 
     return stringSort(strA, strB);
@@ -102,7 +102,7 @@ export class ImportManager implements ObjectManager {
 
     private constructor(
         public readonly document: TextDocument,
-        private _parsedDocument: File
+        private _parsedDocument: File,
     ) {
         this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
     }
@@ -121,7 +121,7 @@ export class ImportManager implements ObjectManager {
     public static async create(document: TextDocument): Promise<ImportManager> {
         const source = await ImportManager.parser.parseSource(document.getText());
         source.imports = source.imports.map(
-            o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o
+            o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
         );
         return new ImportManager(document, source);
     }
@@ -142,8 +142,8 @@ export class ImportManager implements ObjectManager {
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
                 this.document.fileName,
-                workspace.rootPath
-            ) && o instanceof ImportProxy
+                workspace.rootPath,
+            ) && o instanceof ImportProxy,
         ) as ImportProxy;
 
         if (alreadyImported) {
@@ -158,13 +158,13 @@ export class ImportManager implements ObjectManager {
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
                 this.imports.push(new NamespaceImport(
                     declarationInfo.from,
-                    declarationInfo.declaration.name
+                    declarationInfo.declaration.name,
                 ));
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
-                    workspace.rootPath
+                    workspace.rootPath,
                 ));
                 imp.defaultPurposal = declarationInfo.declaration.name;
                 this.imports.push(imp);
@@ -172,7 +172,7 @@ export class ImportManager implements ObjectManager {
                 const imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
-                    workspace.rootPath
+                    workspace.rootPath,
                 ));
                 imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
                 this.imports.push(imp);
@@ -196,11 +196,11 @@ export class ImportManager implements ObjectManager {
             index.declarationInfos,
             this.document.fileName,
             workspace.rootPath,
-            this.imports
+            this.imports,
         );
 
-        for (let usage of this._parsedDocument.nonLocalUsages) {
-            let foundDeclarations = declarations.filter(o => o.declaration.name === usage);
+        for (const usage of this._parsedDocument.nonLocalUsages) {
+            const foundDeclarations = declarations.filter(o => o.declaration.name === usage);
             if (foundDeclarations.length <= 0) {
                 continue;
             } else if (foundDeclarations.length === 1) {
@@ -226,7 +226,7 @@ export class ImportManager implements ObjectManager {
         this.organize = true;
         let keep: Import[] = [];
 
-        for (let actImport of this.imports) {
+        for (const actImport of this.imports) {
             if (actImport instanceof NamespaceImport ||
                 actImport instanceof ExternalModuleImport) {
                 if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
@@ -236,7 +236,7 @@ export class ImportManager implements ObjectManager {
                 actImport.specifiers = actImport.specifiers
                     .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
                     .sort(specifierSort);
-                let defaultSpec = actImport.defaultAlias || actImport.defaultPurposal;
+                const defaultSpec = actImport.defaultAlias || actImport.defaultPurposal;
                 if (actImport.specifiers.length ||
                     (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec))) {
                     keep.push(actImport);
@@ -249,7 +249,7 @@ export class ImportManager implements ObjectManager {
         if (!ImportManager.config.resolver.disableImportSorting) {
             keep = [
                 ...keep.filter(o => o instanceof StringImport).sort(importSort),
-                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort)
+                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort),
             ];
         }
 
@@ -276,24 +276,24 @@ export class ImportManager implements ObjectManager {
         await this.resolveImportSpecifiers();
 
         if (this.organize) {
-            for (let imp of this._parsedDocument.imports) {
+            for (const imp of this._parsedDocument.imports) {
                 edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
                 this.imports.reduce(
                     (all, cur) => all += cur.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    ''
-                )
+                    '',
+                ),
             ));
         } else {
-            for (let imp of this._parsedDocument.imports) {
+            for (const imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
                     edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
                 }
             }
             const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
-            for (let imp of this.imports) {
+            for (const imp of this.imports) {
                 if (imp instanceof ImportProxy &&
                     proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
                     continue;
@@ -301,15 +301,15 @@ export class ImportManager implements ObjectManager {
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
                         importRange(this.document, imp.start, imp.end),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions)
+                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
                     ));
                 } else {
                     edits.push(TextEdit.insert(
                         getImportInsertPosition(
                             ImportManager.config.resolver.newImportLocation,
-                            window.activeTextEditor
+                            window.activeTextEditor,
                         ),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions)
+                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
                     ));
                 }
             }
@@ -350,17 +350,17 @@ export class ImportManager implements ObjectManager {
                     all.push(cur.alias);
                 }
                 return all;
-            }, <string[]>[]);
+            },      <string[]>[]);
 
-        for (let decision of Object.keys(
-            this.userImportDecisions
+        for (const decision of Object.keys(
+            this.userImportDecisions,
         ).filter(o => this.userImportDecisions[o].length > 0)) {
             const declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
-                o => new ResolveQuickPickItem(o)
+                o => new ResolveQuickPickItem(o),
             );
 
             const result = await window.showQuickPick(declarations, {
-                placeHolder: `Multiple declarations for "${decision}" found.`
+                placeHolder: `Multiple declarations for "${decision}" found.`,
             });
 
             if (result) {
@@ -370,13 +370,13 @@ export class ImportManager implements ObjectManager {
 
         const proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
 
-        for (let imp of proxies) {
+        for (const imp of proxies) {
             if (imp.defaultPurposal && !imp.defaultAlias) {
                 imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal);
                 delete imp.defaultPurposal;
             }
 
-            for (let spec of imp.specifiers) {
+            for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
                 if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
                     spec.alias = await this.getSpecifierAlias();
@@ -397,7 +397,7 @@ export class ImportManager implements ObjectManager {
         const result = await this.vscodeInputBox({
             placeHolder: 'Alias for specifier',
             prompt: 'Please enter an alias for the specifier..',
-            validateInput: s => !!s ? '' : 'Please enter a variable name'
+            validateInput: s => !!s ? '' : 'Please enter a variable name',
         });
         return !!result ? result : undefined;
     }
@@ -416,7 +416,7 @@ export class ImportManager implements ObjectManager {
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export..',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
-            value: declarationName
+            value: declarationName,
         });
         return !!result ? result : undefined;
     }

@@ -19,7 +19,7 @@ import { FileChangeType, FileEvent } from 'vscode-languageserver';
  * @returns {string}
  */
 function getNodeLibraryName(path: string): string {
-    let dirs = path.split(/\/|\\/),
+    const dirs = path.split(/\/|\\/),
         nodeIndex = dirs.indexOf('node_modules');
 
     return dirs.slice(nodeIndex + 1).join('/')
@@ -102,7 +102,7 @@ export class DeclarationIndex {
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        private parser: TypescriptParser
+        private parser: TypescriptParser,
     ) {
         this.logger = loggerFactory('DeclarationIndex');
         this.logger.info('Instantiated.');
@@ -167,7 +167,7 @@ export class DeclarationIndex {
             removeResources: string[] = [],
             rebuildFiles: string[] = [];
 
-        for (let change of changes) {
+        for (const change of changes) {
             const filePath = change.uri.replace('file://', ''),
                 resource = '/' + relative(rootPath, change.uri).replace(/[.]tsx?/g, '');
 
@@ -184,7 +184,7 @@ export class DeclarationIndex {
                 }
             }
 
-            for (let file of this.getExportedResources(resource, rootPath)) {
+            for (const file of this.getExportedResources(resource, rootPath)) {
                 if (rebuildFiles.indexOf(file) < 0) {
                     rebuildFiles.push(file);
                 }
@@ -194,14 +194,14 @@ export class DeclarationIndex {
         this.logger.info('Files have changed, going to rebuild', {
             update: rebuildResources,
             delete: removeResources,
-            reindex: rebuildFiles
+            reindex: rebuildFiles,
         });
 
         const resources = await this.parseResources(rootPath, await this.parser.parseFiles(rebuildFiles, rootPath));
-        for (let del of removeResources) {
+        for (const del of removeResources) {
             delete this.parsedResources[del];
         }
-        for (let key of Object.keys(resources)) {
+        for (const key of Object.keys(resources)) {
             this.parsedResources[key] = resources[key];
         }
         this._index = await this.createIndex(this.parsedResources);
@@ -246,7 +246,7 @@ export class DeclarationIndex {
     private doesExportResource(resource: File, resourcePath: string, rootPath: string): boolean {
         let exportsResource = false;
 
-        for (let ex of resource.exports) {
+        for (const ex of resource.exports) {
             if (exportsResource) {
                 break;
             }
@@ -273,9 +273,9 @@ export class DeclarationIndex {
     private async parseResources(rootPath: string, files: File[] = []): Promise<Resources> {
         const parsedResources: Resources = Object.create(null);
 
-        for (let file of files) {
+        for (const file of files) {
             if (file.filePath.indexOf('typings') > -1 || file.filePath.indexOf('node_modules/@types') > -1) {
-                for (let resource of file.resources) {
+                for (const resource of file.resources) {
                     parsedResources[resource.identifier] = resource;
                 }
             } else if (file.filePath.indexOf('node_modules') > -1) {
@@ -286,10 +286,10 @@ export class DeclarationIndex {
             }
         }
 
-        for (let key of Object.keys(parsedResources).sort((k1, k2) => k2.length - k1.length)) {
+        for (const key of Object.keys(parsedResources).sort((k1, k2) => k2.length - k1.length)) {
             const resource = parsedResources[key];
             resource.declarations = resource.declarations.filter(
-                o => isExportableDeclaration(o) && o.isExported
+                o => isExportableDeclaration(o) && o.isExported,
             );
             this.processResourceExports(rootPath, parsedResources, resource);
         }
@@ -312,7 +312,7 @@ export class DeclarationIndex {
         // Thanks to @gund in https://github.com/buehler/typescript-hero/issues/79
         const index: DeclarationInfoIndex = Object.create(null);
 
-        for (let key of Object.keys(resources)) {
+        for (const key of Object.keys(resources)) {
             const resource = resources[key];
             if (resource instanceof Namespace || resource instanceof Module) {
                 if (!index[resource.name]) {
@@ -320,16 +320,16 @@ export class DeclarationIndex {
                 }
                 index[resource.name].push(new DeclarationInfo(
                     new ModuleDeclaration(resource.getNamespaceAlias(), resource.start, resource.end),
-                    resource.name
+                    resource.name,
                 ));
             }
-            for (let declaration of resource.declarations) {
+            for (const declaration of resource.declarations) {
                 if (!index[declaration.name]) {
                     index[declaration.name] = [];
                 }
                 const from = key.replace(/[/]?index$/, '') || '/';
                 if (!index[declaration.name].some(
-                    o => o.declaration.constructor === declaration.constructor && o.from === from
+                    o => o.declaration.constructor === declaration.constructor && o.from === from,
                 )) {
                     index[declaration.name].push(new DeclarationInfo(declaration, from));
                 }
@@ -355,14 +355,14 @@ export class DeclarationIndex {
         rootPath: string,
         parsedResources: Resources,
         resource: Resource,
-        processedResources: Resource[] = []
+        processedResources: Resource[] = [],
     ): void {
         if (processedResources.indexOf(resource) >= 0 || resource.exports.length === 0) {
             return;
         }
         processedResources.push(resource);
 
-        for (let ex of resource.exports) {
+        for (const ex of resource.exports) {
             if (resource instanceof File && (ex instanceof NamedExport || ex instanceof AllExport)) {
                 if (!ex.from) {
                     return;
@@ -379,7 +379,7 @@ export class DeclarationIndex {
                     return;
                 }
 
-                let exportedLib = parsedResources[sourceLib];
+                const exportedLib = parsedResources[sourceLib];
                 this.processResourceExports(rootPath, parsedResources, exportedLib, processedResources);
 
                 if (ex instanceof AllExport) {
@@ -389,13 +389,13 @@ export class DeclarationIndex {
                 }
             } else {
                 if (ex instanceof AssignedExport) {
-                    for (let lib of ex.exported.filter(o => !isExportableDeclaration(o))) {
+                    for (const lib of ex.exported.filter(o => !isExportableDeclaration(o))) {
                         this.processResourceExports(rootPath, parsedResources, lib as Resource, processedResources);
                     }
                     this.processAssignedExport(ex, resource);
                 } else if (ex instanceof NamedExport && ex.from && parsedResources[ex.from]) {
                     this.processResourceExports(
-                        rootPath, parsedResources, parsedResources[ex.from], processedResources
+                        rootPath, parsedResources, parsedResources[ex.from], processedResources,
                     );
                     this.processNamedFromExport(ex, resource, parsedResources[ex.from]);
                 }
@@ -432,11 +432,11 @@ export class DeclarationIndex {
     private processNamedFromExport(
         tsExport: NamedExport,
         exportingLib: Resource,
-        exportedLib: Resource
+        exportedLib: Resource,
     ): void {
         exportedLib.declarations
             .forEach(o => {
-                let ex = tsExport.specifiers.find(s => s.specifier === o.name);
+                const ex = tsExport.specifiers.find(s => s.specifier === o.name);
                 if (!ex) {
                     return;
                 }
@@ -460,7 +460,7 @@ export class DeclarationIndex {
      */
     private processAssignedExport(
         tsExport: AssignedExport,
-        exportingLib: Resource
+        exportingLib: Resource,
     ): void {
         tsExport.exported.forEach(exported => {
             if (isExportableDeclaration(exported)) {
@@ -468,8 +468,8 @@ export class DeclarationIndex {
             } else {
                 exportingLib.declarations.push(
                     ...exported.declarations.filter(
-                        o => isExportableDeclaration(o) && o.isExported
-                    )
+                        o => isExportableDeclaration(o) && o.isExported,
+                    ),
                 );
                 exported.declarations = [];
             }

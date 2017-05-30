@@ -45,7 +45,7 @@ export class Namespace implements Resource, Node {
     public get nonLocalUsages(): string[] {
         return this.usages.filter(
             usage => !this.declarations.some(o => o.name === usage) &&
-                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage)
+                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage),
         );
     }
 
@@ -66,6 +66,6 @@ export class Namespace implements Resource, Node {
             } else {
                 return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
             }
-        }, '');
+        },                                    '');
     }
 }

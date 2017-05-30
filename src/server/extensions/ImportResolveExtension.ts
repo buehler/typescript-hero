@@ -24,7 +24,7 @@ export class ImportResolveExtension implements ServerExtension {
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        private index: DeclarationIndex
+        private index: DeclarationIndex,
     ) {
         this.logger = loggerFactory('ImportResolveExtension');
     }
@@ -124,7 +124,7 @@ export class ImportResolveExtension implements ServerExtension {
                 Notification.PartialIndexResult,
                 partialKeys
                     .map(k => new DeclarationIndexPartial(k, this.index.index![k]))
-                    .filter(p => p.infos.length > 0)
+                    .filter(p => p.infos.length > 0),
             );
         }
     }

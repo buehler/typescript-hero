@@ -17,7 +17,7 @@ import { Serializable } from 'ts-json-serializer';
         const obj = new NamedImport(json.libraryName, json.start, json.end);
         obj.specifiers = json.specifiers;
         return obj;
-    }
+    },
 })
 export class NamedImport implements Import {
     public specifiers: SymbolSpecifier[] = [];
@@ -37,12 +37,12 @@ export class NamedImport implements Import {
      * @memberOf NamedImport
      */
     public generateTypescript(options: GenerationOptions): string {
-        let {eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold} = options,
+        const { eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold } = options,
             space = spaceBraces ? ' ' : '',
             specifiers = this.specifiers.sort(this.specifierSort).map(o => o.generateTypescript()).join(', '),
             lib = this.libraryName;
 
-        let importString =
+        const importString =
             `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}\n`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
@@ -58,7 +58,7 @@ export class NamedImport implements Import {
      * @memberOf NamedImport
      */
     public clone(): NamedImport {
-        let clone = new NamedImport(this.libraryName, this.start, this.end);
+        const clone = new NamedImport(this.libraryName, this.start, this.end);
         clone.specifiers = this.specifiers.map(o => o.clone());
         return clone;
     }
@@ -71,8 +71,8 @@ export class NamedImport implements Import {
      * 
      * @memberOf NamedImport
      */
-    public toMultiLineImport({eol, stringQuoteStyle, tabSize}: GenerationOptions): string {
-        let spacings = Array(tabSize + 1).join(' ');
+    public toMultiLineImport({ eol, stringQuoteStyle, tabSize }: GenerationOptions): string {
+        const spacings = Array(tabSize + 1).join(' ');
         return `import {
 ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n')}
 } from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
@@ -89,7 +89,7 @@ ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateType
      * @memberOf NamedImport
      */
     private specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
-        let strA = i1.specifier.toLowerCase(),
+        const strA = i1.specifier.toLowerCase(),
             strB = i2.specifier.toLowerCase();
 
         if (strA < strB) {

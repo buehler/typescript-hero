@@ -14,8 +14,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new PropertyDeclaration(
-        json.name, json.visibility, json.type, json.start, json.end
-    )
+        json.name, json.visibility, json.type, json.start, json.end,
+    ),
 })
 export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration {
     public get itemKind(): CompletionItemKind {
@@ -31,7 +31,7 @@ export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration 
         public visibility: DeclarationVisibility | undefined,
         public type: string | undefined,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

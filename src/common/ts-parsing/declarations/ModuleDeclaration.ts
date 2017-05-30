@@ -13,8 +13,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new ModuleDeclaration(
-        json.name, json.start, json.end
-    )
+        json.name, json.start, json.end,
+    ),
 })
 export class ModuleDeclaration implements Declaration {
     public get itemKind(): CompletionItemKind {
@@ -28,7 +28,7 @@ export class ModuleDeclaration implements Declaration {
     constructor(
         public name: string,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

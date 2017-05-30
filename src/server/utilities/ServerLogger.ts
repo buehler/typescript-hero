@@ -114,7 +114,7 @@ export class ServerLogger implements Logger {
      */
     private trySendBuffer(): void {
         if (this.configuration && this.messageBuffer) {
-            for (let {level, type, message, data} of [...this.messageBuffer]) {
+            for (const { level, type, message, data } of [...this.messageBuffer]) {
                 this.log(level, type, message, data);
             }
             delete this.messageBuffer;

@@ -28,7 +28,7 @@ export class AssignedExport implements Export {
                     isExportableDeclaration(o) && o.isExported && o.name === this.declarationIdentifier),
             ...this.resource.resources
                 .filter(o =>
-                    (o instanceof Namespace || o instanceof Module) && o.name === this.declarationIdentifier)
+                    (o instanceof Namespace || o instanceof Module) && o.name === this.declarationIdentifier),
         ];
     }
 
@@ -36,6 +36,6 @@ export class AssignedExport implements Export {
         public start: number,
         public end: number,
         public declarationIdentifier: string,
-        private resource: Resource
+        private resource: Resource,
     ) { }
 }

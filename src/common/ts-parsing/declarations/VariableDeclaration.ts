@@ -12,8 +12,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new VariableDeclaration(
-        json.name, json.isConst, json.isExported, json.type, json.start, json.end
-    )
+        json.name, json.isConst, json.isExported, json.type, json.start, json.end,
+    ),
 })
 export class VariableDeclaration implements ExportableDeclaration, TypedDeclaration {
     public get itemKind(): CompletionItemKind {
@@ -30,7 +30,7 @@ export class VariableDeclaration implements ExportableDeclaration, TypedDeclarat
         public isExported: boolean,
         public type: string | undefined,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

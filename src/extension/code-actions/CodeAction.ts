@@ -40,7 +40,7 @@ export class AddImportCodeAction implements CodeAction {
      * @memberOf AddImportCodeAction
      */
     public async execute(): Promise<boolean> {
-        let controller = await ImportManager.create(this.document);
+        const controller = await ImportManager.create(this.document);
         return controller.addDeclarationImport(this.importToAdd).commit();
     }
 }
@@ -63,7 +63,7 @@ export class AddMissingImportsCodeAction implements CodeAction {
      * @memberOf AddMissingImportsCodeAction
      */
     public async execute(): Promise<boolean> {
-        let controller = await ImportManager.create(this.document);
+        const controller = await ImportManager.create(this.document);
         return controller.addMissingImports(this.resolveIndex).commit();
     }
 }
@@ -100,7 +100,7 @@ export class ImplementPolymorphElements implements CodeAction {
     constructor(
         private document: TextDocument,
         private managedClass: string,
-        private polymorphObject: InterfaceDeclaration
+        private polymorphObject: InterfaceDeclaration,
     ) { }
 
     /**
@@ -111,16 +111,16 @@ export class ImplementPolymorphElements implements CodeAction {
      * @memberOf ImplementPolymorphElements
      */
     public async execute(): Promise<boolean> {
-        let controller = await ClassManager.create(this.document, this.managedClass);
+        const controller = await ClassManager.create(this.document, this.managedClass);
 
-        for (let property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
+        for (const property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
             if (!property.visibility) {
                 property.visibility = DeclarationVisibility.Public;
             }
             controller.addProperty(property);
         }
 
-        for (let method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
+        for (const method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
             if (!method.visibility) {
                 method.visibility = DeclarationVisibility.Public;
             }

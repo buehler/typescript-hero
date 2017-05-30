@@ -12,8 +12,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new ParameterDeclaration(
-        json.name, json.type, json.start, json.end
-    )
+        json.name, json.type, json.start, json.end,
+    ),
 })
 export class ParameterDeclaration implements TypedDeclaration {
     public get itemKind(): CompletionItemKind {

@@ -14,7 +14,7 @@ const usageNotAllowedParents = [
     SyntaxKind.FunctionDeclaration,
     SyntaxKind.EnumDeclaration,
     SyntaxKind.TypeAliasDeclaration,
-    SyntaxKind.MethodDeclaration
+    SyntaxKind.MethodDeclaration,
 ];
 
 const usageAllowedIfLast = [
@@ -22,13 +22,13 @@ const usageAllowedIfLast = [
     SyntaxKind.PropertyDeclaration,
     SyntaxKind.VariableDeclaration,
     SyntaxKind.ElementAccessExpression,
-    SyntaxKind.BinaryExpression
+    SyntaxKind.BinaryExpression,
 ];
 
 const usagePredicates: any = [
     (o: Node) => o.parent && usageNotAllowedParents.indexOf(o.parent.kind) === -1,
     allowedIfLastIdentifier,
-    allowedIfPropertyAccessFirst
+    allowedIfPropertyAccessFirst,
 ];
 
 /**
@@ -47,7 +47,7 @@ function allowedIfLastIdentifier(node: Node): boolean {
         return true;
     }
 
-    let children = node.parent.getChildren().filter(o => o.kind === SyntaxKind.Identifier);
+    const children = node.parent.getChildren().filter(o => o.kind === SyntaxKind.Identifier);
     return children.length === 1 || children.indexOf(node) === 1;
 }
 
@@ -67,7 +67,7 @@ function allowedIfPropertyAccessFirst(node: Node): boolean {
         return true;
     }
 
-    let children = node.parent.getChildren();
+    const children = node.parent.getChildren();
     return children.indexOf(node) === 0;
 }
 

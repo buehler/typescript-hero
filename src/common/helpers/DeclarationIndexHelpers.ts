@@ -17,11 +17,11 @@ export function getDeclarationsFilteredByImports(
     declarationInfos: DeclarationInfo[],
     documentPath: string,
     rootPath: string,
-    imports: Import[]
+    imports: Import[],
 ): DeclarationInfo[] {
     let declarations = declarationInfos;
 
-    for (let tsImport of imports) {
+    for (const tsImport of imports) {
         const importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath, rootPath);
 
         if (tsImport instanceof NamedImport) {
@@ -56,7 +56,7 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string, r
     }
     return '/' + relative(
         rootPath,
-        normalize(join(parse(actualFilePath).dir, library))
+        normalize(join(parse(actualFilePath).dir, library)),
     ).replace(/[/]$/g, '');
 }
 

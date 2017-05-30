@@ -18,7 +18,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         obj.parameters = json.parameters;
         obj.variables = json.variables;
         return obj;
-    }
+    },
 })
 export class ConstructorDeclaration implements CallableDeclaration {
     public parameters: ParameterDeclaration[] = [];
@@ -35,7 +35,7 @@ export class ConstructorDeclaration implements CallableDeclaration {
     constructor(
         public name: string,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

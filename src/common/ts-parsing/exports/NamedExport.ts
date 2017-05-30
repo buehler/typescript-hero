@@ -14,7 +14,7 @@ import { Serializable } from 'ts-json-serializer';
         const obj = new NamedExport(json.start, json.end, json.from);
         obj.specifiers = json.specifiers;
         return obj;
-    }
+    },
 })
 export class NamedExport implements Export {
     public specifiers: SymbolSpecifier[];

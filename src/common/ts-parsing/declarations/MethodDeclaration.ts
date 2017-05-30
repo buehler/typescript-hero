@@ -22,7 +22,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         obj.parameters = json.parameters;
         obj.variables = json.variables;
         return obj;
-    }
+    },
 })
 export class MethodDeclaration implements AbstractDeclaration, CallableDeclaration, ScopedDeclaration, TypedDeclaration {
     public parameters: ParameterDeclaration[] = [];
@@ -54,7 +54,7 @@ export class MethodDeclaration implements AbstractDeclaration, CallableDeclarati
      * @memberOf MethodDeclaration
      */
     public generateTypescript({ tabSize }: GenerationOptions): string {
-        let intend = Array(tabSize + 1).join(' ');
+        const intend = Array(tabSize + 1).join(' ');
         return `${intend}` +
             `${this.visibility !== undefined ? getVisibilityText(this.visibility) + ' ' : ''}${this.name}(` +
             `${this.parameters.map(o => o.generateTypescript()).join(', ')})` +

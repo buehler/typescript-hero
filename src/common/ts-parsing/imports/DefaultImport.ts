@@ -26,7 +26,7 @@ export class DefaultImport implements AliasedImport {
      * 
      * @memberOf DefaultImport
      */
-    public generateTypescript({stringQuoteStyle, eol}: GenerationOptions): string {
+    public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
         return `import ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
     }
 
