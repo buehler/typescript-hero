@@ -41,7 +41,7 @@
     "postinstall": "node ./node_modules/vscode/bin/install",
     "pretest": "del ./out && tsc -p ./config/tsconfig.test.json && yarn run lint",
     "test": "node ./node_modules/vscode/bin/test",
-    "lint": "exit 0",
+    "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "build": "del ./out && tsc -p ./config/tsconfig.build.json",
     "package": "yarn run build && del './*.vsix' && vsce package"
   },
