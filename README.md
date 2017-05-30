@@ -82,7 +82,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | insertSemicolons                      | If the extension should add a semicolon to the end of a statement                    |
 | multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                     |
 | newImportLocation                     | The location of new imports (at the top of the file, or at the cursor location)      |
-| disableImportsSorting                 | Disable sorting during organize imports action
+| disableImportSorting                  | Disable sorting during organize imports action                                       |
 
 ### Debug session restarter
 
