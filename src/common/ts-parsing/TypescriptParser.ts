@@ -8,7 +8,7 @@ import {
     parseInterface,
     parseModule,
     parseTypeAlias,
-    parseVariable
+    parseVariable,
 } from './node-parser';
 import { File, Resource } from './resources';
 import { readFileSync } from 'fs';
@@ -30,7 +30,7 @@ import {
     SourceFile,
     SyntaxKind,
     TypeAliasDeclaration,
-    VariableStatement
+    VariableStatement,
 } from 'typescript';
 
 /**
@@ -67,7 +67,7 @@ export class TypescriptParser {
      * @memberOf TsResourceParser
      */
     public async parseFile(filePath: string, rootPath: string): Promise<File> {
-        let parse = await this.parseFiles([filePath], rootPath);
+        const parse = await this.parseFiles([filePath], rootPath);
         return parse[0];
     }
 
@@ -118,7 +118,7 @@ export class TypescriptParser {
      * @memberOf TsResourceParser
      */
     private parse(resource: Resource, node: Node): void {
-        for (let child of node.getChildren()) {
+        for (const child of node.getChildren()) {
             switch (child.kind) {
                 case SyntaxKind.ImportDeclaration:
                 case SyntaxKind.ImportEqualsDeclaration:

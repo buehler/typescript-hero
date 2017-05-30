@@ -15,8 +15,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new DefaultDeclaration(
-        json.name, json.resource, json.start, json.end
-    )
+        json.name, json.resource, json.start, json.end,
+    ),
 })
 export class DefaultDeclaration implements ExportableDeclaration {
     public readonly isExported: boolean = true;
@@ -43,7 +43,7 @@ export class DefaultDeclaration implements ExportableDeclaration {
         public name: string,
         private resource: Resource,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

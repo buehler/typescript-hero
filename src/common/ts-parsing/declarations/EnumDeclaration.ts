@@ -11,11 +11,11 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {ExportableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new EnumDeclaration(json.name, json.isExported, json.start, json.end);
         obj.members = json.members;
         return obj;
-    }
+    },
 })
 export class EnumDeclaration implements ExportableDeclaration {
     public members: string[] = [];
@@ -32,7 +32,7 @@ export class EnumDeclaration implements ExportableDeclaration {
         public name: string,
         public isExported: boolean,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

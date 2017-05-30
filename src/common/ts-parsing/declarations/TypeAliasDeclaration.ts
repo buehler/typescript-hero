@@ -13,8 +13,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  */
 @Serializable({
     factory: json => new TypeAliasDeclaration(
-        json.name, json.isExported, json.start, json.end
-    )
+        json.name, json.isExported, json.start, json.end,
+    ),
 })
 export class TypeAliasDeclaration implements ExportableDeclaration {
     public get itemKind(): CompletionItemKind {
@@ -29,7 +29,7 @@ export class TypeAliasDeclaration implements ExportableDeclaration {
         public name: string,
         public isExported: boolean,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

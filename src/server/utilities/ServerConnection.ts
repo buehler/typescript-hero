@@ -33,10 +33,10 @@ export class ServerConnection extends Connection<IConnection> {
 
         const extensions = Container.getAll<ServerExtension>(iocSymbols.extensions);
 
-        this.connection.onInitialize(params => {
+        this.connection.onInitialize((params) => {
             extensions.forEach(o => o.initialize(this, params));
             return {
-                capabilities: {}
+                capabilities: {},
             };
         });
         this.connection.onShutdown(() => {
@@ -56,7 +56,7 @@ export class ServerConnection extends Connection<IConnection> {
         if (!this.handler['onDidChangeConfiguration']) {
             this.handler['onDidChangeConfiguration'] = [];
             this.connection.onDidChangeConfiguration(
-                params => this.handler['onDidChangeConfiguration'].forEach(o => o(params.settings.typescriptHero))
+                params => this.handler['onDidChangeConfiguration'].forEach(o => o(params.settings.typescriptHero)),
             );
         }
         this.handler['onDidChangeConfiguration'].push(handler);
@@ -73,7 +73,7 @@ export class ServerConnection extends Connection<IConnection> {
         if (!this.handler['onDidChangeWatchedFiles']) {
             this.handler['onDidChangeWatchedFiles'] = [];
             this.connection.onDidChangeWatchedFiles(
-                params => this.handler['onDidChangeWatchedFiles'].forEach(o => o(params.changes))
+                params => this.handler['onDidChangeWatchedFiles'].forEach(o => o(params.changes)),
             );
         }
         this.handler['onDidChangeWatchedFiles'].push(handler);

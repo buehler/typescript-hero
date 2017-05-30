@@ -4,7 +4,7 @@ import {
     isIdentifier,
     isMethodDeclaration,
     isObjectBindingPattern,
-    isPropertyDeclaration
+    isPropertyDeclaration,
 } from '../../type-guards';
 import {
     ClassDeclaration as TshClass,
@@ -12,7 +12,7 @@ import {
     DefaultDeclaration as TshDefault,
     MethodDeclaration as TshMethod,
     ParameterDeclaration as TshParameter,
-    PropertyDeclaration as TshProperty
+    PropertyDeclaration as TshProperty,
 } from '../declarations';
 import { Resource } from '../resources';
 import { parseFunctionParts, parseMethodParams } from './function-parser';
@@ -22,7 +22,7 @@ import {
     getNodeType,
     getNodeVisibility,
     isNodeDefaultExported,
-    isNodeExported
+    isNodeExported,
 } from './parse-utilities';
 import {
     ArrayBindingPattern,
@@ -32,7 +32,7 @@ import {
     Identifier,
     Node,
     ObjectBindingPattern,
-    SyntaxKind
+    SyntaxKind,
 } from 'typescript';
 
 /**
@@ -43,7 +43,7 @@ import {
  * @param {Node} node
  */
 export function parseClassIdentifiers(tsResource: Resource, node: Node): void {
-    for (let child of node.getChildren()) {
+    for (const child of node.getChildren()) {
         switch (child.kind) {
             case SyntaxKind.Identifier:
                 parseIdentifier(tsResource, <Identifier>child);
@@ -67,17 +67,17 @@ export function parseClassIdentifiers(tsResource: Resource, node: Node): void {
 export function parseCtorParams(
     parent: TshClass,
     ctor: TshConstructor,
-    node: ConstructorDeclaration
+    node: ConstructorDeclaration,
 ): void {
     if (!node.parameters) {
         return;
     }
-    node.parameters.forEach(o => {
+    node.parameters.forEach((o) => {
         if (isIdentifier(o.name)) {
             ctor.parameters.push(
                 new TshParameter(
-                    (o.name as Identifier).text, getNodeType(o.type), o.getStart(), o.getEnd()
-                )
+                    (o.name as Identifier).text, getNodeType(o.type), o.getStart(), o.getEnd(),
+                ),
             );
             if (!o.modifiers) {
                 return;
@@ -88,16 +88,17 @@ export function parseCtorParams(
                     getNodeVisibility(o),
                     getNodeType(o.type),
                     o.getStart(),
-                    o.getEnd()
-                )
+                    o.getEnd(),
+                ),
             );
         } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
-            const identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern,
-                elements = [...identifiers.elements];
+            const identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
+            const elements = [...identifiers.elements];
+
             ctor.parameters = ctor.parameters.concat(<TshParameter[]>elements.map((bind: BindingElement) => {
                 if (isIdentifier(bind.name)) {
                     return new TshParameter(
-                        (bind.name as Identifier).text, undefined, bind.getStart(), bind.getEnd()
+                        (bind.name as Identifier).text, undefined, bind.getStart(), bind.getEnd(),
                     );
                 }
             }).filter(Boolean));
@@ -113,8 +114,8 @@ export function parseCtorParams(
  * @param {ClassDeclaration} node
  */
 export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
-    const name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource),
-        classDeclaration = new TshClass(name, isNodeExported(node), node.getStart(), node.getEnd());
+    const name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
+    const classDeclaration = new TshClass(name, isNodeExported(node), node.getStart(), node.getEnd());
 
     if (isNodeDefaultExported(node)) {
         classDeclaration.isExported = false;
@@ -122,7 +123,7 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
     }
 
     if (node.members) {
-        node.members.forEach(o => {
+        node.members.forEach((o) => {
             if (isPropertyDeclaration(o)) {
                 const actualCount = classDeclaration.properties.length;
                 if (o.modifiers) {
@@ -132,8 +133,8 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
                             getNodeVisibility(o),
                             getNodeType(o.type),
                             o.getStart(),
-                            o.getEnd()
-                        )
+                            o.getEnd(),
+                        ),
                     );
                 }
                 if (actualCount === classDeclaration.properties.length) {
@@ -143,8 +144,8 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
                             getNodeVisibility(o),
                             getNodeType(o.type),
                             o.getStart(),
-                            o.getEnd()
-                        )
+                            o.getEnd(),
+                        ),
                     );
                 }
                 return;
@@ -156,13 +157,13 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
                 classDeclaration.ctor = ctor;
                 parseFunctionParts(tsResource, ctor, o);
             } else if (isMethodDeclaration(o)) {
-                let method = new TshMethod(
+                const method = new TshMethod(
                     (o.name as Identifier).text,
                     o.modifiers !== undefined && o.modifiers.some(m => m.kind === SyntaxKind.AbstractKeyword),
                     getNodeVisibility(o),
                     getNodeType(o.type),
                     o.getStart(),
-                    o.getEnd()
+                    o.getEnd(),
                 );
                 method.parameters = parseMethodParams(o);
                 classDeclaration.methods.push(method);

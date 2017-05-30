@@ -10,11 +10,11 @@ import { Serializable } from 'ts-json-serializer';
  * @implements {Export}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new NamedExport(json.start, json.end, json.from);
         obj.specifiers = json.specifiers;
         return obj;
-    }
+    },
 })
 export class NamedExport implements Export {
     public specifiers: SymbolSpecifier[];

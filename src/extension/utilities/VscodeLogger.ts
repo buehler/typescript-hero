@@ -32,7 +32,7 @@ export class VscodeLogger implements Logger {
             LogLevel.Errors,
             'Error',
             message,
-            data
+            data,
         );
     }
 
@@ -49,7 +49,7 @@ export class VscodeLogger implements Logger {
             LogLevel.Warnings,
             'Warn ',
             message,
-            data
+            data,
         );
     }
 
@@ -66,7 +66,7 @@ export class VscodeLogger implements Logger {
             LogLevel.All,
             'Info ',
             message,
-            data
+            data,
         );
     }
 
@@ -84,7 +84,7 @@ export class VscodeLogger implements Logger {
      */
     private log(level: LogLevel, severity: string, message: string, data?: any): void {
         if (this.getLogLevel() >= level) {
-            let msg = `[${severity} - ${this.getDate()}] ${this.prefix ? this.prefix + ' - ' : ''}${message}`;
+            const msg = `[${severity} - ${this.getDate()}] ${this.prefix ? this.prefix + ' - ' : ''}${message}`;
             // tslint:disable
             if (data) {
                 console.log(msg, data);
@@ -109,9 +109,10 @@ export class VscodeLogger implements Logger {
      */
     private getDate(): string {
         const date = new Date();
-        let hours = date.getHours().toString(),
-            minutes = date.getMinutes().toString(),
-            seconds = date.getSeconds().toString();
+        let hours = date.getHours().toString();
+        let minutes = date.getMinutes().toString();
+        let seconds = date.getSeconds().toString();
+
         if (hours.length < 2) {
             hours = `0${hours}`;
         }

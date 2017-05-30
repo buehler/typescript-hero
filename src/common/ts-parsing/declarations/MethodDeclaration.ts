@@ -17,12 +17,12 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {TypedDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new MethodDeclaration(json.name, json.isExported, json.visibility, json.type, json.start, json.end);
         obj.parameters = json.parameters;
         obj.variables = json.variables;
         return obj;
-    }
+    },
 })
 export class MethodDeclaration implements AbstractDeclaration, CallableDeclaration, ScopedDeclaration, TypedDeclaration {
     public parameters: ParameterDeclaration[] = [];
@@ -54,7 +54,7 @@ export class MethodDeclaration implements AbstractDeclaration, CallableDeclarati
      * @memberOf MethodDeclaration
      */
     public generateTypescript({ tabSize }: GenerationOptions): string {
-        let intend = Array(tabSize + 1).join(' ');
+        const intend = Array(tabSize + 1).join(' ');
         return `${intend}` +
             `${this.visibility !== undefined ? getVisibilityText(this.visibility) + ' ' : ''}${this.name}(` +
             `${this.parameters.map(o => o.generateTypescript()).join(', ')})` +

@@ -14,14 +14,14 @@ import { SyntaxKind, VariableStatement } from 'typescript';
 export function parseVariable(parent: Resource | CallableDeclaration, node: VariableStatement): void {
     const isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
     if (node.declarationList && node.declarationList.declarations) {
-        node.declarationList.declarations.forEach(o => {
-            let declaration = new VariableDeclaration(
+        node.declarationList.declarations.forEach((o) => {
+            const declaration = new VariableDeclaration(
                 o.name.getText(),
                 isConst,
                 isNodeExported(node),
                 getNodeType(o.type),
                 node.getStart(),
-                node.getEnd()
+                node.getEnd(),
             );
             if (isCallableDeclaration(parent)) {
                 parent.variables.push(declaration);

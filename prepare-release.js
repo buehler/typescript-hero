@@ -13,13 +13,6 @@ console.log('Create release branch');
 
 exec(`git checkout -b release/${versionNumber}`);
 
-console.log(`Update package.json to version v${versionNumber}`);
-
-let packageJson = fs.readFileSync('./package.json', 'utf-8');
-packageJson = packageJson.replace(/"version": .*,/, `"version": "${versionNumber}",`);
-
-fs.writeFileSync('./package.json', packageJson, { encoding: 'utf-8' });
-
 console.log(`Update changelog`);
 
 let changelog = fs.readFileSync('./CHANGELOG.md', 'utf-8');
@@ -29,12 +22,13 @@ changelog = changelog.replace(/\[Unreleased\]\:.*v(.*)\.\.\.master/, `[Unrelease
 
 fs.writeFileSync('./CHANGELOG.md', changelog, { encoding: 'utf-8' });
 
-console.log('Commit package.json');
-
-exec('git add package.json');
-exec(`git commit -m "Version bump to v${versionNumber}"`);
-
 console.log('Commit changelog');
 
 exec('git add CHANGELOG.md');
 exec(`git commit -m "Update changelog to v${versionNumber}"`);
+
+console.log('Update package.json version');
+
+exec(`yarn version --new-version ${versionNumber} --no-git-tag-version`);
+exec('git add package.json');
+exec(`git commit -m "Update package.json to v${versionNumber}"`);

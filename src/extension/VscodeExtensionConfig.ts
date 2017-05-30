@@ -123,7 +123,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberOf VscodeResolverConfig
      */
     public get newImportLocation(): ImportLocation {
-        let configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
+        const configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
         return ImportLocation[configString];
     }
 
@@ -162,7 +162,7 @@ class VscodeResolverConfig implements ResolverConfig {
             multiLineWrapThreshold: this.multiLineWrapThreshold,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
             stringQuoteStyle: this.stringQuoteStyle,
-            tabSize: this.tabSize
+            tabSize: this.tabSize,
         };
     }
 }

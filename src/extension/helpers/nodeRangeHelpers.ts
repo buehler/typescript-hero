@@ -29,7 +29,7 @@ export function importRange(document: TextDocument, start?: number, end?: number
     return start !== undefined && end !== undefined ?
         new Range(
             document.lineAt(document.positionAt(start).line).rangeIncludingLineBreak.start,
-            document.lineAt(document.positionAt(end).line).rangeIncludingLineBreak.end
+            document.lineAt(document.positionAt(end).line).rangeIncludingLineBreak.end,
         ) :
         new Range(new Position(0, 0), new Position(0, 0));
 }

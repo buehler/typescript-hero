@@ -15,5 +15,5 @@ export type GenerationOptions = {
     eol: '' | ';',
     spaceBraces: boolean,
     multiLineWrapThreshold: number,
-    tabSize: number
+    tabSize: number,
 };

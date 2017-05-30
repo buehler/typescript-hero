@@ -18,7 +18,7 @@ export class TypeScriptHero implements Disposable {
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @multiInject(iocSymbols.extensions) private extensions: BaseExtension[]
+        @multiInject(iocSymbols.extensions) private extensions: BaseExtension[],
     ) {
         this.logger = loggerFactory('TypescriptHero');
         this.logger.info('Activation event called. TypeScriptHero instantiated.');
@@ -32,7 +32,7 @@ export class TypeScriptHero implements Disposable {
      */
     public dispose(): void {
         this.logger.info('Deactivation event called. Disposing TypeScriptHero.');
-        for (let ext of this.extensions) {
+        for (const ext of this.extensions) {
             ext.dispose();
         }
     }

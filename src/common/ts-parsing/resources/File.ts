@@ -49,7 +49,7 @@ export class File implements Resource, Node {
     public get nonLocalUsages(): string[] {
         return this.usages.filter(
             usage => !this.declarations.some(o => o.name === usage) &&
-                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage)
+                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage),
         );
     }
 

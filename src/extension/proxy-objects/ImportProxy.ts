@@ -54,7 +54,7 @@ export class ImportProxy extends NamedImport {
      * @memberOf ImportProxy
      */
     public clone(): ImportProxy {
-        let clone = new ImportProxy(this.libraryName, this.start, this.end);
+        const clone = new ImportProxy(this.libraryName, this.start, this.end);
         clone.specifiers = this.specifiers.map(o => o.clone());
         clone.defaultAlias = this.defaultAlias;
         clone.defaultPurposal = this.defaultPurposal;
@@ -71,9 +71,9 @@ export class ImportProxy extends NamedImport {
      * @memberOf ImportProxy
      */
     public isEqual(imp: ImportProxy): boolean {
-        let sameSpecifiers = (specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]) => {
-            for (let spec of specs1) {
-                let spec2 = specs2[specs1.indexOf(spec)];
+        const sameSpecifiers = (specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]) => {
+            for (const spec of specs1) {
+                const spec2 = specs2[specs1.indexOf(spec)];
                 if (!spec2 ||
                     spec.specifier !== spec2.specifier ||
                     spec.alias !== spec2.alias) {
@@ -103,7 +103,7 @@ export class ImportProxy extends NamedImport {
     public generateTypescript(options: GenerationOptions): string {
         if (this.specifiers.length <= 0) {
             return new DefaultImport(
-                this.libraryName, this.defaultAlias!, this.start, this.end
+                this.libraryName, this.defaultAlias!, this.start, this.end,
             ).generateTypescript(options);
         }
         if (this.defaultAlias) {

@@ -17,7 +17,7 @@ import {
     PropertyDeclaration,
     PropertySignature,
     StringLiteral,
-    SyntaxKind
+    SyntaxKind,
 } from 'typescript';
 
 /**

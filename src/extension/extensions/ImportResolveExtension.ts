@@ -30,10 +30,10 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
     if (local.length !== config.length) {
         return false;
     }
-    let localSorted = local.sort(),
-        configSorted = config.sort();
+    const localSorted = local.sort();
+    const configSorted = config.sort();
 
-    for (let x = 0; x < configSorted.length; x++) {
+    for (let x = 0; x < configSorted.length; x += 1) {
         if (configSorted[x] !== localSorted[x]) {
             return false;
         }
@@ -54,40 +54,40 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     const searches: PromiseLike<Uri[]>[] = [
         workspace.findFiles(
             '{**/*.ts,**/*.tsx}',
-            '{**/node_modules/**,**/typings/**}'
-        )
+            '{**/node_modules/**,**/typings/**}',
+        ),
     ];
 
-    let globs: string[] = [],
-        ignores = ['**/typings/**'];
+    let globs: string[] = [];
+    let ignores = ['**/typings/**'];
 
     if (workspace.rootPath && existsSync(join(workspace.rootPath, 'package.json'))) {
         const packageJson = require(join(workspace.rootPath, 'package.json'));
         if (packageJson['dependencies']) {
             globs = globs.concat(
-                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`)
+                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`),
             );
             ignores = ignores.concat(
-                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`)
+                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`),
             );
         }
         if (packageJson['devDependencies']) {
             globs = globs.concat(
-                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`)
+                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`),
             );
             ignores = ignores.concat(
-                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`)
+                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`),
             );
         }
     } else {
         globs.push('**/node_modules/**/*.d.ts');
     }
     searches.push(
-        workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`)
+        workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`),
     );
 
     searches.push(
-        workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**')
+        workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**'),
     );
 
     let uris = await Promise.all(searches);
@@ -99,14 +99,14 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
                 .replace(workspace.rootPath, '')
                 .split(/\\|\//)
                 .every(p => excludePatterns.indexOf(p) < 0)) :
-        o
+        o,
     );
     return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
 }
 
-const resolverOk = 'TSH Resolver $(check)',
-    resolverSyncing = 'TSH Resolver $(sync)',
-    resolverErr = 'TSH Resolver $(flame)';
+const resolverOk = 'TSH Resolver $(check)';
+const resolverSyncing = 'TSH Resolver $(sync)';
+const resolverErr = 'TSH Resolver $(flame)';
 
 /**
  * Extension that resolves imports. Contains various actions to add imports to a document, add missing
@@ -128,7 +128,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private index: CalculatedDeclarationIndex,
         private parser: TypescriptParser,
-        private connection: ClientConnection
+        private connection: ClientConnection,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
@@ -147,35 +147,35 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.show();
 
         this.connection.onNotification(
-            Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk
+            Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk,
         );
         this.connection.onNotification(
-            Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr
+            Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr,
         );
         this.connection.onNotification(
-            Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing
+            Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
         );
 
         // TODO: readd add Import. 
         this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport())
+            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
         );
         this.context.subscriptions.push(
             commands.registerTextEditorCommand(
                 'typescriptHero.resolve.addImportUnderCursor',
-                () => this.addImportUnderCursor()
-            )
+                () => this.addImportUnderCursor(),
+            ),
         );
         this.context.subscriptions.push(
             commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports()
-            )
+                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports(),
+            ),
         );
         this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports())
+            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
         );
         this.context.subscriptions.push(
-            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex())
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
         );
 
         this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
@@ -233,7 +233,7 @@ export class ImportResolveExtension extends BaseExtension {
         try {
             const selectedItem = await window.showQuickPick(
                 this.index.declarationInfos.map(o => new ResolveQuickPickItem(o)),
-                { placeHolder: 'Add import to document:' }
+                { placeHolder: 'Add import to document:' },
             );
             if (selectedItem) {
                 this.logger.info('Add import to document', { resolveItem: selectedItem });
@@ -267,19 +267,19 @@ export class ImportResolveExtension extends BaseExtension {
             const resolveItems = await this.getDeclarationsForImport({
                 cursorSymbol: selectedSymbol,
                 documentSource: window.activeTextEditor.document.getText(),
-                documentPath: window.activeTextEditor.document.fileName
+                documentPath: window.activeTextEditor.document.fileName,
             });
 
             if (resolveItems.length < 1) {
                 window.showInformationMessage(
-                    `The symbol '${selectedSymbol}' was not found in the index or is already imported.`
+                    `The symbol '${selectedSymbol}' was not found in the index or is already imported.`,
                 );
             } else if (resolveItems.length === 1 && resolveItems[0].declaration.name === selectedSymbol) {
                 this.logger.info('Add import to document', { resolveItem: resolveItems[0] });
                 this.addImportToDocument(resolveItems[0]);
             } else {
                 const selectedItem = await window.showQuickPick(
-                    resolveItems.map(o => new ResolveQuickPickItem(o)), { placeHolder: 'Multiple declarations found:' }
+                    resolveItems.map(o => new ResolveQuickPickItem(o)), { placeHolder: 'Multiple declarations found:' },
                 );
                 if (selectedItem) {
                     this.logger.info('Add import to document', { resolveItem: selectedItem });
@@ -309,7 +309,7 @@ export class ImportResolveExtension extends BaseExtension {
         try {
             const missing = await this.getMissingDeclarationsForFile({
                 documentSource: window.activeTextEditor.document.getText(),
-                documentPath: window.activeTextEditor.document.fileName
+                documentPath: window.activeTextEditor.document.fileName,
             });
 
             if (missing && missing.length) {
@@ -368,8 +368,9 @@ export class ImportResolveExtension extends BaseExtension {
         if (!editor) {
             return '';
         }
-        const selection = editor.selection,
-            word = editor.document.getWordRangeAtPosition(selection.active);
+        const selection = editor.selection;
+        const word = editor.document.getWordRangeAtPosition(selection.active);
+
         return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
 
@@ -395,22 +396,22 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private async getDeclarationsForImport(
-        { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions
+        { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions,
     ): Promise<DeclarationInfo[]> {
         this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
 
-        const parsedSource = await this.parser.parseSource(documentSource),
-            activeDocumentDeclarations = parsedSource.declarations.map(o => o.name),
-            declarations = getDeclarationsFilteredByImports(
-                this.index.declarationInfos,
-                documentPath,
-                workspace.rootPath,
-                parsedSource.imports
-            ).filter(o => o.declaration.name.startsWith(cursorSymbol));
+        const parsedSource = await this.parser.parseSource(documentSource);
+        const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
+        const declarations = getDeclarationsFilteredByImports(
+            this.index.declarationInfos,
+            documentPath,
+            workspace.rootPath,
+            parsedSource.imports,
+        ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
             ...declarations.filter(o => o.from.startsWith('/')),
-            ...declarations.filter(o => !o.from.startsWith('/'))
+            ...declarations.filter(o => !o.from.startsWith('/')),
         ].filter(o => activeDocumentDeclarations.indexOf(o.declaration.name) === -1);
     }
 
@@ -425,18 +426,18 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberOf ImportResolveExtension
      */
     private async getMissingDeclarationsForFile(
-        { documentSource, documentPath }: MissingDeclarationsForFileOptions
+        { documentSource, documentPath }: MissingDeclarationsForFileOptions,
     ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
-        const parsedDocument = await this.parser.parseSource(documentSource),
-            missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [],
-            declarations = getDeclarationsFilteredByImports(
-                this.index.declarationInfos,
-                documentPath,
-                workspace.rootPath,
-                parsedDocument.imports
-            );
+        const parsedDocument = await this.parser.parseSource(documentSource);
+        const missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [];
+        const declarations = getDeclarationsFilteredByImports(
+            this.index.declarationInfos,
+            documentPath,
+            workspace.rootPath,
+            parsedDocument.imports,
+        );
 
-        for (let usage of parsedDocument.nonLocalUsages) {
+        for (const usage of parsedDocument.nonLocalUsages) {
             const foundDeclarations = declarations.filter(o => o.declaration.name === usage);
             if (foundDeclarations.length <= 0) {
                 continue;

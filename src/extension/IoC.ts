@@ -12,7 +12,7 @@ import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 import { Container as IoCContainer, interfaces } from 'inversify';
 import { ExtensionContext } from 'vscode';
-import getDecorators from 'inversify-inject-decorators';
+import inversifyInjectDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
 
@@ -25,16 +25,15 @@ container.bind(TypescriptParser).to(TypescriptParser);
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
-// injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
-// injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 
 // Logging
 container
     .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)
     .toFactory<Logger>((context: interfaces.Context) => {
         return (prefix?: string) => {
-            const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext),
-                config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
+            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+
             return new VscodeLogger(extContext, config, prefix);
         };
     });
@@ -48,4 +47,4 @@ export const Container = container;
  * IocDecorators to lazy inject stuff into properties or something. Useful when normal injection via the
  * constructor is not possible.
  */
-export const IocDecorators = getDecorators(container);
+export const IocDecorators = inversifyInjectDecorators(container);

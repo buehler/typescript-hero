@@ -8,5 +8,5 @@ export const enum LogLevel {
     Nothing,
     Errors,
     Warnings,
-    All
+    All,
 }

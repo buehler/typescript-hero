@@ -4,7 +4,7 @@ import {
     MethodDuplicated,
     MethodNotFound,
     PropertyDuplicated,
-    PropertyNotFound
+    PropertyNotFound,
 } from '../../common/errors';
 import { TypescriptParser } from '../../common/ts-parsing';
 import {
@@ -13,7 +13,7 @@ import {
     DeclarationVisibility,
     MethodDeclaration,
     ParameterDeclaration,
-    PropertyDeclaration
+    PropertyDeclaration,
 } from '../../common/ts-parsing/declarations';
 import { File } from '../../common/ts-parsing/resources';
 import { Container } from '../IoC';
@@ -32,8 +32,8 @@ type VisibleObject = { visibility?: DeclarationVisibility };
  * @returns {number}
  */
 function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleObject>): number {
-    const left = o1.object.visibility,
-        right = o2.object.visibility;
+    const left = o1.object.visibility;
+    const right = o2.object.visibility;
 
     if ((left === undefined && right === undefined) || (left === right)) {
         return 0;
@@ -64,7 +64,7 @@ export class ClassManager implements ObjectManager {
     private constructor(
         public readonly document: TextDocument,
         public readonly parsedDocument: File,
-        private readonly managedClass: ClassDeclaration
+        private readonly managedClass: ClassDeclaration,
     ) {
         this.ctor = new Changeable(managedClass.ctor);
         this.properties = managedClass.properties.map(o => new Changeable(o));
@@ -84,10 +84,11 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
-        const source = await ClassManager.parser.parseSource(document.getText()),
-            managedClass = source.declarations.find(
-                o => o.name === className && o instanceof ClassDeclaration
-            ) as ClassDeclaration;
+        const source = await ClassManager.parser.parseSource(document.getText());
+        const managedClass = source.declarations.find(
+            o => o.name === className && o instanceof ClassDeclaration,
+        ) as ClassDeclaration;
+
         if (!managedClass) {
             throw new ClassNotFoundError(className);
         }
@@ -119,7 +120,7 @@ export class ClassManager implements ObjectManager {
     public addProperty(
         nameOrDeclaration: string | PropertyDeclaration,
         visibility?: DeclarationVisibility,
-        type?: string
+        type?: string,
     ): this {
         let declaration: PropertyDeclaration;
 
@@ -190,7 +191,7 @@ export class ClassManager implements ObjectManager {
         nameOrDeclaration: string | MethodDeclaration,
         visibility?: DeclarationVisibility,
         type?: string,
-        parameters?: ParameterDeclaration[]
+        parameters?: ParameterDeclaration[],
     ): this {
         let declaration: MethodDeclaration;
 
@@ -249,7 +250,7 @@ export class ClassManager implements ObjectManager {
     public async commit(): Promise<boolean> {
         const edits = [
             ...this.calculatePropertyEdits(),
-            ...this.calculateMethodEdits()
+            ...this.calculateMethodEdits(),
         ];
 
         const workspaceEdit = new WorkspaceEdit();
@@ -286,34 +287,34 @@ export class ClassManager implements ObjectManager {
     private calculatePropertyEdits(): TextEdit[] {
         const edits: TextEdit[] = [];
 
-        for (let property of this.properties.filter(o => o.isDeleted)) {
+        for (const property of this.properties.filter(o => o.isDeleted)) {
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
-                        this.document.positionAt(property.object.start!).line
+                        this.document.positionAt(property.object.start!).line,
                     ).rangeIncludingLineBreak.start,
                     this.document.lineAt(
-                        this.document.positionAt(property.object.end!).line
+                        this.document.positionAt(property.object.end!).line,
                     ).rangeIncludingLineBreak.end,
-                )
+                ),
             ));
         }
 
         // TODO update
 
-        for (let property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
+        for (const property of this.properties.filter(o => o.isNew).sort(sortByVisibility)) {
             const lastProperty = this.properties.filter(
                 o => !o.isNew &&
                     !o.isDeleted &&
                     !this.isInConstructor(o.object) &&
-                    o.object.visibility === property.object.visibility
+                    o.object.visibility === property.object.visibility,
             ).pop();
             const lastPosition = lastProperty ?
                 this.document.positionAt(lastProperty.object.end!).line + 1 :
                 this.document.positionAt(this.managedClass.start!).line + 1;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                property.object.generateTypescript(ClassManager.config.resolver.generationOptions)
+                property.object.generateTypescript(ClassManager.config.resolver.generationOptions),
             ));
         }
 
@@ -331,36 +332,36 @@ export class ClassManager implements ObjectManager {
     private calculateMethodEdits(): TextEdit[] {
         const edits: TextEdit[] = [];
 
-        for (let method of this.methods.filter(o => o.isDeleted)) {
-            let endPosition = this.document.positionAt(method.object.end!),
-                endLine = endPosition.line;
+        for (const method of this.methods.filter(o => o.isDeleted)) {
+            const endPosition = this.document.positionAt(method.object.end!);
+            let endLine = endPosition.line;
 
             if (this.document.lineAt(endLine + 1).isEmptyOrWhitespace) {
-                endLine++;
+                endLine += 1;
             }
 
             edits.push(TextEdit.delete(
                 new Range(
                     this.document.lineAt(
-                        this.document.positionAt(method.object.start!).line
+                        this.document.positionAt(method.object.start!).line,
                     ).rangeIncludingLineBreak.start,
                     this.document.lineAt(endLine).rangeIncludingLineBreak.end,
-                )
+                ),
             ));
         }
 
         // TODO update
 
-        for (let method of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
+        for (const method of this.methods.filter(o => o.isNew).sort(sortByVisibility)) {
             const lastMethod = this.methods.filter(
-                o => !o.isNew && !o.isDeleted && o.object.visibility === method.object.visibility
+                o => !o.isNew && !o.isDeleted && o.object.visibility === method.object.visibility,
             ).pop();
             const lastPosition = lastMethod ?
                 this.document.positionAt(lastMethod.object.end!).line + 1 :
                 this.document.positionAt(this.managedClass.end!).line;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '\n' + method.object.generateTypescript(ClassManager.config.resolver.generationOptions)
+                '\n' + method.object.generateTypescript(ClassManager.config.resolver.generationOptions),
             ));
         }
 

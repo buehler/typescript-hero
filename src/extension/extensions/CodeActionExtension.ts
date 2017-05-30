@@ -8,7 +8,7 @@ import {
     AddMissingImportsCodeAction,
     CodeAction,
     ImplementPolymorphElements,
-    NoopCodeAction
+    NoopCodeAction,
 } from '../code-actions/CodeAction';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
@@ -26,7 +26,7 @@ import {
     Range,
     TextDocument,
     window,
-    workspace
+    workspace,
 } from 'vscode';
 
 /**
@@ -60,7 +60,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     public initialize(): void {
         this.context.subscriptions.push(commands.registerCommand(
             'typescriptHero.codeFix.executeCodeAction',
-            (codeAction: CodeAction) => this.executeCodeAction(codeAction)
+            (codeAction: CodeAction) => this.executeCodeAction(codeAction),
         ));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescriptreact', this));
@@ -75,6 +75,99 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      */
     public dispose(): void {
         this.logger.info('Disposed');
+    }
+
+    /**
+     * Provides the commands to execute for a given problem.
+     * 
+     * @param {TextDocument} document
+     * @param {Range} range
+     * @param {CodeActionContext} context
+     * @param {CancellationToken} token
+     * @returns {Promise<Command[]>}
+     * 
+     * @memberOf CodeActionExtension
+     */
+    public async provideCodeActions(
+        document: TextDocument,
+        _range: Range,
+        context: CodeActionContext,
+        _token: CancellationToken,
+    ): Promise<Command[]> {
+        const commands: Command[] = [];
+        let matchfoo: RegExpExecArray | null;
+        let addAllMissingImportsAdded = false;
+
+        for (const diagnostic of context.diagnostics) {
+            switch (true) {
+                case !!(matchfoo = isMissingImport(diagnostic)):
+                    const match = isMissingImport(diagnostic)!;
+                    if (!match) {
+                        break;
+                    }
+                    const infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
+                    if (infos.length > 0) {
+                        for (const info of infos) {
+                            commands.push(this.createCommand(
+                                `Import "${info.declaration.name}" from "${info.from}".`,
+                                new AddImportCodeAction(document, info),
+                            ));
+                        }
+                        if (!addAllMissingImportsAdded) {
+                            commands.push(this.createCommand(
+                                'Add all missing imports if possible.',
+                                new AddMissingImportsCodeAction(document, this.index),
+                            ));
+                            addAllMissingImportsAdded = true;
+                        }
+                    } else {
+                        commands.push(this.createCommand(
+                            `Cannot find "${match[1]}" in the index.`,
+                            new NoopCodeAction(),
+                        ));
+                    }
+                    break;
+                case !!(matchfoo = isIncorrectlyImplementingInterface(diagnostic)):
+                case !!(matchfoo = isIncorrectlyImplementingAbstract(diagnostic)):
+                    const match2 = isMissingImport(diagnostic)!;
+                    if (!match2) {
+                        break;
+                    }
+                    const parsedDocument = await this.parser.parseSource(document.getText());
+                    const alreadyImported = parsedDocument.imports.find(
+                        o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2]),
+                    );
+                    const declaration = parsedDocument.declarations.find(o => o.name === match2[2]) ||
+                        (this.index.declarationInfos.find(
+                            o => o.declaration.name === match2[2] &&
+                                o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
+                        ) || { declaration: undefined }).declaration;
+
+                    if (commands.some((o: Command) => o.title.indexOf(match2[2]) >= 0)) {
+                        // Do leave the method when a command with the found class is already added.
+                        break;
+                    }
+
+                    if (!declaration) {
+                        commands.push(this.createCommand(
+                            `Cannot find "${match2[2]}" in the index or the actual file.`,
+                            new NoopCodeAction(),
+                        ));
+                        break;
+                    }
+
+                    commands.push(this.createCommand(
+                        `Implement missing elements from "${match2[2]}".`,
+                        new ImplementPolymorphElements(document, match2[1], <InterfaceDeclaration>declaration),
+                    ));
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return commands;
     }
 
     /**
@@ -93,99 +186,6 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     }
 
     /**
-     * Provides the commands to execute for a given problem.
-     * 
-     * @param {TextDocument} document
-     * @param {Range} range
-     * @param {CodeActionContext} context
-     * @param {CancellationToken} token
-     * @returns {Promise<Command[]>}
-     * 
-     * @memberOf CodeActionExtension
-     */
-    public async provideCodeActions(
-        document: TextDocument,
-        _range: Range,
-        context: CodeActionContext,
-        _token: CancellationToken
-    ): Promise<Command[]> {
-        let commands: Command[] = [],
-            matchfoo: RegExpExecArray | null,
-            addAllMissingImportsAdded = false;
-
-        for (let diagnostic of context.diagnostics) {
-            switch (true) {
-                case !!(matchfoo = isMissingImport(diagnostic)):
-                    const match = isMissingImport(diagnostic)!;
-                    if (!match) {
-                        break;
-                    }
-                    let infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
-                    if (infos.length > 0) {
-                        for (let info of infos) {
-                            commands.push(this.createCommand(
-                                `Import "${info.declaration.name}" from "${info.from}".`,
-                                new AddImportCodeAction(document, info)
-                            ));
-                        }
-                        if (!addAllMissingImportsAdded) {
-                            commands.push(this.createCommand(
-                                'Add all missing imports if possible.',
-                                new AddMissingImportsCodeAction(document, this.index)
-                            ));
-                            addAllMissingImportsAdded = true;
-                        }
-                    } else {
-                        commands.push(this.createCommand(
-                            `Cannot find "${match[1]}" in the index.`,
-                            new NoopCodeAction()
-                        ));
-                    }
-                    break;
-                case !!(matchfoo = isIncorrectlyImplementingInterface(diagnostic)):
-                case !!(matchfoo = isIncorrectlyImplementingAbstract(diagnostic)):
-                    const match2 = isMissingImport(diagnostic)!;
-                    if (!match2) {
-                        break;
-                    }
-                    let parsedDocument = await this.parser.parseSource(document.getText()),
-                        alreadyImported = parsedDocument.imports.find(
-                            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2])
-                        ),
-                        declaration = parsedDocument.declarations.find(o => o.name === match2[2]) ||
-                            (this.index.declarationInfos.find(
-                                o => o.declaration.name === match2[2] &&
-                                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath)
-                            ) || { declaration: undefined }).declaration;
-
-                    if (commands.some((o: Command) => o.title.indexOf(match2[2]) >= 0)) {
-                        // Do leave the method when a command with the found class is already added.
-                        break;
-                    }
-
-                    if (!declaration) {
-                        commands.push(this.createCommand(
-                            `Cannot find "${match2[2]}" in the index or the actual file.`,
-                            new NoopCodeAction()
-                        ));
-                        break;
-                    }
-
-                    commands.push(this.createCommand(
-                        `Implement missing elements from "${match2[2]}".`,
-                        new ImplementPolymorphElements(document, match2[1], <InterfaceDeclaration>declaration)
-                    ));
-
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        return commands;
-    }
-
-    /**
      * Creates a customized command for the lightbulb with the correct strings.
      * 
      * @private
@@ -199,7 +199,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         return {
             arguments: [codeAction],
             command: 'typescriptHero.codeFix.executeCodeAction',
-            title
+            title,
         };
     }
 }

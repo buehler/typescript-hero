@@ -11,8 +11,8 @@ import { EnumDeclaration as TshEnum } from '../declarations';
  * @param {EnumDeclaration} node
  */
 export function parseEnum(resource: Resource, node: EnumDeclaration): void {
-    let declaration = new TshEnum(
-        node.name.text, isNodeExported(node), node.getStart(), node.getEnd()
+    const declaration = new TshEnum(
+        node.name.text, isNodeExported(node), node.getStart(), node.getEnd(),
     );
     declaration.members = node.members.map(o => o.name.getText());
     resource.declarations.push(declaration);

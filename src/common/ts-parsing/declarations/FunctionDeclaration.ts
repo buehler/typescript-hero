@@ -15,12 +15,12 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {ExportableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new FunctionDeclaration(json.name, json.isExported, json.type, json.start, json.end);
         obj.parameters = json.parameters;
         obj.variables = json.variables;
         return obj;
-    }
+    },
 })
 export class FunctionDeclaration implements CallableDeclaration, ExportableDeclaration {
     public parameters: ParameterDeclaration[] = [];
@@ -39,7 +39,7 @@ export class FunctionDeclaration implements CallableDeclaration, ExportableDecla
         public isExported: boolean,
         public type?: string,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

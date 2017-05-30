@@ -11,6 +11,6 @@ export class Changeable<T> {
         public object: T,
         public isNew: boolean = false,
         public isModified: boolean = false,
-        public isDeleted: boolean = false
+        public isDeleted: boolean = false,
     ) { }
 }
