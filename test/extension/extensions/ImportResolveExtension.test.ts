@@ -1,6 +1,6 @@
 import { ExtensionConfig } from '../../../src/common/config';
 import { LoggerFactory } from '../../../src/common/utilities';
-import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
+import { ImportResolveExtension } from '../../../src/extension/extensions/importResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import * as chai from 'chai';
@@ -16,7 +16,7 @@ describe('ImportResolveExtension', () => {
     before(async () => {
         const file = join(
             vscode.workspace.rootPath,
-            'extension/extensions/ImportResolveExtension/addImportToDocument.ts'
+            'extension/extensions/importResolveExtension/addImportToDocument.ts'
         ),
             document = await vscode.workspace.openTextDocument(file);
         await vscode.window.showTextDocument(document);
@@ -32,7 +32,7 @@ describe('ImportResolveExtension', () => {
 
         const file = join(
             vscode.workspace.rootPath,
-            'extension/extensions/ImportResolveExtension/addImportToDocument.ts'
+            'extension/extensions/importResolveExtension/addImportToDocument.ts'
         );
         let document: vscode.TextDocument;
 
@@ -91,7 +91,7 @@ describe('ImportResolveExtension', () => {
 
     describe('organizeImports', () => {
 
-        const file = join(vscode.workspace.rootPath, 'extension/extensions/ImportResolveExtension/organizeImports.ts');
+        const file = join(vscode.workspace.rootPath, 'extension/extensions/importResolveExtension/organizeImports.ts');
         let document: vscode.TextDocument;
         let documentText: string;
 
