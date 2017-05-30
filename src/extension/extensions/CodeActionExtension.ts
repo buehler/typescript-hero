@@ -117,6 +117,9 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
             switch (true) {
                 case !!(matchfoo = isMissingImport(diagnostic)):
                     const match = isMissingImport(diagnostic)!;
+                    if (!match) {
+                        break;
+                    }
                     let infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
                     if (infos.length > 0) {
                         for (let info of infos) {
@@ -142,6 +145,9 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                 case !!(matchfoo = isIncorrectlyImplementingInterface(diagnostic)):
                 case !!(matchfoo = isIncorrectlyImplementingAbstract(diagnostic)):
                     const match2 = isMissingImport(diagnostic)!;
+                    if (!match2) {
+                        break;
+                    }
                     let parsedDocument = await this.parser.parseSource(document.getText()),
                         alreadyImported = parsedDocument.imports.find(
                             o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2])

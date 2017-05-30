@@ -11,7 +11,7 @@ import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } f
  * @class ClientConnection
  */
 export class ClientConnection extends Connection<LanguageClient> {
-    constructor(endpoint: LanguageClient) {
+    private constructor(endpoint: LanguageClient) {
         super(endpoint);
     }
 
