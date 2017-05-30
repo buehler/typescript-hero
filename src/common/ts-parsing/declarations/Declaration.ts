@@ -120,3 +120,20 @@ export interface CallableDeclaration extends Declaration {
      */
     variables: VariableDeclaration[];
 }
+
+/**
+ * Interface for possible abstract declarations. Contains information if the element is abstract or not.
+ * 
+ * @export
+ * @interface AbstractDeclaration
+ * @extends {Declaration}
+ */
+export interface AbstractDeclaration extends Declaration {
+    /**
+     * Defines if the declaration is abstract or not.
+     * 
+     * @type {boolean}
+     * @memberOf AbstractDeclaration
+     */
+    isAbstract: boolean;
+}

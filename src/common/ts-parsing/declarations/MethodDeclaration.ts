@@ -1,5 +1,5 @@
 import { GenerationOptions } from '../../ts-generation';
-import { CallableDeclaration, ScopedDeclaration, TypedDeclaration } from './Declaration';
+import { AbstractDeclaration, CallableDeclaration, ScopedDeclaration, TypedDeclaration } from './Declaration';
 import { DeclarationVisibility, getVisibilityText } from './DeclarationVisibility';
 import { ParameterDeclaration } from './ParameterDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
@@ -24,7 +24,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         return obj;
     }
 })
-export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration, TypedDeclaration {
+export class MethodDeclaration implements AbstractDeclaration, CallableDeclaration, ScopedDeclaration, TypedDeclaration {
     public parameters: ParameterDeclaration[] = [];
     public variables: VariableDeclaration[] = [];
 
@@ -38,11 +38,11 @@ export class MethodDeclaration implements CallableDeclaration, ScopedDeclaration
 
     constructor(
         public name: string,
-        public isExported: boolean,
+        public isAbstract: boolean,
         public visibility: DeclarationVisibility | undefined,
         public type: string | undefined,
         public start?: number,
-        public end?: number
+        public end?: number,
     ) { }
 
     /**

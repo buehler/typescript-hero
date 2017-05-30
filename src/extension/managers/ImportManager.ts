@@ -19,6 +19,7 @@ import {
 import { File } from '../../common/ts-parsing/resources';
 import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
 import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
+import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { importRange } from '../helpers';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
@@ -190,7 +191,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberOf ImportManager
      */
-    public addMissingImports(index: DeclarationIndex): this {
+    public addMissingImports(index: DeclarationIndex | CalculatedDeclarationIndex): this {
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,

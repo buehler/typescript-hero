@@ -1,8 +1,9 @@
-import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { ExtensionConfig } from '../common/config';
 import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
+import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { BaseExtension } from './extensions/BaseExtension';
+import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { iocSymbols } from './IoCSymbols';
@@ -20,15 +21,10 @@ container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonSc
 container.bind(CalculatedDeclarationIndex).to(CalculatedDeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
 
-// // Providers
-// injector.bind(GuiProvider).to(GuiProvider).inSingletonScope();
-// injector.bind(ResolveQuickPickProvider).to(ResolveQuickPickProvider).inSingletonScope();
-// injector.bind(ResolveCompletionItemProvider).to(ResolveCompletionItemProvider).inSingletonScope();
-// injector.bind(TypescriptCodeActionProvider).to(TypescriptCodeActionProvider).inSingletonScope();
-
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(RestartDebuggerExtension).inSingletonScope();
 // injector.bind<BaseExtension>('Extension').to(CodeFixExtension).inSingletonScope();
 

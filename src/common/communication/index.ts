@@ -14,6 +14,7 @@ export enum Notification {
     IndexCreationSuccessful,
     IndexCreationFailed,
     PartialIndexResult,
+    UpdatePartialIndex,
 }
 
 /**
