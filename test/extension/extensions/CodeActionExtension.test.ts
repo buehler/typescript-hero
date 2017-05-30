@@ -1,14 +1,10 @@
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import { DeclarationInfoIndex } from '../../../src/common/indices';
-import { ClientConnection } from '../../../src/extension/utilities/ClientConnection';
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeAction } from '../../../src/extension/code-actions/CodeAction';
-import { CalculatedDeclarationIndex } from '../../../src/extension/declarations/CalculatedDeclarationIndex';
-import { activate } from '../../../src/extension/extension';
 import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
