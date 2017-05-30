@@ -30,10 +30,10 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
     if (local.length !== config.length) {
         return false;
     }
-    const localSorted = local.sort(),
-        configSorted = config.sort();
+    const localSorted = local.sort();
+    const configSorted = config.sort();
 
-    for (let x = 0; x < configSorted.length; x++) {
+    for (let x = 0; x < configSorted.length; x += 1) {
         if (configSorted[x] !== localSorted[x]) {
             return false;
         }
@@ -58,8 +58,8 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
         ),
     ];
 
-    let globs: string[] = [],
-        ignores = ['**/typings/**'];
+    let globs: string[] = [];
+    let ignores = ['**/typings/**'];
 
     if (workspace.rootPath && existsSync(join(workspace.rootPath, 'package.json'))) {
         const packageJson = require(join(workspace.rootPath, 'package.json'));
@@ -104,9 +104,9 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
 }
 
-const resolverOk = 'TSH Resolver $(check)',
-    resolverSyncing = 'TSH Resolver $(sync)',
-    resolverErr = 'TSH Resolver $(flame)';
+const resolverOk = 'TSH Resolver $(check)';
+const resolverSyncing = 'TSH Resolver $(sync)';
+const resolverErr = 'TSH Resolver $(flame)';
 
 /**
  * Extension that resolves imports. Contains various actions to add imports to a document, add missing
@@ -368,8 +368,9 @@ export class ImportResolveExtension extends BaseExtension {
         if (!editor) {
             return '';
         }
-        const selection = editor.selection,
-            word = editor.document.getWordRangeAtPosition(selection.active);
+        const selection = editor.selection;
+        const word = editor.document.getWordRangeAtPosition(selection.active);
+
         return word && !word.isEmpty ? editor.document.getText(word) : '';
     }
 
@@ -399,14 +400,14 @@ export class ImportResolveExtension extends BaseExtension {
     ): Promise<DeclarationInfo[]> {
         this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
 
-        const parsedSource = await this.parser.parseSource(documentSource),
-            activeDocumentDeclarations = parsedSource.declarations.map(o => o.name),
-            declarations = getDeclarationsFilteredByImports(
-                this.index.declarationInfos,
-                documentPath,
-                workspace.rootPath,
-                parsedSource.imports,
-            ).filter(o => o.declaration.name.startsWith(cursorSymbol));
+        const parsedSource = await this.parser.parseSource(documentSource);
+        const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
+        const declarations = getDeclarationsFilteredByImports(
+            this.index.declarationInfos,
+            documentPath,
+            workspace.rootPath,
+            parsedSource.imports,
+        ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
             ...declarations.filter(o => o.from.startsWith('/')),
@@ -427,14 +428,14 @@ export class ImportResolveExtension extends BaseExtension {
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,
     ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
-        const parsedDocument = await this.parser.parseSource(documentSource),
-            missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [],
-            declarations = getDeclarationsFilteredByImports(
-                this.index.declarationInfos,
-                documentPath,
-                workspace.rootPath,
-                parsedDocument.imports,
-            );
+        const parsedDocument = await this.parser.parseSource(documentSource);
+        const missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [];
+        const declarations = getDeclarationsFilteredByImports(
+            this.index.declarationInfos,
+            documentPath,
+            workspace.rootPath,
+            parsedDocument.imports,
+        );
 
         for (const usage of parsedDocument.nonLocalUsages) {
             const foundDeclarations = declarations.filter(o => o.declaration.name === usage);

@@ -13,7 +13,7 @@ import { Serializable } from 'ts-json-serializer';
  * @implements {Import}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new NamedImport(json.libraryName, json.start, json.end);
         obj.specifiers = json.specifiers;
         return obj;
@@ -37,10 +37,10 @@ export class NamedImport implements Import {
      * @memberOf NamedImport
      */
     public generateTypescript(options: GenerationOptions): string {
-        const { eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold } = options,
-            space = spaceBraces ? ' ' : '',
-            specifiers = this.specifiers.sort(this.specifierSort).map(o => o.generateTypescript()).join(', '),
-            lib = this.libraryName;
+        const { eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold } = options;
+        const space = spaceBraces ? ' ' : '';
+        const specifiers = this.specifiers.sort(this.specifierSort).map(o => o.generateTypescript()).join(', ');
+        const lib = this.libraryName;
 
         const importString =
             `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}\n`;
@@ -89,8 +89,8 @@ ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateType
      * @memberOf NamedImport
      */
     private specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
-        const strA = i1.specifier.toLowerCase(),
-            strB = i2.specifier.toLowerCase();
+        const strA = i1.specifier.toLowerCase();
+        const strB = i2.specifier.toLowerCase();
 
         if (strA < strB) {
             return -1;

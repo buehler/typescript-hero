@@ -33,7 +33,7 @@ export class ServerConnection extends Connection<IConnection> {
 
         const extensions = Container.getAll<ServerExtension>(iocSymbols.extensions);
 
-        this.connection.onInitialize(params => {
+        this.connection.onInitialize((params) => {
             extensions.forEach(o => o.initialize(this, params));
             return {
                 capabilities: {},

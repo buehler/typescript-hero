@@ -72,7 +72,7 @@ export function parseCtorParams(
     if (!node.parameters) {
         return;
     }
-    node.parameters.forEach(o => {
+    node.parameters.forEach((o) => {
         if (isIdentifier(o.name)) {
             ctor.parameters.push(
                 new TshParameter(
@@ -92,8 +92,9 @@ export function parseCtorParams(
                 ),
             );
         } else if (isObjectBindingPattern(o.name) || isArrayBindingPattern(o.name)) {
-            const identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern,
-                elements = [...identifiers.elements];
+            const identifiers = o.name as ObjectBindingPattern | ArrayBindingPattern;
+            const elements = [...identifiers.elements];
+
             ctor.parameters = ctor.parameters.concat(<TshParameter[]>elements.map((bind: BindingElement) => {
                 if (isIdentifier(bind.name)) {
                     return new TshParameter(
@@ -113,8 +114,8 @@ export function parseCtorParams(
  * @param {ClassDeclaration} node
  */
 export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
-    const name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource),
-        classDeclaration = new TshClass(name, isNodeExported(node), node.getStart(), node.getEnd());
+    const name = node.name ? node.name.text : getDefaultResourceIdentifier(tsResource);
+    const classDeclaration = new TshClass(name, isNodeExported(node), node.getStart(), node.getEnd());
 
     if (isNodeDefaultExported(node)) {
         classDeclaration.isExported = false;
@@ -122,7 +123,7 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
     }
 
     if (node.members) {
-        node.members.forEach(o => {
+        node.members.forEach((o) => {
             if (isPropertyDeclaration(o)) {
                 const actualCount = classDeclaration.properties.length;
                 if (o.modifiers) {

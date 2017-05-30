@@ -37,7 +37,7 @@ export class ServerLogger implements Logger {
     private configuration: ExtensionConfig;
 
     constructor(private connection: ServerConnection, public prefix?: string) {
-        connection.onDidChangeConfiguration(config => {
+        connection.onDidChangeConfiguration((config) => {
             this.configuration = config;
             this.trySendBuffer();
         });
@@ -92,14 +92,15 @@ export class ServerLogger implements Logger {
      * @memberOf Logger
      */
     private log(level: LogLevel, type: MessageType, message: string, data?: any): void {
+        let payload = message;
         if (this.configuration && getLogLevel(this.configuration.verbosity) >= level) {
-            message = `${this.prefix ? this.prefix + ' - ' : ''}${message}`;
+            payload = `${this.prefix ? this.prefix + ' - ' : ''}${payload}`;
             if (data) {
-                message += `\n\tData:\t${util.inspect(data, {})}`;
+                payload += `\n\tData:\t${util.inspect(data, {})}`;
             }
-            this.connection.sendNotification('window/logMessage', { type, message });
+            this.connection.sendNotification('window/logMessage', { type, payload });
         } else if (!this.configuration && this.messageBuffer) {
-            this.messageBuffer.push({ level, type, message, data });
+            this.messageBuffer.push({ level, type, message: payload, data });
         }
     }
 

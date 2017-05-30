@@ -39,6 +39,12 @@
             "parameter",
             "property-declaration",
             "member-variable-declaration"
+        ],
+        "variable-name": [
+            true,
+            "check-format",
+            "allow-leading-underscore",
+            "allow-pascal-case"
         ]
     }
 }

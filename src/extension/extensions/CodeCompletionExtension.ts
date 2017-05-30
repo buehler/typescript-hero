@@ -87,8 +87,8 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         position: Position,
         token: CancellationToken,
     ): Promise<CompletionItem[] | null> {
-        const wordAtPosition = document.getWordRangeAtPosition(position),
-            lineText = document.lineAt(position.line).text;
+        const wordAtPosition = document.getWordRangeAtPosition(position);
+        const lineText = document.lineAt(position.line).text;
 
         let searchWord = '';
 
@@ -122,7 +122,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
         return declarations
             .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
-            .map(o => {
+            .map((o) => {
                 const item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
                 item.detail = o.from;
                 item.sortText = o.declaration.intellisenseSortKey;
@@ -143,7 +143,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberOf CodeCompletionExtension
      */
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: File): TextEdit[] {
-        const imp = parsedSource.imports.find(o => {
+        const imp = parsedSource.imports.find((o) => {
             if (o instanceof NamedImport) {
                 const importedLib = getAbsolutLibraryName(o.libraryName, document.fileName, workspace.rootPath);
                 return importedLib === declaration.from;

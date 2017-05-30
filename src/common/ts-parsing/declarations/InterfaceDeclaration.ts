@@ -13,7 +13,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {ExportableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new InterfaceDeclaration(json.name, json.isExported, json.start, json.end);
         obj.properties = json.properties;
         obj.methods = json.methods;

@@ -17,7 +17,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {TypedDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new MethodDeclaration(json.name, json.isExported, json.visibility, json.type, json.start, json.end);
         obj.parameters = json.parameters;
         obj.variables = json.variables;

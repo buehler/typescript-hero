@@ -32,8 +32,8 @@ type VisibleObject = { visibility?: DeclarationVisibility };
  * @returns {number}
  */
 function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleObject>): number {
-    const left = o1.object.visibility,
-        right = o2.object.visibility;
+    const left = o1.object.visibility;
+    const right = o2.object.visibility;
 
     if ((left === undefined && right === undefined) || (left === right)) {
         return 0;
@@ -84,10 +84,11 @@ export class ClassManager implements ObjectManager {
      * @memberOf ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
-        const source = await ClassManager.parser.parseSource(document.getText()),
-            managedClass = source.declarations.find(
-                o => o.name === className && o instanceof ClassDeclaration,
-            ) as ClassDeclaration;
+        const source = await ClassManager.parser.parseSource(document.getText());
+        const managedClass = source.declarations.find(
+            o => o.name === className && o instanceof ClassDeclaration,
+        ) as ClassDeclaration;
+
         if (!managedClass) {
             throw new ClassNotFoundError(className);
         }
@@ -332,11 +333,11 @@ export class ClassManager implements ObjectManager {
         const edits: TextEdit[] = [];
 
         for (const method of this.methods.filter(o => o.isDeleted)) {
-            let endPosition = this.document.positionAt(method.object.end!),
-                endLine = endPosition.line;
+            const endPosition = this.document.positionAt(method.object.end!);
+            let endLine = endPosition.line;
 
             if (this.document.lineAt(endLine + 1).isEmptyOrWhitespace) {
-                endLine++;
+                endLine += 1;
             }
 
             edits.push(TextEdit.delete(

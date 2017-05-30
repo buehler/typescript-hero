@@ -20,10 +20,10 @@ import { Identifier, InterfaceDeclaration } from 'typescript';
  * @param {InterfaceDeclaration} node
  */
 export function parseInterface(resource: Resource, node: InterfaceDeclaration): void {
-    const name = node.name ? node.name.text : getDefaultResourceIdentifier(resource),
-        interfaceDeclaration = new TshInterface(
-            name, isNodeExported(node), node.getStart(), node.getEnd(),
-        );
+    const name = node.name ? node.name.text : getDefaultResourceIdentifier(resource);
+    const interfaceDeclaration = new TshInterface(
+        name, isNodeExported(node), node.getStart(), node.getEnd(),
+    );
 
     if (isNodeDefaultExported(node)) {
         interfaceDeclaration.isExported = false;
@@ -31,7 +31,7 @@ export function parseInterface(resource: Resource, node: InterfaceDeclaration): 
     }
 
     if (node.members) {
-        node.members.forEach(o => {
+        node.members.forEach((o) => {
             if (isPropertySignature(o)) {
                 interfaceDeclaration.properties.push(
                     new PropertyDeclaration(

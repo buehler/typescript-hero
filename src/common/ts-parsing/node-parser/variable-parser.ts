@@ -14,7 +14,7 @@ import { SyntaxKind, VariableStatement } from 'typescript';
 export function parseVariable(parent: Resource | CallableDeclaration, node: VariableStatement): void {
     const isConst = node.declarationList.getChildren().some(o => o.kind === SyntaxKind.ConstKeyword);
     if (node.declarationList && node.declarationList.declarations) {
-        node.declarationList.declarations.forEach(o => {
+        node.declarationList.declarations.forEach((o) => {
             const declaration = new VariableDeclaration(
                 o.name.getText(),
                 isConst,

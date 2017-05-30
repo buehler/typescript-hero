@@ -13,7 +13,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {CallableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new ConstructorDeclaration(json.name, json.start, json.end);
         obj.parameters = json.parameters;
         obj.variables = json.variables;

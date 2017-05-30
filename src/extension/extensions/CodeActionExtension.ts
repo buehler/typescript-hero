@@ -78,21 +78,6 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     }
 
     /**
-     * Executes a code action. If the result is false, a warning is shown.
-     * 
-     * @private
-     * @param {CodeAction} codeAction
-     * @returns {Promise<void>}
-     * 
-     * @memberOf CodeFixExtension
-     */
-    private async executeCodeAction(codeAction: CodeAction): Promise<void> {
-        if (!await codeAction.execute()) {
-            window.showWarningMessage('The provided code action could not complete. Please see the logs.');
-        }
-    }
-
-    /**
      * Provides the commands to execute for a given problem.
      * 
      * @param {TextDocument} document
@@ -109,9 +94,9 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         context: CodeActionContext,
         _token: CancellationToken,
     ): Promise<Command[]> {
-        let commands: Command[] = [],
-            matchfoo: RegExpExecArray | null,
-            addAllMissingImportsAdded = false;
+        const commands: Command[] = [];
+        let matchfoo: RegExpExecArray | null;
+        let addAllMissingImportsAdded = false;
 
         for (const diagnostic of context.diagnostics) {
             switch (true) {
@@ -148,15 +133,15 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                     if (!match2) {
                         break;
                     }
-                    const parsedDocument = await this.parser.parseSource(document.getText()),
-                        alreadyImported = parsedDocument.imports.find(
-                            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2]),
-                        ),
-                        declaration = parsedDocument.declarations.find(o => o.name === match2[2]) ||
-                            (this.index.declarationInfos.find(
-                                o => o.declaration.name === match2[2] &&
-                                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
-                            ) || { declaration: undefined }).declaration;
+                    const parsedDocument = await this.parser.parseSource(document.getText());
+                    const alreadyImported = parsedDocument.imports.find(
+                        o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match2[2]),
+                    );
+                    const declaration = parsedDocument.declarations.find(o => o.name === match2[2]) ||
+                        (this.index.declarationInfos.find(
+                            o => o.declaration.name === match2[2] &&
+                                o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
+                        ) || { declaration: undefined }).declaration;
 
                     if (commands.some((o: Command) => o.title.indexOf(match2[2]) >= 0)) {
                         // Do leave the method when a command with the found class is already added.
@@ -183,6 +168,21 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         }
 
         return commands;
+    }
+
+    /**
+     * Executes a code action. If the result is false, a warning is shown.
+     * 
+     * @private
+     * @param {CodeAction} codeAction
+     * @returns {Promise<void>}
+     * 
+     * @memberOf CodeFixExtension
+     */
+    private async executeCodeAction(codeAction: CodeAction): Promise<void> {
+        if (!await codeAction.execute()) {
+            window.showWarningMessage('The provided code action could not complete. Please see the logs.');
+        }
     }
 
     /**

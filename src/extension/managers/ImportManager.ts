@@ -52,8 +52,8 @@ function stringSort(strA: string, strB: string): number {
  * @returns {number}
  */
 function importSort(i1: Import, i2: Import): number {
-    const strA = i1.libraryName.toLowerCase(),
-        strB = i2.libraryName.toLowerCase();
+    const strA = i1.libraryName.toLowerCase();
+    const strB = i2.libraryName.toLowerCase();
 
     return stringSort(strA, strB);
 }
@@ -282,7 +282,7 @@ export class ImportManager implements ObjectManager {
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
                 this.imports.reduce(
-                    (all, cur) => all += cur.generateTypescript(ImportManager.config.resolver.generationOptions),
+                    (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
                     '',
                 ),
             ));
@@ -339,18 +339,22 @@ export class ImportManager implements ObjectManager {
      */
     private async resolveImportSpecifiers(): Promise<void> {
         const getSpecifiers = () => this.imports
-            .reduce((all, cur) => {
+            .reduce(
+            (all, cur) => {
+                let specifiers = all;
                 if (cur instanceof ImportProxy) {
-                    all = all.concat(cur.specifiers.map(o => o.alias || o.specifier));
+                    specifiers = specifiers.concat(cur.specifiers.map(o => o.alias || o.specifier));
                     if (cur.defaultAlias) {
-                        all.push(cur.defaultAlias);
+                        specifiers.push(cur.defaultAlias);
                     }
                 }
                 if (isAliasedImport(cur)) {
-                    all.push(cur.alias);
+                    specifiers.push(cur.alias);
                 }
-                return all;
-            },      <string[]>[]);
+                return specifiers;
+            },
+            <string[]>[],
+        );
 
         for (const decision of Object.keys(
             this.userImportDecisions,

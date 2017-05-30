@@ -26,8 +26,9 @@ export function parseExport(resource: Resource, node: ExportDeclaration | Export
                 ),
             );
         } else if (tsExport.exportClause && isNamedExports(tsExport.exportClause)) {
-            const lib = tsExport.moduleSpecifier as StringLiteral,
-                ex = new NamedExport(node.getStart(), node.getEnd(), lib.text);
+            const lib = tsExport.moduleSpecifier as StringLiteral;
+            const ex = new NamedExport(node.getStart(), node.getEnd(), lib.text);
+
             ex.specifiers = tsExport.exportClause.elements.map(
                 o => o.propertyName && o.name ?
                     new SymbolSpecifier(o.propertyName.text, o.name.text) :

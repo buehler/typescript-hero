@@ -19,8 +19,8 @@ import { FileChangeType, FileEvent } from 'vscode-languageserver';
  * @returns {string}
  */
 function getNodeLibraryName(path: string): string {
-    const dirs = path.split(/\/|\\/),
-        nodeIndex = dirs.indexOf('node_modules');
+    const dirs = path.split(/\/|\\/);
+    const nodeIndex = dirs.indexOf('node_modules');
 
     return dirs.slice(nodeIndex + 1).join('/')
         .replace(/([.]d)?([.]tsx?)?/g, '')
@@ -163,13 +163,13 @@ export class DeclarationIndex {
      * @memberOf DeclarationIndex
      */
     public async reindexForChanges(changes: FileEvent[], rootPath: string): Promise<void> {
-        const rebuildResources: string[] = [],
-            removeResources: string[] = [],
-            rebuildFiles: string[] = [];
+        const rebuildResources: string[] = [];
+        const removeResources: string[] = [];
+        const rebuildFiles: string[] = [];
 
         for (const change of changes) {
-            const filePath = change.uri.replace('file://', ''),
-                resource = '/' + relative(rootPath, change.uri).replace(/[.]tsx?/g, '');
+            const filePath = change.uri.replace('file://', '');
+            const resource = '/' + relative(rootPath, change.uri).replace(/[.]tsx?/g, '');
 
             if (change.type === FileChangeType.Deleted) {
                 if (removeResources.indexOf(resource) < 0) {
@@ -222,7 +222,7 @@ export class DeclarationIndex {
         Object
             .keys(this.parsedResources)
             .filter(o => o.startsWith('/'))
-            .forEach(key => {
+            .forEach((key) => {
                 const resource = this.parsedResources[key] as File;
                 if (this.doesExportResource(resource, resourceToCheck, rootPath)) {
                     resources.push(resource.filePath);
@@ -435,7 +435,7 @@ export class DeclarationIndex {
         exportedLib: Resource,
     ): void {
         exportedLib.declarations
-            .forEach(o => {
+            .forEach((o) => {
                 const ex = tsExport.specifiers.find(s => s.specifier === o.name);
                 if (!ex) {
                     return;
@@ -462,7 +462,7 @@ export class DeclarationIndex {
         tsExport: AssignedExport,
         exportingLib: Resource,
     ): void {
-        tsExport.exported.forEach(exported => {
+        tsExport.exported.forEach((exported) => {
             if (isExportableDeclaration(exported)) {
                 exportingLib.declarations.push(exported);
             } else {

@@ -11,7 +11,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {ExportableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new EnumDeclaration(json.name, json.isExported, json.start, json.end);
         obj.members = json.members;
         return obj;

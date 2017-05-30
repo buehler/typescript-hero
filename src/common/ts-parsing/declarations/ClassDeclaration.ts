@@ -14,7 +14,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @implements {ExportableDeclaration}
  */
 @Serializable({
-    factory: json => {
+    factory: (json) => {
         const obj = new ClassDeclaration(json.name, json.isExported, json.start, json.end);
         obj.ctor = json.ctor;
         obj.properties = json.properties;

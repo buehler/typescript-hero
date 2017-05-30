@@ -109,9 +109,10 @@ export class VscodeLogger implements Logger {
      */
     private getDate(): string {
         const date = new Date();
-        let hours = date.getHours().toString(),
-            minutes = date.getMinutes().toString(),
-            seconds = date.getSeconds().toString();
+        let hours = date.getHours().toString();
+        let minutes = date.getMinutes().toString();
+        let seconds = date.getSeconds().toString();
+
         if (hours.length < 2) {
             hours = `0${hours}`;
         }

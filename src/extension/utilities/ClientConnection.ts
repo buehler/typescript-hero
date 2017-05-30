@@ -25,8 +25,8 @@ export class ClientConnection extends Connection<LanguageClient> {
      * @memberOf ClientConnection
      */
     public static async create(context: ExtensionContext): Promise<ClientConnection> {
-        const module = join(__dirname, '..', '..', 'server', 'TypeScriptHeroServer'),
-            options = { execArgv: ['--nolazy', '--debug=6004'] };
+        const module = join(__dirname, '..', '..', 'server', 'TypeScriptHeroServer');
+        const options = { execArgv: ['--nolazy', '--debug=6004'] };
 
         const serverOptions: ServerOptions = {
             run: { module, transport: TransportKind.ipc },

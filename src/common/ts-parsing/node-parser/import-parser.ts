@@ -28,13 +28,15 @@ import {
 export function parseImport(resource: Resource, node: ImportDeclaration | ImportEqualsDeclaration): void {
     if (isImportDeclaration(node)) {
         if (node.importClause && isNamespaceImport(node.importClause.namedBindings)) {
-            const lib = node.moduleSpecifier as StringLiteral,
-                alias = (node.importClause.namedBindings as TsNamespaceImport).name as Identifier;
+            const lib = node.moduleSpecifier as StringLiteral;
+            const alias = (node.importClause.namedBindings as TsNamespaceImport).name as Identifier;
+
             resource.imports.push(new NamespaceImport(lib.text, alias.text, node.getStart(), node.getEnd()));
         } else if (node.importClause && isNamedImports(node.importClause.namedBindings)) {
-            const lib = node.moduleSpecifier as StringLiteral,
-                bindings = node.importClause.namedBindings as NamedImports,
-                tsImport = new NamedImport(lib.text, node.getStart(), node.getEnd());
+            const lib = node.moduleSpecifier as StringLiteral;
+            const bindings = node.importClause.namedBindings as NamedImports;
+            const tsImport = new NamedImport(lib.text, node.getStart(), node.getEnd());
+
             tsImport.specifiers = bindings.elements.map(
                 o => o.propertyName && o.name ?
                     new SymbolSpecifier(o.propertyName.text, o.name.text) :
@@ -43,16 +45,18 @@ export function parseImport(resource: Resource, node: ImportDeclaration | Import
 
             resource.imports.push(tsImport);
         } else if (node.importClause && node.importClause.name) {
-            const lib = node.moduleSpecifier as StringLiteral,
-                alias = node.importClause.name;
+            const lib = node.moduleSpecifier as StringLiteral;
+            const alias = node.importClause.name;
+
             resource.imports.push(new DefaultImport(lib.text, alias.text, node.getStart(), node.getEnd()));
         } else if (node.moduleSpecifier && isStringLiteral(node.moduleSpecifier)) {
             const lib = node.moduleSpecifier as StringLiteral;
             resource.imports.push(new StringImport(lib.text, node.getStart(), node.getEnd()));
         }
     } else if (isExternalModuleReference(node.moduleReference)) {
-        const alias = node.name,
-            lib = (node.moduleReference as ExternalModuleReference).expression as Identifier;
+        const alias = node.name;
+        const lib = (node.moduleReference as ExternalModuleReference).expression as Identifier;
+
         resource.imports.push(new ExternalModuleImport(lib.text, alias.text, node.getStart(), node.getEnd()));
     }
 }
