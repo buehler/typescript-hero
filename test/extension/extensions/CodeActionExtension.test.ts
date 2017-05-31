@@ -35,14 +35,18 @@ describe('CodeActionExtension', () => {
             [
                 join(
                     workspace.rootPath,
-                    'server/indices/MyClass.ts'
+                    'server/indices/MyClass.ts',
                 ),
                 join(
                     workspace.rootPath,
-                    'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts'
-                )
+                    'extension/extensions/codeActionExtension/exportedObjects.ts',
+                ),
+                join(
+                    workspace.rootPath,
+                    'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
+                ),
             ],
-            workspace.rootPath
+            workspace.rootPath,
         );
 
         extension = new CodeActionExtension(ctx, logger, index as any, parser);
@@ -52,7 +56,7 @@ describe('CodeActionExtension', () => {
 
         const file = join(
             workspace.rootPath,
-            'extension/extensions/codeActionExtension/empty.ts'
+            'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
 
@@ -62,22 +66,22 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
             });
         });
 
         it('should call the execute method of a code action', async () => {
-            let spy = sinon.spy();
+            const spy = sinon.spy();
             await extension.executeCodeAction(new SpyCodeAction(spy, true));
             spy.should.be.calledOnce;
         });
 
         it('should warn the user if the result is false', async () => {
-            let stub = sinon.stub(window, 'showWarningMessage', () => {
+            const stub = sinon.stub(window, 'showWarningMessage', () => {
                 return Promise.resolve();
             });
 
@@ -95,7 +99,7 @@ describe('CodeActionExtension', () => {
 
         const file = join(
             workspace.rootPath,
-            'extension/extensions/codeActionExtension/empty.ts'
+            'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
 
@@ -105,20 +109,20 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
             });
         });
 
         it('should add a missing import to a document', async () => {
-            let cmds = await extension.provideCodeActions(
+            const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 <any>{ diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
-                null
+                null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
             document.lineAt(0).text.should.equal(`import { Class1 } from '../../../server/indices/MyClass';`);
@@ -126,11 +130,10 @@ describe('CodeActionExtension', () => {
 
     });
 
-    describe.skip('missingPolymorphicElements', () => {
-        // TODO
+    describe('missingPolymorphicElements', () => {
         const file = join(workspace.rootPath, 'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts');
-        let document: TextDocument,
-            documentText: string;
+        let document: TextDocument;
+        let documentText: string;
 
         before(async () => {
             document = await workspace.openTextDocument(file);
@@ -139,21 +142,21 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
                 builder.insert(new Position(0, 0), documentText);
             });
         });
 
         it('should add interface elements to a class', async () => {
-            let cmds = await extension.provideCodeActions(
+            const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 <any>{ diagnostics: [{ message: `class 'InterfaceImplement' incorrectly implements 'CodeFixImplementInterface'.` }] },
-                null
+                null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
             document.lineAt(3).text.should.equal(`class InterfaceImplement implements CodeFixImplementInterface {`);
@@ -168,11 +171,11 @@ describe('CodeActionExtension', () => {
         });
 
         it('should add abstract class elements to a class', async () => {
-            let cmds = await extension.provideCodeActions(
+            const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 <any>{ diagnostics: [{ message: `non-abstract class 'AbstractImplement' implement inherited from class 'CodeFixImplementAbstract'.` }] },
-                null
+                null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
             document.lineAt(6).text.should.equal(`class AbstractImplement extends CodeFixImplementAbstract {`);
@@ -187,11 +190,11 @@ describe('CodeActionExtension', () => {
         });
 
         it('should add local interface elements to a class', async () => {
-            let cmds = await extension.provideCodeActions(
+            const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 <any>{ diagnostics: [{ message: `class 'InternalInterfaceImplement' incorrectly implements 'InternalInterface'.` }] },
-                null
+                null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
             document.lineAt(19).text.should.equal(`class InternalInterfaceImplement implements InternalInterface {`);
@@ -205,11 +208,11 @@ describe('CodeActionExtension', () => {
         });
 
         it('should add local abstract class elements to a class', async () => {
-            let cmds = await extension.provideCodeActions(
+            const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 <any>{ diagnostics: [{ message: `non-abstract class 'InternalAbstractImplement' implement inherited from class 'InternalAbstract'.` }] },
-                null
+                null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
             document.lineAt(22).text.should.equal(`class InternalAbstractImplement extends InternalAbstract {`);
