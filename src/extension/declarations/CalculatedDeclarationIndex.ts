@@ -83,11 +83,11 @@ export class CalculatedDeclarationIndex {
             ([partials]: [DeclarationIndexPartial[]]) => {
                 if (!this.tempIndex) {
                     this.tempIndex = {};
+                    this.logger.info('Receiving partial index result.');
                 }
                 for (const partial of partials) {
                     this.tempIndex[partial.index] = partial.infos;
                 }
-                this.logger.info('Received partial index result.');
             },
         );
         this.connection.onNotification(Notification.IndexCreationSuccessful, () => {
