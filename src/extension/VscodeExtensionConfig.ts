@@ -1,4 +1,4 @@
-import { ExtensionConfig, ResolverConfig, RestartDebuggerConfig } from '../common/config';
+import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { ImportLocation, GenerationOptions } from '../common/ts-generation';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
@@ -15,7 +15,6 @@ const sectionKey = 'typescriptHero';
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
     private resolverConfig: ResolverConfig = new VscodeResolverConfig();
-    private restartDebuggerConfig: RestartDebuggerConfig = new VscodeRestartDebuggerConfig();
 
     /**
      * The actual log level.
@@ -37,17 +36,6 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      */
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
-    }
-
-    /**
-     * Configuration object for the restart debugger extension.
-     * 
-     * @readonly
-     * @type {RestartDebuggerConfig}
-     * @memberof VscodeExtensionConfig
-     */
-    public get restartDebugger(): RestartDebuggerConfig {
-        return this.restartDebuggerConfig;
     }
 }
 
@@ -164,35 +152,5 @@ class VscodeResolverConfig implements ResolverConfig {
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,
         };
-    }
-}
-
-/**
- * Configuration class for the restart debugger extension.
- * 
- * @class VscodeRestartDebuggerConfig
- */
-class VscodeRestartDebuggerConfig implements RestartDebuggerConfig {
-    /**
-     * Defines the folder pathes, which are watched for changes.
-     * 
-     * @readonly
-     * @type {string[]}
-     * @memberof VscodeRestartDebuggerConfig
-     */
-    public get watchFolders(): string[] {
-        return workspace.getConfiguration(sectionKey).get<string[]>('restartDebugger.watchFolders');
-    }
-
-    /**
-     * Returns the active state that is configured.
-     * When true, the restarter is started on startup, otherwise it's deactivated by default.
-     * 
-     * @readonly
-     * @type {boolean}
-     * @memberof VscodeRestartDebuggerConfig
-     */
-    public get active(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('restartDebugger.active');
     }
 }
