@@ -388,20 +388,4 @@ describe('CodeActionExtension', () => {
 
     });
 
-    describe('createCommand()', () => {
-
-        it('should create a command with the corresponding vscode command', () => {
-            const cmd = extension.createCommand('TITLE', new NoopCodeAction());
-
-            cmd.command.should.equal('typescriptHero.codeFix.executeCodeAction');
-        });
-
-        it('should create a command with the correct code action and title', () => {
-            const cmd = extension.createCommand('TITLE', new NoopCodeAction());
-
-            cmd.title.should.equal('TITLE');
-        });
-
-    });
-
 });

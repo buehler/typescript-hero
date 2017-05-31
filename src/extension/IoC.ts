@@ -1,6 +1,7 @@
 import { ExtensionConfig } from '../common/config';
 import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
+import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
@@ -12,7 +13,6 @@ import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 import { Container as IoCContainer, interfaces } from 'inversify';
 import { ExtensionContext } from 'vscode';
-import inversifyInjectDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
 
@@ -37,6 +37,10 @@ container
             return new VscodeLogger(extContext, config, prefix);
         };
     });
+
+// Code Action Extension (action creators)
+container.bind<CodeActionCreator>(iocSymbols.codeActionCreators).to(MissingImportCreator);
+container.bind<CodeActionCreator>(iocSymbols.codeActionCreators).to(MissingImplementationInClassCreator);
 
 /**
  * Injection container. IoC baby.
