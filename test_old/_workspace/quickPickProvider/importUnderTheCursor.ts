@@ -1,3 +1,0 @@
-Fooo
-MyCla
-Fancier
