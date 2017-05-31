@@ -99,9 +99,10 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         let addAllMissingImportsAdded = false;
 
         for (const diagnostic of context.diagnostics) {
+            // TODO refactor.
             switch (true) {
                 case !!(matchfoo = isMissingImport(diagnostic)):
-                    const match = isMissingImport(diagnostic)!;
+                    const match = isMissingImport(diagnostic);
                     if (!match) {
                         break;
                     }
@@ -129,7 +130,8 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                     break;
                 case !!(matchfoo = isIncorrectlyImplementingInterface(diagnostic)):
                 case !!(matchfoo = isIncorrectlyImplementingAbstract(diagnostic)):
-                    const match2 = isMissingImport(diagnostic)!;
+                    const match2 = isIncorrectlyImplementingInterface(diagnostic) ||
+                        isIncorrectlyImplementingAbstract(diagnostic);
                     if (!match2) {
                         break;
                     }
