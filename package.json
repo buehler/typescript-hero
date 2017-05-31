@@ -197,10 +197,9 @@
             "anyOf": [
               {
                 "enum": [
-                  "modules",
-                  "plains",
-                  "workspace",
-                  "others"
+                  "Modules",
+                  "Plains",
+                  "Workspace"
                 ]
               },
               {
@@ -212,10 +211,9 @@
                 "properties": {
                   "identifier": {
                     "enum": [
-                      "modules",
-                      "plains",
-                      "workspace",
-                      "others"
+                      "Modules",
+                      "Plains",
+                      "Workspace"
                     ]
                   },
                   "order": {
@@ -246,9 +244,9 @@
             ]
           },
           "default": [
-            "plains",
-            "modules",
-            "workspace"
+            "Plains",
+            "Modules",
+            "Workspace"
           ],
           "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
         }
