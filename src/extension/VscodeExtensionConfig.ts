@@ -22,7 +22,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf VscodeExtensionConfig
+     * @memberof VscodeExtensionConfig
      */
     public get verbosity(): string {
         return workspace.getConfiguration(sectionKey).get<string>('verbosity');
@@ -33,7 +33,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * 
      * @readonly
      * @type {ResolverConfig}
-     * @memberOf VscodeExtensionConfig
+     * @memberof VscodeExtensionConfig
      */
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
@@ -44,7 +44,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * 
      * @readonly
      * @type {RestartDebuggerConfig}
-     * @memberOf VscodeExtensionConfig
+     * @memberof VscodeExtensionConfig
      */
     public get restartDebugger(): RestartDebuggerConfig {
         return this.restartDebuggerConfig;
@@ -63,7 +63,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
@@ -75,7 +75,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
@@ -86,7 +86,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get stringQuoteStyle(): string {
         return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle');
@@ -98,7 +98,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
         return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
@@ -109,7 +109,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
         return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
@@ -120,7 +120,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {ImportLocation}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get newImportLocation(): ImportLocation {
         const configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
@@ -132,7 +132,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
@@ -143,7 +143,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get tabSize(): number {
         return workspace.getConfiguration().get<number>('editor.tabSize');
@@ -154,7 +154,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * 
      * @readonly
      * @type {TsImportOptions}
-     * @memberOf VscodeResolverConfig
+     * @memberof VscodeResolverConfig
      */
     public get generationOptions(): GenerationOptions {
         return {
@@ -178,7 +178,7 @@ class VscodeRestartDebuggerConfig implements RestartDebuggerConfig {
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf VscodeRestartDebuggerConfig
+     * @memberof VscodeRestartDebuggerConfig
      */
     public get watchFolders(): string[] {
         return workspace.getConfiguration(sectionKey).get<string[]>('restartDebugger.watchFolders');
@@ -190,7 +190,7 @@ class VscodeRestartDebuggerConfig implements RestartDebuggerConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf VscodeRestartDebuggerConfig
+     * @memberof VscodeRestartDebuggerConfig
      */
     public get active(): boolean {
         return workspace.getConfiguration(sectionKey).get<boolean>('restartDebugger.active');

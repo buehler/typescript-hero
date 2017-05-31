@@ -23,7 +23,7 @@ export class StringImport implements Import {
      * @param {GenerationOptions} {stringQuoteStyle, eol}
      * @returns {string}
      * 
-     * @memberOf StringImport
+     * @memberof StringImport
      */
     public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
         return `import ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
@@ -34,7 +34,7 @@ export class StringImport implements Import {
      * 
      * @returns {StringImport}
      * 
-     * @memberOf StringImport
+     * @memberof StringImport
      */
     public clone(): StringImport {
         return new StringImport(this.libraryName, this.start, this.end);

@@ -94,7 +94,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @readonly
      * @type {File}
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public get parsedDocument(): File {
         return this._parsedDocument;
@@ -116,7 +116,7 @@ export class ImportManager implements ObjectManager {
      * @param {TextDocument} document The document that should be managed
      * @returns {Promise<ImportManager>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public static async create(document: TextDocument): Promise<ImportManager> {
         const source = await ImportManager.parser.parseSource(document.getText());
@@ -134,7 +134,7 @@ export class ImportManager implements ObjectManager {
      * @param {DeclarationInfo} declarationInfo The import that should be added to the document
      * @returns {ImportManager}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
         // If there is something already imported, it must be a NamedImport or a DefaultImport
@@ -189,7 +189,7 @@ export class ImportManager implements ObjectManager {
      * @param {DeclarationIndex} index
      * @returns {this}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public addMissingImports(index: DeclarationIndex | CalculatedDeclarationIndex): this {
         const declarations = getDeclarationsFilteredByImports(
@@ -220,7 +220,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @returns {ImportManager}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public organizeImports(): this {
         this.organize = true;
@@ -265,7 +265,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     public async commit(): Promise<boolean> {
         // Commit the documents imports:
@@ -335,7 +335,7 @@ export class ImportManager implements ObjectManager {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     private async resolveImportSpecifiers(): Promise<void> {
         const getSpecifiers = () => this.imports
@@ -395,7 +395,7 @@ export class ImportManager implements ObjectManager {
      * @private
      * @returns {Promise<string | undefined>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     private async getSpecifierAlias(): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
@@ -413,7 +413,7 @@ export class ImportManager implements ObjectManager {
      * @param {string} declarationName
      * @returns {Promise<string | undefined>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
@@ -432,7 +432,7 @@ export class ImportManager implements ObjectManager {
      * @param {InputBoxOptions} options
      * @returns {Promise<string>}
      * 
-     * @memberOf ImportManager
+     * @memberof ImportManager
      */
     private async vscodeInputBox(options: InputBoxOptions): Promise<string> {
         return await window.showInputBox(options);

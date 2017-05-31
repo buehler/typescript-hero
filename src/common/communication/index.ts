@@ -14,7 +14,6 @@ export enum Notification {
     IndexCreationSuccessful,
     IndexCreationFailed,
     PartialIndexResult,
-    UpdatePartialIndex,
 }
 
 /**
@@ -29,6 +28,9 @@ export enum Request {
     MissingDeclarationInfosForDocument,
 }
 
+/**
+ * Type for the connection endpoint. Is used for the communication between server and client.
+ */
 type ConnectionEndpoint = {
     sendNotification: (method: string, params: any) => void;
     sendRequest: <T>(method: string, params: any) => Thenable<T>;
@@ -58,13 +60,21 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {(Notification | string)} notification
      * @param {...any[]} args
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public sendNotification(notification: Notification | string, ...args: any[]): void {
         const method = typeof notification === 'string' ? notification : Notification[notification];
         this.connection.sendNotification(method, args);
     }
 
+    /**
+     * Sends a notification to the other endpoint with serialized payload.
+     * 
+     * @param {(Notification | string)} notification 
+     * @param {...any[]} args 
+     * 
+     * @memberof Connection
+     */
     public sendSerializedNotification(notification: Notification | string, ...args: any[]): void {
         const method = typeof notification === 'string' ? notification : Notification[notification];
         const json = this.serializer.serialize(args);
@@ -79,7 +89,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {*} [params]
      * @returns {Thenable<T>}
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public sendRequest<T>(request: Request | string, params?: any): Thenable<T> {
         const method = typeof request === 'string' ? request : Request[request];
@@ -94,7 +104,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {*} [params]
      * @returns {Promise<T>}
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public async sendSerializedRequest<T>(request: Request | string, params?: any): Promise<T> {
         const method = typeof request === 'string' ? request : Request[request];
@@ -110,7 +120,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {(Notification | string)} notification
      * @param {GenericNotificationHandler} handler
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public onNotification(notification: Notification | string, handler: GenericNotificationHandler): void {
         const method = typeof notification === 'string' ? notification : Notification[notification];
@@ -124,6 +134,15 @@ export abstract class Connection<T extends ConnectionEndpoint> {
         this.handler[method].push(handler);
     }
     
+    /**
+     * Registers a notification handler to the connection. It is assumed, that the notification contains
+     * serialized arguments. The serializer will attempt to deserialize the arguments and thus may fail.
+     * 
+     * @param {(Notification | string)} notification 
+     * @param {GenericNotificationHandler} handler 
+     * 
+     * @memberof Connection
+     */
     public onSerializedNotification(notification: Notification | string, handler: GenericNotificationHandler): void {
         this.onNotification(notification, (...params: any[]) => {
             if (params) {
@@ -143,7 +162,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {(Request | string)} request
      * @param {GenericRequestHandler<TResult, TError>} handler
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public onRequest<TResult, TError>(
         request: Request | string,
@@ -162,7 +181,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
      * @param {(Request | string)} request
      * @param {GenericRequestHandler<TResult, TError>} handler
      * 
-     * @memberOf Connection
+     * @memberof Connection
      */
     public onSerializedRequest<TResult, TError>(
         request: Request | string,

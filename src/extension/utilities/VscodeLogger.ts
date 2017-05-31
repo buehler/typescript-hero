@@ -25,7 +25,7 @@ export class VscodeLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf VscodeLogger
+     * @memberof VscodeLogger
      */
     public error(message: string, data?: any): void {
         this.log(
@@ -42,7 +42,7 @@ export class VscodeLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf VscodeLogger
+     * @memberof VscodeLogger
      */
     public warning(message: string, data?: any): void {
         this.log(
@@ -59,7 +59,7 @@ export class VscodeLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf VscodeLogger
+     * @memberof VscodeLogger
      */
     public info(message: string, data?: any): void {
         this.log(
@@ -80,7 +80,7 @@ export class VscodeLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf VscodeLogger
+     * @memberof VscodeLogger
      */
     private log(level: LogLevel, severity: string, message: string, data?: any): void {
         if (this.getLogLevel() >= level) {
@@ -105,7 +105,7 @@ export class VscodeLogger implements Logger {
      * @private
      * @returns {string}
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     private getDate(): string {
         const date = new Date();
@@ -131,7 +131,7 @@ export class VscodeLogger implements Logger {
      * @private
      * @returns {LogLevel}
      * 
-     * @memberOf VscodeLogger
+     * @memberof VscodeLogger
      */
     private getLogLevel(): LogLevel {
         switch (this.config.verbosity) {

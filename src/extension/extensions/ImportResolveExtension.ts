@@ -137,7 +137,7 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public initialize(): void {
         this.context.subscriptions.push(this.statusBarItem);
@@ -194,7 +194,7 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Disposes the extension.
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public dispose(): void {
         this.logger.info('Disposed');
@@ -207,7 +207,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async buildIndex(): Promise<void> {
         this.statusBarItem.text = resolverSyncing;
@@ -223,7 +223,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf ResolveExtension
+     * @memberof ResolveExtension
      */
     private async addImport(): Promise<void> {
         if (!this.index.indexReady) {
@@ -252,7 +252,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async addImportUnderCursor(): Promise<void> {
         if (!this.index.indexReady) {
@@ -299,7 +299,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async addMissingImports(): Promise<void> {
         if (!this.index.indexReady) {
@@ -329,7 +329,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {Promise<boolean>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async organizeImports(): Promise<boolean> {
         try {
@@ -348,7 +348,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @param {DeclarationInfo} declaration
      * @returns {Promise<boolean>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
         const ctrl = await ImportManager.create(window.activeTextEditor.document);
@@ -361,7 +361,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @private
      * @returns {string}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private getSymbolUnderCursor(): string {
         const editor = window.activeTextEditor;
@@ -379,7 +379,7 @@ export class ImportResolveExtension extends BaseExtension {
      * 
      * @private
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private showCacheWarning(): void {
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
@@ -393,7 +393,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @param {DeclarationsForImportOptions} {cursorSymbol, documentSource, documentPath}
      * @returns {(Promise<DeclarationInfo[] | undefined>)}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async getDeclarationsForImport(
         { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions,
@@ -423,7 +423,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @param {MissingDeclarationsForFileOptions} {documentSource, documentPath}
      * @returns {(Promise<(DeclarationInfo | ImportUserDecision)[]>)}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,

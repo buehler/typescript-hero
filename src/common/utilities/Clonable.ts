@@ -11,7 +11,7 @@ export interface Clonable {
      * @template T
      * @returns {T}
      * 
-     * @memberOf Clonable
+     * @memberof Clonable
      */
     clone<T>(): T;
 }

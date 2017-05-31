@@ -31,7 +31,7 @@ export class ParameterDeclaration implements TypedDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf ParameterDeclaration
+     * @memberof ParameterDeclaration
      */
     public generateTypescript(): string {
         return `${this.name}${this.type ? `: ${this.type}` : ''}`;

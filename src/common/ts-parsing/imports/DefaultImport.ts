@@ -24,7 +24,7 @@ export class DefaultImport implements AliasedImport {
      * @param {GenerationOptions} {stringQuoteStyle, eol}
      * @returns {string}
      * 
-     * @memberOf DefaultImport
+     * @memberof DefaultImport
      */
     public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
         return `import ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
@@ -35,7 +35,7 @@ export class DefaultImport implements AliasedImport {
      * 
      * @returns {DefaultImport}
      * 
-     * @memberOf DefaultImport
+     * @memberof DefaultImport
      */
     public clone(): DefaultImport {
         return new DefaultImport(this.libraryName, this.alias, this.start, this.end);

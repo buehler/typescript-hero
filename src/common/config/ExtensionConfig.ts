@@ -14,7 +14,7 @@ export interface ExtensionConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf ExtensionConfig
+     * @memberof ExtensionConfig
      */
     verbosity: string;
 
@@ -23,7 +23,7 @@ export interface ExtensionConfig {
      * 
      * @readonly
      * @type {ResolverConfig}
-     * @memberOf ExtensionConfig
+     * @memberof ExtensionConfig
      */
     resolver: ResolverConfig;
 
@@ -32,7 +32,7 @@ export interface ExtensionConfig {
      * 
      * @readonly
      * @type {RestartDebuggerConfig}
-     * @memberOf ExtensionConfig
+     * @memberof ExtensionConfig
      */
     restartDebugger: RestartDebuggerConfig;
 }

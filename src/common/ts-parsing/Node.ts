@@ -10,7 +10,7 @@ export interface Node {
      * The starting character of the node in the document.
      * 
      * @type {number}
-     * @memberOf Node
+     * @memberof Node
      */
     start?: number;
 
@@ -18,7 +18,7 @@ export interface Node {
      * The ending character of the node in the document.
      * 
      * @type {number}
-     * @memberOf Node
+     * @memberof Node
      */
     end?: number;
 }

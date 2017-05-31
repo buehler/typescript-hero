@@ -37,7 +37,7 @@ export class TypeAliasDeclaration implements ExportableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf TypeAliasDeclaration
+     * @memberof TypeAliasDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

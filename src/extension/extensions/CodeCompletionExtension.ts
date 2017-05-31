@@ -54,7 +54,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
      * 
-     * @memberOf CodeCompletionExtension
+     * @memberof CodeCompletionExtension
      */
     public initialize(): void {
         this.context.subscriptions.push(languages.registerCompletionItemProvider('typescript', this));
@@ -66,7 +66,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     /**
      * Disposes the extension.
      * 
-     * @memberOf CodeCompletionExtension
+     * @memberof CodeCompletionExtension
      */
     public dispose(): void {
         this.logger.info('Disposed');
@@ -80,7 +80,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @param {CancellationToken} token 
      * @returns {Promise<(CompletionItem[] | null)>} 
      * 
-     * @memberOf CodeCompletionExtension
+     * @memberof CodeCompletionExtension
      */
     public async provideCompletionItems(
         document: TextDocument,
@@ -140,7 +140,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @param {File} parsedSource 
      * @returns {TextEdit[]} 
      * 
-     * @memberOf CodeCompletionExtension
+     * @memberof CodeCompletionExtension
      */
     private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: File): TextEdit[] {
         const imp = parsedSource.imports.find((o) => {

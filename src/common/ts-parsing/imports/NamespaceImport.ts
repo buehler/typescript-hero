@@ -23,7 +23,7 @@ export class NamespaceImport implements AliasedImport {
      * @param {GenerationOptions} {stringQuoteStyle, eol}
      * @returns {string}
      * 
-     * @memberOf NamespaceImport
+     * @memberof NamespaceImport
      */
     public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
         return `import * as ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
@@ -34,7 +34,7 @@ export class NamespaceImport implements AliasedImport {
      * 
      * @returns {NamespaceImport}
      * 
-     * @memberOf NamespaceImport
+     * @memberof NamespaceImport
      */
     public clone(): NamespaceImport {
         return new NamespaceImport(this.libraryName, this.alias, this.start, this.end);

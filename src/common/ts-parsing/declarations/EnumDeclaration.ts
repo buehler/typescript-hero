@@ -40,7 +40,7 @@ export class EnumDeclaration implements ExportableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf EnumDeclaration
+     * @memberof EnumDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

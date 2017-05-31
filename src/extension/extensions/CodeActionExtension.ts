@@ -55,7 +55,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public initialize(): void {
         this.context.subscriptions.push(commands.registerCommand(
@@ -71,7 +71,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     /**
      * Disposes the extension.
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public dispose(): void {
         this.logger.info('Disposed');
@@ -86,7 +86,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      * @param {CancellationToken} token
      * @returns {Promise<Command[]>}
      * 
-     * @memberOf CodeActionExtension
+     * @memberof CodeActionExtension
      */
     public async provideCodeActions(
         document: TextDocument,
@@ -179,7 +179,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      * @param {CodeAction} codeAction
      * @returns {Promise<void>}
      * 
-     * @memberOf CodeFixExtension
+     * @memberof CodeFixExtension
      */
     private async executeCodeAction(codeAction: CodeAction): Promise<void> {
         if (!await codeAction.execute()) {
@@ -195,7 +195,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      * @param {CodeAction} codeAction
      * @returns {Command}
      * 
-     * @memberOf CodeActionExtension
+     * @memberof CodeActionExtension
      */
     private createCommand(title: string, codeAction: CodeAction): Command {
         return {

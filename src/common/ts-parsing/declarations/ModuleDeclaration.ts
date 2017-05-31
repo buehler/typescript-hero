@@ -36,7 +36,7 @@ export class ModuleDeclaration implements Declaration {
      * 
      * @returns {string}
      * 
-     * @memberOf ModuleDeclaration
+     * @memberof ModuleDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

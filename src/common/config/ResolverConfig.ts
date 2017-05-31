@@ -12,7 +12,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     insertSpaceBeforeAndAfterImportBraces: boolean;
 
@@ -22,7 +22,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     insertSemicolons: boolean;
 
@@ -31,7 +31,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     stringQuoteStyle: string;
 
@@ -41,7 +41,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     ignorePatterns: string[];
 
@@ -50,7 +50,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     multiLineWrapThreshold: number;
 
@@ -59,7 +59,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {ImportLocation}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     newImportLocation: ImportLocation;
 
@@ -68,7 +68,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {number}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     tabSize: number;
 
@@ -85,7 +85,7 @@ export interface ResolverConfig {
      * 
      * @readonly
      * @type {GenerationOptions}
-     * @memberOf ResolverConfig
+     * @memberof ResolverConfig
      */
     generationOptions: GenerationOptions;
 }

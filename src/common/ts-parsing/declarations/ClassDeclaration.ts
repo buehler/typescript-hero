@@ -47,7 +47,7 @@ export class ClassDeclaration implements ExportableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf ClassDeclaration
+     * @memberof ClassDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

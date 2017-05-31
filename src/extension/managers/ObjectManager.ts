@@ -17,7 +17,7 @@ export interface ObjectManager {
      * 
      * @returns {Promise<boolean>}
      * Ø
-     * @memberOf ObjectManager
+     * @memberof ObjectManager
      */
     commit(): Promise<boolean>;
 }

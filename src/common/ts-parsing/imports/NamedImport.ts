@@ -34,7 +34,7 @@ export class NamedImport implements Import {
      * @param {GenerationOptions} options
      * @returns {string}
      * 
-     * @memberOf NamedImport
+     * @memberof NamedImport
      */
     public generateTypescript(options: GenerationOptions): string {
         const { eol, stringQuoteStyle, spaceBraces, multiLineWrapThreshold } = options;
@@ -55,7 +55,7 @@ export class NamedImport implements Import {
      * 
      * @returns {NamedImport}
      * 
-     * @memberOf NamedImport
+     * @memberof NamedImport
      */
     public clone(): NamedImport {
         const clone = new NamedImport(this.libraryName, this.start, this.end);
@@ -69,7 +69,7 @@ export class NamedImport implements Import {
      * @param {GenerationOptions} {eol, stringQuoteStyle, tabSize}
      * @returns {string}
      * 
-     * @memberOf NamedImport
+     * @memberof NamedImport
      */
     public toMultiLineImport({ eol, stringQuoteStyle, tabSize }: GenerationOptions): string {
         const spacings = Array(tabSize + 1).join(' ');
@@ -86,7 +86,7 @@ ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateType
      * @param {SymbolSpecifier} i2
      * @returns {number} - Sort index
      * 
-     * @memberOf NamedImport
+     * @memberof NamedImport
      */
     private specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
         const strA = i1.specifier.toLowerCase();

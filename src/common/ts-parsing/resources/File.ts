@@ -58,7 +58,7 @@ export class File implements Resource, Node {
      * 
      * @readonly
      * @type {ParsedPath}
-     * @memberOf File
+     * @memberof File
      */
     public get parsedPath(): ParsedPath {
         return parse(this.filePath);
@@ -69,7 +69,7 @@ export class File implements Resource, Node {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf File
+     * @memberof File
      */
     public get isWorkspaceFile(): boolean {
         return ['node_modules', 'typings'].every(o => this.filePath.indexOf(o) === -1);

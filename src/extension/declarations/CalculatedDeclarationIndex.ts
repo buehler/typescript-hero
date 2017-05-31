@@ -31,7 +31,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @private
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private _index: DeclarationInfoIndex | undefined;
 
@@ -40,7 +40,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get indexReady(): boolean {
         return this._index !== undefined;
@@ -51,7 +51,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get index(): DeclarationInfoIndex | undefined {
         return this._index;
@@ -63,7 +63,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {DeclarationInfo[]}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get declarationInfos(): DeclarationInfo[] {
         return Object

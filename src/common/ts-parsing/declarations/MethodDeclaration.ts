@@ -51,7 +51,7 @@ export class MethodDeclaration implements AbstractDeclaration, CallableDeclarati
      * @param {GenerationOptions} {tabSize}
      * @returns {string}
      * 
-     * @memberOf MethodDeclaration
+     * @memberof MethodDeclaration
      */
     public generateTypescript({ tabSize }: GenerationOptions): string {
         const intend = Array(tabSize + 1).join(' ');

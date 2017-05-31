@@ -81,7 +81,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} className The name of the class that should be managed
      * @returns {Promise<ClassManager>}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
         const source = await ClassManager.parser.parseSource(document.getText());
@@ -101,7 +101,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} name
      * @returns {boolean}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public hasProperty(name: string): boolean {
         return this.properties.some(o => o.object.name === name && !o.isDeleted);
@@ -115,7 +115,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} [type]
      * @returns {this}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public addProperty(
         nameOrDeclaration: string | PropertyDeclaration,
@@ -147,7 +147,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} name
      * @returns {this}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public removeProperty(name: string): this {
         if (!this.properties.some(o => o.object.name === name && !o.isDeleted)) {
@@ -170,7 +170,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} name
      * @returns {boolean}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public hasMethod(name: string): boolean {
         return this.methods.some(o => o.object.name === name && !o.isDeleted);
@@ -185,7 +185,7 @@ export class ClassManager implements ObjectManager {
      * @param {ParameterDeclaration[]} [parameters]
      * @returns {this}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public addMethod(
         nameOrDeclaration: string | MethodDeclaration,
@@ -219,7 +219,7 @@ export class ClassManager implements ObjectManager {
      * @param {string} name
      * @returns {this}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public removeMethod(name: string): this {
         if (!this.methods.some(o => o.object.name === name && !o.isDeleted)) {
@@ -245,7 +245,7 @@ export class ClassManager implements ObjectManager {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     public async commit(): Promise<boolean> {
         const edits = [
@@ -266,7 +266,7 @@ export class ClassManager implements ObjectManager {
      * @param {PropertyDeclaration} property
      * @returns {boolean}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     private isInConstructor(property: PropertyDeclaration): boolean {
         if (!this.ctor || !this.ctor.object) {
@@ -282,7 +282,7 @@ export class ClassManager implements ObjectManager {
      * @private
      * @returns {TextEdit[]}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     private calculatePropertyEdits(): TextEdit[] {
         const edits: TextEdit[] = [];
@@ -327,7 +327,7 @@ export class ClassManager implements ObjectManager {
      * @private
      * @returns {TextEdit[]}
      * 
-     * @memberOf ClassManager
+     * @memberof ClassManager
      */
     private calculateMethodEdits(): TextEdit[] {
         const edits: TextEdit[] = [];

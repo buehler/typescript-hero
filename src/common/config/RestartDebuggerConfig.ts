@@ -9,7 +9,7 @@ export interface RestartDebuggerConfig {
      * 
      * @readonly
      * @type {string[]}
-     * @memberOf RestartDebuggerConfig
+     * @memberof RestartDebuggerConfig
      */
     watchFolders: string[];
 
@@ -19,7 +19,7 @@ export interface RestartDebuggerConfig {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf RestartDebuggerConfig
+     * @memberof RestartDebuggerConfig
      */
     active: boolean;
 }

@@ -17,7 +17,7 @@ export interface Logger {
      * The prefix used for the messages.
      * 
      * @type {string}
-     * @memberOf Logger
+     * @memberof Logger
      */
     readonly prefix?: string;
 
@@ -27,7 +27,7 @@ export interface Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     error(message: string, data?: any): void;
 
@@ -37,7 +37,7 @@ export interface Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     warning(message: string, data?: any): void;
 
@@ -47,7 +47,7 @@ export interface Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     info(message: string, data?: any): void;
 }
