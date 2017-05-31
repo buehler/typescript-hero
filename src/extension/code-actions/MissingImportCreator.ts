@@ -1,6 +1,7 @@
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
+import { injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
 const regex: RegExp = /cannot find name ['"](.*)['"]/ig;
@@ -12,6 +13,7 @@ const regex: RegExp = /cannot find name ['"](.*)['"]/ig;
  * @class MissingImportCreator
  * @extends {CodeActionCreator}
  */
+@injectable()
 export class MissingImportCreator extends CodeActionCreator {
     constructor(private index: CalculatedDeclarationIndex) {
         super();

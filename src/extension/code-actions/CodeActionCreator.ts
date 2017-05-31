@@ -1,4 +1,5 @@
 import { CodeAction } from './CodeAction';
+import { injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
 /**
@@ -9,6 +10,7 @@ import { Command, Diagnostic, TextDocument } from 'vscode';
  * @abstract
  * @class CodeActionCreator
  */
+@injectable()
 export abstract class CodeActionCreator {
     /**
      * Determines if the given diagnostic can be handled by this creator.

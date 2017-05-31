@@ -5,6 +5,7 @@ import { NamedImport } from '../../common/ts-parsing/imports';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
+import { injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
 const interfaceRegex: RegExp = /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig;
@@ -17,6 +18,7 @@ const abstractRegex: RegExp = /non-abstract class ['"](.*)['"].*implement inheri
  * @class MissingImplementationInClassCreator
  * @extends {CodeActionCreator}
  */
+@injectable()
 export class MissingImplementationInClassCreator extends CodeActionCreator {
     constructor(private parser: TypescriptParser, private index: CalculatedDeclarationIndex) {
         super();

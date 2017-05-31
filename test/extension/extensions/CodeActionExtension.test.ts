@@ -4,8 +4,11 @@ import {
     AddImportCodeAction,
     CodeAction,
     ImplementPolymorphElements,
-    NoopCodeAction,
 } from '../../../src/extension/code-actions/CodeAction';
+import {
+    MissingImplementationInClassCreator,
+} from '../../../src/extension/code-actions/MissingImplementationInClassCreator';
+import { MissingImportCreator } from '../../../src/extension/code-actions/MissingImportCreator';
 import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -58,7 +61,12 @@ describe('CodeActionExtension', () => {
             workspace.rootPath,
         );
 
-        extension = new CodeActionExtension(ctx, logger, index as any, parser);
+        const creators = [
+            new MissingImportCreator(index as any),
+            new MissingImplementationInClassCreator(parser, index as any),
+        ];
+
+        extension = new CodeActionExtension(ctx, logger, creators);
     });
 
     describe('executeCodeAction', () => {
@@ -164,7 +172,11 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                <any>{ diagnostics: [{ message: `class 'InterfaceImplement' incorrectly implements 'CodeFixImplementInterface'.` }] },
+                <any>{
+                    diagnostics: [
+                        { message: `class 'InterfaceImplement' incorrectly implements 'CodeFixImplementInterface'.` },
+                    ],
+                },
                 null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
@@ -183,7 +195,14 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                <any>{ diagnostics: [{ message: `non-abstract class 'AbstractImplement' implement inherited from class 'CodeFixImplementAbstract'.` }] },
+                <any>{
+                    diagnostics: [
+                        {
+                            message: `non-abstract class 'AbstractImplement' ` +
+                            `implement inherited from class 'CodeFixImplementAbstract'.`,
+                        },
+                    ],
+                },
                 null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
@@ -202,7 +221,11 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                <any>{ diagnostics: [{ message: `class 'InternalInterfaceImplement' incorrectly implements 'InternalInterface'.` }] },
+                <any>{
+                    diagnostics: [
+                        { message: `class 'InternalInterfaceImplement' incorrectly implements 'InternalInterface'.` },
+                    ],
+                },
                 null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
@@ -220,7 +243,15 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                <any>{ diagnostics: [{ message: `non-abstract class 'InternalAbstractImplement' implement inherited from class 'InternalAbstract'.` }] },
+                <any>{
+                    diagnostics: [
+                        {
+                            message:
+                            `non-abstract class 'InternalAbstractImplement' ` +
+                            `implement inherited from class 'InternalAbstract'.`,
+                        },
+                    ],
+                },
                 null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
@@ -336,7 +367,14 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.` }] },
+                {
+                    diagnostics: [
+                        {
+                            message:
+                            `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
+                        },
+                    ],
+                },
                 null,
             );
 
@@ -364,7 +402,11 @@ describe('CodeActionExtension', () => {
             const cmds = await extension.provideCodeActions(
                 document,
                 new Range(new Position(0, 0), new Position(0, 0)),
-                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` }] },
+                {
+                    diagnostics: [
+                        { message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` },
+                    ],
+                },
                 null,
             );
 
