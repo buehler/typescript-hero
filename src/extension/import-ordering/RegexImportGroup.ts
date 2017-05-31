@@ -15,7 +15,7 @@ export class RegexImportGroup implements ImportGroup {
 
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
 
-    public processImport(_tsImport: Import): void {
+    public processImport(_tsImport: Import): boolean {
         throw new Error('Not implemented yet.');
     }
 

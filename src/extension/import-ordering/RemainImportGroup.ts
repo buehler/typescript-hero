@@ -14,8 +14,9 @@ export class RemainImportGroup implements ImportGroup {
     public readonly order: ImportGroupOrder = 'asc';
     public readonly imports: Import[] = [];
 
-    public processImport(tsImport: Import): void {
+    public processImport(tsImport: Import): boolean {
         this.imports.push(tsImport);
+        return true;
     }
 
     public generateTypescript(options: GenerationOptions): string {

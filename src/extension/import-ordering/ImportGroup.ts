@@ -12,5 +12,5 @@ import { ImportGroupOrder } from './ImportGroupOrder';
 export interface ImportGroup extends Generatable {
     readonly imports: Import[];
     order: ImportGroupOrder;
-    processImport(tsImport: Import): void;
+    processImport(tsImport: Import): boolean;
 }

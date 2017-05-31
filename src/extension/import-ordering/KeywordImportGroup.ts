@@ -16,7 +16,7 @@ export class KeywordImportGroup implements ImportGroup {
 
     constructor(public readonly keyword: ImportGroupKeyword, public readonly order: ImportGroupOrder = 'asc') { }
 
-    public processImport(_tsImport: Import): void {
+    public processImport(_tsImport: Import): boolean {
         throw new Error('Not implemented yet.');
     }
 
