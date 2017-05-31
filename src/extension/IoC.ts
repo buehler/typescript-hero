@@ -13,6 +13,7 @@ import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 import { Container as IoCContainer, interfaces } from 'inversify';
 import { ExtensionContext } from 'vscode';
+import inversifyInjectDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
 

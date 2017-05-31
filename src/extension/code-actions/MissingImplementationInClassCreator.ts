@@ -1,14 +1,9 @@
-import { InterfaceDeclaration } from '../../common/ts-parsing/declarations';
 import { getAbsolutLibraryName } from '../../common/helpers';
-import { NamedImport } from '../../common/ts-parsing/imports';
 import { TypescriptParser } from '../../common/ts-parsing';
+import { InterfaceDeclaration } from '../../common/ts-parsing/declarations';
+import { NamedImport } from '../../common/ts-parsing/imports';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
-import {
-    AddImportCodeAction,
-    AddMissingImportsCodeAction,
-    ImplementPolymorphElements,
-    NoopCodeAction
-} from './CodeAction';
+import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
