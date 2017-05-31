@@ -29,7 +29,7 @@ import {
 } from 'vscode';
 
 /**
- * TODO
+ * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
  * 
  * @export
  * @class CodeCompletionExtension
@@ -73,7 +73,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     }
 
     /**
-     * TODO
+     * Provides completion items for a given position in the given document.
      * 
      * @param {TextDocument} document 
      * @param {Position} position 

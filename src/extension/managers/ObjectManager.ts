@@ -16,7 +16,7 @@ export interface ObjectManager {
      * Commits the changes made to the given document.
      * 
      * @returns {Promise<boolean>}
-     * Ø
+     *
      * @memberof ObjectManager
      */
     commit(): Promise<boolean>;
