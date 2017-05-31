@@ -1,6 +1,11 @@
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
-import { CodeAction } from '../../../src/extension/code-actions/CodeAction';
+import {
+    AddImportCodeAction,
+    CodeAction,
+    ImplementPolymorphElements,
+    NoopCodeAction,
+} from '../../../src/extension/code-actions/CodeAction';
 import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -44,6 +49,10 @@ describe('CodeActionExtension', () => {
                 join(
                     workspace.rootPath,
                     'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
+                ),
+                join(
+                    workspace.rootPath,
+                    'node_modules/fancy-library/FancierLibraryClass.d.ts',
                 ),
             ],
             workspace.rootPath,
@@ -220,6 +229,177 @@ describe('CodeActionExtension', () => {
             document.lineAt(25).text.should.equal(`        throw new Error('Not implemented yet.');`);
             document.lineAt(26).text.should.equal(`    }`);
             document.lineAt(27).text.should.equal(`}`);
+        });
+
+    });
+
+    describe('provideCodeActions', () => {
+
+        const file = join(
+            workspace.rootPath,
+            'extension/extensions/codeActionExtension/empty.ts',
+        );
+        let document: TextDocument;
+
+        before(async () => {
+            document = await workspace.openTextDocument(file);
+            await window.showTextDocument(document);
+        });
+
+        it('should not resolve to a code action if the problem is not recognized', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `I really do have a problem mate..` }] },
+                null,
+            );
+            cmds.should.have.lengthOf(0);
+        });
+
+        describe('missing import actions', () => {
+
+            it('should resolve a missing import problem to a code action', async () => {
+                const cmds = await extension.provideCodeActions(
+                    document,
+                    new Range(new Position(0, 0), new Position(0, 0)),
+                    { diagnostics: [{ message: `Cannot find name 'Class1'.` }] },
+                    null,
+                );
+
+                cmds.should.have.lengthOf(2);
+                const action = cmds[0];
+                action.title.should.equal('Import "Class1" from "/server/indices/MyClass".');
+                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+            });
+
+            it('should resolve to a NOOP code action if the missing import is not found in the index', async () => {
+                const cmds = await extension.provideCodeActions(
+                    document,
+                    new Range(new Position(0, 0), new Position(0, 0)),
+                    { diagnostics: [{ message: `Cannot find name 'FOOOOBAR'.` }] },
+                    null,
+                );
+                cmds.should.have.lengthOf(1);
+                cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index.');
+            });
+
+            it('should add multiple code actions for multiple declarations found', async () => {
+                const cmds = await extension.provideCodeActions(
+                    document,
+                    new Range(new Position(0, 0), new Position(0, 0)),
+                    { diagnostics: [{ message: `Cannot find name 'FancierLibraryClass'.` }] },
+                    null,
+                );
+
+                cmds.should.have.lengthOf(3);
+                let action = cmds[0];
+                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices/MyClass".');
+                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+
+                action = cmds[1];
+                action.title.should.equal('Import "FancierLibraryClass" from "fancy-library/FancierLibraryClass".');
+                action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
+            });
+
+        });
+
+    });
+
+    describe('missing polymorphic elements actions', () => {
+
+        const file = join(
+            workspace.rootPath,
+            'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
+        );
+        let document: TextDocument;
+
+        before(async () => {
+            document = await workspace.openTextDocument(file);
+            await window.showTextDocument(document);
+        });
+
+        it('should resolve missing implementations of an interface to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'CodeFixImplementInterface'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "CodeFixImplementInterface".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of an abstract class to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "CodeFixImplementAbstract".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a local interface to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'InternalInterface'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "InternalInterface".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a local abstract class to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "InternalAbstract".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing to a NOOP if the interface / class is not found', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'FOOOOBAR'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index or the actual file.');
+        });
+
+    });
+
+    describe('createCommand()', () => {
+
+        it('should create a command with the corresponding vscode command', () => {
+            const cmd = extension.createCommand('TITLE', new NoopCodeAction());
+
+            cmd.command.should.equal('typescriptHero.codeFix.executeCodeAction');
+        });
+
+        it('should create a command with the correct code action and title', () => {
+            const cmd = extension.createCommand('TITLE', new NoopCodeAction());
+
+            cmd.title.should.equal('TITLE');
         });
 
     });
