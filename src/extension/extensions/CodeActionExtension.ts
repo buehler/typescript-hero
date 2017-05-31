@@ -82,13 +82,11 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         _token: CancellationToken,
     ): Promise<Command[]> {
         let commands: Command[] = [];
-
         for (const diagnostic of context.diagnostics) {
             for (const creator of this.actionCreators) {
-                if (!creator.canHandleDiagnostic(diagnostic)) {
-                    continue;
+                if (creator.canHandleDiagnostic(diagnostic)) {
+                    commands = await creator.handleDiagnostic(document, commands, diagnostic);
                 }
-                commands = await creator.handleDiagnostic(document, commands, diagnostic);
             }
         }
 

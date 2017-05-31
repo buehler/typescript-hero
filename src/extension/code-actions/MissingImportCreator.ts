@@ -4,8 +4,6 @@ import { CodeActionCreator } from './CodeActionCreator';
 import { injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
-const regex: RegExp = /cannot find name ['"](.*)['"]/ig;
-
 /**
  * Action creator that handles missing imports in files.
  * 
@@ -28,7 +26,7 @@ export class MissingImportCreator extends CodeActionCreator {
      * @memberof MissingImportCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
-        return regex.test(diagnostic.message);
+        return /cannot find name ['"](.*)['"]/ig.test(diagnostic.message);
     }
 
     /**
@@ -42,8 +40,7 @@ export class MissingImportCreator extends CodeActionCreator {
      * @memberof MissingImportCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
-        const match = regex.exec(diagnostic.message);
-
+        const match = /cannot find name ['"](.*)['"]/ig.exec(diagnostic.message);
         if (!match) {
             return commands;
         }

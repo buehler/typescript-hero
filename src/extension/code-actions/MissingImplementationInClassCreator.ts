@@ -8,9 +8,6 @@ import { CodeActionCreator } from './CodeActionCreator';
 import { injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
-const interfaceRegex: RegExp = /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig;
-const abstractRegex: RegExp = /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig;
-
 /**
  * Action creator that handles missing implementations in a class.
  * 
@@ -33,7 +30,8 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
      * @memberof MissingImplementationInClassCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
-        return interfaceRegex.test(diagnostic.message) || abstractRegex.test(diagnostic.message);
+        return /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.test(diagnostic.message) ||
+            /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.test(diagnostic.message);
     }
 
     /**
@@ -47,7 +45,8 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
      * @memberof MissingImplementationInClassCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
-        const match = interfaceRegex.exec(diagnostic.message) || abstractRegex.exec(diagnostic.message);
+        const match = /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.exec(diagnostic.message) ||
+            /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.exec(diagnostic.message);
 
         if (!match) {
             return commands;
