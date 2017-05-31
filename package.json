@@ -189,7 +189,68 @@
         "typescriptHero.resolver.disableImportsSorting": {
           "type": "boolean",
           "default": false,
-          "description": "Defines if sorting is disable during organize imports"
+          "description": "Defines if sorting is disable during organize imports."
+        },
+        "typescriptHero.resolver.importGroups": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "modules",
+                  "plains",
+                  "workspace",
+                  "others"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "\/[A-Za-z-_0-9]*\\/"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "enum": [
+                      "modules",
+                      "plains",
+                      "workspace",
+                      "others"
+                    ]
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "pattern": "\/[A-Za-z-_0-9]*\\/"
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false
+              }
+            ]
+          },
+          "default": [
+            "plains",
+            "modules",
+            "workspace"
+          ],
+          "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
         }
       }
     }
