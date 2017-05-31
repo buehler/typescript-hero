@@ -15,7 +15,7 @@ export interface ServerExtension {
      * @param {ServerConnection} connection
      * @param {InitializeParams} params
      * 
-     * @memberOf ServerExtension
+     * @memberof ServerExtension
      */
     initialize(connection: ServerConnection, params: InitializeParams): void;
 
@@ -23,7 +23,7 @@ export interface ServerExtension {
      * Method that is called by the main entry point of the server. Shuts down the server when
      * VSCode exists.
      * 
-     * @memberOf ServerExtension
+     * @memberof ServerExtension
      */
     exit(): void;
 }

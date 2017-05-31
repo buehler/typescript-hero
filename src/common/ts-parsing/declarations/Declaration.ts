@@ -18,7 +18,7 @@ export interface Declaration extends Node, Generatable {
      * The kind of the item. Used for intellisense / autocompletion. Does render a specific icon.
      * 
      * @type {CompletionItemKind}
-     * @memberOf Declaration
+     * @memberof Declaration
      */
     readonly itemKind: CompletionItemKind;
 
@@ -27,7 +27,7 @@ export interface Declaration extends Node, Generatable {
      * return a special case to order declarations specifically.
      * 
      * @type {string}
-     * @memberOf Declaration
+     * @memberof Declaration
      */
     readonly intellisenseSortKey: string;
 
@@ -35,7 +35,7 @@ export interface Declaration extends Node, Generatable {
      * The name of the declaration.
      * 
      * @type {string}
-     * @memberOf Declaration
+     * @memberof Declaration
      */
     name: string;
 }
@@ -55,7 +55,7 @@ export interface TypedDeclaration extends Declaration {
      * @type {(string | undefined)}
      * @example "string"
      * @example "Declaration[]"
-     * @memberOf TypedDeclaration
+     * @memberof TypedDeclaration
      */
     type: string | undefined;
 }
@@ -72,7 +72,7 @@ export interface ExportableDeclaration extends Declaration {
      * Indicates if the declaration is exported (i.e. export function ...) or not.
      * 
      * @type {boolean}
-     * @memberOf ExportableDeclaration
+     * @memberof ExportableDeclaration
      */
     isExported: boolean;
 }
@@ -90,7 +90,7 @@ export interface ScopedDeclaration extends Declaration {
      * is no visibility given (e.g. methods in interfaces).
      * 
      * @type {(DeclarationVisibility | undefined)}
-     * @memberOf ScopedDeclaration
+     * @memberof ScopedDeclaration
      */
     visibility: DeclarationVisibility | undefined;
 }
@@ -108,7 +108,7 @@ export interface CallableDeclaration extends Declaration {
      * List of used parameters in the callable node.
      * 
      * @type {ParameterDeclaration[]}
-     * @memberOf CallableDeclaration
+     * @memberof CallableDeclaration
      */
     parameters: ParameterDeclaration[];
 
@@ -116,7 +116,7 @@ export interface CallableDeclaration extends Declaration {
      * List of used variables in the callable node.
      * 
      * @type {VariableDeclaration[]}
-     * @memberOf CallableDeclaration
+     * @memberof CallableDeclaration
      */
     variables: VariableDeclaration[];
 }
@@ -133,7 +133,7 @@ export interface AbstractDeclaration extends Declaration {
      * Defines if the declaration is abstract or not.
      * 
      * @type {boolean}
-     * @memberOf AbstractDeclaration
+     * @memberof AbstractDeclaration
      */
     isAbstract: boolean;
 }

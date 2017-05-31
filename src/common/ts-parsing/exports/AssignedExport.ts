@@ -19,7 +19,7 @@ export class AssignedExport implements Export {
      * 
      * @readonly
      * @type {((ExportableDeclaration | Resource)[])}
-     * @memberOf AssignedExport
+     * @memberof AssignedExport
      */
     public get exported(): (ExportableDeclaration | Resource)[] {
         return <(ExportableDeclaration | Resource)[]>[

@@ -4,6 +4,7 @@
     ],
     "rules": {
         "max-line-length": [
+            true,
             125
         ],
         "member-ordering": [

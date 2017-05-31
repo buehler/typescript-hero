@@ -36,7 +36,7 @@ export class ImportResolveExtension implements ServerExtension {
      * @param {ServerConnection} connection
      * @param {InitializeParams} params
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
         this.rootUri = (params.rootUri || '').replace('file://', '');
@@ -52,7 +52,7 @@ export class ImportResolveExtension implements ServerExtension {
      * Method that is called by the main entry point of the server. Shuts down the server when
      * VSCode exists.
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     public exit(): void {
         this.logger.info('Exit');
@@ -65,7 +65,7 @@ export class ImportResolveExtension implements ServerExtension {
      * @param {FileEvent[]} changes
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async watchedFilesChanged(changes: FileEvent[]): Promise<void> {
         if (!this.rootUri) {
@@ -93,7 +93,7 @@ export class ImportResolveExtension implements ServerExtension {
      * @param {string[]} files
      * @returns {Promise<void>}
      * 
-     * @memberOf ImportResolveExtension
+     * @memberof ImportResolveExtension
      */
     private async buildIndex(files: string[]): Promise<void> {
         if (!this.rootUri) {

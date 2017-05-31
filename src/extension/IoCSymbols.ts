@@ -6,4 +6,5 @@ export const iocSymbols = {
     extensionContext: Symbol('context'),
     extensions: Symbol('extensions'),
     loggerFactory: Symbol('loggerFactory'),
+    codeActionCreators: Symbol('codeActionCreators'),
 };

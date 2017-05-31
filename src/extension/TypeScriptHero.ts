@@ -28,7 +28,7 @@ export class TypeScriptHero implements Disposable {
     /**
      * Disposes TypeScript Hero.
      * 
-     * @memberOf TypeScriptHero
+     * @memberof TypeScriptHero
      */
     public dispose(): void {
         this.logger.info('Deactivation event called. Disposing TypeScriptHero.');

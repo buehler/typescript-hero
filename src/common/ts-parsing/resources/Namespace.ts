@@ -57,7 +57,7 @@ export class Namespace implements Resource, Node {
      * 
      * @returns {string}
      * 
-     * @memberOf Namespace
+     * @memberof Namespace
      */
     public getNamespaceAlias(): string {
         return this.name.split(/[-_]/).reduce((all, cur, idx) => {

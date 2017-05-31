@@ -19,7 +19,7 @@ export class SymbolSpecifier implements Clonable, Generatable {
      * 
      * @returns {string}
      * 
-     * @memberOf DefaultImport
+     * @memberof DefaultImport
      */
     public generateTypescript(): string {
         return `${this.specifier}${this.alias ? ` as ${this.alias}` : ''}`;
@@ -30,7 +30,7 @@ export class SymbolSpecifier implements Clonable, Generatable {
      * 
      * @returns {SymbolSpecifier}
      * 
-     * @memberOf SymbolSpecifier
+     * @memberof SymbolSpecifier
      */
     public clone(): SymbolSpecifier {
         return new SymbolSpecifier(this.specifier, this.alias);

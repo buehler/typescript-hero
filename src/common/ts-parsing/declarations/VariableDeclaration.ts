@@ -38,7 +38,7 @@ export class VariableDeclaration implements ExportableDeclaration, TypedDeclarat
      * 
      * @returns {string}
      * 
-     * @memberOf VariableDeclaration
+     * @memberof VariableDeclaration
      */
     public generateTypescript(): string {
         return `${this.name}${this.type ? `: ${this.type}` : ''}`;

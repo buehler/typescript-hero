@@ -50,7 +50,7 @@ export class DeclarationIndex {
      *
      * @private
      * @type {Resources}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private parsedResources: Resources = Object.create(null);
 
@@ -59,7 +59,7 @@ export class DeclarationIndex {
      * 
      * @private
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private _index: DeclarationInfoIndex | undefined;
 
@@ -68,7 +68,7 @@ export class DeclarationIndex {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get indexReady(): boolean {
         return this._index !== undefined;
@@ -79,7 +79,7 @@ export class DeclarationIndex {
      * 
      * @readonly
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get index(): DeclarationInfoIndex | undefined {
         return this._index;
@@ -91,7 +91,7 @@ export class DeclarationIndex {
      * 
      * @readonly
      * @type {DeclarationInfo[]}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get declarationInfos(): DeclarationInfo[] {
         return Object
@@ -112,7 +112,7 @@ export class DeclarationIndex {
      * Resets the whole index. Does delete everything. Period.
      * Is useful for unit testing or similar things.
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public reset(): void {
         this.parsedResources = Object.create(null);
@@ -128,7 +128,7 @@ export class DeclarationIndex {
      * @param {string} rootPath
      * @returns {Promise<void>}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public async buildIndex(filePathes: string[], rootPath: string): Promise<void> {
         this.logger.info('Starting index refresh.');
@@ -160,7 +160,7 @@ export class DeclarationIndex {
      * @param {FileEvent[]} changes
      * @returns {Promise<void>}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public async reindexForChanges(changes: FileEvent[], rootPath: string): Promise<void> {
         const rebuildResources: string[] = [];
@@ -215,7 +215,7 @@ export class DeclarationIndex {
      * @param {string} rootPath
      * @returns {string[]}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private getExportedResources(resourceToCheck: string, rootPath: string): string[] {
         const resources: string[] = [];
@@ -241,7 +241,7 @@ export class DeclarationIndex {
      * @param {string} rootPath The rootpath of the workspace
      * @returns {boolean}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private doesExportResource(resource: File, resourcePath: string, rootPath: string): boolean {
         let exportsResource = false;
@@ -268,7 +268,7 @@ export class DeclarationIndex {
      * @param {File[]} [files=[]]
      * @returns {Promise<Resources>}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private async parseResources(rootPath: string, files: File[] = []): Promise<Resources> {
         const parsedResources: Resources = Object.create(null);
@@ -305,7 +305,7 @@ export class DeclarationIndex {
      * @param {Resources} resources
      * @returns {Promise<ResourceIndex>}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private async createIndex(resources: Resources): Promise<DeclarationInfoIndex> {
         // Use an empty object without a prototype, so that "toString" (for example) can be indexed
@@ -349,7 +349,7 @@ export class DeclarationIndex {
      * @param {Resource[]} [processedResources=[]]
      * @returns {void}
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private processResourceExports(
         rootPath: string,
@@ -411,7 +411,7 @@ export class DeclarationIndex {
      * @param {Resource} exportingLib
      * @param {Resource} exportedLib
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private processAllFromExport(exportingLib: Resource, exportedLib: Resource): void {
         exportingLib.declarations.push(...exportedLib.declarations);
@@ -427,7 +427,7 @@ export class DeclarationIndex {
      * @param {Resource} exportingLib
      * @param {Resource} exportedLib
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private processNamedFromExport(
         tsExport: NamedExport,
@@ -456,7 +456,7 @@ export class DeclarationIndex {
      * @param {AssignedExport} tsExport
      * @param {Resource} exportingLib
      * 
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private processAssignedExport(
         tsExport: AssignedExport,

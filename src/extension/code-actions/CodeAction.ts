@@ -17,7 +17,7 @@ export interface CodeAction {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf CodeAction
+     * @memberof CodeAction
      */
     execute(): Promise<boolean>;
 }
@@ -37,7 +37,7 @@ export class AddImportCodeAction implements CodeAction {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf AddImportCodeAction
+     * @memberof AddImportCodeAction
      */
     public async execute(): Promise<boolean> {
         const controller = await ImportManager.create(this.document);
@@ -60,7 +60,7 @@ export class AddMissingImportsCodeAction implements CodeAction {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf AddMissingImportsCodeAction
+     * @memberof AddMissingImportsCodeAction
      */
     public async execute(): Promise<boolean> {
         const controller = await ImportManager.create(this.document);
@@ -82,7 +82,7 @@ export class NoopCodeAction implements CodeAction {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf NoopCodeAction
+     * @memberof NoopCodeAction
      */
     public execute(): Promise<boolean> {
         return Promise.resolve(true);
@@ -108,7 +108,7 @@ export class ImplementPolymorphElements implements CodeAction {
      * 
      * @returns {Promise<boolean>}
      * 
-     * @memberOf ImplementPolymorphElements
+     * @memberof ImplementPolymorphElements
      */
     public async execute(): Promise<boolean> {
         const controller = await ClassManager.create(this.document, this.managedClass);

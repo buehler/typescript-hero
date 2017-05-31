@@ -17,7 +17,7 @@ export abstract class BaseExtension implements Disposable {
      * 
      * @param {ExtensionContext} context
      * 
-     * @memberOf BaseExtension
+     * @memberof BaseExtension
      */
     constructor(protected readonly context: ExtensionContext) { }
 
@@ -27,7 +27,7 @@ export abstract class BaseExtension implements Disposable {
      * @abstract
      * @returns {CommandQuickPickItem[]}
      * 
-     * @memberOf BaseExtension
+     * @memberof BaseExtension
      */
     // public abstract getGuiCommands(): CommandQuickPickItem[];
 
@@ -37,7 +37,7 @@ export abstract class BaseExtension implements Disposable {
      * 
      * @abstract
      * 
-     * @memberOf BaseExtension
+     * @memberof BaseExtension
      */
     public abstract initialize(): void;
 
@@ -46,7 +46,7 @@ export abstract class BaseExtension implements Disposable {
      * 
      * @abstract
      * 
-     * @memberOf BaseExtension
+     * @memberof BaseExtension
      */
     public abstract dispose(): void;
 }

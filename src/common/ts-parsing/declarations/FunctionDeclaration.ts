@@ -47,7 +47,7 @@ export class FunctionDeclaration implements CallableDeclaration, ExportableDecla
      * 
      * @returns {string}
      * 
-     * @memberOf FunctionDeclaration
+     * @memberof FunctionDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

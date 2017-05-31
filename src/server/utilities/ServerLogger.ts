@@ -49,7 +49,7 @@ export class ServerLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     public error(message: string, data?: any): void {
         this.log(LogLevel.Errors, MessageType.Error, message, data);
@@ -61,7 +61,7 @@ export class ServerLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     public warning(message: string, data?: any): void {
         this.log(LogLevel.Warnings, MessageType.Warning, message, data);
@@ -73,7 +73,7 @@ export class ServerLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     public info(message: string, data?: any): void {
         this.log(LogLevel.All, MessageType.Info, message, data);
@@ -89,7 +89,7 @@ export class ServerLogger implements Logger {
      * @param {string} message
      * @param {*} [data]
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     private log(level: LogLevel, type: MessageType, message: string, data?: any): void {
         let payload = message;
@@ -111,7 +111,7 @@ export class ServerLogger implements Logger {
      * 
      * @private
      * 
-     * @memberOf Logger
+     * @memberof Logger
      */
     private trySendBuffer(): void {
         if (this.configuration && this.messageBuffer) {

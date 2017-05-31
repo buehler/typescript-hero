@@ -24,7 +24,7 @@ export class ServerConnection extends Connection<IConnection> {
     /**
      * Starts the actual connection to listen for clients.
      * 
-     * @memberOf ServerConnection
+     * @memberof ServerConnection
      */
     public start(): void {
         if (this.started) {
@@ -50,7 +50,7 @@ export class ServerConnection extends Connection<IConnection> {
     /**
      * Registers a handler for the onDidChangeConfiguration notification.
      * 
-     * @memberOf ServerConnection
+     * @memberof ServerConnection
      */
     public onDidChangeConfiguration(handler: (settings: ExtensionConfig) => void): void {
         if (!this.handler['onDidChangeConfiguration']) {
@@ -67,7 +67,7 @@ export class ServerConnection extends Connection<IConnection> {
      * 
      * @param {(changes: FileEvent[]) => void} handler
      * 
-     * @memberOf ServerConnection
+     * @memberof ServerConnection
      */
     public onDidChangeWatchedFiles(handler: (changes: FileEvent[]) => void): void {
         if (!this.handler['onDidChangeWatchedFiles']) {

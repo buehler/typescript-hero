@@ -1,5 +1,4 @@
 import { ResolverConfig } from './ResolverConfig';
-import { RestartDebuggerConfig } from './RestartDebuggerConfig';
 
 /**
  * Configuration interface for TypeScript Hero
@@ -14,7 +13,7 @@ export interface ExtensionConfig {
      * 
      * @readonly
      * @type {string}
-     * @memberOf ExtensionConfig
+     * @memberof ExtensionConfig
      */
     verbosity: string;
 
@@ -23,16 +22,7 @@ export interface ExtensionConfig {
      * 
      * @readonly
      * @type {ResolverConfig}
-     * @memberOf ExtensionConfig
+     * @memberof ExtensionConfig
      */
     resolver: ResolverConfig;
-
-    /**
-     * Configuration object for the restart debugger extension.
-     * 
-     * @readonly
-     * @type {RestartDebuggerConfig}
-     * @memberOf ExtensionConfig
-     */
-    restartDebugger: RestartDebuggerConfig;
 }

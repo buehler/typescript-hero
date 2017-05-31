@@ -44,7 +44,7 @@ export class InterfaceDeclaration implements ExportableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf InterfaceDeclaration
+     * @memberof InterfaceDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

@@ -51,7 +51,7 @@ export class DefaultDeclaration implements ExportableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf DefaultDeclaration
+     * @memberof DefaultDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

@@ -190,24 +190,6 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if sorting is disable during organize imports"
-        },
-        "typescriptHero.restartDebugger.watchFolders": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "default": [
-            "build",
-            "out",
-            "dist"
-          ],
-          "description": "Defines the folders that are watched for filechanges to restart the debugger."
-        },
-        "typescriptHero.restartDebugger.active": {
-          "type": "boolean",
-          "default": true,
-          "description": "Defines if the restart debugger extension is active at startup."
         }
       }
     }

@@ -43,7 +43,7 @@ export class ConstructorDeclaration implements CallableDeclaration {
      * 
      * @returns {string}
      * 
-     * @memberOf ConstructorDeclaration
+     * @memberof ConstructorDeclaration
      */
     public generateTypescript(): string {
         throw new NotImplementedYetError();

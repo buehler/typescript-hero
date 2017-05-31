@@ -14,7 +14,7 @@ export interface Resource {
      * List of imports contained in this resource.
      * 
      * @type {Import[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     imports: Import[];
 
@@ -22,7 +22,7 @@ export interface Resource {
      * List of exports contained in this resource.
      * 
      * @type {Export[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     exports: Export[];
 
@@ -30,7 +30,7 @@ export interface Resource {
      * List of declarations that are contained in this resource.
      * 
      * @type {Declaration[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     declarations: Declaration[];
 
@@ -38,7 +38,7 @@ export interface Resource {
      * List of subresources (like namespaces in a file) of this resource.
      * 
      * @type {Resource[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     resources: Resource[];
     
@@ -47,7 +47,7 @@ export interface Resource {
      * (i.e. actual used string identifiers to calculate missing imports and stuff.)
      * 
      * @type {string[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     usages: string[];
 
@@ -56,7 +56,7 @@ export interface Resource {
      * node identifiers for node modules.
      * 
      * @type {string}
-     * @memberOf Resource
+     * @memberof Resource
      */
     readonly identifier: string;
 
@@ -65,7 +65,7 @@ export interface Resource {
      * that are not covered by its own declarations. 
      * 
      * @type {string[]}
-     * @memberOf Resource
+     * @memberof Resource
      */
     readonly nonLocalUsages: string[];
 }

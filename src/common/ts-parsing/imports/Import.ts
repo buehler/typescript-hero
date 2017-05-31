@@ -14,7 +14,7 @@ export interface Import extends Clonable, Node, Generatable {
      * Indicates if the given import is "new" or a parsed one.
      * 
      * @type {boolean}
-     * @memberOf Import
+     * @memberof Import
      */
     readonly isNew: boolean;
 
@@ -24,7 +24,7 @@ export interface Import extends Clonable, Node, Generatable {
      * @example "express"
      *
      * @type {string}
-     * @memberOf Import
+     * @memberof Import
      */
     libraryName: string;
 }
@@ -41,7 +41,7 @@ export interface AliasedImport extends Import {
      * Alias for the given import. E.g. for a "* as ..." import.
      * 
      * @type {string}
-     * @memberOf AliasedImport
+     * @memberof AliasedImport
      */
     alias: string;
 }

@@ -13,7 +13,7 @@ export interface Generatable {
      * @param {GenerationOptions} options
      * @returns {string}
      * 
-     * @memberOf Generatable
+     * @memberof Generatable
      */
     generateTypescript(options: GenerationOptions): string;
 }

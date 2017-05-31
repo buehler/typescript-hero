@@ -40,7 +40,7 @@ export class PropertyDeclaration implements ScopedDeclaration, TypedDeclaration 
      * @param {GenerationOptions} {tabSize}
      * @returns {string}
      * 
-     * @memberOf PropertyDeclaration
+     * @memberof PropertyDeclaration
      */
     public generateTypescript({ tabSize }: GenerationOptions): string {
         return `${Array(tabSize + 1).join(' ')}` +

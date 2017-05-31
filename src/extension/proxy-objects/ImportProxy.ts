@@ -38,7 +38,7 @@ export class ImportProxy extends NamedImport {
      * 
      * @param {string} name
      * 
-     * @memberOf ImportProxy
+     * @memberof ImportProxy
      */
     public addSpecifier(name: string): void {
         if (!this.specifiers.some(o => o.specifier === name)) {
@@ -51,7 +51,7 @@ export class ImportProxy extends NamedImport {
      * 
      * @returns {ImportProxy}
      * 
-     * @memberOf ImportProxy
+     * @memberof ImportProxy
      */
     public clone(): ImportProxy {
         const clone = new ImportProxy(this.libraryName, this.start, this.end);
@@ -68,7 +68,7 @@ export class ImportProxy extends NamedImport {
      * @param {ImportProxy} imp
      * @returns {boolean}
      * 
-     * @memberOf ImportProxy
+     * @memberof ImportProxy
      */
     public isEqual(imp: ImportProxy): boolean {
         const sameSpecifiers = (specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]) => {
@@ -98,7 +98,7 @@ export class ImportProxy extends NamedImport {
      * @param {GenerationOptions} options
      * @returns {string}
      * 
-     * @memberOf ImportProxy
+     * @memberof ImportProxy
      */
     public generateTypescript(options: GenerationOptions): string {
         if (this.specifiers.length <= 0) {

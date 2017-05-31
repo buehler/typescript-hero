@@ -18,7 +18,6 @@ Here is a brief list, of what TypeScript Hero is capable of (more at the end):
 - Intellisense that suggests symbols and automatically adds the needed imports
 - "Light bulb feature" that fixes code you wrote
 - Sort and organize your imports (sort and remove unused)
-- Restart your debug session when your code changes
 
 ##### Some badges :-)
 
@@ -41,7 +40,6 @@ All commands are preceeded by `typescriptHero`.
 | resolve.addMissingImports    | import resolver | Imports all missing symbols for the actual document       |
 | resolve.organizeImports      | import resolver | Removes unused imports and orders all imports             |
 | resolve.rebuildCache         | import resolver | Rebuilds the whole symbol cache (or index)                |
-| restartDebugger.toggle       | debug restarter | Toggles the active state of the debug restarter           |
 
 ## Keybindings
 
@@ -49,7 +47,6 @@ The following commands are bound by default when the extension is installed.
 
 | Command                      | Keybinding         |
 | ---------------------------- | ------------------ |
-| showCmdGui                   | `ctrl+alt+g`       |
 | resolve.addImport            | `ctrl+alt+i`       |
 | resolve.addImportUnderCursor | `ctrl+alt+shift+i` |
 | resolve.organizeImports      | `ctrl+alt+o`       |
@@ -84,16 +81,6 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | newImportLocation                     | The location of new imports (at the top of the file, or at the cursor location)      |
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
 
-### Debug session restarter
-
-The following settings do have the prefix `restartDebugger`. So an example setting could be
-`typescriptHero.restartDebugger.watchFolders`.
-
-| Setting      | Description                                                 |
-| ------------ | ----------------------------------------------------------- |
-| watchFolders | Which output folders should be watched to trigger a restart |
-| active       | If true, the debug restart is activated on startup          |
-
 ## Features (extended)
 
 ### Import management
@@ -119,11 +106,6 @@ TypeScript Hero offers the following fix actions:
 - Detect a missing import and offer to add all missing imports to the file
 - Detect missing methods / properties of an interface that you implemented and implement them for you (implement interface refactoring)
 - Detect missing abstract methods of an extended abstract class and implement them for you (implement abstract class refactoring)
-
-### Debug restarter
-
-TypeScript Hero does detect changes to configurable directories in your workspace and restarts the
-debugger (if it's running) after a short delay (actually calls the `restartDebugger` command).
 
 ## Known Issues
 

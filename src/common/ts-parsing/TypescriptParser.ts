@@ -51,7 +51,7 @@ export class TypescriptParser {
      * @param {string} source
      * @returns {Promise<File>}
      * 
-     * @memberOf TsResourceParser
+     * @memberof TsResourceParser
      */
     public async parseSource(source: string): Promise<File> {
         return await this.parseTypescript(createSourceFile('inline.ts', source, ScriptTarget.ES2015, true), '/');
@@ -64,7 +64,7 @@ export class TypescriptParser {
      * @param {string} rootPath
      * @returns {Promise<File>}
      * 
-     * @memberOf TsResourceParser
+     * @memberof TsResourceParser
      */
     public async parseFile(filePath: string, rootPath: string): Promise<File> {
         const parse = await this.parseFiles([filePath], rootPath);
@@ -78,7 +78,7 @@ export class TypescriptParser {
      * @param {string} rootPath
      * @returns {Promise<File[]>}
      * 
-     * @memberOf TsResourceParser
+     * @memberof TsResourceParser
      */
     public async parseFiles(filePathes: string[], rootPath: string): Promise<File[]> {
         return filePathes
@@ -95,7 +95,7 @@ export class TypescriptParser {
      * @param {string} rootPath
      * @returns {TsFile}
      * 
-     * @memberOf TsResourceParser
+     * @memberof TsResourceParser
      */
     private parseTypescript(source: SourceFile, rootPath: string): File {
         const file = new File(source.fileName, rootPath, source.getStart(), source.getEnd());
@@ -115,7 +115,7 @@ export class TypescriptParser {
      * @param {Resource} resource
      * @param {Node} node
      * 
-     * @memberOf TsResourceParser
+     * @memberof TsResourceParser
      */
     private parse(resource: Resource, node: Node): void {
         for (const child of node.getChildren()) {

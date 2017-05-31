@@ -22,7 +22,7 @@ export class ClientConnection extends Connection<LanguageClient> {
      * @param {ExtensionContext} context
      * @returns {Promise<ClientConnection>}
      * 
-     * @memberOf ClientConnection
+     * @memberof ClientConnection
      */
     public static async create(context: ExtensionContext): Promise<ClientConnection> {
         const module = join(__dirname, '..', '..', 'server', 'TypeScriptHeroServer');

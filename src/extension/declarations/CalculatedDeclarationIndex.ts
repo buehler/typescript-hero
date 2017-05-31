@@ -31,7 +31,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @private
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     private _index: DeclarationInfoIndex | undefined;
 
@@ -40,7 +40,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {boolean}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get indexReady(): boolean {
         return this._index !== undefined;
@@ -51,7 +51,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {(DeclarationInfoIndex | undefined)}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get index(): DeclarationInfoIndex | undefined {
         return this._index;
@@ -63,7 +63,7 @@ export class CalculatedDeclarationIndex {
      * 
      * @readonly
      * @type {DeclarationInfo[]}
-     * @memberOf DeclarationIndex
+     * @memberof DeclarationIndex
      */
     public get declarationInfos(): DeclarationInfo[] {
         return Object
@@ -83,11 +83,11 @@ export class CalculatedDeclarationIndex {
             ([partials]: [DeclarationIndexPartial[]]) => {
                 if (!this.tempIndex) {
                     this.tempIndex = {};
+                    this.logger.info('Receiving partial index result.');
                 }
                 for (const partial of partials) {
                     this.tempIndex[partial.index] = partial.infos;
                 }
-                this.logger.info('Received partial index result.');
             },
         );
         this.connection.onNotification(Notification.IndexCreationSuccessful, () => {
