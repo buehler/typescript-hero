@@ -98,68 +98,67 @@ describe('ImportProxy', () => {
         });
 
         given(
-            [
-                (() => {
-                    const p = new ImportProxy('foo');
-                    return p;
-                })(),
-                (() => {
-                    const p = new ImportProxy('bar');
-                    return p;
-                })()
-            ],
-            [
-                (() => {
+            {
+                description: 'foo vs bar',
+                p1: new ImportProxy('foo'),
+                p2: new ImportProxy('bar'),
+            },
+            {
+                description: 'foo with different alias',
+                p1: (() => {
                     const p = new ImportProxy('foo');
                     p.defaultAlias = 'ALIAS';
                     return p;
                 })(),
-                (() => {
+                p2: (() => {
                     const p = new ImportProxy('foo');
                     p.defaultAlias = 'ALIAS_2';
                     return p;
-                })()
-            ],
-            [
-                (() => {
+                })(),
+            },
+            {
+                description: 'foo with different default export',
+                p1: (() => {
                     const p = new ImportProxy('foo');
                     p.defaultPurposal = 'MyDefaultExport';
                     return p;
                 })(),
-                (() => {
+                p2: (() => {
                     const p = new ImportProxy('foo');
                     p.defaultPurposal = 'MyDefaultExport_2';
                     return p;
-                })()
-            ],
-            [
-                (() => {
+                })(),
+            },
+            {
+                description: 'foo with different specifiers count',
+                p1: (() => {
                     const p = new ImportProxy('foo');
                     p.addSpecifier('bar');
                     p.addSpecifier('baz');
                     return p;
                 })(),
-                (() => {
-                    const p = new ImportProxy('foo');
-                    p.addSpecifier('bar');
-                    return p;
-                })()
-            ],
-            [
-                (() => {
+                p2: (() => {
                     const p = new ImportProxy('foo');
                     p.addSpecifier('bar');
                     return p;
                 })(),
-                (() => {
+            },
+            {
+                description: 'foo with different specifiers',
+                p1: (() => {
                     const p = new ImportProxy('foo');
                     p.addSpecifier('baz');
                     return p;
-                })()
-            ])
-            .it('should return false if another proxy is not equal', (p1, p2) => {
-                (p1.isEqual(p2)).should.be.false;
-            });
+                })(),
+                p2: (() => {
+                    const p = new ImportProxy('foo');
+                    p.addSpecifier('bar');
+                    return p;
+                })(),
+            },
+        ).it('should return false if another proxy is not equal', ({ p1, p2 }) => {
+            (p1.isEqual(p2)).should.be.false;
+        });
 
     });
 
