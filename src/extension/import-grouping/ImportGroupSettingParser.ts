@@ -1,4 +1,4 @@
-import { RegexImportGroup } from './';
+import { RegexImportGroup, RemainImportGroup } from './';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupIdentifierInvalidError } from './ImportGroupIdentifierInvalidError';
 import { ImportGroupKeyword } from './ImportGroupKeyword';
@@ -16,6 +16,7 @@ export class ImportGroupSettingParser {
         new KeywordImportGroup(ImportGroupKeyword.Plains),
         new KeywordImportGroup(ImportGroupKeyword.Modules),
         new KeywordImportGroup(ImportGroupKeyword.Workspace),
+        new RemainImportGroup(),
     ];
 
     public static parseSetting(setting: string | { identifier: string, order: ImportGroupOrder }): ImportGroup {
