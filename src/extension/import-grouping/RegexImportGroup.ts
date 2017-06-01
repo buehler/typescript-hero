@@ -1,5 +1,6 @@
 import { GenerationOptions } from '../../common/ts-generation';
-import { Import } from '../../common/ts-parsing/imports';
+import { Import, StringImport } from '../../common/ts-parsing/imports';
+import { importSort } from '../utilities/utilityFunctions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupOrder } from './ImportGroupOrder';
 
@@ -15,11 +16,21 @@ export class RegexImportGroup implements ImportGroup {
 
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
 
-    public processImport(_tsImport: Import): boolean {
-        throw new Error('Not implemented yet.');
+    public processImport(tsImport: Import): boolean {
+        const regex = new RegExp(this.regex.replace(/\//g, ''), 'g');
+
+        if (regex.test(tsImport.libraryName)) {
+            this.imports.push(tsImport);
+            return true;
+        }
+        return false;
     }
 
     public generateTypescript(options: GenerationOptions): string {
-        return this.imports.reduce((str, cur) => str + cur.generateTypescript(options), '');
+        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
+        return [
+            ...sorted.filter(i => i instanceof StringImport),
+            ...sorted.filter(i => !(i instanceof StringImport)),
+        ].reduce((str, cur) => str + cur.generateTypescript(options), '');
     }
 }

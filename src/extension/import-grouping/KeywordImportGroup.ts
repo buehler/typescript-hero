@@ -1,6 +1,6 @@
-import { importSort } from '../utilities/utilityFunctions';
 import { GenerationOptions } from '../../common/ts-generation';
 import { Import, StringImport } from '../../common/ts-parsing/imports';
+import { importSort } from '../utilities/utilityFunctions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupKeyword } from './ImportGroupKeyword';
 import { ImportGroupOrder } from './ImportGroupOrder';
