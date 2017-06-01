@@ -204,7 +204,7 @@
               },
               {
                 "type": "string",
-                "pattern": "\/[A-Za-z-_0-9]*\\/"
+                "pattern": "\\/[A-Za-z-_0-9]*\\/"
               },
               {
                 "type": "object",
@@ -230,7 +230,7 @@
                 "properties": {
                   "identifier": {
                     "type": "string",
-                    "pattern": "\/[A-Za-z-_0-9]*\\/"
+                    "pattern": "\\/[A-Za-z-_0-9]*\\/"
                   },
                   "order": {
                     "enum": [
