@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+
+## [0.13.0]
 ### Big refactoring.
 The whole refactoring is part of ([#143](https://github.com/buehler/typescript-hero/issues/143))
 
@@ -161,7 +163,8 @@ The whole refactoring is part of ([#143](https://github.com/buehler/typescript-h
 - Various bugs in AST parsing
 
 
-[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.12.0...master
+[Unreleased]: https://github.com/buehler/typescript-hero/compare/v0.13.0...master
+[0.13.0]: https://github.com/buehler/typescript-hero/compare/v0.12.0...v0.13.0
 [0.12.0]: https://github.com/buehler/typescript-hero/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/buehler/typescript-hero/compare/v0.10.1...v0.11.0
 [0.10.1]: https://github.com/buehler/typescript-hero/compare/v0.10.0...v0.10.1
