@@ -204,7 +204,7 @@
               },
               {
                 "type": "string",
-                "pattern": "\\/[A-Za-z-_0-9]*\\/"
+                "pattern": "\\/[A-Za-z-_0-9]+\\/"
               },
               {
                 "type": "object",
@@ -223,14 +223,18 @@
                     ]
                   }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
               },
               {
                 "type": "object",
                 "properties": {
                   "identifier": {
                     "type": "string",
-                    "pattern": "\\/[A-Za-z-_0-9]*\\/"
+                    "pattern": "\\/[A-Za-z-_0-9]+\\/"
                   },
                   "order": {
                     "enum": [
@@ -239,7 +243,11 @@
                     ]
                   }
                 },
-                "additionalProperties": false
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
               }
             ]
           },
