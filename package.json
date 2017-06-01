@@ -35,7 +35,7 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "yarn install && yarn run build && npm prune --production",
+    "vscode:prepublish": "npm install && npm run build && npm prune --production",
     "predevelop": "yarn del ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
