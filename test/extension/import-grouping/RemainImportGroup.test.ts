@@ -10,7 +10,7 @@ import { workspace } from 'vscode';
 
 chai.should();
 
-describe.only('RemainImportGroup', () => {
+describe('RemainImportGroup', () => {
 
     let file: File;
     let importGroup: RemainImportGroup;
