@@ -43,10 +43,7 @@ script:
 
 deploy:
   provider: script
-  script:
-    - npm install -g vsce
-    - vsce package
-    - vsce publish -p $VSCE_TOKEN
+  script: npm install -g vsce && vsce package && vsce publish -p $VSCE_TOKEN
   skip_cleanup: true
   on:
     tags: true
