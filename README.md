@@ -47,8 +47,9 @@ The following commands are bound by default when the extension is installed.
 
 | Command                      | Keybinding         |
 | ---------------------------- | ------------------ |
-| resolve.addImport            | `ctrl+alt+i`       |
-| resolve.addImportUnderCursor | `ctrl+alt+shift+i` |
+| resolve.addImport            | `ctrl+shift+i`     |
+| resolve.addImportUnderCursor | `ctrl+alt+i`       |
+| resolve.addMissingImports    | `ctrl+alt+shift+i` |
 | resolve.organizeImports      | `ctrl+alt+o`       |
 
 ## Settings
