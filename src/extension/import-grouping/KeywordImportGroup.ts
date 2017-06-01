@@ -21,6 +21,10 @@ export class KeywordImportGroup implements ImportGroup {
         switch (this.keyword) {
             case ImportGroupKeyword.Modules:
                 return this.processModulesImport(tsImport);
+            case ImportGroupKeyword.Plains:
+                return this.processPlainsImport(tsImport);
+            case ImportGroupKeyword.Workspace:
+                return this.processWorkspaceImport(tsImport);
             default:
                 return false;
         }
@@ -37,6 +41,28 @@ export class KeywordImportGroup implements ImportGroup {
             tsImport instanceof StringImport ||
             tsImport.libraryName.startsWith('.') ||
             tsImport.libraryName.startsWith('/')
+        ) {
+            return false;
+        }
+        this.imports.push(tsImport);
+        return true;
+    }
+
+    private processPlainsImport(tsImport: Import): boolean {
+        if (!(tsImport instanceof StringImport)) {
+            return false;
+        }
+        this.imports.push(tsImport);
+        return true;
+    }
+
+    private processWorkspaceImport(tsImport: Import): boolean {
+        if (
+            tsImport instanceof StringImport ||
+            (
+                !tsImport.libraryName.startsWith('.') &&
+                !tsImport.libraryName.startsWith('/')
+            )
         ) {
             return false;
         }
