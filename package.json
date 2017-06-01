@@ -36,14 +36,14 @@
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "vscode:prepublish": "npm install && npm run build && npm prune --production",
-    "predevelop": "yarn del ./out",
+    "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "yarn del ./out && tsc -p ./config/tsconfig.test.json && yarn run lint",
+    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && npm run lint",
     "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
-    "build": "yarn del ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "yarn run build && yarn del './*.vsix' && vsce package"
+    "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
+    "package": "npm run build && del-cli './*.vsix' && vsce package"
   },
   "devDependencies": {
     "@types/chai": "^4.0.0",
