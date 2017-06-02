@@ -34,7 +34,7 @@ export class ImportGroupSettingParser {
             return new RegexImportGroup(identifier, order);
         }
 
-        if (Object.keys(ImportGroupKeyword).indexOf(identifier) >= 0) {
+        if (ImportGroupKeyword[identifier] !== undefined) {
             return new KeywordImportGroup(ImportGroupKeyword[identifier], order);
         }
 
