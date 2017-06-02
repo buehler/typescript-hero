@@ -383,7 +383,7 @@ export class ImportManager implements ObjectManager {
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
                 if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
-                    spec.alias = await this.getSpecifierAlias();
+                    spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }
             }
         }
@@ -397,10 +397,10 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberof ImportManager
      */
-    private async getSpecifierAlias(): Promise<string | undefined> {
+    private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
-            placeHolder: 'Alias for specifier',
-            prompt: 'Please enter an alias for the specifier..',
+            placeHolder: `Alias for specifier "${specifierName}"`,
+            prompt: `Please enter an alias for the specifier "${specifierName}"..`,
             validateInput: s => !!s ? '' : 'Please enter a variable name',
         });
         return !!result ? result : undefined;
