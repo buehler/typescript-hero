@@ -3,6 +3,8 @@
 .vscode-test/**
 
 .gitignore
+package-lock.json
+prepare-release.js
 
 config/**
 test/**
