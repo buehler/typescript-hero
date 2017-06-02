@@ -1,3 +1,4 @@
+import { ImportGroup } from '../../extension/import-grouping';
 import { GenerationOptions, ImportLocation } from '../ts-generation';
 
 /**
@@ -79,6 +80,14 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     disableImportSorting: boolean;
+
+    /**
+     * Returns the configured import groups. On a parsing error, a default should be provided.
+     * 
+     * @type {ImportGroup[]}
+     * @memberof ResolverConfig
+     */
+    importGroups: ImportGroup[];
 
     /**
      * All information that are needed to print an import.

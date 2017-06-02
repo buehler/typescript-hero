@@ -1,5 +1,6 @@
 import { ExtensionConfig, ResolverConfig } from '../common/config';
-import { ImportLocation, GenerationOptions } from '../common/ts-generation';
+import { GenerationOptions, ImportLocation } from '../common/ts-generation';
+import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser } from './import-grouping';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
@@ -45,6 +46,8 @@ export class VscodeExtensionConfig implements ExtensionConfig {
  * @class VscodeResolverConfig
  */
 class VscodeResolverConfig implements ResolverConfig {
+    private parsedImportGroups: ImportGroup[] | null = null;
+
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }
@@ -138,6 +141,29 @@ class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
+     * Returns the configured import groups. On a parsing error, the default is used.
+     * 
+     * @type {ImportGroup[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get importGroups(): ImportGroup[] {
+        if (this.parsedImportGroups !== null) {
+            return this.parsedImportGroups;
+        }
+
+        this.parsedImportGroups = [];
+        const groups = workspace.getConfiguration(sectionKey).get<ImportGroupSetting[]>('resolver.importGroups');
+
+        try {
+            this.parsedImportGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
+        } catch (e) {
+            this.parsedImportGroups = ImportGroupSettingParser.default;
+        }
+
+        return this.parsedImportGroups;
+    }
+
+    /**
      * All information that are needed to print an import.
      * 
      * @readonly
@@ -152,5 +178,9 @@ class VscodeResolverConfig implements ResolverConfig {
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,
         };
+    }
+
+    constructor() {
+        workspace.onDidChangeConfiguration(() => this.parsedImportGroups = null);
     }
 }
