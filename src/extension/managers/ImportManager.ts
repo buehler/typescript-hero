@@ -1,3 +1,4 @@
+import { ImportGroup } from '../import-grouping';
 import { ExtensionConfig } from '../../common/config';
 import {
     getAbsolutLibraryName,
@@ -85,6 +86,7 @@ export class ImportManager implements ObjectManager {
         return Container.get<ExtensionConfig>(iocSymbols.configuration);
     }
 
+    private importGroups: ImportGroup[];
     private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
     private organize: boolean;
@@ -105,6 +107,14 @@ export class ImportManager implements ObjectManager {
         private _parsedDocument: File,
     ) {
         this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
+        this.importGroups = ImportManager.config.resolver.importGroups;
+        for (const tsImport of this.imports) {
+            for (const group of this.importGroups) {
+                if (group.processImport(tsImport)) {
+                    break;
+                }
+            }
+        }
     }
 
     /**

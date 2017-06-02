@@ -1,6 +1,6 @@
 import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { GenerationOptions, ImportLocation } from '../common/ts-generation';
-import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser } from './import-grouping';
+import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
@@ -146,12 +146,18 @@ class VscodeResolverConfig implements ResolverConfig {
      */
     public get importGroups(): ImportGroup[] {
         const groups = workspace.getConfiguration(sectionKey).get<ImportGroupSetting[]>('resolver.importGroups');
+        let importGroups: ImportGroup[] = [];
 
         try {
-            return groups.map(g => ImportGroupSettingParser.parseSetting(g));
+            importGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
         } catch (e) {
-            return ImportGroupSettingParser.default;
+            importGroups = ImportGroupSettingParser.default;
         }
+        if (!importGroups.some(i => i instanceof RemainImportGroup)) {
+            importGroups.push(new RemainImportGroup());
+        }
+
+        return importGroups;
     }
 
     /**
