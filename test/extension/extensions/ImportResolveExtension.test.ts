@@ -1,10 +1,11 @@
-import { TypescriptParser } from '../../../src/common/ts-parsing';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 import { ExtensionConfig } from '../../../src/common/config';
+import { ImportLocation } from '../../../src/common/ts-generation';
+import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 import * as chai from 'chai';
 import { join } from 'path';
 import * as vscode from 'vscode';
@@ -14,8 +15,36 @@ chai.should();
 describe('ImportResolveExtension', () => {
 
     let extension: any;
+    let previousConfig: ExtensionConfig;
+    const defaultConfig: ExtensionConfig = {
+        resolver: {
+            disableImportSorting: false,
+            generationOptions: {
+                eol: ';',
+                multiLineWrapThreshold: 120,
+                spaceBraces: true,
+                stringQuoteStyle: `'`,
+                tabSize: 4,
+            },
+            ignorePatterns: [],
+            stringQuoteStyle: `'`,
+            insertSemicolons: true,
+            insertSpaceBeforeAndAfterImportBraces: true,
+            multiLineWrapThreshold: 120,
+            newImportLocation: ImportLocation.TopOfFile,
+            tabSize: 4,
+        },
+        verbosity: 'Warning',
+        sort: {
+            type: 'ascending',
+            semantic: [],
+        },
+    };
 
     before(async () => {
+        previousConfig = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        Container.rebind<ExtensionConfig>(iocSymbols.configuration).toConstantValue(defaultConfig);
+        
         const file = join(
             vscode.workspace.rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
@@ -53,6 +82,10 @@ describe('ImportResolveExtension', () => {
         );
 
         extension = new ImportResolveExtension(ctx, logger, config, index as any, parser, <any>null);
+    });
+
+    after(() => {
+        Container.rebind<ExtensionConfig>(iocSymbols.configuration).toConstantValue(previousConfig);
     });
 
     describe('addImportToDocument', () => {
@@ -162,27 +195,82 @@ describe('ImportResolveExtension', () => {
             });
         });
 
-        it('shoud remove unused imports', async () => {
-            await extension.organizeImports();
-            document.getText().should.not.match(/Class1/);
+        describe('when sort order is semantic', () => {
+            before(() => {
+                defaultConfig.sort.type = 'semantic';
+                defaultConfig.sort.semantic = ['plains', 'globals', 'locals'];
+            });
+
+            beforeEach(async () => {
+                await extension.organizeImports();
+            });
+
+            it('should remove unused imports', () => {
+                document.getText().should.not.match(/Class1/);
+            });
+
+            it('should order string imports to the top', () => {
+                document.lineAt(0).text.should.equal(`import 'foo-bar';`);
+            });
+
+            it('should order global imports alphabetically after string imports', () => {
+                document.lineAt(1).text.should.equal(`import { Input } from '@angular/core';`);
+                document.lineAt(2).text.should.equal(`import * as React from 'react';`);
+            });
+
+            it('should order imports from your code by name and put them last', () => {
+                document.lineAt(3).text.should.match(/resourceIndex/);
+                document.lineAt(4).text.should.match(/subfolderstructure/);
+            });
+
+            it('should order specifiers by name', () => {
+                document.lineAt(3).text.should.match(/ExportAlias.*FancierLibraryClass/);
+            });
         });
 
-        it('shoud order string imports to the top', async () => {
-            await extension.organizeImports();
-            document.lineAt(0).text.should.equal(`import 'foo-bar';`);
+        describe('when sort order is ascending', () => {
+            before(() => {
+                defaultConfig.sort.type = 'ascending';
+            });
+
+            beforeEach(async () => {
+                await extension.organizeImports();
+            });
+
+            it('should order imports alphabetically by name', () => {
+                document.lineAt(0).text.should.match(/resourceIndex/);
+                document.lineAt(1).text.should.match(/subfolderstructure/);
+                document.lineAt(2).text.should.equal(`import { Input } from '@angular/core';`);
+                document.lineAt(3).text.should.equal(`import 'foo-bar';`);
+                document.lineAt(4).text.should.equal(`import * as React from 'react';`);
+            });
+
+            it('should order specifiers by name', () => {
+                document.lineAt(0).text.should.match(/ExportAlias.*FancierLibraryClass/);
+            });
         });
 
-        it('shoud order libraries by name', async () => {
-            await extension.organizeImports();
-            document.lineAt(1).text.should.match(/resourceIndex/);
-            document.lineAt(2).text.should.match(/subfolderstructure/);
-        });
+        describe('when sort order is descending', () => {
+            before(() => {
+                defaultConfig.sort.type = 'descending';
+            });
 
-        it('shoud order specifiers by name', async () => {
-            await extension.organizeImports();
-            document.lineAt(1).text.should.match(/ExportAlias.*FancierLibraryClass/);
-        });
+            beforeEach(async () => {
+                await extension.organizeImports();
+            });
 
+            it('should order imports alphabetically by name', () => {
+                document.lineAt(4).text.should.match(/resourceIndex/);
+                document.lineAt(3).text.should.match(/subfolderstructure/);
+                document.lineAt(2).text.should.equal(`import { Input } from '@angular/core';`);
+                document.lineAt(1).text.should.equal(`import 'foo-bar';`);
+                document.lineAt(0).text.should.equal(`import * as React from 'react';`);
+            });
+
+            it('should order specifiers by name', () => {
+                document.lineAt(4).text.should.match(/ExportAlias.*FancierLibraryClass/);
+            });
+        });
     });
 
 });

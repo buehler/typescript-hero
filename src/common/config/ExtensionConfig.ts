@@ -1,4 +1,5 @@
 import { ResolverConfig } from './ResolverConfig';
+import { SortConfig } from './SortConfig';
 
 /**
  * Configuration interface for TypeScript Hero
@@ -25,4 +26,13 @@ export interface ExtensionConfig {
      * @memberof ExtensionConfig
      */
     resolver: ResolverConfig;
+
+    /**
+     * Defines which sorting strategy will be applied
+     * 
+     * @readonly
+     * @type {SortConfig}
+     * @memberof ExtensionConfig
+     */
+    sort: SortConfig;
 }

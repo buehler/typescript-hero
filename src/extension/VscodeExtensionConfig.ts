@@ -1,5 +1,5 @@
-import { ExtensionConfig, ResolverConfig } from '../common/config';
-import { ImportLocation, GenerationOptions } from '../common/ts-generation';
+import { ExtensionConfig, ImportSemanticType, ResolverConfig, SortConfig, SortType } from '../common/config';
+import { GenerationOptions, ImportLocation } from '../common/ts-generation';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
@@ -15,6 +15,7 @@ const sectionKey = 'typescriptHero';
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
     private resolverConfig: ResolverConfig = new VscodeResolverConfig();
+    private sortConfig: SortConfig = new VscodeSortConfig();
 
     /**
      * The actual log level.
@@ -36,6 +37,17 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      */
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
+    }
+
+    /**
+     * Defines which sorting strategy will be applied
+     * 
+     * @readonly
+     * @type {SortConfig}
+     * @memberof VscodeExntesionConfig
+     */
+    public get sort(): SortConfig {
+        return this.sortConfig;
     }
 }
 
@@ -152,5 +164,34 @@ class VscodeResolverConfig implements ResolverConfig {
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,
         };
+    }
+}
+
+/**
+ * Configuration class for imports sorting.
+ * 
+ * @class VscodeSortConfig
+ */
+class VscodeSortConfig implements SortConfig {
+    /**
+     * Defines sorting type.
+     * 
+     * @readonly
+     * @type {SortType}
+     * @memberof VscodeSortConfig
+     */
+    public get type(): SortType {
+        return workspace.getConfiguration(sectionKey).get<SortType>('sort.type');
+    }
+
+    /**
+     * Defines sort order when type is set to semantic.
+     * 
+     * @readonly
+     * @type {SemanticType[]}
+     * @memberof VscodeSortConfig
+     */
+    public get semantic(): ImportSemanticType[] {
+        return workspace.getConfiguration(sectionKey).get<ImportSemanticType[]>('sort.semantic');
     }
 }

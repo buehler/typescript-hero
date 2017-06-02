@@ -82,6 +82,15 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | newImportLocation                     | The location of new imports (at the top of the file, or at the cursor location)      |
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
 
+### Imports ordering
+
+The following settings have prefix `sort`. For example `typescriptHero.sort.type`
+
+| Setting                               | Description                                                                          |
+| ------------------------------------- | ------------------------------------------------------------------------------------ |
+| type                                  | Defines how imports should be sorted (alphabetically or semanticaly)                 |
+| semantic                              | In case `type` is `semantic` defines order of different semantic blocks              |
+
 ## Features (extended)
 
 ### Import management
