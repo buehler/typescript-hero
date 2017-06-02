@@ -18,12 +18,14 @@ export type ImportGroupSetting = string | { identifier: string, order: ImportGro
  * @class ImportGroupSettingParser
  */
 export class ImportGroupSettingParser {
-    public static readonly default: ImportGroup[] = [
-        new KeywordImportGroup(ImportGroupKeyword.Plains),
-        new KeywordImportGroup(ImportGroupKeyword.Modules),
-        new KeywordImportGroup(ImportGroupKeyword.Workspace),
-        new RemainImportGroup(),
-    ];
+    public static get default(): ImportGroup[] {
+        return [
+            new KeywordImportGroup(ImportGroupKeyword.Plains),
+            new KeywordImportGroup(ImportGroupKeyword.Modules),
+            new KeywordImportGroup(ImportGroupKeyword.Workspace),
+            new RemainImportGroup(),
+        ];
+    }
 
     public static parseSetting(setting: ImportGroupSetting): ImportGroup {
         let identifier: string;

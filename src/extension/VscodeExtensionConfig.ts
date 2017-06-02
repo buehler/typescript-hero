@@ -46,8 +46,6 @@ export class VscodeExtensionConfig implements ExtensionConfig {
  * @class VscodeResolverConfig
  */
 class VscodeResolverConfig implements ResolverConfig {
-    private parsedImportGroups: ImportGroup[] | null = null;
-
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }
@@ -147,20 +145,13 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get importGroups(): ImportGroup[] {
-        if (this.parsedImportGroups !== null) {
-            return this.parsedImportGroups;
-        }
-
-        this.parsedImportGroups = [];
         const groups = workspace.getConfiguration(sectionKey).get<ImportGroupSetting[]>('resolver.importGroups');
 
         try {
-            this.parsedImportGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
+            return groups.map(g => ImportGroupSettingParser.parseSetting(g));
         } catch (e) {
-            this.parsedImportGroups = ImportGroupSettingParser.default;
+            return ImportGroupSettingParser.default;
         }
-
-        return this.parsedImportGroups;
     }
 
     /**
@@ -178,9 +169,5 @@ class VscodeResolverConfig implements ResolverConfig {
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,
         };
-    }
-
-    constructor() {
-        workspace.onDidChangeConfiguration(() => this.parsedImportGroups = null);
     }
 }
