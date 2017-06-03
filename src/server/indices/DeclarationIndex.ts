@@ -1,3 +1,4 @@
+import { normalizePathUri } from '../../common/helpers/PathHelpers';
 import { DeclarationInfoIndex } from '../../common/indices';
 import { TypescriptParser } from '../../common/ts-parsing';
 import { DeclarationInfo, ModuleDeclaration } from '../../common/ts-parsing/declarations';
@@ -155,7 +156,7 @@ export class DeclarationIndex {
     }
 
     /**
-     * 
+     * Is called when file events happen. Does reindex for the changed files and creates a new index.
      * 
      * @param {FileEvent[]} changes
      * @returns {Promise<void>}
@@ -168,8 +169,8 @@ export class DeclarationIndex {
         const rebuildFiles: string[] = [];
 
         for (const change of changes) {
-            const filePath = change.uri.replace('file://', '');
-            const resource = '/' + relative(rootPath, change.uri).replace(/[.]tsx?/g, '');
+            const filePath = normalizePathUri(change.uri);
+            const resource = '/' + relative(rootPath, filePath).replace(/[.]tsx?/g, '');
 
             if (change.type === FileChangeType.Deleted) {
                 if (removeResources.indexOf(resource) < 0) {

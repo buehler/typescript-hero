@@ -1,3 +1,4 @@
+import { normalizePathUri } from '../../helpers/PathHelpers';
 import { Declaration } from '../declarations';
 import { Export } from '../exports';
 import { Import } from '../imports';
@@ -76,6 +77,6 @@ export class File implements Resource, Node {
     }
 
     constructor(public filePath: string, rootPath: string, public start: number, public end: number) {
-        this.rootPath = rootPath.replace('file://', '');
+        this.rootPath = normalizePathUri(rootPath);
     }
 }

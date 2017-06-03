@@ -1,4 +1,5 @@
 import { Notification } from '../../common/communication';
+import { normalizePathUri } from '../../common/helpers/PathHelpers';
 import { DeclarationIndexPartial } from '../../common/transport-models';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { DeclarationIndex } from '../indices/DeclarationIndex';
@@ -39,7 +40,7 @@ export class ImportResolveExtension implements ServerExtension {
      * @memberof ImportResolveExtension
      */
     public initialize(connection: ServerConnection, params: InitializeParams): void {
-        this.rootUri = (params.rootUri || '').replace('file://', '');
+        this.rootUri = normalizePathUri(params.rootUri || '');
         this.connection = connection;
 
         connection.onDidChangeWatchedFiles(changes => this.watchedFilesChanged(changes));

@@ -35,6 +35,7 @@
         {
             "name": "Attach Server",
             "type": "node",
+            "protocol": "auto",
             "request": "attach",
             "port": 6004,
             "sourceMaps": true,

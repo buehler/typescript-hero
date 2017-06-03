@@ -86,21 +86,21 @@ export class ServerLogger implements Logger {
      * @private
      * @param {LogLevel} level
      * @param {MessageType} type
-     * @param {string} message
+     * @param {string} payload
      * @param {*} [data]
      * 
      * @memberof Logger
      */
-    private log(level: LogLevel, type: MessageType, message: string, data?: any): void {
-        let payload = message;
+    private log(level: LogLevel, type: MessageType, payload: string, data?: any): void {
+        let message = payload;
         if (this.configuration && getLogLevel(this.configuration.verbosity) >= level) {
-            payload = `${this.prefix ? this.prefix + ' - ' : ''}${payload}`;
+            message = `${this.prefix ? this.prefix + ' - ' : ''}${message}`;
             if (data) {
-                payload += `\n\tData:\t${util.inspect(data, {})}`;
+                message += `\n\tData:\t${util.inspect(data, {})}`;
             }
-            this.connection.sendNotification('window/logMessage', { type, payload });
+            this.connection.sendNotification('window/logMessage', { type, message });
         } else if (!this.configuration && this.messageBuffer) {
-            this.messageBuffer.push({ level, type, message: payload, data });
+            this.messageBuffer.push({ level, type, message, data });
         }
     }
 
