@@ -31,7 +31,25 @@
             "outFiles": [
                 "${workspaceRoot}/out/test/**/*.js"
             ]
+        },
+        {
+            "name": "Attach Server",
+            "type": "node",
+            "request": "attach",
+            "port": 6004,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/out/**/*.js"
+            ]
         }
     ],
-    "compounds": []
+    "compounds": [
+        {
+            "name": "Launch Extension & Server",
+            "configurations": [
+                "Launch Extension",
+                "Attach Server"
+            ]
+        }
+    ]
 }
