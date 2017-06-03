@@ -156,7 +156,7 @@ export class DeclarationIndex {
     }
 
     /**
-     * TODO
+     * Is called when file events happen. Does reindex for the changed files and creates a new index.
      * 
      * @param {FileEvent[]} changes
      * @returns {Promise<void>}
