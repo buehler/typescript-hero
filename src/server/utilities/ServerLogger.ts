@@ -86,7 +86,7 @@ export class ServerLogger implements Logger {
      * @private
      * @param {LogLevel} level
      * @param {MessageType} type
-     * @param {string} message
+     * @param {string} payload
      * @param {*} [data]
      * 
      * @memberof Logger

@@ -128,7 +128,7 @@
       }
     ],
     "configuration": {
-      "title": "Configuration section of the typescript hero extension",
+      "title": "TypeScript Hero",
       "properties": {
         "typescriptHero.verbosity": {
           "enum": [
