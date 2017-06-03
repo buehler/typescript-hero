@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Fixed
+- Server output (server logger) shows `undefined` ([#194](https://github.com/buehler/typescript-hero/issues/194))
+- Files are not indexed when changed ([#194](https://github.com/buehler/typescript-hero/issues/194))
 
 ## [0.13.0]
 ### Big refactoring.
