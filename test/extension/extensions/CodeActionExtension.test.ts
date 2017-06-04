@@ -66,7 +66,7 @@ describe('CodeActionExtension', () => {
             new MissingImplementationInClassCreator(parser, index as any),
         ];
 
-        extension = new CodeActionExtension(ctx, logger, creators);
+        extension = new CodeActionExtension(ctx, logger, creators, index as any);
     });
 
     describe('executeCodeAction', () => {
