@@ -13,7 +13,6 @@ export enum Notification {
     IndexCreationRunning,
     IndexCreationSuccessful,
     IndexCreationFailed,
-    PartialIndexResult,
 }
 
 /**
@@ -23,9 +22,7 @@ export enum Notification {
  * @enum {number}
  */
 export enum Request {
-    DeclarationIndexReady,
-    DeclarationInfosForImport,
-    MissingDeclarationInfosForDocument,
+    PartialIndexResult,
 }
 
 /**
