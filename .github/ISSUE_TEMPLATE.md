@@ -1,6 +1,6 @@
 <thank you for using and contributing to typescript hero>
 <please fill the information below to ease up the process>
-<you may event implement it and send a PR which would be very appreciated>
+<you may even implement it and send a PR which would be very appreciated>
 
 #### System information
 
