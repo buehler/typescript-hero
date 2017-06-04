@@ -23,6 +23,7 @@ export class ImportResolveExtension implements ServerExtension {
     private rootUri: string | null;
     private logger: Logger;
     private connection: ServerConnection;
+    private serializer: TsSerializer = new TsSerializer();
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
@@ -123,9 +124,8 @@ export class ImportResolveExtension implements ServerExtension {
             .map(k => new DeclarationIndexPartial(k, this.index.index![k]))
             .filter(p => p.infos.length > 0);
 
-        const serializer = new TsSerializer();
         for (let x = 0; x < partials.length; x += 100) {
-            const parts = serializer.serialize(partials.slice(x, x + 100));
+            const parts = this.serializer.serialize(partials.slice(x, x + 100));
 
             await this.connection.sendRequest(
                 Request.PartialIndexResult,
