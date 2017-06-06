@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Fixed
+- Fixing pathing and `undefined` issues ([#194](https://github.com/buehler/typescript-hero/issues/194)) - actual showstopper
 
 ## [0.13.1]
 #### Fixed
