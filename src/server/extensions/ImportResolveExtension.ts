@@ -1,4 +1,4 @@
-import { Notification } from '../../common/communication';
+import { Notification, Request } from '../../common/communication';
 import { normalizePathUri } from '../../common/helpers/PathHelpers';
 import { DeclarationIndexPartial } from '../../common/transport-models';
 import { Logger, LoggerFactory } from '../../common/utilities';
@@ -7,6 +7,7 @@ import { iocSymbols } from '../IoCSymbols';
 import { ServerConnection } from '../utilities/ServerConnection';
 import { ServerExtension } from './ServerExtension';
 import { inject, injectable } from 'inversify';
+import { TsSerializer } from 'ts-json-serializer';
 import { FileEvent, InitializeParams } from 'vscode-languageserver';
 
 /**
@@ -22,6 +23,7 @@ export class ImportResolveExtension implements ServerExtension {
     private rootUri: string | null;
     private logger: Logger;
     private connection: ServerConnection;
+    private serializer: TsSerializer = new TsSerializer();
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
@@ -77,7 +79,7 @@ export class ImportResolveExtension implements ServerExtension {
             this.logger.info(`Watched files have changed, processing ${changes.length} changes.`);
             this.connection.sendNotification(Notification.IndexCreationRunning);
             await this.index.reindexForChanges(changes, this.rootUri);
-            this.sendIndexToExtension();
+            await this.sendIndexToExtension();
             this.connection.sendNotification(Notification.IndexCreationSuccessful);
             this.logger.info('Index rebuild successful.');
         } catch (e) {
@@ -108,7 +110,7 @@ export class ImportResolveExtension implements ServerExtension {
         try {
             await this.index.buildIndex(files, this.rootUri);
             this.logger.info('Index successfully built.');
-            this.sendIndexToExtension();
+            await this.sendIndexToExtension();
             this.connection.sendNotification(Notification.IndexCreationSuccessful);
         } catch (e) {
             this.logger.error('There was an error during the build of the index.', e);
@@ -116,16 +118,18 @@ export class ImportResolveExtension implements ServerExtension {
         }
     }
 
-    private sendIndexToExtension(): void {
-        const keys = Object.keys(this.index.index);
+    private async sendIndexToExtension(): Promise<void> {
+        const partials = Object.keys(this.index.index)
+            .filter(k => this.index.index![k] !== undefined)
+            .map(k => new DeclarationIndexPartial(k, this.index.index![k]))
+            .filter(p => p.infos.length > 0);
 
-        for (let x = 0; x < keys.length; x += 100) {
-            const partialKeys = keys.slice(x, x + 100);
-            this.connection.sendSerializedNotification(
-                Notification.PartialIndexResult,
-                partialKeys
-                    .map(k => new DeclarationIndexPartial(k, this.index.index![k]))
-                    .filter(p => p.infos.length > 0),
+        for (let x = 0; x < partials.length; x += 100) {
+            const parts = this.serializer.serialize(partials.slice(x, x + 100));
+
+            await this.connection.sendRequest(
+                Request.PartialIndexResult,
+                { parts },
             );
         }
     }

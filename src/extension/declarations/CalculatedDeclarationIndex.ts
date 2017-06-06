@@ -1,11 +1,12 @@
-import { DeclarationIndexPartial } from '../../common/transport-models';
-import { Notification } from '../../common/communication';
+import { Notification, Request } from '../../common/communication';
 import { DeclarationInfoIndex } from '../../common/indices';
+import { DeclarationIndexPartial } from '../../common/transport-models';
 import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ClientConnection } from '../utilities/ClientConnection';
 import { inject, injectable } from 'inversify';
+import { TsSerializer } from 'ts-json-serializer';
 
 /*
 basic idea: keep the index in the extension and only do the parsing on the server side (for performance)
@@ -25,6 +26,7 @@ basic idea: keep the index in the extension and only do the parsing on the serve
 export class CalculatedDeclarationIndex {
     private logger: Logger;
     private tempIndex: DeclarationInfoIndex | undefined;
+    private serializer: TsSerializer = new TsSerializer();
 
     /**
      * Declaration index. Reverse index from a name to many declarations assotiated to the name.
@@ -66,28 +68,35 @@ export class CalculatedDeclarationIndex {
      * @memberof DeclarationIndex
      */
     public get declarationInfos(): DeclarationInfo[] {
-        return Object
-            .keys(this.index)
-            .sort()
-            .reduce((all, key) => all.concat(this.index![key]), <DeclarationInfo[]>[]);
+        return this.indexReady ?
+            Object
+                .keys(this.index)
+                .sort()
+                .reduce((all, key) => all.concat(this.index![key]), <DeclarationInfo[]>[]) :
+            [];
     }
 
     constructor(
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         private connection: ClientConnection,
     ) {
-        this.logger = loggerFactory('DeclarationIndex');
+        this.logger = loggerFactory('CalculatedDeclarationIndex');
         this.logger.info('Instantiated.');
-        this.connection.onSerializedNotification(
-            Notification.PartialIndexResult,
-            ([partials]: [DeclarationIndexPartial[]]) => {
+        this.connection.onRequest(
+            Request.PartialIndexResult,
+            ({ parts }) => {
+                if (!parts) {
+                    return false;
+                }
                 if (!this.tempIndex) {
                     this.tempIndex = {};
                     this.logger.info('Receiving partial index result.');
                 }
+                const partials = this.serializer.deserialize<DeclarationIndexPartial[]>(parts);
                 for (const partial of partials) {
                     this.tempIndex[partial.index] = partial.infos;
                 }
+                return true;
             },
         );
         this.connection.onNotification(Notification.IndexCreationSuccessful, () => {

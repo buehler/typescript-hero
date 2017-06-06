@@ -87,6 +87,10 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         position: Position,
         token: CancellationToken,
     ): Promise<CompletionItem[] | null> {
+        if (!this.index.indexReady) {
+            return null;
+        }
+
         const wordAtPosition = document.getWordRangeAtPosition(position);
         const lineText = document.lineAt(position.line).text;
 

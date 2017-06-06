@@ -1,6 +1,7 @@
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { CodeAction } from '../code-actions/CodeAction';
 import { CodeActionCreator } from '../code-actions/CodeActionCreator';
+import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseExtension } from './BaseExtension';
 import { inject, injectable, multiInject } from 'inversify';
@@ -34,6 +35,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @multiInject(iocSymbols.codeActionCreators) private actionCreators: CodeActionCreator[],
+        private index: CalculatedDeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeActionExtension');
@@ -81,6 +83,10 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         context: CodeActionContext,
         _token: CancellationToken,
     ): Promise<Command[]> {
+        if (!this.index.indexReady) {
+            return [];
+        }
+
         let commands: Command[] = [];
         for (const diagnostic of context.diagnostics) {
             for (const creator of this.actionCreators) {
