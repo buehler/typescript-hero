@@ -108,13 +108,7 @@ export class ImportManager implements ObjectManager {
     ) {
         this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
         this.importGroups = ImportManager.config.resolver.importGroups;
-        for (const tsImport of this.imports) {
-            for (const group of this.importGroups) {
-                if (group.processImport(tsImport)) {
-                    break;
-                }
-            }
-        }
+        this.addImportsToGroups(this.imports);
     }
 
     /**
@@ -165,28 +159,29 @@ export class ImportManager implements ObjectManager {
                 alreadyImported.addSpecifier(declarationInfo.declaration.name);
             }
         } else {
+            let imp: Import;
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
-                this.imports.push(new NamespaceImport(
+                imp = new NamespaceImport(
                     declarationInfo.from,
                     declarationInfo.declaration.name,
-                ));
+                );
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-                const imp = new ImportProxy(getRelativeLibraryName(
+                imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
                     workspace.rootPath,
                 ));
-                imp.defaultPurposal = declarationInfo.declaration.name;
-                this.imports.push(imp);
+                (imp as ImportProxy).defaultPurposal = declarationInfo.declaration.name;
             } else {
-                const imp = new ImportProxy(getRelativeLibraryName(
+                imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
                     workspace.rootPath,
                 ));
-                imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
-                this.imports.push(imp);
+                (imp as ImportProxy).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
+            this.imports.push(imp);
+            this.addImportsToGroups([imp]);
         }
 
         return this;
@@ -336,6 +331,24 @@ export class ImportManager implements ObjectManager {
         }
 
         return result;
+    }
+
+    /**
+     * TODO
+     * 
+     * @private
+     * @param {Import[]} imports 
+     * 
+     * @memberof ImportManager
+     */
+    private addImportsToGroups(imports: Import[]): void {
+        for (const tsImport of imports) {
+            for (const group of this.importGroups) {
+                if (group.processImport(tsImport)) {
+                    break;
+                }
+            }
+        }
     }
 
     /**
