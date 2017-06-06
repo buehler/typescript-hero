@@ -1,4 +1,4 @@
-import { ExtensionConfig } from '../../common/config';
+import { ExtensionConfig, ImportSemanticType, SortConfig } from '../../common/config';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
@@ -56,6 +56,69 @@ function importSort(i1: Import, i2: Import): number {
     const strB = i2.libraryName.toLowerCase();
 
     return stringSort(strA, strB);
+}
+
+function buildSortFunc(config: SortConfig): (i1: Import, i2: Import) => number {
+    switch (config.type) {
+        case 'ascending':
+            return importSort;
+        case 'descending':
+            return (i1, i2) => -1 * importSort(i1, i2);
+        case 'semantic':
+            const semanticSorter = new SemanticSorter(config.semantic);
+            return semanticSorter.isValid
+                ? semanticSorter.sortFunction.bind(semanticSorter)
+                : importSort;
+        default:
+            throw new Error(`Unsupported sort type: ${config.type}`);
+    }
+}
+
+/**
+ * Helper class that helps with sorting import in semantic order
+ * 
+ * @class SemanticSorter
+ */
+class SemanticSorter {
+    constructor(private sortOrder: ImportSemanticType[]) { }
+
+    public get isValid(): boolean {
+        if (this.sortOrder == null) {
+            return false;
+        }
+
+        const orderValues: ImportSemanticType[] = ['globals', 'locals', 'plains'];
+        if (orderValues.length !== this.sortOrder.length) {
+            return false;
+        }
+
+        return orderValues.every(v => this.sortOrder.some(v1 => v1 === v));
+    }
+
+    public sortFunction(i1: Import, i2: Import): number {
+        const import1Weight = this.getImportWeight(i1);
+        const import2Weight = this.getImportWeight(i2);
+
+        if (import1Weight === import2Weight) {
+            return importSort(i1, i2);
+        }
+
+        return import1Weight < import2Weight ? -1 : 1;
+    }
+
+    private getSemanticType(i: Import): ImportSemanticType {
+        if (i instanceof StringImport) {
+            return 'plains';
+        }
+
+        return i.libraryName.startsWith('.') ? 'locals' : 'globals';
+    }
+
+    private getImportWeight(i: Import): number {
+        const semanticType = this.getSemanticType(i);
+
+        return this.sortOrder.indexOf(semanticType);
+    }
 }
 
 /**
@@ -247,10 +310,7 @@ export class ImportManager implements ObjectManager {
         }
 
         if (!ImportManager.config.resolver.disableImportSorting) {
-            keep = [
-                ...keep.filter(o => o instanceof StringImport).sort(importSort),
-                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort),
-            ];
+            keep = keep.sort(buildSortFunc(ImportManager.config.sort));
         }
 
         this.imports = keep;

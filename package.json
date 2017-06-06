@@ -190,6 +190,33 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if sorting is disable during organize imports"
+        },
+        "typescriptHero.sort.type": {
+          "enum": [
+            "ascending",
+            "descending",
+            "semantic"
+          ],
+          "default": "semantic",
+          "description": "Defines in which manner import are sorted."
+        },
+        "typescriptHero.sort.semantic": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "plains",
+              "globals",
+              "locals"
+            ]
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "default": [
+            "plains",
+            "globals",
+            "locals"
+          ],
+          "description": "Defines sort order of imports when sort type is set to 'semantic'"
         }
       }
     }

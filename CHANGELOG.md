@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+- Add `sort` settings that help fine-tune imports ordering ([#102](https://github.com/buehler/typescript-hero/issues/102))
 
 ## [0.13.2]
 #### Fixed
