@@ -85,6 +85,9 @@ export class CalculatedDeclarationIndex {
         this.connection.onRequest(
             Request.PartialIndexResult,
             ({ parts }) => {
+                if (!parts) {
+                    return false;
+                }
                 if (!this.tempIndex) {
                     this.tempIndex = {};
                     this.logger.info('Receiving partial index result.');
@@ -94,7 +97,6 @@ export class CalculatedDeclarationIndex {
                     this.tempIndex[partial.index] = partial.infos;
                 }
                 return true;
-
             },
         );
         this.connection.onNotification(Notification.IndexCreationSuccessful, () => {

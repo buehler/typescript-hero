@@ -79,7 +79,7 @@ export class ImportResolveExtension implements ServerExtension {
             this.logger.info(`Watched files have changed, processing ${changes.length} changes.`);
             this.connection.sendNotification(Notification.IndexCreationRunning);
             await this.index.reindexForChanges(changes, this.rootUri);
-            this.sendIndexToExtension();
+            await this.sendIndexToExtension();
             this.connection.sendNotification(Notification.IndexCreationSuccessful);
             this.logger.info('Index rebuild successful.');
         } catch (e) {
