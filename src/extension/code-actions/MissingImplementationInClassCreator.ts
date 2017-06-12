@@ -52,31 +52,40 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             return commands;
         }
 
+        let specifier = match[2];
+        let type: string;
+        const genericMatch = /^(.*)[<](.*)[>]$/.exec(specifier);
+
+        if (genericMatch) {
+            specifier = genericMatch[1];
+            type = genericMatch[2];
+        }
+
         const parsedDocument = await this.parser.parseSource(document.getText());
         const alreadyImported = parsedDocument.imports.find(
-            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === match[2]),
+            o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === specifier),
         );
-        const declaration = parsedDocument.declarations.find(o => o.name === match[2]) ||
+        const declaration = parsedDocument.declarations.find(o => o.name === specifier) ||
             (this.index.declarationInfos.find(
-                o => o.declaration.name === match[2] &&
+                o => o.declaration.name === specifier &&
                     o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
             ) || { declaration: undefined }).declaration;
 
-        if (commands.some((o: Command) => o.title.indexOf(match[2]) >= 0)) {
+        if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {
             // Do leave the method when a command with the found class is already added.
             return commands;
         }
 
         if (!declaration) {
             commands.push(this.createCommand(
-                `Cannot find "${match[2]}" in the index or the actual file.`,
+                `Cannot find "${specifier}" in the index or the actual file.`,
                 new NoopCodeAction(),
             ));
             return commands;
         }
 
         commands.push(this.createCommand(
-            `Implement missing elements from "${match[2]}".`,
+            `Implement missing elements from "${specifier}".`,
             new ImplementPolymorphElements(document, match[1], <InterfaceDeclaration>declaration),
         ));
 
