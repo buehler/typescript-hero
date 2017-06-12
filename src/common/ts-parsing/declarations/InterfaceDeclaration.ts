@@ -1,5 +1,5 @@
 import { NotImplementedYetError } from '../../errors';
-import { ExportableDeclaration } from './Declaration';
+import { ExportableDeclaration, GenericDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
 import { Serializable } from 'ts-json-serializer';
@@ -11,6 +11,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
  * @export
  * @class InterfaceDeclaration
  * @implements {ExportableDeclaration}
+ * @implements {GenericDeclaration}
  */
 @Serializable({
     factory: (json) => {
@@ -20,7 +21,8 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         return obj;
     },
 })
-export class InterfaceDeclaration implements ExportableDeclaration {
+export class InterfaceDeclaration implements ExportableDeclaration, GenericDeclaration {
+    public typeParameters: string[] | undefined;
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];
 

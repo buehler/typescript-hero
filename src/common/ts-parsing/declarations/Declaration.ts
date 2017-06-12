@@ -61,6 +61,27 @@ export interface TypedDeclaration extends Declaration {
 }
 
 /**
+ * Interface for generic type declarations. Those declarations are able to be used in a generic way.
+ * Examples are: classes, interfaces, methods and such.
+ * 
+ * @export
+ * @interface GenericDeclaration
+ * @extends {Declaration}
+ */
+export interface GenericDeclaration extends Declaration {
+    /**
+     * List of type parameters
+     * 
+     * @type {(string[] | undefined)}
+     * @memberof GenericDeclaration
+     *
+     * @example
+     * ['T', 'TResult', 'TError']
+     */
+    typeParameters: string[] | undefined;
+}
+
+/**
  * Interface for exportable declarations. Does contain information about the export status of a declaration.
  * 
  * @export
