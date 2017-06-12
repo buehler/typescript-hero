@@ -258,7 +258,9 @@ export class ImportManager implements ObjectManager {
             ];
         }
 
+        this.importGroups = ImportManager.config.resolver.importGroups;
         this.imports = keep;
+        this.addImportsToGroups(this.imports);
 
         return this;
     }
@@ -319,8 +321,6 @@ export class ImportManager implements ObjectManager {
                 }
             }
         }
-
-        // Later, more edits will come (like add methods to a class or so.) 
 
         const workspaceEdit = new WorkspaceEdit();
         workspaceEdit.set(this.document.uri, <CodeTextEdit[]>edits);
@@ -423,7 +423,7 @@ export class ImportManager implements ObjectManager {
     private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
             placeHolder: `Alias for specifier "${specifierName}"`,
-            prompt: `Please enter an alias for the specifier "${specifierName}"..`,
+            prompt: `Please enter an alias for the specifier "${specifierName}"...`,
             validateInput: s => !!s ? '' : 'Please enter a variable name',
         });
         return !!result ? result : undefined;
@@ -441,7 +441,7 @@ export class ImportManager implements ObjectManager {
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
-            prompt: 'Please enter a variable name for the default export..',
+            prompt: 'Please enter a variable name for the default export...',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName,
         });
