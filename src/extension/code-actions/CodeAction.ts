@@ -101,6 +101,7 @@ export class ImplementPolymorphElements implements CodeAction {
         private document: TextDocument,
         private managedClass: string,
         private polymorphObject: InterfaceDeclaration,
+        private typeParameterMappings?: { [type: string]: string },
     ) { }
 
     /**
@@ -117,12 +118,30 @@ export class ImplementPolymorphElements implements CodeAction {
             if (!property.visibility) {
                 property.visibility = DeclarationVisibility.Public;
             }
+            if (this.typeParameterMappings) {
+                const type = property.type || '';
+                if (Object.keys(this.typeParameterMappings).indexOf(type) >= 0) {
+                    property.type = this.typeParameterMappings[type];
+                }
+            }
             controller.addProperty(property);
         }
 
         for (const method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
             if (!method.visibility) {
                 method.visibility = DeclarationVisibility.Public;
+            }
+            if (this.typeParameterMappings) {
+                const type = method.type || '';
+                if (Object.keys(this.typeParameterMappings).indexOf(type) >= 0) {
+                    method.type = this.typeParameterMappings[type];
+                }
+                for (const param of method.parameters) {
+                    const paramType = param.type || '';
+                    if (Object.keys(this.typeParameterMappings).indexOf(paramType) >= 0) {
+                        param.type = this.typeParameterMappings[paramType];
+                    }
+                }
             }
             controller.addMethod(method);
         }
