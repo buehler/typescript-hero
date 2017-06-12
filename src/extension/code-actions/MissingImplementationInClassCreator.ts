@@ -53,23 +53,24 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
         }
 
         let specifier = match[2];
-        let type: string;
+        let types: string[] | undefined;
+        let typeParams: { [type: string]: string } | undefined;
         const genericMatch = /^(.*)[<](.*)[>]$/.exec(specifier);
 
         if (genericMatch) {
             specifier = genericMatch[1];
-            type = genericMatch[2];
+            types = genericMatch[2].split(',').map(t => t.trim());
         }
 
         const parsedDocument = await this.parser.parseSource(document.getText());
         const alreadyImported = parsedDocument.imports.find(
             o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === specifier),
         );
-        const declaration = parsedDocument.declarations.find(o => o.name === specifier) ||
+        const declaration = (parsedDocument.declarations.find(o => o.name === specifier) ||
             (this.index.declarationInfos.find(
                 o => o.declaration.name === specifier &&
                     o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
-            ) || { declaration: undefined }).declaration;
+            ) || { declaration: undefined }).declaration) as InterfaceDeclaration | undefined; // TODO change interface
 
         if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {
             // Do leave the method when a command with the found class is already added.
@@ -84,9 +85,16 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             return commands;
         }
 
+        if (genericMatch && declaration.typeParameters && types) {
+            typeParams = {};
+            for (const typeParam of declaration.typeParameters) {
+                typeParams[typeParam] = types[declaration.typeParameters.indexOf(typeParam)];
+            }
+        }
+
         commands.push(this.createCommand(
-            `Implement missing elements from "${specifier}".`,
-            new ImplementPolymorphElements(document, match[1], <InterfaceDeclaration>declaration),
+            `Implement missing elements from "${genericMatch && types ? `${specifier}<${types.join(', ')}>` : specifier}".`,
+            new ImplementPolymorphElements(document, match[1], <InterfaceDeclaration>declaration, typeParams),
         ));
 
         return commands;
