@@ -113,6 +113,7 @@ export class ImplementPolymorphElements implements CodeAction {
      */
     public async execute(): Promise<boolean> {
         const controller = await ClassManager.create(this.document, this.managedClass);
+        const typeKeys = Object.keys(this.typeParameterMappings);
 
         for (const property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
             if (!property.visibility) {
@@ -120,7 +121,7 @@ export class ImplementPolymorphElements implements CodeAction {
             }
             if (this.typeParameterMappings) {
                 const type = property.type || '';
-                if (Object.keys(this.typeParameterMappings).indexOf(type) >= 0) {
+                if (typeKeys.indexOf(type) >= 0) {
                     property.type = this.typeParameterMappings[type];
                 }
             }
@@ -133,12 +134,12 @@ export class ImplementPolymorphElements implements CodeAction {
             }
             if (this.typeParameterMappings) {
                 const type = method.type || '';
-                if (Object.keys(this.typeParameterMappings).indexOf(type) >= 0) {
+                if (typeKeys.indexOf(type) >= 0) {
                     method.type = this.typeParameterMappings[type];
                 }
                 for (const param of method.parameters) {
                     const paramType = param.type || '';
-                    if (Object.keys(this.typeParameterMappings).indexOf(paramType) >= 0) {
+                    if (typeKeys.indexOf(paramType) >= 0) {
                         param.type = this.typeParameterMappings[paramType];
                     }
                 }
