@@ -56,5 +56,10 @@ export function parseInterface(resource: Resource, node: InterfaceDeclaration): 
             }
         });
     }
+
+    if (node.typeParameters) {
+        interfaceDeclaration.typeParameters = node.typeParameters.map(param => param.getText());
+    }
+
     resource.declarations.push(interfaceDeclaration);
 }
