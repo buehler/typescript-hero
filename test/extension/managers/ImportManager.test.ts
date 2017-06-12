@@ -385,6 +385,49 @@ describe('ImportManager', () => {
             (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
         });
 
+        it('should remove an unused default import', async () => {
+            await window.activeTextEditor.edit(builder => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import DefaultImport from '../foobar';\n\n`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports[0].defaultAlias.should.equal('DefaultImport');
+
+            ctrl.organizeImports();
+
+            (ctrl as any).imports.should.have.lengthOf(0);
+        });
+
+        it('should not remove a used default import', async () => {
+            await window.activeTextEditor.edit(builder => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import DefaultImport from '../foobar';
+
+let foobar = DefaultImport();
+`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports[0].defaultAlias.should.equal('DefaultImport');
+
+            ctrl.organizeImports();
+
+            (ctrl as any).imports[0].defaultAlias.should.equal('DefaultImport');
+        });
+
     });
 
     describe('commit()', () => {

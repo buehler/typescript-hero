@@ -7,7 +7,7 @@ import {
     FunctionDeclaration,
     InterfaceDeclaration,
     TypeAliasDeclaration,
-    VariableDeclaration
+    VariableDeclaration,
 } from '../../../src/common/ts-parsing/declarations';
 import { AllExport, AssignedExport, NamedExport } from '../../../src/common/ts-parsing/exports';
 import {
@@ -15,7 +15,7 @@ import {
     ExternalModuleImport,
     NamedImport,
     NamespaceImport,
-    StringImport
+    StringImport,
 } from '../../../src/common/ts-parsing/imports';
 import { Module, Namespace, Resource } from '../../../src/common/ts-parsing/resources';
 import * as chai from 'chai';
@@ -26,8 +26,8 @@ const should = chai.should();
 
 describe('common / TypescriptParser', () => {
 
-    let parser: TypescriptParser,
-        parsed: Resource;
+    let parser: TypescriptParser;
+    let parsed: Resource;
 
     beforeEach(() => {
         parser = new TypescriptParser();
@@ -102,6 +102,10 @@ describe('common / TypescriptParser', () => {
             tsImport.should.be.an.instanceOf(DefaultImport);
             tsImport.libraryName.should.equal('aFile');
             tsImport.alias.should.equal('Foobar');
+        });
+
+        it('should not add any imports to the usages', () => {
+            parsed.usages.length.should.equal(0);
         });
 
     });
@@ -233,8 +237,8 @@ describe('common / TypescriptParser', () => {
             });
 
             it('should parse parameters correctly', () => {
-                const func1 = parsed.declarations[0] as FunctionDeclaration,
-                    func2 = parsed.declarations[1] as FunctionDeclaration;
+                const func1 = parsed.declarations[0] as FunctionDeclaration;
+                const func2 = parsed.declarations[1] as FunctionDeclaration;
 
                 func1.parameters.should.be.an('array').with.lengthOf(1);
                 func1.parameters[0].name.should.equal('param1');
@@ -248,8 +252,8 @@ describe('common / TypescriptParser', () => {
             });
 
             it('should parse variables correctly', () => {
-                const func1 = parsed.declarations[0] as FunctionDeclaration,
-                    func2 = parsed.declarations[1] as FunctionDeclaration;
+                const func1 = parsed.declarations[0] as FunctionDeclaration;
+                const func2 = parsed.declarations[1] as FunctionDeclaration;
 
                 func1.variables.should.be.an('array').with.lengthOf(1);
                 func1.variables[0].name.should.equal('var1');
@@ -262,9 +266,9 @@ describe('common / TypescriptParser', () => {
             });
 
             it('should parse return types correctly', () => {
-                const func1 = parsed.declarations[0] as FunctionDeclaration,
-                    func2 = parsed.declarations[1] as FunctionDeclaration,
-                    func3 = parsed.declarations[2] as FunctionDeclaration;
+                const func1 = parsed.declarations[0] as FunctionDeclaration;
+                const func2 = parsed.declarations[1] as FunctionDeclaration;
+                const func3 = parsed.declarations[2] as FunctionDeclaration;
 
                 should.equal(func1.type, 'string');
                 should.equal(func2.type, 'void');
@@ -576,6 +580,21 @@ describe('common / TypescriptParser', () => {
         it('should parse nested identifier', () => {
             const usages = parsed.usages;
             usages.should.contain('NestedBinaryAssignment');
+        });
+
+        it('should parse a global (file level) used function', () => {
+            const usages = parsed.usages;
+            usages.should.contain('globalFunction');
+        });
+
+        it('should parse a global extended class', () => {
+            const usages = parsed.usages;
+            usages.should.contain('DefaultClass');
+        });
+
+        it('should parse a generic identifier in a class extension', () => {
+            const usages = parsed.usages;
+            usages.should.contain('GenericType');
         });
 
     });

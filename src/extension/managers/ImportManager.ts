@@ -238,7 +238,7 @@ export class ImportManager implements ObjectManager {
                     .sort(specifierSort);
                 const defaultSpec = actImport.defaultAlias || actImport.defaultPurposal;
                 if (actImport.specifiers.length ||
-                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec))) {
+                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
                     keep.push(actImport);
                 }
             } else if (actImport instanceof StringImport) {
