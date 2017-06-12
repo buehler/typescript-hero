@@ -1,6 +1,6 @@
 import { NotImplementedYetError } from '../../errors';
 import { ConstructorDeclaration } from './ConstructorDeclaration';
-import { ExportableDeclaration } from './Declaration';
+import { ClassLikeDeclaration, ExportableDeclaration, GenericDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
 import { Serializable } from 'ts-json-serializer';
@@ -22,10 +22,11 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         return obj;
     },
 })
-export class ClassDeclaration implements ExportableDeclaration {
+export class ClassDeclaration implements ClassLikeDeclaration, ExportableDeclaration, GenericDeclaration {
     public ctor: ConstructorDeclaration;
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];
+    public typeParameters: string[] | undefined;
 
     public get itemKind(): CompletionItemKind {
         return CompletionItemKind.Class;

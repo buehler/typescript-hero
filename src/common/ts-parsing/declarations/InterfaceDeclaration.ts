@@ -1,5 +1,5 @@
 import { NotImplementedYetError } from '../../errors';
-import { ExportableDeclaration, GenericDeclaration } from './Declaration';
+import { ClassLikeDeclaration, ExportableDeclaration, GenericDeclaration } from './Declaration';
 import { MethodDeclaration } from './MethodDeclaration';
 import { PropertyDeclaration } from './PropertyDeclaration';
 import { Serializable } from 'ts-json-serializer';
@@ -21,7 +21,7 @@ import { CompletionItemKind } from 'vscode-languageserver-types';
         return obj;
     },
 })
-export class InterfaceDeclaration implements ExportableDeclaration, GenericDeclaration {
+export class InterfaceDeclaration implements ClassLikeDeclaration, ExportableDeclaration, GenericDeclaration {
     public typeParameters: string[] | undefined;
     public properties: PropertyDeclaration[] = [];
     public methods: MethodDeclaration[] = [];
