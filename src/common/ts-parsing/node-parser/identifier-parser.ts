@@ -6,6 +6,8 @@ const usageNotAllowedParents = [
     SyntaxKind.ImportSpecifier,
     SyntaxKind.NamespaceImport,
     SyntaxKind.ClassDeclaration,
+    SyntaxKind.ImportEqualsDeclaration,
+    SyntaxKind.ImportClause,
     SyntaxKind.ImportDeclaration,
     SyntaxKind.InterfaceDeclaration,
     SyntaxKind.ExportDeclaration,
