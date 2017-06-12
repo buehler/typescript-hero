@@ -6,7 +6,7 @@ class Class {
     public typedProperty: TypedPropertyRef;
 
     public assignedProperty = AssignedProperty;
-    
+
     @FunctionDecorator()
     public func(param: TypedParam, defaultParam = DefaultParam) {
     }
@@ -28,4 +28,14 @@ class Class {
 
         return null;
     }
+}
+
+let a = globalFunction();
+
+class Class extends DefaultClass {
+
+}
+
+class Class extends GenericClass<GenericType> {
+
 }
