@@ -1,6 +1,6 @@
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { TypescriptParser } from '../../common/ts-parsing';
-import { InterfaceDeclaration } from '../../common/ts-parsing/declarations';
+import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
 import { NamedImport } from '../../common/ts-parsing/imports';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
@@ -70,7 +70,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             (this.index.declarationInfos.find(
                 o => o.declaration.name === specifier &&
                     o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, workspace.rootPath),
-            ) || { declaration: undefined }).declaration) as InterfaceDeclaration | undefined; // TODO change interface
+            ) || { declaration: undefined }).declaration) as (ClassLikeDeclaration & GenericDeclaration) | undefined;
 
         if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {
             // Do leave the method when a command with the found class is already added.
@@ -94,7 +94,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
 
         commands.push(this.createCommand(
             `Implement missing elements from "${genericMatch && types ? `${specifier}<${types.join(', ')}>` : specifier}".`,
-            new ImplementPolymorphElements(document, match[1], <InterfaceDeclaration>declaration, typeParams),
+            new ImplementPolymorphElements(document, match[1], declaration, typeParams),
         ));
 
         return commands;

@@ -1,4 +1,5 @@
-import { DeclarationInfo, DeclarationVisibility, InterfaceDeclaration } from '../../common/ts-parsing/declarations';
+import { DeclarationInfo, DeclarationVisibility } from '../../common/ts-parsing/declarations';
+import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ClassManager } from '../managers/ClassManager';
 import { ImportManager } from '../managers/ImportManager';
@@ -100,7 +101,7 @@ export class ImplementPolymorphElements implements CodeAction {
     constructor(
         private document: TextDocument,
         private managedClass: string,
-        private polymorphObject: InterfaceDeclaration,
+        private polymorphObject: ClassLikeDeclaration & GenericDeclaration,
         private typeParameterMappings?: { [type: string]: string },
     ) { }
 
