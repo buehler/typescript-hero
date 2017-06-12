@@ -36,7 +36,7 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-describe.only('ImportManager', () => {
+describe('ImportManager', () => {
 
     const file = join(workspace.rootPath, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument,
@@ -293,7 +293,7 @@ describe.only('ImportManager', () => {
 
     });
 
-    describe.only('organizeImports()', () => {
+    describe('organizeImports()', () => {
 
         it('should remove an unused import', async () => {
             const ctrl = await ImportManager.create(document);
