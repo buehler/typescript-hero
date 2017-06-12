@@ -122,6 +122,10 @@ export function parseClass(tsResource: Resource, node: ClassDeclaration): void {
         tsResource.declarations.push(new TshDefault(classDeclaration.name, tsResource));
     }
 
+    if (node.typeParameters) {
+        classDeclaration.typeParameters = node.typeParameters.map(param => param.getText());
+    }
+
     if (node.members) {
         node.members.forEach((o) => {
             if (isPropertyDeclaration(o)) {

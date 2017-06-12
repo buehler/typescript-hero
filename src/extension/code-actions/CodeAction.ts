@@ -114,7 +114,11 @@ export class ImplementPolymorphElements implements CodeAction {
      */
     public async execute(): Promise<boolean> {
         const controller = await ClassManager.create(this.document, this.managedClass);
-        const typeKeys = Object.keys(this.typeParameterMappings);
+        let typeKeys;
+
+        if (this.typeParameterMappings) {
+            typeKeys = Object.keys(this.typeParameterMappings);
+        }
 
         for (const property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
             if (!property.visibility) {
