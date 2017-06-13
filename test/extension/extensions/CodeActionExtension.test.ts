@@ -98,7 +98,7 @@ describe('CodeActionExtension', () => {
         });
 
         it('should warn the user if the result is false', async () => {
-            const stub = sinon.stub(window, 'showWarningMessage', () => {
+            const stub = sinon.stub(window, 'showWarningMessage').callsFake(() => {
                 return Promise.resolve();
             });
 
@@ -166,6 +166,120 @@ describe('CodeActionExtension', () => {
                 ));
                 builder.insert(new Position(0, 0), documentText);
             });
+        });
+
+        it('should resolve missing implementations of an interface to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'CodeFixImplementInterface'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "CodeFixImplementInterface".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of an abstract class to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                {
+                    diagnostics: [
+                        {
+                            message:
+                            `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
+                        },
+                    ],
+                },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "CodeFixImplementAbstract".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a local interface to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'InternalInterface'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "InternalInterface".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a local abstract class to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                {
+                    diagnostics: [
+                        { message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` },
+                    ],
+                },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "InternalAbstract".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a generic interface to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'GenericInterface<string, number>'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "GenericInterface<string, number>".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing implementations of a generic abstract class to a code action', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                {
+                    diagnostics: [
+                        {
+                            message: `non-abstract class 'Foobar' ` +
+                            `implement inherited from class 'GenericAbstractClass<string, string, string>'.`,
+                        },
+                    ],
+                },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            const action = cmds[0];
+            action.title.should.equal('Implement missing elements from "GenericAbstractClass<string, string, string>".');
+            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
+        });
+
+        it('should resolve missing to a NOOP if the interface / class is not found', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'FOOOOBAR'.` }] },
+                null,
+            );
+
+            cmds.should.have.lengthOf(1);
+            cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index or the actual file.');
         });
 
         it('should add interface elements to a class', async () => {
@@ -262,6 +376,58 @@ describe('CodeActionExtension', () => {
             document.lineAt(27).text.should.equal(`}`);
         });
 
+        it('should add generic interface elements with types to a class', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                <any>{
+                    diagnostics: [
+                        {
+                            message:
+                            `class 'ImplementGenericInterface' incorrectly implements 'GenericInterface<string, number>'.`,
+                        },
+                    ],
+                },
+                null,
+            );
+            await extension.executeCodeAction(cmds[0].arguments[0]);
+            document.lineAt(34).text.should.equal(
+                `class ImplementGenericInterface implements GenericInterface<string, number> {`,
+            );
+            document.lineAt(36).text.should.equal(`    public method(p1: string): number {`);
+            document.lineAt(37).text.should.equal(`        throw new Error('Not implemented yet.');`);
+            document.lineAt(38).text.should.equal(`    }`);
+            document.lineAt(39).text.should.equal(`}`);
+        });
+
+        it('should add generic abstract elements with types to a class', async () => {
+            const cmds = await extension.provideCodeActions(
+                document,
+                new Range(new Position(0, 0), new Position(0, 0)),
+                <any>{
+                    diagnostics: [
+                        {
+                            message:
+                            `non-abstract class 'ImplementGenericAbstract' ` +
+                            `implement inherited from class 'GenericAbstractClass<string, number, boolean>'.`,
+                        },
+                    ],
+                },
+                null,
+            );
+            await extension.executeCodeAction(cmds[0].arguments[0]);
+            document.lineAt(37).text.should.equal(
+                `class ImplementGenericAbstract extends GenericAbstractClass<string, number, boolean> {`,
+            );
+            document.lineAt(39).text.should.equal(`    public abstractMethod(p1: string): number {`);
+            document.lineAt(40).text.should.equal(`        throw new Error('Not implemented yet.');`);
+            document.lineAt(41).text.should.equal(`    }`);
+            document.lineAt(43).text.should.equal(`    protected protMethod(p2: number, p3: boolean) {`);
+            document.lineAt(44).text.should.equal(`        throw new Error('Not implemented yet.');`);
+            document.lineAt(45).text.should.equal(`    }`);
+            document.lineAt(46).text.should.equal(`}`);
+        });
+
     });
 
     describe('provideCodeActions', () => {
@@ -332,100 +498,6 @@ describe('CodeActionExtension', () => {
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
             });
 
-        });
-
-    });
-
-    describe('missing polymorphic elements actions', () => {
-
-        const file = join(
-            workspace.rootPath,
-            'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
-        );
-        let document: TextDocument;
-
-        before(async () => {
-            document = await workspace.openTextDocument(file);
-            await window.showTextDocument(document);
-        });
-
-        it('should resolve missing implementations of an interface to a code action', async () => {
-            const cmds = await extension.provideCodeActions(
-                document,
-                new Range(new Position(0, 0), new Position(0, 0)),
-                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'CodeFixImplementInterface'.` }] },
-                null,
-            );
-
-            cmds.should.have.lengthOf(1);
-            const action = cmds[0];
-            action.title.should.equal('Implement missing elements from "CodeFixImplementInterface".');
-            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
-        });
-
-        it('should resolve missing implementations of an abstract class to a code action', async () => {
-            const cmds = await extension.provideCodeActions(
-                document,
-                new Range(new Position(0, 0), new Position(0, 0)),
-                {
-                    diagnostics: [
-                        {
-                            message:
-                            `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
-                        },
-                    ],
-                },
-                null,
-            );
-
-            cmds.should.have.lengthOf(1);
-            const action = cmds[0];
-            action.title.should.equal('Implement missing elements from "CodeFixImplementAbstract".');
-            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
-        });
-
-        it('should resolve missing implementations of a local interface to a code action', async () => {
-            const cmds = await extension.provideCodeActions(
-                document,
-                new Range(new Position(0, 0), new Position(0, 0)),
-                { diagnostics: [{ message: `class 'Foobar' incorrectly implements 'InternalInterface'.` }] },
-                null,
-            );
-
-            cmds.should.have.lengthOf(1);
-            const action = cmds[0];
-            action.title.should.equal('Implement missing elements from "InternalInterface".');
-            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
-        });
-
-        it('should resolve missing implementations of a local abstract class to a code action', async () => {
-            const cmds = await extension.provideCodeActions(
-                document,
-                new Range(new Position(0, 0), new Position(0, 0)),
-                {
-                    diagnostics: [
-                        { message: `non-abstract class 'Foobar' implement inherited from class 'InternalAbstract'.` },
-                    ],
-                },
-                null,
-            );
-
-            cmds.should.have.lengthOf(1);
-            const action = cmds[0];
-            action.title.should.equal('Implement missing elements from "InternalAbstract".');
-            action.arguments[0].should.be.an.instanceof(ImplementPolymorphElements);
-        });
-
-        it('should resolve missing to a NOOP if the interface / class is not found', async () => {
-            const cmds = await extension.provideCodeActions(
-                document,
-                new Range(new Position(0, 0), new Position(0, 0)),
-                { diagnostics: [{ message: `non-abstract class 'Foobar' implement inherited from class 'FOOOOBAR'.` }] },
-                null,
-            );
-
-            cmds.should.have.lengthOf(1);
-            cmds[0].title.should.equal('Cannot find "FOOOOBAR" in the index or the actual file.');
         });
 
     });

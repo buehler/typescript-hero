@@ -352,7 +352,7 @@ describe('common / TypescriptParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(2);
+                parsed.declarations.should.be.an('array').with.lengthOf(4);
             });
 
             it('should parse a non exported interface', () => {
@@ -398,6 +398,18 @@ describe('common / TypescriptParser', () => {
                 should.equal(parsedInterface.properties[1].type, 'number');
             });
 
+            it('should parse a generic interface', () => {
+                const parsedInterface = parsed.declarations[2] as InterfaceDeclaration;
+                parsedInterface.typeParameters!.should.contain('T');
+            });
+
+            it('should parse a generic interface with multiple type params', () => {
+                const parsedInterface = parsed.declarations[3] as InterfaceDeclaration;
+                parsedInterface.typeParameters!.should.contain('TIn');
+                parsedInterface.typeParameters!.should.contain('TOut');
+                parsedInterface.typeParameters!.should.contain('TError');
+            });
+
         });
 
         describe('Classes', () => {
@@ -409,7 +421,7 @@ describe('common / TypescriptParser', () => {
             });
 
             it('should parse a file', () => {
-                parsed.declarations.should.be.an('array').with.lengthOf(3);
+                parsed.declarations.should.be.an('array').with.lengthOf(5);
             });
 
             it('should parse an abstract class', () => {
@@ -470,6 +482,18 @@ describe('common / TypescriptParser', () => {
             it('should parse a methods visibility', () => {
                 const parsedClass = parsed.declarations[1] as ClassDeclaration;
                 should.equal(parsedClass.methods[0].visibility, DeclarationVisibility.Public);
+            });
+
+            it('should parse a generic class', () => {
+                const parsedClass = parsed.declarations[3] as ClassDeclaration;
+                parsedClass.typeParameters!.should.contain('T');
+            });
+
+            it('should parse a generic class with multiple type params', () => {
+                const parsedClass = parsed.declarations[4] as ClassDeclaration;
+                parsedClass.typeParameters!.should.contain('TIn');
+                parsedClass.typeParameters!.should.contain('TOut');
+                parsedClass.typeParameters!.should.contain('TError');
             });
 
         });

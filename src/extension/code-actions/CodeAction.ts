@@ -1,4 +1,5 @@
-import { DeclarationInfo, DeclarationVisibility, InterfaceDeclaration } from '../../common/ts-parsing/declarations';
+import { DeclarationInfo, DeclarationVisibility } from '../../common/ts-parsing/declarations';
+import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ClassManager } from '../managers/ClassManager';
 import { ImportManager } from '../managers/ImportManager';
@@ -100,7 +101,8 @@ export class ImplementPolymorphElements implements CodeAction {
     constructor(
         private document: TextDocument,
         private managedClass: string,
-        private polymorphObject: InterfaceDeclaration,
+        private polymorphObject: ClassLikeDeclaration & GenericDeclaration,
+        private typeParameterMappings?: { [type: string]: string },
     ) { }
 
     /**
@@ -112,10 +114,21 @@ export class ImplementPolymorphElements implements CodeAction {
      */
     public async execute(): Promise<boolean> {
         const controller = await ClassManager.create(this.document, this.managedClass);
+        let typeKeys;
+
+        if (this.typeParameterMappings) {
+            typeKeys = Object.keys(this.typeParameterMappings);
+        }
 
         for (const property of this.polymorphObject.properties.filter(o => !controller.hasProperty(o.name))) {
             if (!property.visibility) {
                 property.visibility = DeclarationVisibility.Public;
+            }
+            if (this.typeParameterMappings) {
+                const type = property.type || '';
+                if (typeKeys.indexOf(type) >= 0) {
+                    property.type = this.typeParameterMappings[type];
+                }
             }
             controller.addProperty(property);
         }
@@ -123,6 +136,18 @@ export class ImplementPolymorphElements implements CodeAction {
         for (const method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
             if (!method.visibility) {
                 method.visibility = DeclarationVisibility.Public;
+            }
+            if (this.typeParameterMappings) {
+                const type = method.type || '';
+                if (typeKeys.indexOf(type) >= 0) {
+                    method.type = this.typeParameterMappings[type];
+                }
+                for (const param of method.parameters) {
+                    const paramType = param.type || '';
+                    if (typeKeys.indexOf(paramType) >= 0) {
+                        param.type = this.typeParameterMappings[paramType];
+                    }
+                }
             }
             controller.addMethod(method);
         }

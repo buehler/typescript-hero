@@ -5,6 +5,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## [Unreleased]
 #### Fixed
 - Default imports are removed regardless if they are used or not ([#149](https://github.com/buehler/typescript-hero/issues/149))
+- Support for generic interfaces and abstract classes for the implement elements feature of the light bulb ([#158](https://github.com/buehler/typescript-hero/issues/158))
+- Deprecation warnings during testing of the extension (sinon).
 
 ## [0.13.2]
 #### Fixed

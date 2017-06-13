@@ -27,3 +27,6 @@ export class ExportedClass {
         this._property = value;
     }
 }
+
+class Generic<T> { }
+class MultiGeneric<TIn, TOut, TError> { }

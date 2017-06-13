@@ -1,7 +1,9 @@
-import { DeclarationVisibility } from './DeclarationVisibility';
 import { Generatable } from '../../ts-generation';
 import { Node } from '../Node';
+import { DeclarationVisibility } from './DeclarationVisibility';
+import { MethodDeclaration } from './MethodDeclaration';
 import { ParameterDeclaration } from './ParameterDeclaration';
+import { PropertyDeclaration } from './PropertyDeclaration';
 import { VariableDeclaration } from './VariableDeclaration';
 import { CompletionItemKind } from 'vscode-languageserver-types';
 
@@ -61,6 +63,27 @@ export interface TypedDeclaration extends Declaration {
 }
 
 /**
+ * Interface for generic type declarations. Those declarations are able to be used in a generic way.
+ * Examples are: classes, interfaces, methods and such.
+ * 
+ * @export
+ * @interface GenericDeclaration
+ * @extends {Declaration}
+ */
+export interface GenericDeclaration extends Declaration {
+    /**
+     * List of type parameters
+     * 
+     * @type {(string[] | undefined)}
+     * @memberof GenericDeclaration
+     *
+     * @example
+     * ['T', 'TResult', 'TError']
+     */
+    typeParameters: string[] | undefined;
+}
+
+/**
  * Interface for exportable declarations. Does contain information about the export status of a declaration.
  * 
  * @export
@@ -93,6 +116,32 @@ export interface ScopedDeclaration extends Declaration {
      * @memberof ScopedDeclaration
      */
     visibility: DeclarationVisibility | undefined;
+}
+
+/**
+ * Interface for class like constructs. Contain properties and methods that are contained.
+ * Examples are classes, interfaces, abstract classes, etc.
+ * 
+ * @export
+ * @interface ClassLikeDeclaration
+ * @extends {Declaration}
+ */
+export interface ClassLikeDeclaration extends Declaration {
+    /**
+     * The properties of the declaration.
+     * 
+     * @type {PropertyDeclaration[]}
+     * @memberof ClassLikeDeclaration
+     */
+    properties: PropertyDeclaration[];
+
+    /**
+     * The methods of the declaration.
+     * 
+     * @type {MethodDeclaration[]}
+     * @memberof ClassLikeDeclaration
+     */
+    methods: MethodDeclaration[];
 }
 
 /**

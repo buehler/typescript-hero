@@ -48,6 +48,14 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
     return right! - left!;
 }
 
+/**
+ * Manager for classes in files. Is able to modify a written class (add / remove methods and properties).
+ * On commit, the new typescript is generated and inserted.
+ * 
+ * @export
+ * @class ClassManager
+ * @implements {ObjectManager}
+ */
 export class ClassManager implements ObjectManager {
     private static get parser(): TypescriptParser {
         return Container.get(TypescriptParser);
