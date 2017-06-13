@@ -29,7 +29,7 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe.only('CodeActionExtension', () => {
+describe('CodeActionExtension', () => {
 
     let extension: any;
 
