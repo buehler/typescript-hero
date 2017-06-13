@@ -277,14 +277,14 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public async commit(): Promise<boolean> {
-        // Commit the documents imports:
-        // 1. Remove imports that are in the document, but not anymore
-        // 2. Update existing / insert new ones
         const edits: TextEdit[] = [];
 
         await this.resolveImportSpecifiers();
 
         if (this.organize) {
+            // since the imports should be organized:
+            // delete all imports and the following lines (if empty)
+            // newly generate all groups.
             for (const imp of this._parsedDocument.imports) {
                 edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
                 if (imp.end !== undefined) {
@@ -302,6 +302,9 @@ export class ImportManager implements ObjectManager {
                     .join('\n') + '\n',
             ));
         } else {
+            // Commit the documents imports:
+            // 1. Remove imports that are in the document, but not anymore
+            // 2. Update existing / insert new ones
             for (const imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
                     edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
