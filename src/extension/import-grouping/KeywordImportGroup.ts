@@ -17,6 +17,10 @@ export class KeywordImportGroup implements ImportGroup {
 
     constructor(public readonly keyword: ImportGroupKeyword, public readonly order: ImportGroupOrder = 'asc') { }
 
+    public reset(): void {
+        this.imports.length = 0;
+    }
+
     public processImport(tsImport: Import): boolean {
         switch (this.keyword) {
             case ImportGroupKeyword.Modules:

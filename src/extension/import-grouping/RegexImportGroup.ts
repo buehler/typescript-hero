@@ -16,6 +16,10 @@ export class RegexImportGroup implements ImportGroup {
 
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
 
+    public reset(): void {
+        this.imports.length = 0;
+    }
+
     public processImport(tsImport: Import): boolean {
         const regex = new RegExp(this.regex.replace(/\//g, ''), 'g');
 

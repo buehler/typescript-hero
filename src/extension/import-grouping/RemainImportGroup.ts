@@ -15,6 +15,10 @@ export class RemainImportGroup implements ImportGroup {
     public readonly order: ImportGroupOrder = 'asc';
     public readonly imports: Import[] = [];
 
+    public reset(): void {
+        this.imports.length = 0;
+    }
+
     public processImport(tsImport: Import): boolean {
         this.imports.push(tsImport);
         return true;

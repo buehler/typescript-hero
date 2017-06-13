@@ -258,7 +258,9 @@ export class ImportManager implements ObjectManager {
             ];
         }
 
-        this.importGroups = ImportManager.config.resolver.importGroups;
+        for (const group of this.importGroups) {
+            group.reset();
+        }
         this.imports = keep;
         this.addImportsToGroups(this.imports);
 

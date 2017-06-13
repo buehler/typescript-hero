@@ -13,4 +13,5 @@ export interface ImportGroup extends Generatable {
     readonly imports: Import[];
     order: ImportGroupOrder;
     processImport(tsImport: Import): boolean;
+    reset(): void;
 }
