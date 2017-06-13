@@ -26,7 +26,7 @@ export class NamespaceImport implements AliasedImport {
      * @memberof NamespaceImport
      */
     public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
-        return `import * as ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
+        return `import * as ${this.alias} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}`;
     }
 
     /**

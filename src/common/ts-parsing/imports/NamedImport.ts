@@ -43,7 +43,7 @@ export class NamedImport implements Import {
         const lib = this.libraryName;
 
         const importString =
-            `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}\n`;
+            `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
         }
@@ -75,7 +75,7 @@ export class NamedImport implements Import {
         const spacings = Array(tabSize + 1).join(' ');
         return `import {
 ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n')}
-} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
+} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}`;
     }
 
     /**

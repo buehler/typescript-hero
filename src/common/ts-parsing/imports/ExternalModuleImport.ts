@@ -27,7 +27,7 @@ export class ExternalModuleImport implements AliasedImport {
      * @memberof ExternalModuleImport
      */
     public generateTypescript({ stringQuoteStyle, eol }: GenerationOptions): string {
-        return `import ${this.alias} = require(${stringQuoteStyle}${this.libraryName}${stringQuoteStyle})${eol}\n`;
+        return `import ${this.alias} = require(${stringQuoteStyle}${this.libraryName}${stringQuoteStyle})${eol}`;
     }
 
     /**
