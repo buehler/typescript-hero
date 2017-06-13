@@ -1,4 +1,3 @@
-import { ImportGroup } from '../import-grouping';
 import { ExtensionConfig } from '../../common/config';
 import {
     getAbsolutLibraryName,
@@ -22,6 +21,7 @@ import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
 import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { importRange } from '../helpers';
+import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
@@ -287,21 +287,19 @@ export class ImportManager implements ObjectManager {
         if (this.organize) {
             for (const imp of this._parsedDocument.imports) {
                 edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
+                if (imp.end !== undefined) {
+                    const nextLine = this.document.lineAt(this.document.positionAt(imp.end).line + 1);
+                    if (nextLine.text === '') {
+                        edits.push(TextEdit.del(nextLine.rangeIncludingLineBreak));
+                    }
+                }
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
                 this.importGroups
                     .map(group => group.generateTypescript(ImportManager.config.resolver.generationOptions))
                     .filter(Boolean)
-                    .join('\n'),
-                // this.importGroups.reduce(
-                //     (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
-                //     '',
-                // ),
-                // this.imports.reduce(
-                //     (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
-                //     '',
-                // ),
+                    .join('\n') + '\n',
             ));
         } else {
             for (const imp of this._parsedDocument.imports) {
