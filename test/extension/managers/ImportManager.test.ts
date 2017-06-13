@@ -180,7 +180,7 @@ describe.only('ImportManager', () => {
 
     describe('addDeclarationImport()', () => {
 
-        it('should add a normal import to the document.', async () => {
+        it('should add a normal import to the document', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
             ctrl.addDeclarationImport(declaration!);
@@ -190,7 +190,7 @@ describe.only('ImportManager', () => {
             (ctrl as any).imports[1].specifiers[0].specifier.should.equal('NotBarelExported');
         });
 
-        it('should add a module import to the import index.', async () => {
+        it('should add a module import to the import index', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.from === 'body-parser');
             ctrl.addDeclarationImport(declaration!);
@@ -215,7 +215,7 @@ describe.only('ImportManager', () => {
             should.not.exist((ctrl as any).imports[1].defaultAlias);
         });
 
-        it('should add multiple imports to the import index.', async () => {
+        it('should add multiple imports to the import index', async () => {
             const ctrl = await ImportManager.create(document);
             const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
             ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
@@ -226,7 +226,7 @@ describe.only('ImportManager', () => {
             (ctrl as any).imports[1].specifiers[0].specifier.should.equal('FancierLibraryClass');
         });
 
-        it('should add an import to an existing import index item.', async () => {
+        it('should add an import to an existing import index item', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
             const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
@@ -251,6 +251,29 @@ describe.only('ImportManager', () => {
             ctrl.addDeclarationImport(declaration!);
 
             (ctrl as any).imports[0].specifiers.should.have.lengthOf(2);
+        });
+
+        it('should add a normal import to a group', async () => {
+            const ctrl = await ImportManager.create(document);
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+
+            ctrl.addDeclarationImport(declaration!);
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(2);
+        });
+
+        it('should add an import to an existing import group', async () => {
+            const ctrl = await ImportManager.create(document);
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+
+            ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
         });
 
     });
@@ -304,11 +327,6 @@ describe.only('ImportManager', () => {
 
     });
 
-});
-
-/*
-describe.skip('ImportManager', () => {
-
     describe('organizeImports()', () => {
 
         it('should remove an unused import', async () => {
@@ -323,6 +341,18 @@ describe.skip('ImportManager', () => {
 
             (ctrl as any).imports.should.have.lengthOf(1);
             (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
+        });
+        
+        it('should remove an unused import from a group', async () => {
+            const ctrl = await ImportManager.create(document);
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+            ctrl.addDeclarationImport(declaration!);
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(2);
+
+            ctrl.organizeImports();
+
+            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
         });
 
         it('should remove an unused specifier from an import', async () => {
@@ -339,10 +369,10 @@ describe.skip('ImportManager', () => {
         });
 
         it('should not remove a string import', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(
                     new Position(0, 0),
-                    `import 'my-string-import';\n`
+                    `import 'my-string-import';\n`,
                 );
             });
             const ctrl = await ImportManager.create(document);
@@ -355,10 +385,10 @@ describe.skip('ImportManager', () => {
         });
 
         it('should order imports alphabetically', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(
                     new Position(1, 0),
-                    `import { AddImportSameDirectory } from '../../../server/indices';\n`
+                    `import { AddImportSameDirectory } from '../../../server/indices';\n`,
                 );
                 builder.insert(new Position(6, 0), `const foo = AddImportSameDirectory;\n`);
             });
@@ -372,7 +402,7 @@ describe.skip('ImportManager', () => {
         });
 
         it('should order string imports before normal imports', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(new Position(1, 0), `import 'foobar';\n`);
             });
             const ctrl = await ImportManager.create(document);
@@ -385,10 +415,10 @@ describe.skip('ImportManager', () => {
         });
 
         it('should order specifiers alphabetically', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.replace(
                     document.lineAt(0).rangeIncludingLineBreak,
-                    `import { Class2, Class1 } from '../resourceIndex';`
+                    `import { Class2, Class1 } from '../resourceIndex';`,
                 );
                 builder.insert(new Position(5, 0), `const foo = new Class2();\n`);
             });
@@ -402,10 +432,10 @@ describe.skip('ImportManager', () => {
         });
 
         it('should remove an unused default import', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
                 builder.insert(
                     new Position(0, 0),
@@ -422,10 +452,10 @@ describe.skip('ImportManager', () => {
         });
 
         it('should not remove a used default import', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
                 builder.insert(
                     new Position(0, 0),
@@ -445,6 +475,13 @@ let foobar = DefaultImport();
         });
 
     });
+
+});
+
+/*
+describe.skip('ImportManager', () => {
+
+    
 
     describe('commit()', () => {
 
