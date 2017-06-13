@@ -31,10 +31,15 @@ export class RegexImportGroup implements ImportGroup {
     }
 
     public generateTypescript(options: GenerationOptions): string {
+        if (!this.imports.length) {
+            return '';
+        }
         const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
         return [
             ...sorted.filter(i => i instanceof StringImport),
             ...sorted.filter(i => !(i instanceof StringImport)),
-        ].reduce((str, cur) => str + cur.generateTypescript(options), '');
+        ]
+            .map(imp => imp.generateTypescript(options))
+            .join('\n') + '\n';
     }
 }

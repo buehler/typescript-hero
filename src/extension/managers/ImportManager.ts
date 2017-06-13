@@ -290,10 +290,18 @@ export class ImportManager implements ObjectManager {
             }
             edits.push(TextEdit.insert(
                 getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
-                this.imports.reduce(
-                    (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    '',
-                ),
+                this.importGroups
+                    .map(group => group.generateTypescript(ImportManager.config.resolver.generationOptions))
+                    .filter(Boolean)
+                    .join('\n'),
+                // this.importGroups.reduce(
+                //     (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
+                //     '',
+                // ),
+                // this.imports.reduce(
+                //     (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
+                //     '',
+                // ),
             ));
         } else {
             for (const imp of this._parsedDocument.imports) {

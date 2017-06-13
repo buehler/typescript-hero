@@ -35,9 +35,13 @@ export class KeywordImportGroup implements ImportGroup {
     }
 
     public generateTypescript(options: GenerationOptions): string {
+        if (!this.imports.length) {
+            return '';
+        }
         return this.imports
             .sort((i1, i2) => importSort(i1, i2, this.order))
-            .reduce((str, cur) => str + cur.generateTypescript(options), '');
+            .map(imp => imp.generateTypescript(options))
+            .join('\n') + '\n';
     }
 
     private processModulesImport(tsImport: Import): boolean {
