@@ -22,7 +22,7 @@ chai.use(sinonChai);
  * @returns {sinon.SinonStub}
  */
 function mockInputBox(returnValue: string): sinon.SinonStub {
-    return sinon.stub(window, 'showInputBox', () => {
+    return sinon.stub(window, 'showInputBox').callsFake(() => {
         return Promise.resolve(returnValue);
     });
 }
@@ -706,7 +706,7 @@ let foobar = DefaultImport();
             let stub: sinon.SinonStub | undefined;
             try {
                 const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-                stub = sinon.stub(window, 'showQuickPick', () => {
+                stub = sinon.stub(window, 'showQuickPick').callsFake(() => {
                     return Promise.resolve(new ResolveQuickPickItem(declarations[0]));
                 });
                 await window.activeTextEditor.edit(builder => {
