@@ -12,7 +12,6 @@ import { ImportGroupOrder } from './ImportGroupOrder';
  * @implements {ImportGroup}
  */
 export class RemainImportGroup implements ImportGroup {
-    public readonly order: ImportGroupOrder = 'asc';
     public readonly imports: Import[] = [];
 
     public get sortedImports(): Import[] {
@@ -22,6 +21,8 @@ export class RemainImportGroup implements ImportGroup {
             ...sorted.filter(i => !(i instanceof StringImport)),
         ];
     }
+
+    constructor(public readonly order: ImportGroupOrder = 'asc') { }
 
     public reset(): void {
         this.imports.length = 0;

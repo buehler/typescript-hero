@@ -175,7 +175,7 @@
           "type": "number",
           "minimum": 1,
           "multipleOf": 1,
-          "default": 120,
+          "default": 125,
           "description": "Defines the threshold when an import should be wrapped into a multiline import."
         },
         "typescriptHero.resolver.multiLineTrailingComma": {
@@ -196,7 +196,8 @@
                 "enum": [
                   "Modules",
                   "Plains",
-                  "Workspace"
+                  "Workspace",
+                  "Remaining"
                 ]
               },
               {
@@ -210,7 +211,8 @@
                     "enum": [
                       "Modules",
                       "Plains",
-                      "Workspace"
+                      "Workspace",
+                      "Remaining"
                     ]
                   },
                   "order": {

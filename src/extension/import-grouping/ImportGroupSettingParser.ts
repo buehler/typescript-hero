@@ -42,6 +42,10 @@ export class ImportGroupSettingParser {
             return new RegexImportGroup(identifier, order);
         }
 
+        if (ImportGroupKeyword[identifier] === ImportGroupKeyword.Remaining) {
+            return new RemainImportGroup(order);
+        }
+
         if (ImportGroupKeyword[identifier] !== undefined) {
             return new KeywordImportGroup(ImportGroupKeyword[identifier], order);
         }
