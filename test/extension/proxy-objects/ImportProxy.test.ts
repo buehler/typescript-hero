@@ -1,9 +1,10 @@
+import * as chai from 'chai';
+import { given } from 'mocha-testdata';
+
 import { GenerationOptions } from '../../../src/common/ts-generation';
 import { SymbolSpecifier } from '../../../src/common/ts-parsing';
 import { DefaultImport, NamedImport } from '../../../src/common/ts-parsing/imports';
 import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
-import * as chai from 'chai';
-import { given } from 'mocha-testdata';
 
 chai.should();
 
@@ -19,8 +20,8 @@ describe('ImportProxy', () => {
         });
 
         it('should use the values of a given TsNamedImport', () => {
-            const imp = new NamedImport('foo', 42, 1337),
-                proxy = new ImportProxy(imp);
+            const imp = new NamedImport('foo', 42, 1337);
+            const proxy = new ImportProxy(imp);
 
             proxy.libraryName.should.equal(imp.libraryName);
             proxy.start!.should.equal(imp.start);
@@ -37,8 +38,8 @@ describe('ImportProxy', () => {
         });
 
         it('should add a default alias from a TsDefaultImport', () => {
-            const imp = new DefaultImport('foo', 'ALIAS'),
-                proxy = new ImportProxy(imp);
+            const imp = new DefaultImport('foo', 'ALIAS');
+            const proxy = new ImportProxy(imp);
 
             proxy.defaultAlias!.should.equal('ALIAS');
         });
@@ -85,8 +86,8 @@ describe('ImportProxy', () => {
     describe('isEqual()', () => {
 
         it('should return true if another proxy is equal', () => {
-            const p1 = new ImportProxy('foo'),
-                p2 = new ImportProxy('foo');
+            const p1 = new ImportProxy('foo');
+            const p2 = new ImportProxy('foo');
 
             p1.addSpecifier('bar');
             p2.addSpecifier('bar');
@@ -167,9 +168,10 @@ describe('ImportProxy', () => {
         const options: GenerationOptions = {
             eol: ';',
             multiLineWrapThreshold: 120,
+            multiLineTrailingComma: false,
             stringQuoteStyle: `'`,
             spaceBraces: true,
-            tabSize: 4
+            tabSize: 4,
         };
         let proxy: ImportProxy;
 
@@ -179,32 +181,32 @@ describe('ImportProxy', () => {
 
         it('should generate a TsDefaultImport when no specifiers are provided', () => {
             proxy.defaultAlias = 'ALIAS';
-            proxy.generateTypescript(options).should.equal(`import ALIAS from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import ALIAS from 'foo';`);
         });
 
         it('should generate a normal TsNamedImport when no default import is provided', () => {
             proxy.addSpecifier('bar');
             proxy.addSpecifier('baz');
-            proxy.generateTypescript(options).should.equal(`import { bar, baz } from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import { bar, baz } from 'foo';`);
         });
 
         it('should generate a normal TsNamedImport with aliases when no default import is provided', () => {
             proxy.addSpecifier('bar');
             proxy.specifiers.push(new SymbolSpecifier('baz', 'blub'));
-            proxy.generateTypescript(options).should.equal(`import { bar, baz as blub } from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import { bar, baz as blub } from 'foo';`);
         });
 
         it('should generate a TsNamedImport with default import', () => {
             proxy.defaultAlias = 'ALIAS';
             proxy.addSpecifier('bar');
-            proxy.generateTypescript(options).should.equal(`import { bar, default as ALIAS } from 'foo';\n`);
+            proxy.generateTypescript(options).should.equal(`import { bar, default as ALIAS } from 'foo';`);
         });
 
         it('should omit semicolons if configured', () => {
             const optionsClone = Object.assign({}, options);
             optionsClone.eol = '';
             proxy.defaultAlias = 'ALIAS';
-            proxy.generateTypescript(optionsClone).should.equal(`import ALIAS from 'foo'\n`);
+            proxy.generateTypescript(optionsClone).should.equal(`import ALIAS from 'foo'`);
         });
 
     });
