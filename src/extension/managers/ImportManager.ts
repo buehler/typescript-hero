@@ -295,7 +295,7 @@ export class ImportManager implements ObjectManager {
                 }
             }
             edits.push(TextEdit.insert(
-                getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
+                getImportInsertPosition(window.activeTextEditor),
                 this.importGroups
                     .map(group => group.generateTypescript(ImportManager.config.resolver.generationOptions))
                     .filter(Boolean)
@@ -324,7 +324,6 @@ export class ImportManager implements ObjectManager {
                 } else {
                     edits.push(TextEdit.insert(
                         getImportInsertPosition(
-                            ImportManager.config.resolver.newImportLocation,
                             window.activeTextEditor,
                         ),
                         imp.generateTypescript(ImportManager.config.resolver.generationOptions),

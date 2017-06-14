@@ -170,7 +170,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             return [
                 TextEdit.insert(
                     getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor,
+                        window.activeTextEditor,
                     ),
                     mod.generateTypescript(this.config.resolver.generationOptions),
                 ),
@@ -184,7 +184,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             return [
                 TextEdit.insert(
                     getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor,
+                        window.activeTextEditor,
                     ),
                     named.generateTypescript(this.config.resolver.generationOptions),
                 ),

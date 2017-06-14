@@ -178,13 +178,10 @@
           "default": 120,
           "description": "Defines the threshold when an import should be wrapped into a multiline import."
         },
-        "typescriptHero.resolver.newImportLocation": {
-          "enum": [
-            "TopOfFile",
-            "AtCursorLocation"
-          ],
-          "default": "TopOfFile",
-          "description": "Defines the location of new imports."
+        "typescriptHero.resolver.multiLineTrailingComma": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defined if multi line imports contain the last trailing comma."
         },
         "typescriptHero.resolver.disableImportsSorting": {
           "type": "boolean",

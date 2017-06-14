@@ -1,5 +1,5 @@
 import { ExtensionConfig, ResolverConfig } from '../common/config';
-import { GenerationOptions, ImportLocation } from '../common/ts-generation';
+import { GenerationOptions } from '../common/ts-generation';
 import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
@@ -105,15 +105,20 @@ class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
-     * Where the new imports should be added (e.g. top of the file, current cursor location, etc).
-     * 
+     * If a multiline named import should contain the last trailing comma.
+     *
      * @readonly
-     * @type {ImportLocation}
+     * @type {boolean}
      * @memberof VscodeResolverConfig
+     *
+     * @example
+     * import {
+     *     Foo,
+     *     Bar, <<
+     * } from 'whatever';
      */
-    public get newImportLocation(): ImportLocation {
-        const configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
-        return ImportLocation[configString];
+    public get multiLineTrailingComma(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma');
     }
 
     /**
