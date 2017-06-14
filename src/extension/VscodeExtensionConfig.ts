@@ -176,6 +176,7 @@ class VscodeResolverConfig implements ResolverConfig {
         return {
             eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,
+            multiLineTrailingComma: this.multiLineTrailingComma,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,

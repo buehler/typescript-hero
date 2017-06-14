@@ -8,6 +8,7 @@
  * @property {string} eol Defines end of line character (semicolon or nothing) 
  * @property {boolean} spaceBraces Defines if the symbols should have spacing in the braces ({ Foo } or {Foo}).
  * @property {number} multiLineWrapThreshold The threshold where an import is written as multiline.
+ * @property {boolean} multiLineTrailingComma Defines if the last line of a multiline import should have a comma.
  * @property {number} tabSize How many spaces of indentiation.
  */
 export type GenerationOptions = {
@@ -15,5 +16,6 @@ export type GenerationOptions = {
     eol: '' | ';',
     spaceBraces: boolean,
     multiLineWrapThreshold: number,
+    multiLineTrailingComma: boolean,
     tabSize: number,
 };
