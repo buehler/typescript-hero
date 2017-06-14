@@ -113,9 +113,7 @@ export class ImportManager implements ObjectManager {
         public readonly document: TextDocument,
         private _parsedDocument: File,
     ) {
-        this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
-        this.importGroups = ImportManager.config.resolver.importGroups;
-        this.addImportsToGroups(this.imports);
+        this.reset();
     }
 
     /**
@@ -135,6 +133,18 @@ export class ImportManager implements ObjectManager {
             o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
         );
         return new ImportManager(document, source);
+    }
+
+    /**
+     * TODO
+     * 
+     * 
+     * @memberof ImportManager
+     */
+    public reset(): void {
+        this.imports = this._parsedDocument.imports.map(o => o.clone<Import>());
+        this.importGroups = ImportManager.config.resolver.importGroups;
+        this.addImportsToGroups(this.imports);
     }
 
     /**

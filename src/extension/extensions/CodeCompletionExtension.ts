@@ -102,6 +102,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         this.logger.info('Search completion for word.', { searchWord });
 
         const parsed = await this.parser.parseSource(document.getText());
+        const manager = await ImportManager.create(document);
 
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
@@ -117,13 +118,14 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
         ) {
             const item = new CompletionItem(declaration.declaration.name, declaration.declaration.itemKind);
-            const manager = await ImportManager.create(document);
-
+            
             manager.addDeclarationImport(declaration);
             item.detail = declaration.from;
             item.sortText = declaration.declaration.intellisenseSortKey;
             item.additionalTextEdits = manager.calculateTextEdits();
             items.push(item);
+
+            manager.reset();
         }
         return items;
     }
