@@ -1,3 +1,9 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import * as sinon from 'sinon';
+import sinonChai = require('sinon-chai');
+import { Position, Range, TextDocument, window, workspace } from 'vscode';
+
 import { File } from '../../../src/common/ts-parsing/resources';
 import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
 import { ImportManager } from '../../../src/extension/managers';
@@ -5,11 +11,6 @@ import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
 import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
 import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 import { Container } from '../../../src/server/IoC';
-import * as chai from 'chai';
-import { join } from 'path';
-import sinonChai = require('sinon-chai');
-import { Position, Range, TextDocument, window, workspace } from 'vscode';
-// import sinon = require('sinon');
 
 const should = chai.should();
 chai.use(sinonChai);
@@ -20,22 +21,22 @@ chai.use(sinonChai);
  * @param {string} returnValue
  * @returns {sinon.SinonStub}
  */
-// function mockInputBox(returnValue: string): sinon.SinonStub {
-//     return sinon.stub(window, 'showInputBox').callsFake(() => {
-//         return Promise.resolve(returnValue);
-//     });
-// }
+function mockInputBox(returnValue: string): sinon.SinonStub {
+    return sinon.stub(window, 'showInputBox').callsFake(() => {
+        return Promise.resolve(returnValue);
+    });
+}
 
 /**
  * Restore window.
  * 
  * @param {sinon.SinonStub} stub
  */
-// function restoreInputBox(stub: sinon.SinonStub): void {
-//     stub.restore();
-// }
+function restoreInputBox(stub: sinon.SinonStub): void {
+    stub.restore();
+}
 
-describe.only('ImportManager', () => {
+describe('ImportManager', () => {
 
     const file = join(workspace.rootPath, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument;
@@ -342,7 +343,7 @@ describe.only('ImportManager', () => {
             (ctrl as any).imports.should.have.lengthOf(1);
             (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
         });
-        
+
         it('should remove an unused import from a group', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
@@ -476,22 +477,15 @@ let foobar = DefaultImport();
 
     });
 
-});
-
-/*
-describe.skip('ImportManager', () => {
-
-    
-
     describe('commit()', () => {
 
         it('should not touch anything if nothing changed', async () => {
             const ctrl = await ImportManager.create(document);
 
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.replace(
                     document.lineAt(0).rangeIncludingLineBreak,
-                    `import {Class1} from '../resourceIndex';`
+                    `import {Class1} from '../resourceIndex';`,
                 );
             });
 
@@ -500,55 +494,57 @@ describe.skip('ImportManager', () => {
             document.lineAt(0).text.should.equals(`import {Class1} from '../resourceIndex';`);
         });
 
-        it('should add a single new import to the document (top)', async () => {
+        it('should add a single new import to the document (@correct place)', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
             ctrl.addDeclarationImport(declaration!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(0).text.should.equals(
-                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`
+            document.lineAt(1).text.should.equals(
+                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
         });
 
-        it('should add two new imports to the document (top)', async () => {
+        it('should add two new imports to the document (@correct place)', async () => {
             const ctrl = await ImportManager.create(document);
-            const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
-                declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
+
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(0).text.should.equals(
-                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`
+            document.lineAt(2).text.should.equals(
+                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
             document.lineAt(1).text.should.equals(
-                `import { isString } from '../../server/indices/HelperFunctions';`
+                `import { isString } from '../../server/indices/HelperFunctions';`,
             );
         });
 
-        it('should add three new imports to the document (top)', async () => {
+        it('should add three new imports to the document (@correct place)', async () => {
             const ctrl = await ImportManager.create(document);
-            const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported'),
-                declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString'),
-                declaration3 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
+            const declaration3 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+
             ctrl.addDeclarationImport(declaration!)
                 .addDeclarationImport(declaration2!)
                 .addDeclarationImport(declaration3!);
 
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(0).text.should.equals(
-                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`
+            document.lineAt(3).text.should.equals(
+                `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
             document.lineAt(1).text.should.equals(
-                `import { isString } from '../../server/indices/HelperFunctions';`
+                `import { isString } from '../../server/indices/HelperFunctions';`,
             );
             document.lineAt(2).text.should.equals(
-                `import { myComponent } from '../../server/indices/MyReactTemplate';`
+                `import { myComponent } from '../../server/indices/MyReactTemplate';`,
             );
         });
 
-        it('should add a single new module import to the document (top)', async () => {
+        it('should add a single new module import to the document (@correct place)', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.from === 'body-parser');
             ctrl.addDeclarationImport(declaration!);
@@ -557,19 +553,19 @@ describe.skip('ImportManager', () => {
             document.lineAt(0).text.should.equals(`import * as bodyParser from 'body-parser';`);
         });
 
-        it('should add a single default import to the document (top)', async () => {
+        it('should add a single default import to the document (@correct place)', async () => {
             const stub = mockInputBox('DEFAULT_IMPORT');
             try {
                 const ctrl = await ImportManager.create(document);
                 const declaration = index.declarationInfos.find(
-                    o => o.declaration.name === 'myDefaultExportedFunction'
+                    o => o.declaration.name === 'myDefaultExportedFunction',
                 );
                 ctrl.addDeclarationImport(declaration!);
                 (await ctrl.commit()).should.be.true;
 
                 stub.should.be.calledWithMatch({ value: 'myDefaultExportedFunction' });
-                document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/lateDefaultExportedElement';`
+                document.lineAt(1).text.should.equals(
+                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -585,10 +581,10 @@ describe.skip('ImportManager', () => {
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(0).text.should.equal(
-                    `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`
+                    `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
                 );
-                document.lineAt(1).text.should.equal(
-                    `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../server/indices';`
+                document.lineAt(2).text.should.equal(
+                    `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../server/indices';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -606,8 +602,9 @@ describe.skip('ImportManager', () => {
 
         it('should add multiple specifier to an existing import', async () => {
             const ctrl = await ImportManager.create(document);
-            const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
-                declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
+            const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
+
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
             (await ctrl.commit()).should.be.true;
 
@@ -618,14 +615,20 @@ describe.skip('ImportManager', () => {
             const stub = mockInputBox('DEFAULT_IMPORT');
             try {
                 const ctrl = await ImportManager.create(document);
-                const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport'),
-                    declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
-                ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+                const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
+                const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+
+                try {
+                    ctrl.addDeclarationImport(declaration!);
+                    ctrl.addDeclarationImport(declaration2!);
+                } catch (e) {
+                    console.log(e);
+                }
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(0).text.should.equals(
+                document.lineAt(1).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
-                    `from '../../server/indices/defaultExport/multiExport';`
+                    `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -634,17 +637,17 @@ describe.skip('ImportManager', () => {
 
         it('should add a specifier to an import and a new import', async () => {
             const ctrl = await ImportManager.create(document);
-            const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
-                declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+            const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
 
             await ctrl.addDeclarationImport(declaration1!)
                 .addDeclarationImport(declaration2!)
                 .commit();
 
-            document.lineAt(0).text.should.equals(
-                `import { myComponent } from '../../server/indices/MyReactTemplate';`
+            document.lineAt(1).text.should.equals(
+                `import { myComponent } from '../../server/indices/MyReactTemplate';`,
             );
-            document.lineAt(1).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
+            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
         });
 
         it('should convert a default import when a normal specifier is added', async () => {
@@ -654,16 +657,16 @@ describe.skip('ImportManager', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/multiExport';`
+                document.lineAt(1).text.should.equals(
+                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/multiExport';`,
                 );
 
                 declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(0).text.should.equals(
+                document.lineAt(1).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
-                    `from '../../server/indices/defaultExport/multiExport';`
+                    `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -677,17 +680,17 @@ describe.skip('ImportManager', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(0).text.should.equals(
-                    `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`
+                document.lineAt(1).text.should.equals(
+                    `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
                 );
 
                 declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
                 ctrl.addDeclarationImport(declaration!);
                 await ctrl.commit();
 
-                document.lineAt(0).text.should.equals(
+                document.lineAt(1).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
-                    `from '../../server/indices/defaultExport/multiExport';`
+                    `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -695,37 +698,38 @@ describe.skip('ImportManager', () => {
         });
 
         it('should render the optimized import', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
             });
+
             const ctrl = await ImportManager.create(document);
-            const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2'),
-                declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+            const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+            const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
 
             await ctrl.addDeclarationImport(declaration1!)
                 .addDeclarationImport(declaration2!)
                 .commit();
 
-            document.lineAt(0).text.should.equals(
-                `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`
-            );
             document.lineAt(1).text.should.equals(
-                `import { Class1, Class2 } from '../../server/indices';`
+                `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
+            );
+            document.lineAt(0).text.should.equals(
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
 
             await ctrl.organizeImports().commit();
 
             document.lineAt(0).text.should.equals(
-                `import { Class1, Class2 } from '../../server/indices';`
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
             document.lineAt(1).text.should.equals('');
         });
 
         it('should render sorted imports when optimizing', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(
                     new Position(0, 0),
-                    `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';\n`
+                    `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';\n`,
                 );
                 builder.insert(new Position(5, 0), 'const foobar = new MultiExportClass();\n');
             });
@@ -734,15 +738,15 @@ describe.skip('ImportManager', () => {
             await ctrl.organizeImports().commit();
 
             document.lineAt(1).text.should.equals(
-                `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`
+                `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
             );
             document.lineAt(0).text.should.equals(
-                `import { Class1 } from '../../server/indices';`
+                `import { Class1 } from '../../server/indices';`,
             );
         });
 
         it('should render sorted specifiers when optimizing', async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor.edit((builder) => {
                 builder.insert(new Position(0, 9), 'Class2, ');
                 builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
             });
@@ -751,33 +755,10 @@ describe.skip('ImportManager', () => {
             await ctrl.organizeImports().commit();
 
             document.lineAt(0).text.should.equals(
-                `import { Class1, Class2 } from '../../server/indices';`
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
-        });
-
-        it('should ask which declaration should be used on multiple options (add missing)', async () => {
-            let stub: sinon.SinonStub | undefined;
-            try {
-                const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-                stub = sinon.stub(window, 'showQuickPick').callsFake(() => {
-                    return Promise.resolve(new ResolveQuickPickItem(declarations[0]));
-                });
-                await window.activeTextEditor.edit(builder => {
-                    builder.insert(new Position(5, 0), 'const foobar = new FancierLibraryClass();\n');
-                });
-                const ctrl = await ImportManager.create(document);
-
-                await ctrl.addMissingImports(index).commit();
-
-                stub.should.be.calledOnce;
-            } finally {
-                if (stub) {
-                    stub.restore();
-                }
-            }
         });
 
     });
 
 });
-*/
