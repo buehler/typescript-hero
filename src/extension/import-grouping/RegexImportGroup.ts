@@ -14,6 +14,14 @@ import { ImportGroupOrder } from './ImportGroupOrder';
 export class RegexImportGroup implements ImportGroup {
     public readonly imports: Import[] = [];
 
+    public get sortedImports(): Import[] {
+        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
+        return [
+            ...sorted.filter(i => i instanceof StringImport),
+            ...sorted.filter(i => !(i instanceof StringImport)),
+        ];
+    }
+
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
 
     public reset(): void {
@@ -34,11 +42,7 @@ export class RegexImportGroup implements ImportGroup {
         if (!this.imports.length) {
             return '';
         }
-        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
-        return [
-            ...sorted.filter(i => i instanceof StringImport),
-            ...sorted.filter(i => !(i instanceof StringImport)),
-        ]
+        return this.sortedImports
             .map(imp => imp.generateTypescript(options))
             .join('\n') + '\n';
     }

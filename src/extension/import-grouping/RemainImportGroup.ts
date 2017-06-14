@@ -15,6 +15,14 @@ export class RemainImportGroup implements ImportGroup {
     public readonly order: ImportGroupOrder = 'asc';
     public readonly imports: Import[] = [];
 
+    public get sortedImports(): Import[] {
+        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
+        return [
+            ...sorted.filter(i => i instanceof StringImport),
+            ...sorted.filter(i => !(i instanceof StringImport)),
+        ];
+    }
+
     public reset(): void {
         this.imports.length = 0;
     }
@@ -28,11 +36,7 @@ export class RemainImportGroup implements ImportGroup {
         if (!this.imports.length) {
             return '';
         }
-        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
-        return [
-            ...sorted.filter(i => i instanceof StringImport),
-            ...sorted.filter(i => !(i instanceof StringImport)),
-        ]
+        return this.sortedImports
             .map(imp => imp.generateTypescript(options))
             .join('\n') + '\n';
     }
