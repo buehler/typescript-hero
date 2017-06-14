@@ -26,7 +26,15 @@ import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import { InputBoxOptions, TextDocument, TextEdit as CodeTextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import {
+    InputBoxOptions,
+    Range,
+    TextDocument,
+    TextEdit as CodeTextEdit,
+    window,
+    workspace,
+    WorkspaceEdit
+} from 'vscode';
 import { TextEdit } from 'vscode-languageserver-types';
 
 /**
@@ -319,15 +327,38 @@ export class ImportManager implements ObjectManager {
                 if (imp.start !== undefined && imp.end !== undefined) {
                     edits.push(TextEdit.replace(
                         importRange(this.document, imp.start, imp.end),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
+                        imp.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
                     ));
                 } else {
-                    edits.push(TextEdit.insert(
-                        getImportInsertPosition(
-                            window.activeTextEditor,
-                        ),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    ));
+                    const group = this.importGroups.find(grp => !!grp.imports.find(grpImp => grpImp === imp));
+                    if (!group) {
+                        continue;
+                    }
+                    const grpImports = group.sortedImports;
+                    const physicalFirstImport = grpImports.find(grpImp => grpImp.start !== undefined);
+                    const physicalLastImport = [...grpImports].reverse().find(grpImp => grpImp.end !== undefined);
+                    if (physicalFirstImport && physicalLastImport) {
+                        // If the group has more than 0 imports, delete the whole group (like in organize)
+                        // and regenerate it at the start of it's first import that has a start position
+                        // if there is an import that is there already
+                        edits.push(TextEdit.replace(
+                            new Range(
+                                this.document.positionAt(physicalFirstImport.start!),
+                                this.document.lineAt(
+                                    this.document.positionAt(physicalLastImport.end!).line,
+                                ).rangeIncludingLineBreak.end,
+                            ),
+                            group.generateTypescript(ImportManager.config.resolver.generationOptions),
+                        ));
+                    } else {
+                        // Since the group has no imports, generate it at the top of the file.
+                        edits.push(TextEdit.insert(
+                            getImportInsertPosition(
+                                window.activeTextEditor,
+                            ),
+                            group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
+                        ));
+                    }
                 }
             }
         }
@@ -338,6 +369,7 @@ export class ImportManager implements ObjectManager {
         if (result) {
             delete this.organize;
             this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            // TODO cleanup ?
         }
 
         return result;
