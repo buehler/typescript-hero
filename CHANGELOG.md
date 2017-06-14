@@ -3,6 +3,12 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- Import grouping, imports are now grouped and sorted (read the docs in README) ([#102](https://github.com/buehler/typescript-hero/issues/102))
+
+#### Removed
+- `newImportLocation` setting, since the imports are grouped and sorted, the new import location is obsolete ([#102](https://github.com/buehler/typescript-hero/issues/102))
+
 #### Fixed
 - Default imports are removed regardless if they are used or not ([#149](https://github.com/buehler/typescript-hero/issues/149))
 - Support for generic interfaces and abstract classes for the implement elements feature of the light bulb ([#158](https://github.com/buehler/typescript-hero/issues/158))
