@@ -1,12 +1,13 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import * as vscode from 'vscode';
+
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import * as chai from 'chai';
-import { join } from 'path';
-import * as vscode from 'vscode';
 
 const should = chai.should();
 
@@ -84,7 +85,8 @@ describe('CodeCompletionExtension', () => {
         should.exist(result);
         result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
         result![0].additionalTextEdits[0].newText.should.equal(
-            'import { MyClass } from \'../../../server/indices/MyClass\';\n',
+            `import { MyClass } from '../../../server/indices/MyClass';\n` +
+            `import { AlreadyImported } from './codeCompletionImports';\n`,
         );
     });
 
