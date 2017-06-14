@@ -103,7 +103,7 @@ export class ImportProxy extends NamedImport {
     public generateTypescript(options: GenerationOptions): string {
         if (this.specifiers.length <= 0) {
             return new DefaultImport(
-                this.libraryName, this.defaultAlias!, this.start, this.end,
+                this.libraryName, (this.defaultAlias || this.defaultPurposal)!, this.start, this.end,
             ).generateTypescript(options);
         }
         if (this.defaultAlias) {

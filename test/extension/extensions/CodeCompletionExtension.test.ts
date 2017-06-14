@@ -1,4 +1,3 @@
-import { ExtensionConfig } from '../../../src/common/config';
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
@@ -27,7 +26,6 @@ describe('CodeCompletionExtension', () => {
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         const parser = Container.get(TypescriptParser);
         const index = new DeclarationIndex(logger, parser);
 
@@ -45,7 +43,7 @@ describe('CodeCompletionExtension', () => {
             vscode.workspace.rootPath,
         );
 
-        extension = new CodeCompletionExtension(ctx, logger, config, parser, index as any);
+        extension = new CodeCompletionExtension(ctx, logger, parser, index as any);
     });
 
     it('shoud resolve to null if typing in a string', async () => {
@@ -85,7 +83,9 @@ describe('CodeCompletionExtension', () => {
 
         should.exist(result);
         result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits[0].newText.should.equal('import { MyClass } from \'../../../server/indices/MyClass\';\n');
+        result![0].additionalTextEdits[0].newText.should.equal(
+            'import { MyClass } from \'../../../server/indices/MyClass\';\n',
+        );
     });
 
     it('shoud add a replace text edit if import will be updated with new specifier', async () => {

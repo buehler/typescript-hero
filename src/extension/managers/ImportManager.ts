@@ -30,12 +30,11 @@ import {
     InputBoxOptions,
     Range,
     TextDocument,
-    TextEdit as CodeTextEdit,
+    TextEdit,
     window,
     workspace,
-    WorkspaceEdit
+    WorkspaceEdit,
 } from 'vscode';
-import { TextEdit } from 'vscode-languageserver-types';
 
 /**
  * String-Sort function.
@@ -285,20 +284,44 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public async commit(): Promise<boolean> {
-        const edits: TextEdit[] = [];
-
         await this.resolveImportSpecifiers();
+
+        const edits: TextEdit[] = this.calculateTextEdits();
+        const workspaceEdit = new WorkspaceEdit();
+
+        workspaceEdit.set(this.document.uri, edits);
+
+        const result = await workspace.applyEdit(workspaceEdit);
+
+        if (result) {
+            delete this.organize;
+            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            // TODO cleanup ?
+        }
+
+        return result;
+    }
+
+    /**
+     * TODO
+     * 
+     * @returns {TextEdit[]} 
+     * 
+     * @memberof ImportManager
+     */
+    public calculateTextEdits(): TextEdit[] {
+        const edits: TextEdit[] = [];
 
         if (this.organize) {
             // since the imports should be organized:
             // delete all imports and the following lines (if empty)
             // newly generate all groups.
             for (const imp of this._parsedDocument.imports) {
-                edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
+                edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
                 if (imp.end !== undefined) {
                     const nextLine = this.document.lineAt(this.document.positionAt(imp.end).line + 1);
                     if (nextLine.text === '') {
-                        edits.push(TextEdit.del(nextLine.rangeIncludingLineBreak));
+                        edits.push(TextEdit.delete(nextLine.rangeIncludingLineBreak));
                     }
                 }
             }
@@ -315,7 +338,7 @@ export class ImportManager implements ObjectManager {
             // 2. Update existing / insert new ones
             for (const imp of this._parsedDocument.imports) {
                 if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
-                    edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
+                    edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
                 }
             }
             const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
@@ -363,16 +386,7 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        const workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, <CodeTextEdit[]>edits);
-        const result = await workspace.applyEdit(workspaceEdit);
-        if (result) {
-            delete this.organize;
-            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
-            // TODO cleanup ?
-        }
-
-        return result;
+        return edits;
     }
 
     /**
