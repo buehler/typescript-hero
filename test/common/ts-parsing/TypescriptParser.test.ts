@@ -1,3 +1,7 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import * as vscode from 'vscode';
+
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import {
     ClassDeclaration,
@@ -18,9 +22,6 @@ import {
     StringImport,
 } from '../../../src/common/ts-parsing/imports';
 import { Module, Namespace, Resource } from '../../../src/common/ts-parsing/resources';
-import * as chai from 'chai';
-import { join } from 'path';
-import * as vscode from 'vscode';
 
 const should = chai.should();
 
@@ -35,10 +36,10 @@ describe('common / TypescriptParser', () => {
 
     describe('Import parsing', () => {
 
-        const file = join(vscode.workspace.rootPath, 'common/ts-parsing/importsOnly.ts');
+        const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/importsOnly.ts');
 
         beforeEach(async () => {
-            parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+            parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
         });
 
         it('should parse imports', () => {
@@ -112,10 +113,10 @@ describe('common / TypescriptParser', () => {
 
     describe('Export parsing', () => {
 
-        const file = join(vscode.workspace.rootPath, 'common/ts-parsing/exportsOnly.ts');
+        const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/exportsOnly.ts');
 
         beforeEach(async () => {
-            parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+            parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
         });
 
         it('should parse export all from another file', () => {
@@ -158,10 +159,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Enums', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/enum.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/enum.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -188,10 +189,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Type aliases', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/typeAlias.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/typeAlias.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -214,10 +215,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Functions', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/function.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/function.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -285,10 +286,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Variables', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/variable.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/variable.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -345,10 +346,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Interfaces', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/interface.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/interface.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -414,10 +415,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Classes', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/class.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/class.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -500,10 +501,10 @@ describe('common / TypescriptParser', () => {
 
         describe('Modules', () => {
 
-            const file = join(vscode.workspace.rootPath, 'common/ts-parsing/module.ts');
+            const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/module.ts');
 
             beforeEach(async () => {
-                parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+                parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
             });
 
             it('should parse a file', () => {
@@ -529,10 +530,10 @@ describe('common / TypescriptParser', () => {
 
     describe('Usages', () => {
 
-        const file = join(vscode.workspace.rootPath, 'common/ts-parsing/usagesOnly.ts');
+        const file = join(vscode.workspace.rootPath!, 'common/ts-parsing/usagesOnly.ts');
 
         beforeEach(async () => {
-            parsed = await parser.parseFile(file, vscode.workspace.rootPath);
+            parsed = await parser.parseFile(file, vscode.workspace.rootPath!);
         });
 
         it('should parse decorator usages', () => {

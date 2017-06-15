@@ -1,8 +1,9 @@
+import { injectable } from 'inversify';
+import { workspace } from 'vscode';
+
 import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { GenerationOptions } from '../common/ts-generation';
 import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
-import { injectable } from 'inversify';
-import { workspace } from 'vscode';
 
 const sectionKey = 'typescriptHero';
 
@@ -25,7 +26,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * @memberof VscodeExtensionConfig
      */
     public get verbosity(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('verbosity');
+        return workspace.getConfiguration(sectionKey).get<string>('verbosity') || 'Warning';
     }
 
     /**
@@ -55,7 +56,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces') || true;
     }
 
     /**
@@ -67,7 +68,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons') || true;
     }
 
     /**
@@ -78,7 +79,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get stringQuoteStyle(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle');
+        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle') || `'`;
     }
 
     /**
@@ -90,7 +91,11 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
-        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
+        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns') || [
+            'build',
+            'out',
+            'dist',
+        ];
     }
 
     /**
@@ -101,7 +106,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
-        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
+        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold') || 125;
     }
 
     /**
@@ -118,7 +123,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * } from 'whatever';
      */
     public get multiLineTrailingComma(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma') || true;
     }
 
     /**
@@ -129,7 +134,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting') || false;
     }
 
     /**
@@ -140,7 +145,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get tabSize(): number {
-        return workspace.getConfiguration().get<number>('editor.tabSize');
+        return workspace.getConfiguration().get<number>('editor.tabSize') || 4;
     }
 
     /**
@@ -154,7 +159,11 @@ class VscodeResolverConfig implements ResolverConfig {
         let importGroups: ImportGroup[] = [];
 
         try {
-            importGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
+            if (groups) {
+                importGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
+            } else {
+                importGroups = ImportGroupSettingParser.default;
+            }
         } catch (e) {
             importGroups = ImportGroupSettingParser.default;
         }

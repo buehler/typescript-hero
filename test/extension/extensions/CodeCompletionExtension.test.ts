@@ -19,7 +19,7 @@ describe('CodeCompletionExtension', () => {
 
     before(async () => {
         const file = join(
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
             'extension/extensions/codeCompletionExtension/codeCompletionFile.ts',
         );
         document = await vscode.workspace.openTextDocument(file);
@@ -33,15 +33,15 @@ describe('CodeCompletionExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'extension/extensions/codeCompletionExtension/codeCompletionImports.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'server/indices/MyClass.ts',
                 ),
             ],
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
         );
 
         extension = new CodeCompletionExtension(ctx, logger, parser, index as any);
@@ -76,15 +76,15 @@ describe('CodeCompletionExtension', () => {
 
         should.exist(result);
         result![0].label.should.equal('MyClass');
-        result![0].detail.should.equal('/server/indices/MyClass');
+        result![0].detail!.should.equal('/server/indices/MyClass');
     });
 
     it('shoud add an insert text edit if import would be new', async () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
 
         should.exist(result);
-        result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits[0].newText.should.equal(
+        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
+        result![0].additionalTextEdits![0].newText.should.equal(
             `import { MyClass } from '../../../server/indices/MyClass';\n` +
             `import { AlreadyImported } from './codeCompletionImports';\n`,
         );
@@ -94,8 +94,8 @@ describe('CodeCompletionExtension', () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(9, 10), token);
 
         should.exist(result);
-        result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits[0].newText.should.equal(
+        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
+        result![0].additionalTextEdits![0].newText.should.equal(
             `import { AlreadyImported, ShouldBeImported } from './codeCompletionImports';\n`,
         );
     });

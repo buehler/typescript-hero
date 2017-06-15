@@ -1,3 +1,5 @@
+import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+
 import { ExtensionConfig } from '../../common/config';
 import {
     getAbsolutLibraryName,
@@ -26,15 +28,6 @@ import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import {
-    InputBoxOptions,
-    Range,
-    TextDocument,
-    TextEdit,
-    window,
-    workspace,
-    WorkspaceEdit,
-} from 'vscode';
 
 /**
  * String-Sort function.
@@ -216,8 +209,8 @@ export class ImportManager implements ObjectManager {
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,
-            workspace.rootPath,
             this.imports,
+            workspace.rootPath,
         );
 
         for (const usage of this._parsedDocument.nonLocalUsages) {
@@ -520,11 +513,11 @@ export class ImportManager implements ObjectManager {
      * 
      * @private
      * @param {InputBoxOptions} options
-     * @returns {Promise<string>}
+     * @returns {Promise<string | undefined>}
      * 
      * @memberof ImportManager
      */
-    private async vscodeInputBox(options: InputBoxOptions): Promise<string> {
+    private async vscodeInputBox(options: InputBoxOptions): Promise<string | undefined> {
         return await window.showInputBox(options);
     }
 }

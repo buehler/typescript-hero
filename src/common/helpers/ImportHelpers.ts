@@ -5,10 +5,10 @@ import { Position, TextEditor } from 'vscode';
  * Does respect the "use strict" string as first line of a document.
  * 
  * @export
- * @param {TextEditor} editor
+ * @param {TextEditor | undefined} editor
  * @returns {Position}
  */
-export function getImportInsertPosition(editor: TextEditor): Position {
+export function getImportInsertPosition(editor: TextEditor | undefined): Position {
     if (!editor) {
         return new Position(0, 0);
     }
