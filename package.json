@@ -82,27 +82,27 @@
     "commands": [
       {
         "command": "typescriptHero.resolve.addImport",
-        "title": "Typescript: Add an import to current file"
+        "title": "TS Hero: Add an import to current file"
       },
       {
         "command": "typescriptHero.resolve.addImportUnderCursor",
-        "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
+        "title": "TS Hero: Adds the current symbol under the cursor as an import to current file"
       },
       {
         "command": "typescriptHero.resolve.addMissingImports",
-        "title": "Typescript: Adds all missing imports for the open document"
+        "title": "TS Hero: Adds all missing imports for the open document"
       },
       {
         "command": "typescriptHero.resolve.organizeImports",
-        "title": "Typescript: Organize imports (sort and remove unused)"
+        "title": "TS Hero: Organize imports (sort and remove unused)"
       },
       {
         "command": "typescriptHero.resolve.rebuildCache",
-        "title": "Typescript: Rebuild the resolver cache"
+        "title": "TS Hero: Rebuild the resolver cache"
       },
       {
         "command": "typescriptHero.codeFix.executeCodeAction",
-        "title": "Typescript: Execute a code action"
+        "title": "TS Hero (internal): Execute a code action"
       }
     ],
     "keybindings": [
