@@ -1,3 +1,8 @@
+import { existsSync } from 'fs';
+import { inject, injectable } from 'inversify';
+import { join } from 'path';
+import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+
 import { Notification } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
@@ -11,10 +16,6 @@ import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
-import { existsSync } from 'fs';
-import { inject, injectable } from 'inversify';
-import { join } from 'path';
-import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
@@ -404,8 +405,8 @@ export class ImportResolveExtension extends BaseExtension {
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
-            workspace.rootPath,
             parsedSource.imports,
+            workspace.rootPath,
         ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
@@ -432,8 +433,8 @@ export class ImportResolveExtension extends BaseExtension {
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
-            workspace.rootPath,
             parsedDocument.imports,
+            workspace.rootPath,
         );
 
         for (const usage of parsedDocument.nonLocalUsages) {

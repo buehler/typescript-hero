@@ -1,3 +1,6 @@
+import { injectable } from 'inversify';
+import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
+
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { TypescriptParser } from '../../common/ts-parsing';
 import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
@@ -5,8 +8,6 @@ import { NamedImport } from '../../common/ts-parsing/imports';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
-import { injectable } from 'inversify';
-import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
 /**
  * Action creator that handles missing implementations in a class.

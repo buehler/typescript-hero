@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import { TsSerializer } from 'ts-json-serializer';
-import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-jsonrpc';
+import { GenericNotificationHandler, GenericRequestHandler } from 'vscode-languageclient';
 
 /**
  * List of notifications that are passed between the client and the server.
@@ -27,13 +27,15 @@ export enum Request {
 
 /**
  * Type for the connection endpoint. Is used for the communication between server and client.
+ * 
+ * @interface ConnectionEndpoint
  */
-type ConnectionEndpoint = {
+interface ConnectionEndpoint {
     sendNotification: (method: string, params: any) => void;
     sendRequest: <T>(method: string, params: any) => Thenable<T>;
     onNotification: (method: string, handler: GenericNotificationHandler) => void;
     onRequest: <TResult, TError>(method: string, handler: GenericRequestHandler<TResult, TError>) => void;
-};
+}
 
 /**
  * Base connection class. Does provide the basic functionallity to send and receive notifications.
@@ -130,7 +132,7 @@ export abstract class Connection<T extends ConnectionEndpoint> {
         }
         this.handler[method].push(handler);
     }
-    
+
     /**
      * Registers a notification handler to the connection. It is assumed, that the notification contains
      * serialized arguments. The serializer will attempt to deserialize the arguments and thus may fail.

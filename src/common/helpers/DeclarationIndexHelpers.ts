@@ -1,6 +1,7 @@
+import { join, normalize, parse, relative } from 'path';
+
 import { DeclarationInfo, DefaultDeclaration } from '../ts-parsing/declarations';
 import { DefaultImport, ExternalModuleImport, Import, NamedImport, NamespaceImport } from '../ts-parsing/imports';
-import { join, normalize, parse, relative } from 'path';
 
 /**
  * Calculates a list of declarationInfos filtered by the already imported ones in the given document.
@@ -9,15 +10,15 @@ import { join, normalize, parse, relative } from 'path';
  * @export
  * @param {ResolveIndex} resolveIndex
  * @param {string} documentPath
- * @param {string} rootPath
  * @param {TsImport[]} imports
+ * @param {string} [rootPath]
  * @returns {DeclarationInfo[]}
  */
 export function getDeclarationsFilteredByImports(
     declarationInfos: DeclarationInfo[],
     documentPath: string,
-    rootPath: string,
     imports: Import[],
+    rootPath?: string,
 ): DeclarationInfo[] {
     let declarations = declarationInfos;
 
@@ -47,11 +48,11 @@ export function getDeclarationsFilteredByImports(
  * 
  * @param {string} library Name of the library
  * @param {string} actualFilePath Filepath of the actually open file
- * @param {string} rootPath Root path of the workspace
+ * @param {string} [rootPath] Root path of the workspace
  * @returns {string} Absolut path from the workspace root to the desired library
  */
-export function getAbsolutLibraryName(library: string, actualFilePath: string, rootPath: string): string {
-    if (!library.startsWith('.')) {
+export function getAbsolutLibraryName(library: string, actualFilePath: string, rootPath?: string): string {
+    if (!library.startsWith('.') || !rootPath) {
         return library;
     }
     return '/' + relative(
@@ -68,11 +69,11 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string, r
  * 
  * @param {string} library Name of the library
  * @param {string} actualFilePath Filepath of the actually open file
- * @param {string} rootPath Root path of the workspace
+ * @param {string} [rootPath] Root path of the workspace
  * @returns {string} Relative path from the actual file to the library
  */
-export function getRelativeLibraryName(library: string, actualFilePath: string, rootPath: string): string {
-    if (!library.startsWith('/')) {
+export function getRelativeLibraryName(library: string, actualFilePath: string, rootPath?: string): string {
+    if (!library.startsWith('/') || !rootPath) {
         return library;
     }
 
