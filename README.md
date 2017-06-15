@@ -137,6 +137,23 @@ The default is as follows:
 ]
 ```
 
+For everybody that just wants all imports ordered in asc or desc, just overwrite the default with:
+
+For all imports sorted asc:
+```json
+[]
+```
+
+For all imports sorted desc:
+```json
+[
+    {
+        "identifier": "Remaining",
+        "order": "desc"
+    }
+]
+```
+
 ##### Regex imports
 
 The regex import group contains a regex string. Let's say you want to group all your `@angular` namespaced imports together
