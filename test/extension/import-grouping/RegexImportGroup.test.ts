@@ -1,12 +1,13 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import { workspace } from 'vscode';
+
 import { ExtensionConfig } from '../../../src/common/config';
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { File } from '../../../src/common/ts-parsing/resources';
 import { RegexImportGroup } from '../../../src/extension/import-grouping';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import * as chai from 'chai';
-import { join } from 'path';
-import { workspace } from 'vscode';
 
 chai.should();
 
@@ -21,10 +22,10 @@ describe('RegexImportGroup', () => {
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         file = await parser.parseFile(
             join(
-                workspace.rootPath,
+                workspace.rootPath!,
                 'extension/import-grouping/imports.ts',
             ),
-            workspace.rootPath,
+            workspace.rootPath!,
         );
     });
 

@@ -38,7 +38,7 @@ function restoreInputBox(stub: sinon.SinonStub): void {
 
 describe('ImportManager', () => {
 
-    const file = join(workspace.rootPath, 'extension/managers/ImportManagerFile.ts');
+    const file = join(workspace.rootPath!, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument;
     let documentText: string;
     let index: DeclarationIndex;
@@ -49,7 +49,7 @@ describe('ImportManager', () => {
         files = await findFiles(config);
 
         index = Container.get(DeclarationIndex);
-        await index.buildIndex(files, workspace.rootPath);
+        await index.buildIndex(files, workspace.rootPath!);
 
         document = await workspace.openTextDocument(file);
         await window.showTextDocument(document);
@@ -58,7 +58,7 @@ describe('ImportManager', () => {
     });
 
     afterEach(async () => {
-        await window.activeTextEditor.edit((builder) => {
+        await window.activeTextEditor!.edit((builder) => {
             builder.delete(new Range(
                 new Position(0, 0),
                 document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -89,7 +89,7 @@ describe('ImportManager', () => {
         });
 
         it('should add an import proxy for a default import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     new Range(
                         new Position(0, 0),
@@ -107,7 +107,7 @@ describe('ImportManager', () => {
         });
 
         it('should add multiple import proxies', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(0, 0),
                     `import myDefaultExportedFunction from '../defaultExport/lateDefaultExportedElement';\n`,
@@ -124,7 +124,7 @@ describe('ImportManager', () => {
         });
 
         it('should not add a proxy for a namespace import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     new Range(
                         new Position(0, 0),
@@ -142,7 +142,7 @@ describe('ImportManager', () => {
         });
 
         it('should not add a proxy for an external import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     new Range(
                         new Position(0, 0),
@@ -160,7 +160,7 @@ describe('ImportManager', () => {
         });
 
         it('should not add a proxy for a string import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     new Range(
                         new Position(0, 0),
@@ -282,7 +282,7 @@ describe('ImportManager', () => {
     describe('addMissingImports()', () => {
 
         it('should add a missing imports to the import index', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(new Position(5, 0), `const foobar = new Class2();\n`);
             });
             const ctrl = await ImportManager.create(document);
@@ -294,7 +294,7 @@ describe('ImportManager', () => {
         });
 
         it('should add multiple missing imports for a document', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(5, 0),
                     `const foobar = new Class2();\nconst foobaz = new Class3();` +
@@ -313,7 +313,7 @@ describe('ImportManager', () => {
         });
 
         it('should create a user decision specifier if multiple delcarations are found', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(5, 0),
                     `const foobar = new FancierLibraryClass();\n`,
@@ -370,7 +370,7 @@ describe('ImportManager', () => {
         });
 
         it('should not remove a string import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(0, 0),
                     `import 'my-string-import';\n`,
@@ -386,7 +386,7 @@ describe('ImportManager', () => {
         });
 
         it('should order imports alphabetically', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(1, 0),
                     `import { AddImportSameDirectory } from '../../../server/indices';\n`,
@@ -403,7 +403,7 @@ describe('ImportManager', () => {
         });
 
         it('should order string imports before normal imports', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(new Position(1, 0), `import 'foobar';\n`);
             });
             const ctrl = await ImportManager.create(document);
@@ -416,7 +416,7 @@ describe('ImportManager', () => {
         });
 
         it('should order specifiers alphabetically', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     document.lineAt(0).rangeIncludingLineBreak,
                     `import { Class2, Class1 } from '../resourceIndex';`,
@@ -433,7 +433,7 @@ describe('ImportManager', () => {
         });
 
         it('should remove an unused default import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -453,7 +453,7 @@ describe('ImportManager', () => {
         });
 
         it('should not remove a used default import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -482,7 +482,7 @@ let foobar = DefaultImport();
         it('should not touch anything if nothing changed', async () => {
             const ctrl = await ImportManager.create(document);
 
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(
                     document.lineAt(0).rangeIncludingLineBreak,
                     `import {Class1} from '../resourceIndex';`,
@@ -698,7 +698,7 @@ let foobar = DefaultImport();
         });
 
         it('should render the optimized import', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
             });
 
@@ -726,7 +726,7 @@ let foobar = DefaultImport();
         });
 
         it('should render sorted imports when optimizing', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(0, 0),
                     `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';\n`,
@@ -746,7 +746,7 @@ let foobar = DefaultImport();
         });
 
         it('should render sorted specifiers when optimizing', async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.insert(new Position(0, 9), 'Class2, ');
                 builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
             });

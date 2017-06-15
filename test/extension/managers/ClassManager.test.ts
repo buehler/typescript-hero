@@ -1,36 +1,37 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import sinonChai = require('sinon-chai');
+import { Position, Range, TextDocument, window, workspace } from 'vscode';
+
 import {
     ClassDeclaration,
     DeclarationVisibility,
     MethodDeclaration,
-    ParameterDeclaration
+    ParameterDeclaration,
 } from '../../../src/common/ts-parsing/declarations';
 import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
 import { ClassManager } from '../../../src/extension/managers/ClassManager';
 import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
 import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 import { Container } from '../../../src/server/IoC';
-import * as chai from 'chai';
-import { join } from 'path';
-import sinonChai = require('sinon-chai');
-import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
 const should = chai.should();
 chai.use(sinonChai);
 
 describe('ClassManager', () => {
 
-    const file = join(workspace.rootPath, 'extension/managers/ClassManagerFile.ts');
-    let document: TextDocument,
-        documentText: string,
-        index: DeclarationIndex,
-        files: string[];
+    const file = join(workspace.rootPath!, 'extension/managers/ClassManagerFile.ts');
+    let document: TextDocument;
+    let documentText: string;
+    let index: DeclarationIndex;
+    let files: string[];
 
     before(async () => {
         const config = new VscodeExtensionConfig();
         files = await findFiles(config);
 
         index = Container.get(DeclarationIndex);
-        await index.buildIndex(files, workspace.rootPath);
+        await index.buildIndex(files, workspace.rootPath!);
 
         document = await workspace.openTextDocument(file);
         await window.showTextDocument(document);
@@ -228,7 +229,7 @@ describe('ClassManager', () => {
     describe('commit()', () => {
 
         afterEach(async () => {
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor!.edit(builder => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
@@ -240,7 +241,7 @@ describe('ClassManager', () => {
         it('should not touch anything if there has nothing changed', async () => {
             let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-            await window.activeTextEditor.edit(builder => {
+            await window.activeTextEditor!.edit(builder => {
                 builder.replace(document.lineAt(10).rangeIncludingLineBreak, `public fooobar(): string {   }`);
             });
 
