@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
-## [1.0.0]
+## [1.0.0] :shipit:
 #### Added
 - Import grouping, imports are now grouped and sorted (read the docs in README) ([#102](https://github.com/buehler/typescript-hero/issues/102))
 - Option to add a trailing comma to a multiline import (at the last import) ([#100](https://github.com/buehler/typescript-hero/issues/100))
