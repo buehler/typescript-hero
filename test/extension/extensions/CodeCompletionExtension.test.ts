@@ -1,13 +1,13 @@
-import { ExtensionConfig } from '../../../src/common/config';
+import * as chai from 'chai';
+import { join } from 'path';
+import * as vscode from 'vscode';
+
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import * as chai from 'chai';
-import { join } from 'path';
-import * as vscode from 'vscode';
 
 const should = chai.should();
 
@@ -19,7 +19,7 @@ describe('CodeCompletionExtension', () => {
 
     before(async () => {
         const file = join(
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
             'extension/extensions/codeCompletionExtension/codeCompletionFile.ts',
         );
         document = await vscode.workspace.openTextDocument(file);
@@ -27,25 +27,24 @@ describe('CodeCompletionExtension', () => {
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         const parser = Container.get(TypescriptParser);
         const index = new DeclarationIndex(logger, parser);
 
         await index.buildIndex(
             [
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'extension/extensions/codeCompletionExtension/codeCompletionImports.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'server/indices/MyClass.ts',
                 ),
             ],
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
         );
 
-        extension = new CodeCompletionExtension(ctx, logger, config, parser, index as any);
+        extension = new CodeCompletionExtension(ctx, logger, parser, index as any);
     });
 
     it('shoud resolve to null if typing in a string', async () => {
@@ -77,23 +76,26 @@ describe('CodeCompletionExtension', () => {
 
         should.exist(result);
         result![0].label.should.equal('MyClass');
-        result![0].detail.should.equal('/server/indices/MyClass');
+        result![0].detail!.should.equal('/server/indices/MyClass');
     });
 
     it('shoud add an insert text edit if import would be new', async () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
 
         should.exist(result);
-        result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits[0].newText.should.equal('import { MyClass } from \'../../../server/indices/MyClass\';\n');
+        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
+        result![0].additionalTextEdits![0].newText.should.equal(
+            `import { MyClass } from '../../../server/indices/MyClass';\n` +
+            `import { AlreadyImported } from './codeCompletionImports';\n`,
+        );
     });
 
     it('shoud add a replace text edit if import will be updated with new specifier', async () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(9, 10), token);
 
         should.exist(result);
-        result![0].additionalTextEdits.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits[0].newText.should.equal(
+        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
+        result![0].additionalTextEdits![0].newText.should.equal(
             `import { AlreadyImported, ShouldBeImported } from './codeCompletionImports';\n`,
         );
     });

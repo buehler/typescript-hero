@@ -1,3 +1,8 @@
+import { existsSync } from 'fs';
+import { inject, injectable } from 'inversify';
+import { join } from 'path';
+import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+
 import { Notification } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
@@ -11,10 +16,6 @@ import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
-import { existsSync } from 'fs';
-import { inject, injectable } from 'inversify';
-import { join } from 'path';
-import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
@@ -96,7 +97,7 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     uris = uris.map((o, idx) => idx === 0 ?
         o.filter(
             f => f.fsPath
-                .replace(workspace.rootPath, '')
+                .replace(workspace.rootPath || '', '')
                 .split(/\\|\//)
                 .every(p => excludePatterns.indexOf(p) < 0)) :
         o,
@@ -156,7 +157,6 @@ export class ImportResolveExtension extends BaseExtension {
             Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
         );
 
-        // TODO: readd add Import. 
         this.context.subscriptions.push(
             commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
         );
@@ -255,6 +255,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addImportUnderCursor(): Promise<void> {
+        if (!window.activeTextEditor) {
+            return;
+        }
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
@@ -302,6 +305,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addMissingImports(): Promise<void> {
+        if (!window.activeTextEditor) {
+            return;
+        }
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
@@ -332,6 +338,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async organizeImports(): Promise<boolean> {
+        if (!window.activeTextEditor) {
+            return false;
+        }
         try {
             const ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
@@ -351,6 +360,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
+        if (!window.activeTextEditor) {
+            return false;
+        }
         const ctrl = await ImportManager.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(declaration).commit();
     }
@@ -405,8 +417,8 @@ export class ImportResolveExtension extends BaseExtension {
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
-            workspace.rootPath,
             parsedSource.imports,
+            workspace.rootPath,
         ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
@@ -433,8 +445,8 @@ export class ImportResolveExtension extends BaseExtension {
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
-            workspace.rootPath,
             parsedDocument.imports,
+            workspace.rootPath,
         );
 
         for (const usage of parsedDocument.nonLocalUsages) {

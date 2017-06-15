@@ -1,7 +1,9 @@
-import { ExtensionConfig, ResolverConfig } from '../common/config';
-import { ImportLocation, GenerationOptions } from '../common/ts-generation';
 import { injectable } from 'inversify';
 import { workspace } from 'vscode';
+
+import { ExtensionConfig, ResolverConfig } from '../common/config';
+import { GenerationOptions } from '../common/ts-generation';
+import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 
 const sectionKey = 'typescriptHero';
 
@@ -24,7 +26,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * @memberof VscodeExtensionConfig
      */
     public get verbosity(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('verbosity');
+        return workspace.getConfiguration(sectionKey).get<string>('verbosity') || 'Warning';
     }
 
     /**
@@ -54,7 +56,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces') || true;
     }
 
     /**
@@ -66,7 +68,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons') || true;
     }
 
     /**
@@ -77,7 +79,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get stringQuoteStyle(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle');
+        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle') || `'`;
     }
 
     /**
@@ -89,7 +91,11 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
-        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns');
+        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns') || [
+            'build',
+            'out',
+            'dist',
+        ];
     }
 
     /**
@@ -100,19 +106,24 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
-        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold');
+        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold') || 125;
     }
 
     /**
-     * Where the new imports should be added (e.g. top of the file, current cursor location, etc).
-     * 
+     * If a multiline named import should contain the last trailing comma.
+     *
      * @readonly
-     * @type {ImportLocation}
+     * @type {boolean}
      * @memberof VscodeResolverConfig
+     *
+     * @example
+     * import {
+     *     Foo,
+     *     Bar, <<
+     * } from 'whatever';
      */
-    public get newImportLocation(): ImportLocation {
-        const configString = workspace.getConfiguration(sectionKey).get<string>('resolver.newImportLocation');
-        return ImportLocation[configString];
+    public get multiLineTrailingComma(): boolean {
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma') || true;
     }
 
     /**
@@ -123,7 +134,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
+        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting') || false;
     }
 
     /**
@@ -134,7 +145,33 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get tabSize(): number {
-        return workspace.getConfiguration().get<number>('editor.tabSize');
+        return workspace.getConfiguration().get<number>('editor.tabSize') || 4;
+    }
+
+    /**
+     * Returns the configured import groups. On a parsing error, the default is used.
+     * 
+     * @type {ImportGroup[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get importGroups(): ImportGroup[] {
+        const groups = workspace.getConfiguration(sectionKey).get<ImportGroupSetting[]>('resolver.importGroups');
+        let importGroups: ImportGroup[] = [];
+
+        try {
+            if (groups) {
+                importGroups = groups.map(g => ImportGroupSettingParser.parseSetting(g));
+            } else {
+                importGroups = ImportGroupSettingParser.default;
+            }
+        } catch (e) {
+            importGroups = ImportGroupSettingParser.default;
+        }
+        if (!importGroups.some(i => i instanceof RemainImportGroup)) {
+            importGroups.push(new RemainImportGroup());
+        }
+
+        return importGroups;
     }
 
     /**
@@ -148,6 +185,7 @@ class VscodeResolverConfig implements ResolverConfig {
         return {
             eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,
+            multiLineTrailingComma: this.multiLineTrailingComma,
             spaceBraces: this.insertSpaceBeforeAndAfterImportBraces,
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,

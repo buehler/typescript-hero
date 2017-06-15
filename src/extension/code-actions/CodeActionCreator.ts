@@ -50,9 +50,9 @@ export abstract class CodeActionCreator {
      */
     protected createCommand(title: string, codeAction: CodeAction): Command {
         return {
+            title,
             arguments: [codeAction],
             command: 'typescriptHero.codeFix.executeCodeAction',
-            title,
         };
     }
 }

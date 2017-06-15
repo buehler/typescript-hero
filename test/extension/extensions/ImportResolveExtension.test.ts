@@ -1,13 +1,14 @@
-import { TypescriptParser } from '../../../src/common/ts-parsing';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
+import * as chai from 'chai';
+import { join } from 'path';
+import * as vscode from 'vscode';
+
 import { ExtensionConfig } from '../../../src/common/config';
+import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import * as chai from 'chai';
-import { join } from 'path';
-import * as vscode from 'vscode';
+import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 
 chai.should();
 
@@ -17,7 +18,7 @@ describe('ImportResolveExtension', () => {
 
     before(async () => {
         const file = join(
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
         );
         const document = await vscode.workspace.openTextDocument(file);
@@ -33,23 +34,23 @@ describe('ImportResolveExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'typings/globals/body-parser/index.d.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'server/indices/MyClass.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'extension/extensions/importResolveExtension/sub1/sub2/sub3/subFile.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath,
+                    vscode.workspace.rootPath!,
                     'extension/extensions/importResolveExtension/sameDirectory.ts',
                 ),
             ],
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
         );
 
         extension = new ImportResolveExtension(ctx, logger, config, index as any, parser, <any>null);
@@ -58,7 +59,7 @@ describe('ImportResolveExtension', () => {
     describe('addImportToDocument', () => {
 
         const file = join(
-            vscode.workspace.rootPath,
+            vscode.workspace.rootPath!,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
         );
         let document: vscode.TextDocument;
@@ -69,7 +70,7 @@ describe('ImportResolveExtension', () => {
         });
 
         afterEach(async () => {
-            await vscode.window.activeTextEditor.edit((builder) => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
                 builder.delete(new vscode.Range(
                     new vscode.Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -84,7 +85,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n`);
+            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n\n`);
         });
 
         it('shoud write a named import correctly', async () => {
@@ -94,7 +95,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.equal(`import { Class1 } from '../../../server/indices/MyClass';\n`);
+            document.getText().should.equal(`import { Class1 } from '../../../server/indices/MyClass';\n\n`);
         });
 
         it('shoud update a named import correcty', async () => {
@@ -105,7 +106,7 @@ describe('ImportResolveExtension', () => {
             });
             await extension.addImportToDocument(items[0]);
             await extension.addImportToDocument(items[1]);
-            document.getText().should.equal(`import { Class1, Class2 } from '../../../server/indices/MyClass';\n`);
+            document.getText().should.equal(`import { Class1, Class2 } from '../../../server/indices/MyClass';\n\n`);
         });
 
         it('shoud use the correct relative path', async () => {
@@ -142,7 +143,7 @@ describe('ImportResolveExtension', () => {
 
     describe('organizeImports', () => {
 
-        const file = join(vscode.workspace.rootPath, 'extension/extensions/importResolveExtension/organizeImports.ts');
+        const file = join(vscode.workspace.rootPath!, 'extension/extensions/importResolveExtension/organizeImports.ts');
         let document: vscode.TextDocument;
         let documentText: string;
 
@@ -153,7 +154,7 @@ describe('ImportResolveExtension', () => {
         });
 
         afterEach(async () => {
-            await vscode.window.activeTextEditor.edit((builder) => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
                 builder.delete(new vscode.Range(
                     new vscode.Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -174,13 +175,13 @@ describe('ImportResolveExtension', () => {
 
         it('shoud order libraries by name', async () => {
             await extension.organizeImports();
-            document.lineAt(1).text.should.match(/resourceIndex/);
-            document.lineAt(2).text.should.match(/subfolderstructure/);
+            document.lineAt(2).text.should.match(/resourceIndex/);
+            document.lineAt(3).text.should.match(/subfolderstructure/);
         });
 
         it('shoud order specifiers by name', async () => {
             await extension.organizeImports();
-            document.lineAt(1).text.should.match(/ExportAlias.*FancierLibraryClass/);
+            document.lineAt(2).text.should.match(/ExportAlias.*FancierLibraryClass/);
         });
 
     });

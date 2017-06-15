@@ -10,7 +10,7 @@
   "version": "0.13.2",
   "publisher": "rbbit",
   "engines": {
-    "vscode": "^1.6.0",
+    "vscode": "^1.13.0",
     "node": ">=6.0.0",
     "npm": ">=3.9.5"
   },
@@ -36,31 +36,31 @@
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
     "vscode:prepublish": "npm install && npm run build && npm prune --production",
-    "predevelop": "yarn del ./out",
+    "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "yarn del ./out && tsc -p ./config/tsconfig.test.json && yarn run lint",
+    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && npm run lint",
     "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
-    "build": "yarn del ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "yarn run build && yarn del './*.vsix' && vsce package"
+    "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
+    "package": "npm run build && del-cli './*.vsix' && vsce package"
   },
   "devDependencies": {
     "@types/chai": "^4.0.0",
     "@types/mocha": "^2.2.39",
-    "@types/node": "^7.0.27",
+    "@types/node": "^7.0.31",
     "@types/reflect-metadata": "0.0.5",
     "@types/sinon": "^2.3.0",
-    "@types/sinon-chai": "^2.7.27",
-    "chai": "^4.0.1",
+    "@types/sinon-chai": "^2.7.28",
+    "chai": "^4.0.2",
     "del-cli": "^1.0.0",
     "filewalker": "^0.1.3",
     "mocha-testdata": "^1.2.0",
-    "sinon": "^2.3.2",
-    "sinon-chai": "^2.8.0",
-    "tslint": "^5.4.2",
-    "tslint-config-airbnb": "^5.0.1",
-    "tsutils": "^2.3.0",
+    "sinon": "^2.3.4",
+    "sinon-chai": "^2.11.0",
+    "tslint": "^5.4.3",
+    "tslint-config-airbnb": "^5.1.2",
+    "tsutils": "^2.4.0",
     "vscode": "^1.0.3"
   },
   "dependencies": {
@@ -70,9 +70,9 @@
     "ts-json-serializer": "^1.2.4",
     "tslib": "^1.5.0",
     "typescript": "^2.3.4",
-    "vscode-languageclient": "^3.0.4",
-    "vscode-languageserver": "^3.0.5",
-    "vscode-languageserver-types": "^3.0.3"
+    "vscode-languageclient": "^3.3.0",
+    "vscode-languageserver": "^3.3.0",
+    "vscode-languageserver-types": "^3.3.0"
   },
   "activationEvents": [
     "onLanguage:typescript",
@@ -82,27 +82,27 @@
     "commands": [
       {
         "command": "typescriptHero.resolve.addImport",
-        "title": "Typescript: Add an import to current file"
+        "title": "TS Hero: Add an import to current file"
       },
       {
         "command": "typescriptHero.resolve.addImportUnderCursor",
-        "title": "Typescript: Adds the current symbol under the cursor as an import to current file"
+        "title": "TS Hero: Adds the current symbol under the cursor as an import to current file"
       },
       {
         "command": "typescriptHero.resolve.addMissingImports",
-        "title": "Typescript: Adds all missing imports for the open document"
+        "title": "TS Hero: Adds all missing imports for the open document"
       },
       {
         "command": "typescriptHero.resolve.organizeImports",
-        "title": "Typescript: Organize imports (sort and remove unused)"
+        "title": "TS Hero: Organize imports (sort and remove unused)"
       },
       {
         "command": "typescriptHero.resolve.rebuildCache",
-        "title": "Typescript: Rebuild the resolver cache"
+        "title": "TS Hero: Rebuild the resolver cache"
       },
       {
         "command": "typescriptHero.codeFix.executeCodeAction",
-        "title": "Typescript: Execute a code action"
+        "title": "TS Hero (internal): Execute a code action"
       }
     ],
     "keybindings": [
@@ -175,21 +175,87 @@
           "type": "number",
           "minimum": 1,
           "multipleOf": 1,
-          "default": 120,
+          "default": 125,
           "description": "Defines the threshold when an import should be wrapped into a multiline import."
         },
-        "typescriptHero.resolver.newImportLocation": {
-          "enum": [
-            "TopOfFile",
-            "AtCursorLocation"
-          ],
-          "default": "TopOfFile",
-          "description": "Defines the location of new imports."
+        "typescriptHero.resolver.multiLineTrailingComma": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defined if multi line imports contain the last trailing comma."
         },
         "typescriptHero.resolver.disableImportsSorting": {
           "type": "boolean",
           "default": false,
-          "description": "Defines if sorting is disable during organize imports"
+          "description": "Defines if sorting is disable during organize imports."
+        },
+        "typescriptHero.resolver.importGroups": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Modules",
+                  "Plains",
+                  "Workspace",
+                  "Remaining"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "\\/[A-Za-z-_0-9]+\\/"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "enum": [
+                      "Modules",
+                      "Plains",
+                      "Workspace",
+                      "Remaining"
+                    ]
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "pattern": "\\/[A-Za-z-_0-9]+\\/"
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
+              }
+            ]
+          },
+          "default": [
+            "Plains",
+            "Modules",
+            "Workspace"
+          ],
+          "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
         }
       }
     }

@@ -30,7 +30,7 @@ export class ClientConnection extends Connection<LanguageClient> {
 
         const serverOptions: ServerOptions = {
             run: { module, transport: TransportKind.ipc },
-            debug: { module, transport: TransportKind.ipc, options },
+            debug: { module, options, transport: TransportKind.ipc },
         };
 
         const clientOptions: LanguageClientOptions = {

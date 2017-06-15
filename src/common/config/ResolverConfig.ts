@@ -1,4 +1,5 @@
-import { GenerationOptions, ImportLocation } from '../ts-generation';
+import { ImportGroup } from '../../extension/import-grouping';
+import { GenerationOptions } from '../ts-generation';
 
 /**
  * Configuration interface for the resolver extension.
@@ -55,13 +56,19 @@ export interface ResolverConfig {
     multiLineWrapThreshold: number;
 
     /**
-     * Where the new imports should be added (e.g. top of the file, current cursor location, etc).
-     * 
+     * If a multiline named import should contain the last trailing comma.
+     *
      * @readonly
-     * @type {ImportLocation}
+     * @type {boolean}
      * @memberof ResolverConfig
+     *
+     * @example
+     * import {
+     *     Foo,
+     *     Bar, <<
+     * } from 'whatever';
      */
-    newImportLocation: ImportLocation;
+    multiLineTrailingComma: boolean;
 
     /**
      * Returns the tab size that is configured in vscode.
@@ -79,6 +86,14 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     disableImportSorting: boolean;
+
+    /**
+     * Returns the configured import groups. On a parsing error, a default should be provided.
+     * 
+     * @type {ImportGroup[]}
+     * @memberof ResolverConfig
+     */
+    importGroups: ImportGroup[];
 
     /**
      * All information that are needed to print an import.

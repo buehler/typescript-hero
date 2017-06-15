@@ -1,19 +1,3 @@
-import { ExtensionConfig } from '../../common/config';
-import {
-    getAbsolutLibraryName,
-    getDeclarationsFilteredByImports,
-    getImportInsertPosition,
-    getRelativeLibraryName,
-} from '../../common/helpers';
-import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
-import { DeclarationInfo, DefaultDeclaration, ModuleDeclaration } from '../../common/ts-parsing/declarations';
-import { NamedImport, NamespaceImport } from '../../common/ts-parsing/imports';
-import { File } from '../../common/ts-parsing/resources';
-import { Logger, LoggerFactory } from '../../common/utilities';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
-import { importRange } from '../helpers';
-import { iocSymbols } from '../IoCSymbols';
-import { BaseExtension } from './BaseExtension';
 import { inject, injectable } from 'inversify';
 import {
     CancellationToken,
@@ -23,10 +7,16 @@ import {
     languages,
     Position,
     TextDocument,
-    TextEdit,
-    window,
     workspace,
 } from 'vscode';
+
+import { getDeclarationsFilteredByImports } from '../../common/helpers';
+import { TypescriptParser } from '../../common/ts-parsing';
+import { Logger, LoggerFactory } from '../../common/utilities';
+import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
+import { iocSymbols } from '../IoCSymbols';
+import { ImportManager } from '../managers/ImportManager';
+import { BaseExtension } from './BaseExtension';
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
@@ -43,7 +33,6 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private parser: TypescriptParser,
         private index: CalculatedDeclarationIndex,
     ) {
@@ -114,82 +103,31 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         this.logger.info('Search completion for word.', { searchWord });
 
         const parsed = await this.parser.parseSource(document.getText());
+        const manager = await ImportManager.create(document);
 
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             document.fileName,
-            workspace.rootPath,
             parsed.imports,
+            workspace.rootPath,
         )
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
 
-        return declarations
-            .filter(o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
-            .map((o) => {
-                const item = new CompletionItem(o.declaration.name, o.declaration.itemKind);
-                item.detail = o.from;
-                item.sortText = o.declaration.intellisenseSortKey;
-                item.additionalTextEdits = this.calculateTextEdits(o, document, parsed);
-                return item;
-            });
-    }
+        const items: CompletionItem[] = [];
+        for (const declaration of declarations.filter(
+            o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
+        ) {
+            const item = new CompletionItem(declaration.declaration.name, declaration.declaration.itemKind);
+            
+            manager.addDeclarationImport(declaration);
+            item.detail = declaration.from;
+            item.sortText = declaration.declaration.intellisenseSortKey;
+            item.additionalTextEdits = manager.calculateTextEdits();
+            items.push(item);
 
-    /**
-     * 
-     * 
-     * @private
-     * @param {DeclarationInfo} declaration 
-     * @param {TextDocument} document 
-     * @param {File} parsedSource 
-     * @returns {TextEdit[]} 
-     * 
-     * @memberof CodeCompletionExtension
-     */
-    private calculateTextEdits(declaration: DeclarationInfo, document: TextDocument, parsedSource: File): TextEdit[] {
-        const imp = parsedSource.imports.find((o) => {
-            if (o instanceof NamedImport) {
-                const importedLib = getAbsolutLibraryName(o.libraryName, document.fileName, workspace.rootPath);
-                return importedLib === declaration.from;
-            }
-            return false;
-        });
-
-        if (imp && imp instanceof NamedImport) {
-            const modifiedImp = imp.clone();
-            modifiedImp.specifiers.push(new SymbolSpecifier(declaration.declaration.name));
-
-            return [
-                TextEdit.replace(
-                    importRange(document, imp.start, imp.end),
-                    modifiedImp.generateTypescript(this.config.resolver.generationOptions),
-                ),
-            ];
-        } else if (declaration.declaration instanceof ModuleDeclaration) {
-            const mod = new NamespaceImport(declaration.from, declaration.declaration.name);
-            return [
-                TextEdit.insert(
-                    getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor,
-                    ),
-                    mod.generateTypescript(this.config.resolver.generationOptions),
-                ),
-            ];
-        } else if (declaration.declaration instanceof DefaultDeclaration) {
-            // TODO: when the completion starts, the command should add the text edit.
-        } else {
-            const library = getRelativeLibraryName(declaration.from, document.fileName, workspace.rootPath);
-            const named = new NamedImport(library);
-            named.specifiers.push(new SymbolSpecifier(declaration.declaration.name));
-            return [
-                TextEdit.insert(
-                    getImportInsertPosition(
-                        this.config.resolver.newImportLocation, window.activeTextEditor,
-                    ),
-                    named.generateTypescript(this.config.resolver.generationOptions),
-                ),
-            ];
+            manager.reset();
         }
-        return [];
+        return items;
     }
 }

@@ -1,3 +1,5 @@
+import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+
 import { ExtensionConfig } from '../../common/config';
 import {
     getAbsolutLibraryName,
@@ -21,12 +23,11 @@ import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
 import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
 import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { importRange } from '../helpers';
+import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { ObjectManager } from './ObjectManager';
-import { InputBoxOptions, TextDocument, TextEdit as CodeTextEdit, window, workspace, WorkspaceEdit } from 'vscode';
-import { TextEdit } from 'vscode-languageserver-types';
 
 /**
  * String-Sort function.
@@ -85,6 +86,7 @@ export class ImportManager implements ObjectManager {
         return Container.get<ExtensionConfig>(iocSymbols.configuration);
     }
 
+    private importGroups: ImportGroup[];
     private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
     private organize: boolean;
@@ -104,7 +106,7 @@ export class ImportManager implements ObjectManager {
         public readonly document: TextDocument,
         private _parsedDocument: File,
     ) {
-        this.imports = _parsedDocument.imports.map(o => o.clone<Import>());
+        this.reset();
     }
 
     /**
@@ -124,6 +126,17 @@ export class ImportManager implements ObjectManager {
             o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
         );
         return new ImportManager(document, source);
+    }
+
+    /**
+     * Resets the imports and the import groups back to the initial state of the parsed document.
+     * 
+     * @memberof ImportManager
+     */
+    public reset(): void {
+        this.imports = this._parsedDocument.imports.map(o => o.clone<Import>());
+        this.importGroups = ImportManager.config.resolver.importGroups;
+        this.addImportsToGroups(this.imports);
     }
 
     /**
@@ -155,28 +168,29 @@ export class ImportManager implements ObjectManager {
                 alreadyImported.addSpecifier(declarationInfo.declaration.name);
             }
         } else {
+            let imp: Import;
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
-                this.imports.push(new NamespaceImport(
+                imp = new NamespaceImport(
                     declarationInfo.from,
                     declarationInfo.declaration.name,
-                ));
+                );
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-                const imp = new ImportProxy(getRelativeLibraryName(
+                imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
                     workspace.rootPath,
                 ));
-                imp.defaultPurposal = declarationInfo.declaration.name;
-                this.imports.push(imp);
+                (imp as ImportProxy).defaultPurposal = declarationInfo.declaration.name;
             } else {
-                const imp = new ImportProxy(getRelativeLibraryName(
+                imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
                     workspace.rootPath,
                 ));
-                imp.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
-                this.imports.push(imp);
+                (imp as ImportProxy).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
+            this.imports.push(imp);
+            this.addImportsToGroups([imp]);
         }
 
         return this;
@@ -195,8 +209,8 @@ export class ImportManager implements ObjectManager {
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,
-            workspace.rootPath,
             this.imports,
+            workspace.rootPath,
         );
 
         for (const usage of this._parsedDocument.nonLocalUsages) {
@@ -253,7 +267,11 @@ export class ImportManager implements ObjectManager {
             ];
         }
 
+        for (const group of this.importGroups) {
+            group.reset();
+        }
         this.imports = keep;
+        this.addImportsToGroups(this.imports);
 
         return this;
     }
@@ -268,64 +286,129 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public async commit(): Promise<boolean> {
-        // Commit the documents imports:
-        // 1. Remove imports that are in the document, but not anymore
-        // 2. Update existing / insert new ones
-        const edits: TextEdit[] = [];
-
         await this.resolveImportSpecifiers();
 
-        if (this.organize) {
-            for (const imp of this._parsedDocument.imports) {
-                edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
-            }
-            edits.push(TextEdit.insert(
-                getImportInsertPosition(ImportManager.config.resolver.newImportLocation, window.activeTextEditor),
-                this.imports.reduce(
-                    (all, cur) => all + cur.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    '',
-                ),
-            ));
-        } else {
-            for (const imp of this._parsedDocument.imports) {
-                if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
-                    edits.push(TextEdit.del(importRange(this.document, imp.start, imp.end)));
-                }
-            }
-            const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
-            for (const imp of this.imports) {
-                if (imp instanceof ImportProxy &&
-                    proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
-                    continue;
-                }
-                if (imp.start !== undefined && imp.end !== undefined) {
-                    edits.push(TextEdit.replace(
-                        importRange(this.document, imp.start, imp.end),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    ));
-                } else {
-                    edits.push(TextEdit.insert(
-                        getImportInsertPosition(
-                            ImportManager.config.resolver.newImportLocation,
-                            window.activeTextEditor,
-                        ),
-                        imp.generateTypescript(ImportManager.config.resolver.generationOptions),
-                    ));
-                }
-            }
-        }
-
-        // Later, more edits will come (like add methods to a class or so.) 
-
+        const edits: TextEdit[] = this.calculateTextEdits();
         const workspaceEdit = new WorkspaceEdit();
-        workspaceEdit.set(this.document.uri, <CodeTextEdit[]>edits);
+
+        workspaceEdit.set(this.document.uri, edits);
+
         const result = await workspace.applyEdit(workspaceEdit);
+
         if (result) {
             delete this.organize;
             this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            this._parsedDocument.imports = this._parsedDocument.imports.map(
+                o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
+            );
+            this.imports = this._parsedDocument.imports.map(o => o.clone<Import>());
+            for (const group of this.importGroups) {
+                group.reset();
+            }
+            this.addImportsToGroups(this.imports);
         }
 
         return result;
+    }
+
+    /**
+     * Calculate the needed {@link TextEdit} array for the actual changes in the imports.
+     * 
+     * @returns {TextEdit[]} 
+     * 
+     * @memberof ImportManager
+     */
+    public calculateTextEdits(): TextEdit[] {
+        const edits: TextEdit[] = [];
+
+        if (this.organize) {
+            // since the imports should be organized:
+            // delete all imports and the following lines (if empty)
+            // newly generate all groups.
+            for (const imp of this._parsedDocument.imports) {
+                edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
+                if (imp.end !== undefined) {
+                    const nextLine = this.document.lineAt(this.document.positionAt(imp.end).line + 1);
+                    if (nextLine.text === '') {
+                        edits.push(TextEdit.delete(nextLine.rangeIncludingLineBreak));
+                    }
+                }
+            }
+            edits.push(TextEdit.insert(
+                getImportInsertPosition(window.activeTextEditor),
+                this.importGroups
+                    .map(group => group.generateTypescript(ImportManager.config.resolver.generationOptions))
+                    .filter(Boolean)
+                    .join('\n') + '\n',
+            ));
+        } else {
+            // Commit the documents imports:
+            // 1. Remove imports that are in the document, but not anymore
+            // 2. Update existing / insert new ones
+            for (const imp of this._parsedDocument.imports) {
+                if (!this.imports.some(o => o.libraryName === imp.libraryName)) {
+                    edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
+                }
+            }
+            const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
+            for (const group of this.importGroups) {
+                const grpImports = group.sortedImports;
+                for (const imp of grpImports) {
+                    if (imp instanceof ImportProxy &&
+                        proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
+                        continue;
+                    }
+
+                    const physicalFirstImport = grpImports.find(grpImp => grpImp.start !== undefined);
+                    const physicalLastImport = [...grpImports].reverse().find(grpImp => grpImp.end !== undefined);
+
+                    if (physicalFirstImport && physicalLastImport) {
+                        // If the group has more than 0 imports, delete the whole group (like in organize)
+                        // and regenerate it at the start of it's first import that has a start position
+                        // if there is an import that is there already
+                        edits.push(TextEdit.replace(
+                            new Range(
+                                this.document.positionAt(physicalFirstImport.start!),
+                                this.document.lineAt(
+                                    this.document.positionAt(physicalLastImport.end!).line,
+                                ).rangeIncludingLineBreak.end,
+                            ),
+                            group.generateTypescript(ImportManager.config.resolver.generationOptions),
+                        ));
+                    } else {
+                        // Since the group has no imports, generate it at the top of the file.
+                        edits.push(TextEdit.insert(
+                            getImportInsertPosition(
+                                window.activeTextEditor,
+                            ),
+                            group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
+                        ));
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return edits;
+    }
+
+    /**
+     * Add a list of imports to the groups of the ImportManager.
+     * 
+     * @private
+     * @param {Import[]} imports 
+     * 
+     * @memberof ImportManager
+     */
+    private addImportsToGroups(imports: Import[]): void {
+        for (const tsImport of imports) {
+            for (const group of this.importGroups) {
+                if (group.processImport(tsImport)) {
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -383,7 +466,7 @@ export class ImportManager implements ObjectManager {
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
                 if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
-                    spec.alias = await this.getSpecifierAlias();
+                    spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }
             }
         }
@@ -397,10 +480,10 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberof ImportManager
      */
-    private async getSpecifierAlias(): Promise<string | undefined> {
+    private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
-            placeHolder: 'Alias for specifier',
-            prompt: 'Please enter an alias for the specifier..',
+            placeHolder: `Alias for specifier "${specifierName}"`,
+            prompt: `Please enter an alias for the specifier "${specifierName}"...`,
             validateInput: s => !!s ? '' : 'Please enter a variable name',
         });
         return !!result ? result : undefined;
@@ -418,7 +501,7 @@ export class ImportManager implements ObjectManager {
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
-            prompt: 'Please enter a variable name for the default export..',
+            prompt: 'Please enter a variable name for the default export...',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName,
         });
@@ -430,11 +513,11 @@ export class ImportManager implements ObjectManager {
      * 
      * @private
      * @param {InputBoxOptions} options
-     * @returns {Promise<string>}
+     * @returns {Promise<string | undefined>}
      * 
      * @memberof ImportManager
      */
-    private async vscodeInputBox(options: InputBoxOptions): Promise<string> {
+    private async vscodeInputBox(options: InputBoxOptions): Promise<string | undefined> {
         return await window.showInputBox(options);
     }
 }

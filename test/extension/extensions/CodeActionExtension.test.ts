@@ -1,10 +1,11 @@
+import * as chai from 'chai';
+import { join } from 'path';
+import * as sinon from 'sinon';
+import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
+
 import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
-import {
-    AddImportCodeAction,
-    CodeAction,
-    ImplementPolymorphElements,
-} from '../../../src/extension/code-actions/CodeAction';
+import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../src/extension/code-actions/CodeAction';
 import {
     MissingImplementationInClassCreator,
 } from '../../../src/extension/code-actions/MissingImplementationInClassCreator';
@@ -13,10 +14,6 @@ import { CodeActionExtension } from '../../../src/extension/extensions/CodeActio
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import * as chai from 'chai';
-import { join } from 'path';
-import * as sinon from 'sinon';
-import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
 chai.should();
 
@@ -42,23 +39,23 @@ describe('CodeActionExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    workspace.rootPath,
+                    workspace.rootPath!,
                     'server/indices/MyClass.ts',
                 ),
                 join(
-                    workspace.rootPath,
+                    workspace.rootPath!,
                     'extension/extensions/codeActionExtension/exportedObjects.ts',
                 ),
                 join(
-                    workspace.rootPath,
+                    workspace.rootPath!,
                     'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
                 ),
                 join(
-                    workspace.rootPath,
+                    workspace.rootPath!,
                     'node_modules/fancy-library/FancierLibraryClass.d.ts',
                 ),
             ],
-            workspace.rootPath,
+            workspace.rootPath!,
         );
 
         const creators = [
@@ -72,7 +69,7 @@ describe('CodeActionExtension', () => {
     describe('executeCodeAction', () => {
 
         const file = join(
-            workspace.rootPath,
+            workspace.rootPath!,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
@@ -83,7 +80,7 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -115,7 +112,7 @@ describe('CodeActionExtension', () => {
     describe('missingImport', () => {
 
         const file = join(
-            workspace.rootPath,
+            workspace.rootPath!,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
@@ -126,7 +123,7 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -148,7 +145,7 @@ describe('CodeActionExtension', () => {
     });
 
     describe('missingPolymorphicElements', () => {
-        const file = join(workspace.rootPath, 'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts');
+        const file = join(workspace.rootPath!, 'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts');
         let document: TextDocument;
         let documentText: string;
 
@@ -159,7 +156,7 @@ describe('CodeActionExtension', () => {
         });
 
         afterEach(async () => {
-            await window.activeTextEditor.edit((builder) => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
                     document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
@@ -433,7 +430,7 @@ describe('CodeActionExtension', () => {
     describe('provideCodeActions', () => {
 
         const file = join(
-            workspace.rootPath,
+            workspace.rootPath!,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;

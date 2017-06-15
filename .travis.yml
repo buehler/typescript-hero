@@ -2,7 +2,7 @@ sudo: false
 
 language: node_js
 node_js:
-- '7'
+- '8'
 
 env:
   global:
@@ -10,7 +10,6 @@ env:
     - secure: ZFxa817TgXMaJc/zC0PUHFqPt4aSXJxuMAXpsthyZyCMC0M2HAyZH14fDf8o7LX24q90EO6eAn3/JRhHWyQK9MygM4wW3J5mTc4Hm/2sJpqmDgmwHaoa1jZSxf7bykb1dPvkdgR15U0Xd0vtmMVR0gY7yQ6pcRVUPO6TNceCsu6p1nUfPGBDjLAKAa5wdJhaxOmfKjoIyT36jrJ2U5lCs7YtYuJGSgu4wHBnVsNjZIYyA8cF6FNMYYe/lRTheCz9vE0IYlmXT5aPEQL2kWZRGyWZOzBbtQXI+5XVqlKNbao4l15K62BvKuBu70bOa9Hxz7nR2ycwcfcpdxiJeDbOYwF5zsXVYY633p3SngPrkKBOww6gqbkMDEN6dqkT7clSZzqHnlL/o35b8LKNwdO9pxqU5YFALFHMSms5zJpTo3TAz4wxlb6TZCJlk+9Y4QaE3JqwTRxfk0Xw79w6N6eQXY2qq0zmL4MMyu3Q0KTCRAYX9CoWEbDD4WanWrLyXTkQbkNO7rZ+nSbS7CmEnt4Zs8AlLqdtsdf93cw7LcDotWnLQ+Fj+hUnApivSJkcQCFpqaJqFJcUutkn70ziqPe3b/BZZtHsbc1Dvda2GLl9gR9jFh61wrlk2WM/Q5kr+BVfT5RtKMSXRrEasEjz15tS0EQMP1k7VXjGMV4P1b57i4A=
 
 os:
-#- osx
 - linux
 
 addons:
@@ -35,11 +34,13 @@ before_install:
   fi
 
 install:
- - yarn install
- - yarn run build
+- npm install
+ 
+before_script:
+- npm run build
 
 script:
-- yarn test --silent
+- npm test --silent
 
 deploy:
   provider: script

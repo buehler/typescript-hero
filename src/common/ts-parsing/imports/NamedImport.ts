@@ -1,7 +1,12 @@
 import { GenerationOptions } from '../../ts-generation';
+import { stringTemplate } from '../../utilities/StringTemplate';
 import { SymbolSpecifier } from '../SymbolSpecifier';
 import { Import } from './Import';
 import { Serializable } from 'ts-json-serializer';
+
+const multiLineImport = stringTemplate`import {
+${0}${1}
+} from ${2}`;
 
 /**
  * Basic typescript import (ES6 style). Does contain multiple symbols of a file and converts
@@ -43,7 +48,7 @@ export class NamedImport implements Import {
         const lib = this.libraryName;
 
         const importString =
-            `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}\n`;
+            `import {${space}${specifiers}${space}} from ${stringQuoteStyle}${lib}${stringQuoteStyle}${eol}`;
         if (importString.length > multiLineWrapThreshold) {
             return this.toMultiLineImport(options);
         }
@@ -71,11 +76,16 @@ export class NamedImport implements Import {
      * 
      * @memberof NamedImport
      */
-    public toMultiLineImport({ eol, stringQuoteStyle, tabSize }: GenerationOptions): string {
+    public toMultiLineImport({ eol, stringQuoteStyle, tabSize, multiLineTrailingComma }: GenerationOptions): string {
         const spacings = Array(tabSize + 1).join(' ');
-        return `import {
-${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n')}
-} from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}\n`;
+        return multiLineImport(
+            this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n'),
+            multiLineTrailingComma ? ',' : '',
+            `${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}`,
+        );
+//         return `import {
+// ${this.specifiers.sort(this.specifierSort).map(o => `${spacings}${o.generateTypescript()}`).join(',\n')}
+// } from ${stringQuoteStyle}${this.libraryName}${stringQuoteStyle}${eol}`;
     }
 
     /**

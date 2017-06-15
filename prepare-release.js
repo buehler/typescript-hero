@@ -29,6 +29,7 @@ exec(`git commit -m "Update changelog to v${versionNumber}"`);
 
 console.log('Update package.json version');
 
-exec(`yarn version --new-version ${versionNumber} --no-git-tag-version`);
+exec(`npm --no-git-tag-version version ${versionNumber}`);
 exec('git add package.json');
+exec('git add package-lock.json');
 exec(`git commit -m "Update package.json to v${versionNumber}"`);
