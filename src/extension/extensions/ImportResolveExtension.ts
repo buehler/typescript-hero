@@ -97,7 +97,7 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     uris = uris.map((o, idx) => idx === 0 ?
         o.filter(
             f => f.fsPath
-                .replace(workspace.rootPath, '')
+                .replace(workspace.rootPath || '', '')
                 .split(/\\|\//)
                 .every(p => excludePatterns.indexOf(p) < 0)) :
         o,
@@ -255,6 +255,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addImportUnderCursor(): Promise<void> {
+        if (!window.activeTextEditor) {
+            return;
+        }
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
@@ -302,6 +305,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addMissingImports(): Promise<void> {
+        if (!window.activeTextEditor) {
+            return;
+        }
         if (!this.index.indexReady) {
             this.showCacheWarning();
             return;
@@ -332,6 +338,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async organizeImports(): Promise<boolean> {
+        if (!window.activeTextEditor) {
+            return false;
+        }
         try {
             const ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
@@ -351,6 +360,9 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
+        if (!window.activeTextEditor) {
+            return false;
+        }
         const ctrl = await ImportManager.create(window.activeTextEditor.document);
         return await ctrl.addDeclarationImport(declaration).commit();
     }
