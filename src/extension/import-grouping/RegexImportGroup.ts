@@ -5,7 +5,7 @@ import { ImportGroup } from './ImportGroup';
 import { ImportGroupOrder } from './ImportGroupOrder';
 
 /**
- * TODO
+ * Importgroup that processes all imports that match a certain regex (the lib name).
  * 
  * @export
  * @class RegexImportGroup
@@ -22,6 +22,14 @@ export class RegexImportGroup implements ImportGroup {
         ];
     }
 
+    /**
+     * Creates an instance of RegexImportGroup.
+     *
+     * @param {string} regex The regex that is matched against the imports library name.
+     * @param {ImportGroupOrder} [order='asc'] 
+     * 
+     * @memberof RegexImportGroup
+     */
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
 
     public reset(): void {

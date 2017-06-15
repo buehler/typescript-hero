@@ -7,17 +7,30 @@ import { RegexImportGroup } from './RegexImportGroup';
 import { RemainImportGroup } from './RemainImportGroup';
 
 /**
- * TODO
+ * Inserted setting that is contained in the settings.json of .vscode.
  */
 export type ImportGroupSetting = string | { identifier: string, order: ImportGroupOrder };
 
 /**
- * TODO
+ * Parser that takes the vscode - setting and creates import groups out of it.
+ * Contains a default if the parsing fails.
  * 
  * @export
  * @class ImportGroupSettingParser
  */
 export class ImportGroupSettingParser {
+    /**
+     * Default value for the import groups.
+     * Contains the following:
+     *  - Plain imports
+     *  - Module imports
+     *  - Workspace imports
+     * 
+     * @readonly
+     * @static
+     * @type {ImportGroup[]}
+     * @memberof ImportGroupSettingParser
+     */
     public static get default(): ImportGroup[] {
         return [
             new KeywordImportGroup(ImportGroupKeyword.Plains),
@@ -27,6 +40,16 @@ export class ImportGroupSettingParser {
         ];
     }
 
+    /**
+     * Function that takes a string or object ({@link ImportGroupSetting}) and parses an import group out of it.
+     * 
+     * @static
+     * @param {ImportGroupSetting} setting 
+     * @returns {ImportGroup}
+     * @throws {ImportGroupIdentifierInvalidError} When the identifier is invalid (neither keyword nor valid regex)
+     * 
+     * @memberof ImportGroupSettingParser
+     */
     public static parseSetting(setting: ImportGroupSetting): ImportGroup {
         let identifier: string;
         let order: ImportGroupOrder = 'asc';

@@ -156,7 +156,6 @@ export class ImportResolveExtension extends BaseExtension {
             Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
         );
 
-        // TODO: readd add Import. 
         this.context.subscriptions.push(
             commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
         );

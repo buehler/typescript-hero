@@ -5,7 +5,7 @@ import { ImportGroup } from './ImportGroup';
 import { ImportGroupOrder } from './ImportGroupOrder';
 
 /**
- * TODO
+ * Importgroup that processes all imports. Should be used if other groups don't process the import.
  * 
  * @export
  * @class RemainImportGroup

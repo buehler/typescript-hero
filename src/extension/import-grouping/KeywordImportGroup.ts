@@ -6,7 +6,7 @@ import { ImportGroupKeyword } from './ImportGroupKeyword';
 import { ImportGroupOrder } from './ImportGroupOrder';
 
 /**
- * TODO
+ * Importgroup for keywords. Uses "Modules", "Plains", "Workspace" as a keyword and processes the corresponding imports.
  * 
  * @export
  * @class KeywordImportGroup
@@ -47,6 +47,16 @@ export class KeywordImportGroup implements ImportGroup {
             .join('\n') + '\n';
     }
 
+    /**
+     * Process a library import.
+     * @example import ... from 'vscode';
+     * 
+     * @private
+     * @param {Import} tsImport 
+     * @returns {boolean} 
+     * 
+     * @memberof KeywordImportGroup
+     */
     private processModulesImport(tsImport: Import): boolean {
         if (
             tsImport instanceof StringImport ||
@@ -59,6 +69,16 @@ export class KeywordImportGroup implements ImportGroup {
         return true;
     }
 
+    /**
+     * Process a string only import.
+     * @example import 'reflect-metadata';
+     * 
+     * @private
+     * @param {Import} tsImport 
+     * @returns {boolean} 
+     * 
+     * @memberof KeywordImportGroup
+     */
     private processPlainsImport(tsImport: Import): boolean {
         if (!(tsImport instanceof StringImport)) {
             return false;
@@ -67,6 +87,16 @@ export class KeywordImportGroup implements ImportGroup {
         return true;
     }
 
+    /**
+     * Process a workspace import (not string nor lib import).
+     * @example import ... from './server';
+     * 
+     * @private
+     * @param {Import} tsImport 
+     * @returns {boolean} 
+     * 
+     * @memberof KeywordImportGroup
+     */
     private processWorkspaceImport(tsImport: Import): boolean {
         if (
             tsImport instanceof StringImport ||

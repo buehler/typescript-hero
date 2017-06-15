@@ -136,8 +136,7 @@ export class ImportManager implements ObjectManager {
     }
 
     /**
-     * TODO
-     * 
+     * Resets the imports and the import groups back to the initial state of the parsed document.
      * 
      * @memberof ImportManager
      */
@@ -320,7 +319,7 @@ export class ImportManager implements ObjectManager {
     }
 
     /**
-     * TODO
+     * Calculate the needed {@link TextEdit} array for the actual changes in the imports.
      * 
      * @returns {TextEdit[]} 
      * 
@@ -396,55 +395,13 @@ export class ImportManager implements ObjectManager {
                     break;
                 }
             }
-            // for (const imp of this.imports) {
-            //     if (imp instanceof ImportProxy &&
-            //         proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
-            //         continue;
-            //     }
-            //     if (imp.start !== undefined && imp.end !== undefined) {
-            //         edits.push(TextEdit.replace(
-            //             importRange(this.document, imp.start, imp.end),
-            //             imp.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
-            //         ));
-            //     } else {
-            //         const group = this.importGroups.find(grp => !!grp.imports.find(grpImp => grpImp === imp));
-            //         if (!group) {
-            //             continue;
-            //         }
-            //         const grpImports = group.sortedImports;
-            //         const physicalFirstImport = grpImports.find(grpImp => grpImp.start !== undefined);
-            //         const physicalLastImport = [...grpImports].reverse().find(grpImp => grpImp.end !== undefined);
-            //         if (physicalFirstImport && physicalLastImport) {
-            //             // If the group has more than 0 imports, delete the whole group (like in organize)
-            //             // and regenerate it at the start of it's first import that has a start position
-            //             // if there is an import that is there already
-            //             edits.push(TextEdit.replace(
-            //                 new Range(
-            //                     this.document.positionAt(physicalFirstImport.start!),
-            //                     this.document.lineAt(
-            //                         this.document.positionAt(physicalLastImport.end!).line,
-            //                     ).rangeIncludingLineBreak.end,
-            //                 ),
-            //                 group.generateTypescript(ImportManager.config.resolver.generationOptions),
-            //             ));
-            //         } else {
-            //             // Since the group has no imports, generate it at the top of the file.
-            //             edits.push(TextEdit.insert(
-            //                 getImportInsertPosition(
-            //                     window.activeTextEditor,
-            //                 ),
-            //                 group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
-            //             ));
-            //         }
-            //     }
-            // }
         }
 
         return edits;
     }
 
     /**
-     * TODO
+     * Add a list of imports to the groups of the ImportManager.
      * 
      * @private
      * @param {Import[]} imports 
