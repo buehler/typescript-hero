@@ -58,9 +58,9 @@
     "mocha-testdata": "^1.2.0",
     "sinon": "^2.3.2",
     "sinon-chai": "^2.8.0",
-    "tslint": "^5.4.2",
-    "tslint-config-airbnb": "^5.0.1",
-    "tsutils": "^2.3.0",
+    "tslint": "^5.4.3",
+    "tslint-config-airbnb": "^5.1.2",
+    "tsutils": "^2.4.0",
     "vscode": "^1.0.3"
   },
   "dependencies": {
