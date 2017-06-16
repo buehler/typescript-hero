@@ -1,5 +1,4 @@
 import { inject, injectable } from 'inversify';
-import { resolve } from 'path';
 import {
     Event,
     EventEmitter,
@@ -24,6 +23,9 @@ import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { stringTemplate } from '../../common/utilities/StringTemplate';
 import { iocSymbols } from '../IoCSymbols';
+import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
+import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
+import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
 import { BaseExtension } from './BaseExtension';
 
 const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
@@ -116,7 +118,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
      */
     public initialize(): void {
         this.context.subscriptions.push(
-            window.registerTreeDataProvider<DeclarationTreeItem>('documentStructure', this),
+            window.registerTreeDataProvider<DeclarationTreeItem>('documentCodeOutline', this),
         );
         this.context.subscriptions.push(this._onDidChangeTreeData);
         this.context.subscriptions.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
@@ -134,13 +136,16 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         this.logger.info('Disposed');
     }
 
-    public getTreeItem(element: DeclarationTreeItem): TreeItem {
+    public getTreeItem(element: TreeItem): TreeItem {
         return element;
     }
 
-    public async getChildren(element?: DeclarationTreeItem): Promise<ProviderResult<DeclarationTreeItem[]>> {
-        if (!window.activeTextEditor) {
-            return [];
+    public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<TreeItem[]>> {
+        if (
+            !window.activeTextEditor ||
+            !['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)
+        ) {
+            return [new NotParseableStructureTreeItem()];
         }
 
         if (!this.documentCache) {
@@ -148,7 +153,14 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         }
 
         if (!element) {
-            return this.documentCache.declarations.map(d => new DeclarationTreeItem(d, this.context));
+            const items: TreeItem[] = [];
+            if (this.documentCache.imports && this.documentCache.imports.length) {
+                items.push(new ImportsStructureTreeItem(this.documentCache, this.context));
+            }
+            // return [
+            //     ...this.documentCache.declarations.map(d => new DeclarationTreeItem(d, this.context)),
+            // ];
+            return items;
         }
         return element.getChildren();
     }
