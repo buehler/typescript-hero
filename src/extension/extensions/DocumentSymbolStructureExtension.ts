@@ -1,89 +1,15 @@
 import { inject, injectable } from 'inversify';
-import {
-    Event,
-    EventEmitter,
-    ExtensionContext,
-    ProviderResult,
-    TreeDataProvider,
-    TreeItem,
-    TreeItemCollapsibleState,
-    window,
-    workspace,
-} from 'vscode';
-import { CompletionItemKind } from 'vscode-languageserver-types';
+import { Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, window, workspace } from 'vscode';
 
 import { TypescriptParser } from '../../common/ts-parsing';
-import {
-    ClassDeclaration,
-    Declaration,
-    InterfaceDeclaration,
-    VariableDeclaration,
-} from '../../common/ts-parsing/declarations';
 import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
-import { stringTemplate } from '../../common/utilities/StringTemplate';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
+import { DeclarationStructureTreeItem } from '../provider-items/document-structure/DeclarationStructureTreeItem';
 import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
 import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
 import { BaseExtension } from './BaseExtension';
-
-const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
-
-class DeclarationTreeItem extends TreeItem {
-    public get iconPath(): string | undefined {
-        switch (this.declaration.itemKind) {
-            case CompletionItemKind.Class:
-            case CompletionItemKind.Keyword:
-                return this.context.asAbsolutePath(fileTemplate('class'));
-            case CompletionItemKind.Interface:
-                return this.context.asAbsolutePath(fileTemplate('interface'));
-            case CompletionItemKind.Enum:
-                return this.context.asAbsolutePath(fileTemplate('enum'));
-            case CompletionItemKind.Function:
-            case CompletionItemKind.Method:
-                return this.context.asAbsolutePath(fileTemplate('callable'));
-            case CompletionItemKind.Module:
-                return this.context.asAbsolutePath(fileTemplate('module'));
-            case CompletionItemKind.Property:
-                return this.context.asAbsolutePath(fileTemplate('property'));
-            default:
-                break;
-        }
-
-        if (this.declaration.itemKind === CompletionItemKind.Variable) {
-            return (this.declaration as VariableDeclaration).isConst ?
-                this.context.asAbsolutePath(fileTemplate('const')) :
-                this.context.asAbsolutePath(fileTemplate('variable'));
-        }
-
-        return this.context.asAbsolutePath(fileTemplate('default'));
-    }
-
-    constructor(public declaration: Declaration, private context: ExtensionContext) {
-        super(declaration.name);
-
-        if (
-            declaration instanceof ClassDeclaration ||
-            declaration instanceof InterfaceDeclaration
-        ) {
-            this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-        }
-    }
-
-    public getChildren(): DeclarationTreeItem[] {
-        if (
-            this.declaration instanceof ClassDeclaration ||
-            this.declaration instanceof InterfaceDeclaration
-        ) {
-            return [
-                ...this.declaration.properties.map(p => new DeclarationTreeItem(p, this.context)),
-                ...this.declaration.methods.map(m => new DeclarationTreeItem(m, this.context)),
-            ];
-        }
-        return [];
-    }
-}
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
@@ -94,9 +20,9 @@ class DeclarationTreeItem extends TreeItem {
  * @implements {CompletionItemProvider}
  */
 @injectable()
-export class DocumentSymbolStructureExtension extends BaseExtension implements TreeDataProvider<DeclarationTreeItem> {
-    public readonly onDidChangeTreeData: Event<DeclarationTreeItem | undefined>;
-    private _onDidChangeTreeData: EventEmitter<DeclarationTreeItem | undefined>;
+export class DocumentSymbolStructureExtension extends BaseExtension implements TreeDataProvider<BaseStructureTreeItem> {
+    public readonly onDidChangeTreeData: Event<BaseStructureTreeItem | undefined>;
+    private _onDidChangeTreeData: EventEmitter<BaseStructureTreeItem | undefined>;
     private logger: Logger;
     private documentCache: File | undefined;
 
@@ -107,7 +33,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     ) {
         super(context);
         this.logger = loggerFactory('DocumentSymbolStructureExtension');
-        this._onDidChangeTreeData = new EventEmitter<DeclarationTreeItem | undefined>();
+        this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
 
@@ -118,7 +44,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
      */
     public initialize(): void {
         this.context.subscriptions.push(
-            window.registerTreeDataProvider<DeclarationTreeItem>('documentCodeOutline', this),
+            window.registerTreeDataProvider<BaseStructureTreeItem>('documentCodeOutline', this),
         );
         this.context.subscriptions.push(this._onDidChangeTreeData);
         this.context.subscriptions.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
@@ -136,11 +62,11 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         this.logger.info('Disposed');
     }
 
-    public getTreeItem(element: TreeItem): TreeItem {
+    public getTreeItem(element: BaseStructureTreeItem): BaseStructureTreeItem {
         return element;
     }
 
-    public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<TreeItem[]>> {
+    public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<BaseStructureTreeItem[]>> {
         if (
             !window.activeTextEditor ||
             !['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)
@@ -153,14 +79,13 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         }
 
         if (!element) {
-            const items: TreeItem[] = [];
+            const items: BaseStructureTreeItem[] = [];
             if (this.documentCache.imports && this.documentCache.imports.length) {
                 items.push(new ImportsStructureTreeItem(this.documentCache, this.context));
             }
-            // return [
-            //     ...this.documentCache.declarations.map(d => new DeclarationTreeItem(d, this.context)),
-            // ];
-            return items;
+            return items.concat(
+                this.documentCache.declarations.map(d => new DeclarationStructureTreeItem(d, this.context)),
+            );
         }
         return element.getChildren();
     }
