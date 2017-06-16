@@ -15,6 +15,12 @@ import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 
 const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
 
+/**
+ * Function to calculate the displayed name of the declaration structure item.
+ * 
+ * @param {Declaration} declaration 
+ * @returns {string} 
+ */
 function getDeclarationLabel(declaration: Declaration): string {
     if (
         declaration instanceof FunctionDeclaration ||
@@ -38,6 +44,13 @@ function getDeclarationLabel(declaration: Declaration): string {
     return declaration.name;
 }
 
+/**
+ * Structure item that represents a typescript declaration of any way.
+ * 
+ * @export
+ * @class DeclarationStructureTreeItem
+ * @extends {BaseStructureTreeItem}
+ */
 export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
     public get iconPath(): string | undefined {
         switch (this.declaration.itemKind) {
