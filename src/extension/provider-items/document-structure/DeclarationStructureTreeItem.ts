@@ -90,6 +90,8 @@ export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
         ) {
             this.collapsibleState = TreeItemCollapsibleState.Expanded;
         }
+
+        this.command = this.command = this.createJumpToCommand([declaration]);
     }
 
     public getChildren(): BaseStructureTreeItem[] {

@@ -15,6 +15,7 @@ export class ImportStructureTreeItem extends BaseStructureTreeItem {
     constructor(tsImport: Import, context: ExtensionContext) {
         super(tsImport.libraryName);
         this.iconPath = context.asAbsolutePath('./src/extension/assets/icons/declarations/import.svg');
+        this.command = this.createJumpToCommand([tsImport]);
     }
 }
 

@@ -1,7 +1,17 @@
 import { inject, injectable } from 'inversify';
-import { Event, EventEmitter, ExtensionContext, ProviderResult, TreeDataProvider, window, workspace } from 'vscode';
+import {
+    commands,
+    Event,
+    EventEmitter,
+    ExtensionContext,
+    ProviderResult,
+    Selection,
+    TreeDataProvider,
+    window,
+    workspace,
+} from 'vscode';
 
-import { TypescriptParser } from '../../common/ts-parsing';
+import { Node, TypescriptParser } from '../../common/ts-parsing';
 import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -46,6 +56,10 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         this.context.subscriptions.push(
             window.registerTreeDataProvider<BaseStructureTreeItem>('documentCodeOutline', this),
         );
+        this.context.subscriptions.push(commands.registerCommand(
+            'typescriptHero.documentCodeOutline.gotoNode',
+            (node: Node | undefined) => this.jumpToNode(node),
+        ));
         this.context.subscriptions.push(this._onDidChangeTreeData);
         this.context.subscriptions.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
         this.context.subscriptions.push(workspace.onDidSaveTextDocument(() => this.activeWindowChanged()));
@@ -90,6 +104,28 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         return element.getChildren();
     }
 
+    private async jumpToNode(node: Node | undefined): Promise<void> {
+        if (!node) {
+            window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
+            return;
+        }
+
+        if (!window.activeTextEditor || node.start === undefined) {
+            return;
+        }
+
+        const newPosition = window.activeTextEditor.document.positionAt(node.start);
+        window.activeTextEditor.selection = new Selection(newPosition, newPosition);
+        window.showTextDocument(window.activeTextEditor.document);
+    }
+
+    /**
+     * TODO
+     * 
+     * @private
+     * 
+     * @memberof DocumentSymbolStructureExtension
+     */
     private activeWindowChanged(): void {
         this.logger.info('Active window changed or document was saved. Reparse file.');
         this.documentCache = undefined;

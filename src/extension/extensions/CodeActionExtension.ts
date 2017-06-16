@@ -49,7 +49,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
     public initialize(): void {
         this.context.subscriptions.push(commands.registerCommand(
             'typescriptHero.codeFix.executeCodeAction',
-            (codeAction: CodeAction) => this.executeCodeAction(codeAction),
+            (codeAction: CodeAction | undefined) => this.executeCodeAction(codeAction),
         ));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescriptreact', this));
@@ -108,7 +108,11 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      * 
      * @memberof CodeFixExtension
      */
-    private async executeCodeAction(codeAction: CodeAction): Promise<void> {
+    private async executeCodeAction(codeAction: CodeAction | undefined): Promise<void> {
+        if (!codeAction) {
+            window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
+            return;
+        }
         if (!await codeAction.execute()) {
             window.showWarningMessage('The provided code action could not complete. Please see the logs.');
         }
