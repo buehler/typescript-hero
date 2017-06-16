@@ -28,37 +28,37 @@ import { BaseExtension } from './BaseExtension';
 
 const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
 
-function filePath(name: string): string {
-    return resolve(fileTemplate(name));
-}
-
 class DeclarationTreeItem extends TreeItem {
     public get iconPath(): string | undefined {
         switch (this.declaration.itemKind) {
             case CompletionItemKind.Class:
             case CompletionItemKind.Keyword:
-                return filePath('class');
+                return this.context.asAbsolutePath(fileTemplate('class'));
             case CompletionItemKind.Interface:
-                return filePath('interface');
+                return this.context.asAbsolutePath(fileTemplate('interface'));
             case CompletionItemKind.Enum:
-                return filePath('enum');
+                return this.context.asAbsolutePath(fileTemplate('enum'));
             case CompletionItemKind.Function:
             case CompletionItemKind.Method:
-                return filePath('callable');
+                return this.context.asAbsolutePath(fileTemplate('callable'));
             case CompletionItemKind.Module:
-                return filePath('module');
+                return this.context.asAbsolutePath(fileTemplate('module'));
+            case CompletionItemKind.Property:
+                return this.context.asAbsolutePath(fileTemplate('property'));
             default:
                 break;
         }
 
         if (this.declaration.itemKind === CompletionItemKind.Variable) {
-            return (this.declaration as VariableDeclaration).isConst ? filePath('const') : filePath('variable');
+            return (this.declaration as VariableDeclaration).isConst ?
+                this.context.asAbsolutePath(fileTemplate('const')) :
+                this.context.asAbsolutePath(fileTemplate('variable'));
         }
 
-        return filePath('default');
+        return this.context.asAbsolutePath(fileTemplate('default'));
     }
 
-    constructor(public declaration: Declaration) {
+    constructor(public declaration: Declaration, private context: ExtensionContext) {
         super(declaration.name);
 
         if (
@@ -75,8 +75,8 @@ class DeclarationTreeItem extends TreeItem {
             this.declaration instanceof InterfaceDeclaration
         ) {
             return [
-                ...this.declaration.properties.map(p => new DeclarationTreeItem(p)),
-                ...this.declaration.methods.map(m => new DeclarationTreeItem(m)),
+                ...this.declaration.properties.map(p => new DeclarationTreeItem(p, this.context)),
+                ...this.declaration.methods.map(m => new DeclarationTreeItem(m, this.context)),
             ];
         }
         return [];
@@ -148,7 +148,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         }
 
         if (!element) {
-            return this.documentCache.declarations.map(d => new DeclarationTreeItem(d));
+            return this.documentCache.declarations.map(d => new DeclarationTreeItem(d, this.context));
         }
         return element.getChildren();
     }
