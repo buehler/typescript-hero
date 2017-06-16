@@ -127,6 +127,14 @@
         "when": "editorTextFocus"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "documentStructure",
+          "name": "Document symbol structure"
+        }
+      ]
+    },
     "configuration": {
       "title": "TypeScript Hero",
       "properties": {
