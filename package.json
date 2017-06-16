@@ -130,8 +130,8 @@
     "views": {
       "explorer": [
         {
-          "id": "documentStructure",
-          "name": "Document symbol structure"
+          "id": "documentCodeOutline",
+          "name": "Code outline"
         }
       ]
     },
