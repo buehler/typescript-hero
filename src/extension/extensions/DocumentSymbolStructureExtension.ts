@@ -21,6 +21,7 @@ import { DeclarationStructureTreeItem } from '../provider-items/document-structu
 import { DisabledStructureTreeItem } from '../provider-items/document-structure/DisabledStructureTreeItem';
 import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
 import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
+import { ResourceStructureTreeItem } from '../provider-items/document-structure/ResourceStructureTreeItem';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -105,9 +106,9 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
             if (this.documentCache.imports && this.documentCache.imports.length) {
                 items.push(new ImportsStructureTreeItem(this.documentCache, this.context));
             }
-            return items.concat(
-                this.documentCache.declarations.map(d => new DeclarationStructureTreeItem(d, this.context)),
-            );
+            items.push(...this.documentCache.resources.map(r => new ResourceStructureTreeItem(r, this.context)));
+            items.push(...this.documentCache.declarations.map(d => new DeclarationStructureTreeItem(d, this.context)));
+            return items;
         }
         return element.getChildren();
     }

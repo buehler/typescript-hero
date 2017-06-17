@@ -8,7 +8,7 @@ import {
     NamespaceImport,
     StringImport,
 } from '../../../common/ts-parsing/imports';
-import { File } from '../../../common/ts-parsing/resources';
+import { Resource } from '../../../common/ts-parsing/resources';
 import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 
 /**
@@ -74,13 +74,13 @@ export class ImportStructureTreeItem extends BaseStructureTreeItem {
  * @extends {BaseStructureTreeItem}
  */
 export class ImportsStructureTreeItem extends BaseStructureTreeItem {
-    constructor(private file: File, private context: ExtensionContext) {
+    constructor(private resource: Resource, private context: ExtensionContext) {
         super('Imports');
         this.collapsibleState = TreeItemCollapsibleState.Collapsed;
         this.iconPath = context.asAbsolutePath('./src/extension/assets/icons/declarations/module.svg');
     }
 
     public getChildren(): BaseStructureTreeItem[] {
-        return this.file.imports.map(i => new ImportStructureTreeItem(i, this.context));
+        return this.resource.imports.map(i => new ImportStructureTreeItem(i, this.context));
     }
 }
