@@ -81,11 +81,12 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<BaseStructureTreeItem[]>> {
-        if (
-            !window.activeTextEditor ||
-            !['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)
-        ) {
+        if (!['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)) {
             return [new NotParseableStructureTreeItem()];
+        }
+
+        if (!window.activeTextEditor) {
+            return [];
         }
 
         if (!this.documentCache) {
