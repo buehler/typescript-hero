@@ -11,12 +11,14 @@ import {
     workspace,
 } from 'vscode';
 
+import { ExtensionConfig } from '../../common/config';
 import { Node, TypescriptParser } from '../../common/ts-parsing';
 import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
 import { DeclarationStructureTreeItem } from '../provider-items/document-structure/DeclarationStructureTreeItem';
+import { DisabledStructureTreeItem } from '../provider-items/document-structure/DisabledStructureTreeItem';
 import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
 import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
 import { BaseExtension } from './BaseExtension';
@@ -39,6 +41,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private parser: TypescriptParser,
     ) {
         super(context);
@@ -81,12 +84,16 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<BaseStructureTreeItem[]>> {
-        if (!['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)) {
-            return [new NotParseableStructureTreeItem()];
+        if (!this.config.codeOutline.outlineEnabled) {
+            return [new DisabledStructureTreeItem()];
         }
 
         if (!window.activeTextEditor) {
             return [];
+        }
+
+        if (!['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)) {
+            return [new NotParseableStructureTreeItem()];
         }
 
         if (!this.documentCache) {
