@@ -69,7 +69,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces') || true;
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
+        return value !== undefined ? value : true;
     }
 
     /**
@@ -81,7 +82,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons') || true;
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
+        return value !== undefined ? value : true;
     }
 
     /**
@@ -136,7 +138,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * } from 'whatever';
      */
     public get multiLineTrailingComma(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma') || true;
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma');
+        return value !== undefined ? value : true;
     }
 
     /**
@@ -147,7 +150,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting') || false;
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
+        return value !== undefined ? value : false;
     }
 
     /**
@@ -222,6 +226,7 @@ class VscodeCodeOutlineConfig implements CodeOutlineConfig {
      * @memberof VscodeCodeOutlineConfig
      */
     public get outlineEnabled(): boolean {
-        return workspace.getConfiguration(sectionKey).get<boolean>('codeOutline.enabled') || true;
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('codeOutline.enabled');
+        return value !== undefined ? value : true;
     }
 }
