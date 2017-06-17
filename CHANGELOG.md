@@ -6,6 +6,9 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Added
 - View (in the explorer) with the code outline (code structure) of the actual file. Jumps to code on click.
 
+#### Fixed
+- Boolean settings are returned correctly now
+
 ## [1.0.0] :shipit:
 #### Added
 - Import grouping, imports are now grouped and sorted (read the docs in README) ([#102](https://github.com/buehler/typescript-hero/issues/102))
