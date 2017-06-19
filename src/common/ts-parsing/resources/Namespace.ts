@@ -43,9 +43,12 @@ export class Namespace implements Resource, Node {
     }
 
     public get nonLocalUsages(): string[] {
-        return this.usages.filter(
-            usage => !this.declarations.some(o => o.name === usage) &&
-                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage),
+        return this.usages
+            .filter(usage =>
+                !this.declarations.some(o => o.name === usage) &&
+                !this.resources.some(o => (o instanceof Module || o instanceof Namespace) && o.name === usage))
+            .concat(
+            this.resources.reduce((all, cur) => all.concat(cur.nonLocalUsages), [] as string[]),
         );
     }
 
@@ -60,12 +63,15 @@ export class Namespace implements Resource, Node {
      * @memberof Namespace
      */
     public getNamespaceAlias(): string {
-        return this.name.split(/[-_]/).reduce((all, cur, idx) => {
-            if (idx === 0) {
-                return all + cur.toLowerCase();
-            } else {
-                return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
-            }
-        },                                    '');
+        return this.name.split(/[-_]/).reduce(
+            (all, cur, idx) => {
+                if (idx === 0) {
+                    return all + cur.toLowerCase();
+                } else {
+                    return all + cur.charAt(0).toUpperCase() + cur.substring(1).toLowerCase();
+                }
+            },
+            '',
+        );
     }
 }
