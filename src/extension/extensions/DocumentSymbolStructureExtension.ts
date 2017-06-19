@@ -6,6 +6,7 @@ import {
     ExtensionContext,
     ProviderResult,
     Selection,
+    TextEditorRevealType,
     TreeDataProvider,
     window,
     workspace,
@@ -113,6 +114,15 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         return element.getChildren();
     }
 
+    /**
+     * Takes a node (or undefined) and jumps to the nodes location. If undefined is passed, a warning message is displayed.
+     * 
+     * @private
+     * @param {(Node | undefined)} node 
+     * @returns {Promise<void>} 
+     * 
+     * @memberof DocumentSymbolStructureExtension
+     */
     private async jumpToNode(node: Node | undefined): Promise<void> {
         if (!node) {
             window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
@@ -125,7 +135,8 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
         const newPosition = window.activeTextEditor.document.positionAt(node.start);
         window.activeTextEditor.selection = new Selection(newPosition, newPosition);
-        window.showTextDocument(window.activeTextEditor.document);
+        window.activeTextEditor.revealRange(window.activeTextEditor.selection, TextEditorRevealType.InCenter);
+        await window.showTextDocument(window.activeTextEditor.document);
     }
 
     /**

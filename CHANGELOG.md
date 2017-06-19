@@ -4,10 +4,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 #### Added
-- View (in the explorer) with the code outline (code structure) of the actual file. Jumps to code on click.
+- View (in the explorer) with the code outline (code structure) of the actual file - Jumps to code on click
 
 #### Fixed
 - Boolean settings are returned correctly now
+- Code outline does correctly jump to the selected element ([#219](https://github.com/buehler/typescript-hero/issues/219))
 
 ## [1.0.0] :shipit:
 #### Added
