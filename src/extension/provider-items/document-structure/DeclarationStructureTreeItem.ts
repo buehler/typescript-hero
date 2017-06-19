@@ -89,9 +89,9 @@ export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
             declaration instanceof InterfaceDeclaration
         ) {
             this.collapsibleState = TreeItemCollapsibleState.Collapsed;
+        } else {
+            this.command = this.command = this.createJumpToCommand([declaration]);
         }
-
-        this.command = this.command = this.createJumpToCommand([declaration]);
     }
 
     public getChildren(): BaseStructureTreeItem[] {
