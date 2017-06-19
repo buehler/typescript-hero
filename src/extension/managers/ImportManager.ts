@@ -27,48 +27,8 @@ import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportProxy } from '../proxy-objects/ImportProxy';
+import { importSort, specifierSort } from '../utilities/utilityFunctions';
 import { ObjectManager } from './ObjectManager';
-
-/**
- * String-Sort function.
- * 
- * @param {string} strA
- * @param {string} strB
- * @returns {number}
- */
-function stringSort(strA: string, strB: string): number {
-    if (strA < strB) {
-        return -1;
-    } else if (strA > strB) {
-        return 1;
-    }
-    return 0;
-}
-
-/**
- * Order imports by library name.
- * 
- * @param {Import} i1
- * @param {TsImport} i2
- * @returns {number}
- */
-function importSort(i1: Import, i2: Import): number {
-    const strA = i1.libraryName.toLowerCase();
-    const strB = i2.libraryName.toLowerCase();
-
-    return stringSort(strA, strB);
-}
-
-/**
- * Order specifiers by name.
- * 
- * @param {SymbolSpecifier} i1
- * @param {SymbolSpecifier} i2
- * @returns {number}
- */
-function specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
-    return stringSort(i1.specifier, i2.specifier);
-}
 
 /**
  * Management class for the imports of a document. Can add and remove imports to the document
