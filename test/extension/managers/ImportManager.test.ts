@@ -460,10 +460,7 @@ describe('ImportManager', () => {
                 ));
                 builder.insert(
                     new Position(0, 0),
-                    `import DefaultImport from '../foobar';
-
-let foobar = DefaultImport();
-`,
+                    `import DefaultImport from '../foobar';\n\nlet foobar = DefaultImport();\n`,
                 );
             });
             const ctrl = await ImportManager.create(document);
@@ -473,6 +470,78 @@ let foobar = DefaultImport();
             ctrl.organizeImports();
 
             (ctrl as any).imports[0].defaultAlias.should.equal('DefaultImport');
+        });
+
+        it('should remove a nonused import in a namespace', async () => {
+            await window.activeTextEditor!.edit((builder) => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import { Class1 } from '../foobar';\n\nnamespace WellHello {\n\n}\n`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports.should.have.lengthOf(1);
+            ctrl.organizeImports();
+            (ctrl as any).imports.should.have.lengthOf(0);
+        });
+
+        it('should remove a nonused import in a module', async () => {
+            await window.activeTextEditor!.edit((builder) => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import { Class1 } from '../foobar';\n\module WellHello {\n\n}\n`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports.should.have.lengthOf(1);
+            ctrl.organizeImports();
+            (ctrl as any).imports.should.have.lengthOf(0);
+        });
+
+        it('should not remove a reference that is encapsuled in a namespace', async () => {
+            await window.activeTextEditor!.edit((builder) => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import { Class1 } from '../foobar';\n\nnamespace WellHello {\n    let a: Class1;\n}\n`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports.should.have.lengthOf(1);
+            ctrl.organizeImports();
+            (ctrl as any).imports.should.have.lengthOf(1);
+        });
+
+        it('should not remove a reference that is encapsuled in a module', async () => {
+            await window.activeTextEditor!.edit((builder) => {
+                builder.delete(new Range(
+                    new Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+                builder.insert(
+                    new Position(0, 0),
+                    `import { Class1 } from '../foobar';\n\nmodule WellHello {\n    let a: Class1;\n}\n`,
+                );
+            });
+            const ctrl = await ImportManager.create(document);
+
+            (ctrl as any).imports.should.have.lengthOf(1);
+            ctrl.organizeImports();
+            (ctrl as any).imports.should.have.lengthOf(1);
         });
 
     });
