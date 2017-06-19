@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Added
+- View (in the explorer) with the code outline (code structure) of the actual file. Jumps to code on click.
+
+#### Fixed
+- Boolean settings are returned correctly now
 
 ## [1.0.0] :shipit:
 #### Added

@@ -1,3 +1,7 @@
+import { Container as IoCContainer, interfaces } from 'inversify';
+import inversifyInjectDecorators from 'inversify-inject-decorators';
+import { ExtensionContext } from 'vscode';
+
 import { ExtensionConfig } from '../common/config';
 import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
@@ -6,14 +10,12 @@ import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclaration
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
+import { DocumentSymbolStructureExtension } from './extensions/DocumentSymbolStructureExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
-import { Container as IoCContainer, interfaces } from 'inversify';
-import { ExtensionContext } from 'vscode';
-import inversifyInjectDecorators from 'inversify-inject-decorators';
 
 const container = new IoCContainer();
 
@@ -26,6 +28,7 @@ container.bind(TypescriptParser).to(TypescriptParser);
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
 
 // Logging
 container

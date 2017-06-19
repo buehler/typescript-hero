@@ -103,6 +103,10 @@
       {
         "command": "typescriptHero.codeFix.executeCodeAction",
         "title": "TS Hero (internal): Execute a code action"
+      },
+      {
+        "command": "typescriptHero.documentCodeOutline.gotoNode",
+        "title": "TS Hero (internal): Jump to the given nodes location"
       }
     ],
     "keybindings": [
@@ -127,6 +131,14 @@
         "when": "editorTextFocus"
       }
     ],
+    "views": {
+      "explorer": [
+        {
+          "id": "documentCodeOutline",
+          "name": "Code outline"
+        }
+      ]
+    },
     "configuration": {
       "title": "TypeScript Hero",
       "properties": {
@@ -256,6 +268,11 @@
             "Workspace"
           ],
           "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
+        },
+        "typescriptHero.codeOutline.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if the code outline feature (and window) are enabled or not."
         }
       }
     }
