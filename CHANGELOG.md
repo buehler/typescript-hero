@@ -9,6 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 #### Fixed
 - Boolean settings are returned correctly now
 - Code outline does correctly jump to the selected element ([#219](https://github.com/buehler/typescript-hero/issues/219))
+- References (and therefore imports) in namespaces and modules are recognized and not longer removed ([#214](https://github.com/buehler/typescript-hero/issues/214))
 
 ## [1.0.0] :shipit:
 #### Added
