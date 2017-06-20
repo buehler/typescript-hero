@@ -7,9 +7,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - View (in the explorer) with the code outline (code structure) of the actual file - Jumps to code on click
 
 #### Fixed
-- Boolean settings are returned correctly now
+- Boolean settings are returned correctly now ([#222](https://github.com/buehler/typescript-hero/issues/222))
 - Code outline does correctly jump to the selected element ([#219](https://github.com/buehler/typescript-hero/issues/219))
 - References (and therefore imports) in namespaces and modules are recognized and not longer removed ([#214](https://github.com/buehler/typescript-hero/issues/214))
+- Complex regex are now possible in import groups (e.g. `/@angular|regex/core/?.*/`) ([#218](https://github.com/buehler/typescript-hero/issues/218))
 
 ## [1.0.0] :shipit:
 #### Added

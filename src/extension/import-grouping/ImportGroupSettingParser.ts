@@ -61,7 +61,7 @@ export class ImportGroupSettingParser {
             order = setting.order;
         }
 
-        if (/\/[A-Za-z-_0-9]+\//g.test(identifier)) {
+        if (/^\/.+.*\/$/g.test(identifier)) {
             return new RegexImportGroup(identifier, order);
         }
 

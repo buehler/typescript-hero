@@ -51,4 +51,25 @@ describe('ImportGroupSettingParser', () => {
         fn.should.throw(ImportGroupIdentifierInvalidError);
     });
 
+    it('should parse a regex with "or"', () => {
+        const result = ImportGroupSettingParser.parseSetting('/angular|react/');
+
+        result.should.be.an.instanceof(RegexImportGroup);
+        (result as RegexImportGroup).regex.should.equal('/angular|react/');
+    });
+
+    it('should parse a regex with "@"', () => {
+        const result = ImportGroupSettingParser.parseSetting('/@angular/');
+
+        result.should.be.an.instanceof(RegexImportGroup);
+        (result as RegexImportGroup).regex.should.equal('/@angular/');
+    });
+
+    it('should parse a complex regex', () => {
+        const result = ImportGroupSettingParser.parseSetting('/(@angular|react)/core/(.*)/');
+
+        result.should.be.an.instanceof(RegexImportGroup);
+        (result as RegexImportGroup).regex.should.equal('/(@angular|react)/core/(.*)/');
+    });
+
 });
