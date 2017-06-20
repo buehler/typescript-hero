@@ -4,6 +4,7 @@ import { workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
 import { TypescriptParser } from '../../../src/common/ts-parsing';
+import { NamedImport } from '../../../src/common/ts-parsing/imports';
 import { File } from '../../../src/common/ts-parsing/resources';
 import { RegexImportGroup } from '../../../src/extension/import-grouping';
 import { Container } from '../../../src/extension/IoC';
@@ -72,6 +73,31 @@ describe('RegexImportGroup', () => {
             `import { ModuleFoobar } from 'myLib';\n` +
             `import { AnotherModuleFoo } from 'anotherLib';\n`,
         );
+    });
+
+    it('should work with regex "or" conditions', () => {
+        const group = new RegexImportGroup('/angular|react/');
+        const imp = new NamedImport('@angular');
+        const imp2 = new NamedImport('@react/core');
+
+        group.processImport(imp).should.be.true;
+        group.processImport(imp2).should.be.true;
+    });
+
+    it('should work with regex containing an "@"', () => {
+        const group = new RegexImportGroup('/@angular/');
+        const imp = new NamedImport('@angular');
+
+        group.processImport(imp).should.be.true;
+    });
+
+    it('should work with slash separated regex', () => {
+        const group = new RegexImportGroup('/@angular/http/');
+        const imp = new NamedImport('@angular/http');
+        const imp2 = new NamedImport('@angular/core/component');
+
+        group.processImport(imp).should.be.true;
+        group.processImport(imp2).should.be.false;
     });
 
 });
