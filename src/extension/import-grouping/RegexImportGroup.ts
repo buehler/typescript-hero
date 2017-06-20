@@ -37,7 +37,10 @@ export class RegexImportGroup implements ImportGroup {
     }
 
     public processImport(tsImport: Import): boolean {
-        const regex = new RegExp(this.regex.replace(/\//g, ''), 'g');
+        let regexString = this.regex;
+        regexString = regexString.startsWith('/') ? regexString.substring(1) : regexString;
+        regexString = regexString.endsWith('/') ? regexString.substring(0, regexString.length - 1) : regexString;
+        const regex = new RegExp(regexString, 'g');
 
         if (regex.test(tsImport.libraryName)) {
             this.imports.push(tsImport);
