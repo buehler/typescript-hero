@@ -9,7 +9,7 @@ import * as chai from 'chai';
 
 chai.should();
 
-describe.only('ImportGroupSettingParser', () => {
+describe('ImportGroupSettingParser', () => {
 
     it('should parse a simple keyword', () => {
         const result = ImportGroupSettingParser.parseSetting('Workspace') as KeywordImportGroup;
