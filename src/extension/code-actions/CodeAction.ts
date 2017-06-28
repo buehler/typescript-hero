@@ -133,7 +133,7 @@ export class ImplementPolymorphElements implements CodeAction {
             controller.addProperty(property);
         }
 
-        for (const method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name))) {
+        for (const method of this.polymorphObject.methods.filter(o => !controller.hasMethod(o.name) && o.isAbstract)) {
             if (!method.visibility) {
                 method.visibility = DeclarationVisibility.Public;
             }
