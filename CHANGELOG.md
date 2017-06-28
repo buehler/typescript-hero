@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Fixed
+- Some abstract methods were not implemented from interfaces
+- Optional parameters are implemented now ([#141](https://github.com/buehler/typescript-hero/issues/141))
+
 #### Removed
 - The document view, since there is a command `cmd+shift+o` that basically does the same, but better
 
