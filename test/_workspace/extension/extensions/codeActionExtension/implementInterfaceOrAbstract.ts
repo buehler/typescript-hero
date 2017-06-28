@@ -29,7 +29,7 @@ interface GenericInterface<T1, T2> {
 
 abstract class GenericAbstractClass<T1, T2, T3> {
     public abstract abstractMethod(p1: T1): T2;
-    protected abstract protMethod(p2: T2, p3: T3);
+    protected abstract protMethod(p2: T2, p3?: T3);
 }
 
 class ImplementGenericInterface implements GenericInterface<string, number> {
