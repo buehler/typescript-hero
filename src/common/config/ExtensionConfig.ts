@@ -1,4 +1,3 @@
-import { CodeOutlineConfig } from './CodeOutlineConfig';
 import { ResolverConfig } from './ResolverConfig';
 
 /**
@@ -26,13 +25,4 @@ export interface ExtensionConfig {
      * @memberof ExtensionConfig
      */
     resolver: ResolverConfig;
-
-    /**
-    * Configuration object for the code outline extension.
-    * 
-    * @readonly
-    * @type {CodeOutlineConfig}
-    * @memberof ExtensionConfig
-    */
-    codeOutline: CodeOutlineConfig;
 }
