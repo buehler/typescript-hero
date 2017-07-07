@@ -10,6 +10,7 @@ import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclaration
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
+import { DocumentSymbolStructureExtension } from './extensions/DocumentSymbolStructureExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
@@ -27,6 +28,7 @@ container.bind(TypescriptParser).to(TypescriptParser);
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
 
 // Logging
 container

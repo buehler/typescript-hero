@@ -7,9 +7,6 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 - Some abstract methods were not implemented from interfaces
 - Optional parameters are implemented now ([#141](https://github.com/buehler/typescript-hero/issues/141))
 
-#### Removed
-- The document view, since there is a command `cmd+shift+o` that basically does the same, but better
-
 ## [1.1.0]
 #### Added
 - View (in the explorer) with the code outline (code structure) of the actual file - Jumps to code on click
