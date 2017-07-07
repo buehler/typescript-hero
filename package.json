@@ -20,10 +20,43 @@
   ],
   "main": "./out/src/extension/extension",
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
+  "license": "MIT",
   "contributors": [
     {
       "name": "Dominique Wirz",
       "email": "dominique.wirz@gmail.com"
+    }
+  ],
+  "badges": [
+    {
+      "url": "https://img.shields.io/travis/buehler/typescript-hero.svg",
+      "href": "https://travis-ci.org/buehler/typescript-hero",
+      "description": "Travis build"
+    },
+    {
+      "url": "http://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg",
+      "href": "https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero",
+      "description": "Marketplace"
+    },
+    {
+      "url": "http://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg",
+      "href": "https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero",
+      "description": "Installs"
+    },
+    {
+      "url": "https://img.shields.io/github/issues/buehler/typescript-hero.svg",
+      "href": "https://github.com/buehler/typescript-hero/issues",
+      "description": "GitHub issues"
+    },
+    {
+      "url": "https://img.shields.io/github/issues-pr/buehler/typescript-hero.svg",
+      "href": "https://github.com/buehler/typescript-hero/pulls",
+      "description": "GitHub pull requests"
+    },
+    {
+      "url": "https://img.shields.io/github/license/buehler/typescript-hero.svg",
+      "href": "https://github.com/buehler/typescript-hero/blob/master/LICENSE",
+      "description": "License"
     }
   ],
   "repository": {
