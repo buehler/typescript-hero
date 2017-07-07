@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { workspace } from 'vscode';
 
 import { ExtensionConfig, ResolverConfig } from '../common/config';
+import { CodeOutlineConfig } from '../common/config/CodeOutlineConfig';
 import { GenerationOptions } from '../common/ts-generation';
 import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 
@@ -17,6 +18,7 @@ const sectionKey = 'typescriptHero';
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
     private resolverConfig: ResolverConfig = new VscodeResolverConfig();
+    private codeOutlineConfig: CodeOutlineConfig = new VscodeCodeOutlineConfig();
 
     /**
      * The actual log level.
@@ -38,6 +40,17 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      */
     public get resolver(): ResolverConfig {
         return this.resolverConfig;
+    }
+
+    /**
+     * Configuration object for the code outline extension.
+     * 
+     * @readonly
+     * @type {CodeOutlineConfig}
+     * @memberof VscodeExtensionConfig
+     */
+    public get codeOutline(): CodeOutlineConfig {
+        return this.codeOutlineConfig;
     }
 }
 
@@ -194,5 +207,26 @@ class VscodeResolverConfig implements ResolverConfig {
             stringQuoteStyle: this.stringQuoteStyle,
             tabSize: this.tabSize,
         };
+    }
+}
+
+/**
+ * Configuration interface for the code outline feature.
+ * 
+ * @class VscodeCodeOutlineConfig
+ * @implements {CodeOutlineConfig}
+ */
+class VscodeCodeOutlineConfig implements CodeOutlineConfig {
+
+    /**
+     * Defined if the code outline feature is enabled or not.
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof VscodeCodeOutlineConfig
+     */
+    public get outlineEnabled(): boolean {
+        const value = workspace.getConfiguration(sectionKey).get<boolean>('codeOutline.enabled');
+        return value !== undefined ? value : true;
     }
 }
