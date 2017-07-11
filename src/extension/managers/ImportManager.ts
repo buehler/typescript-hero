@@ -1,3 +1,19 @@
+import {
+    DeclarationIndex,
+    DeclarationInfo,
+    DefaultDeclaration,
+    DefaultImport,
+    ExternalModuleImport,
+    File,
+    Import,
+    isAliasedImport,
+    ModuleDeclaration,
+    NamedImport,
+    NamespaceImport,
+    StringImport,
+    SymbolSpecifier,
+    TypescriptParser,
+} from 'typescript-parser';
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
@@ -8,20 +24,6 @@ import {
     getRelativeLibraryName,
 } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
-import { SymbolSpecifier, TypescriptParser } from '../../common/ts-parsing';
-import { DeclarationInfo, DefaultDeclaration, ModuleDeclaration } from '../../common/ts-parsing/declarations';
-import {
-    DefaultImport,
-    ExternalModuleImport,
-    Import,
-    NamedImport,
-    NamespaceImport,
-    StringImport,
-} from '../../common/ts-parsing/imports';
-import { File } from '../../common/ts-parsing/resources';
-import { isAliasedImport } from '../../common/type-guards/TypescriptHeroGuards';
-import { DeclarationIndex } from '../../server/indices/DeclarationIndex';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { importRange } from '../helpers';
 import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
@@ -94,7 +96,7 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public reset(): void {
-        this.imports = this._parsedDocument.imports.map(o => o.clone<Import>());
+        this.imports = this._parsedDocument.imports.map(o => o.clone());
         this.importGroups = ImportManager.config.resolver.importGroups;
         this.addImportsToGroups(this.imports);
     }
@@ -165,7 +167,7 @@ export class ImportManager implements ObjectManager {
      * 
      * @memberof ImportManager
      */
-    public addMissingImports(index: DeclarationIndex | CalculatedDeclarationIndex): this {
+    public addMissingImports(index: DeclarationIndex): this {
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,
@@ -261,7 +263,7 @@ export class ImportManager implements ObjectManager {
             this._parsedDocument.imports = this._parsedDocument.imports.map(
                 o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
             );
-            this.imports = this._parsedDocument.imports.map(o => o.clone<Import>());
+            this.imports = this._parsedDocument.imports.map(o => o.clone());
             for (const group of this.importGroups) {
                 group.reset();
             }
@@ -297,7 +299,7 @@ export class ImportManager implements ObjectManager {
             edits.push(TextEdit.insert(
                 getImportInsertPosition(window.activeTextEditor),
                 this.importGroups
-                    .map(group => group.generateTypescript(ImportManager.config.resolver.generationOptions))
+                    .map(_group => '') // TODOgroup.generateTypescript(ImportManager.config.resolver.generationOptions))
                     .filter(Boolean)
                     .join('\n') + '\n',
             ));
@@ -333,7 +335,7 @@ export class ImportManager implements ObjectManager {
                                     this.document.positionAt(physicalLastImport.end!).line,
                                 ).rangeIncludingLineBreak.end,
                             ),
-                            group.generateTypescript(ImportManager.config.resolver.generationOptions),
+                            '',// TODO group.generateTypescript(ImportManager.config.resolver.generationOptions),
                         ));
                     } else {
                         // Since the group has no imports, generate it at the top of the file.
@@ -341,7 +343,7 @@ export class ImportManager implements ObjectManager {
                             getImportInsertPosition(
                                 window.activeTextEditor,
                             ),
-                            group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
+                            '',// TODO group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
                         ));
                     }
 

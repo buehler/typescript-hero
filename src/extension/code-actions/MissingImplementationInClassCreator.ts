@@ -1,11 +1,14 @@
 import { injectable } from 'inversify';
+import {
+    ClassLikeDeclaration,
+    DeclarationIndex,
+    GenericDeclaration,
+    NamedImport,
+    TypescriptParser,
+} from 'typescript-parser';
 import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
 import { getAbsolutLibraryName } from '../../common/helpers';
-import { TypescriptParser } from '../../common/ts-parsing';
-import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
-import { NamedImport } from '../../common/ts-parsing/imports';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
@@ -18,7 +21,7 @@ import { CodeActionCreator } from './CodeActionCreator';
  */
 @injectable()
 export class MissingImplementationInClassCreator extends CodeActionCreator {
-    constructor(private parser: TypescriptParser, private index: CalculatedDeclarationIndex) {
+    constructor(private parser: TypescriptParser, private index: DeclarationIndex) {
         super();
     }
 

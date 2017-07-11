@@ -1,5 +1,4 @@
-import { SymbolSpecifier } from '../../common/ts-parsing';
-import { Import } from '../../common/ts-parsing/imports';
+import { Import, SymbolSpecifier } from 'typescript-parser';
 
 /**
  * String-Sort function.

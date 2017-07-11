@@ -1,8 +1,9 @@
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
+import { injectable } from 'inversify';
+import { DeclarationIndex } from 'typescript-parser';
+import { Command, Diagnostic, TextDocument } from 'vscode';
+
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
-import { injectable } from 'inversify';
-import { Command, Diagnostic, TextDocument } from 'vscode';
 
 /**
  * Action creator that handles missing imports in files.
@@ -13,7 +14,7 @@ import { Command, Diagnostic, TextDocument } from 'vscode';
  */
 @injectable()
 export class MissingImportCreator extends CodeActionCreator {
-    constructor(private index: CalculatedDeclarationIndex) {
+    constructor(private index: DeclarationIndex) {
         super();
     }
 

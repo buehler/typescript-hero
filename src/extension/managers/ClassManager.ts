@@ -1,3 +1,15 @@
+import {
+    ClassDeclaration,
+    ConstructorDeclaration,
+    DeclarationVisibility,
+    File,
+    MethodDeclaration,
+    ParameterDeclaration,
+    PropertyDeclaration,
+    TypescriptParser,
+} from 'typescript-parser';
+import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
+
 import { ExtensionConfig } from '../../common/config';
 import {
     ClassNotFoundError,
@@ -6,21 +18,10 @@ import {
     PropertyDuplicated,
     PropertyNotFound,
 } from '../../common/errors';
-import { TypescriptParser } from '../../common/ts-parsing';
-import {
-    ClassDeclaration,
-    ConstructorDeclaration,
-    DeclarationVisibility,
-    MethodDeclaration,
-    ParameterDeclaration,
-    PropertyDeclaration,
-} from '../../common/ts-parsing/declarations';
-import { File } from '../../common/ts-parsing/resources';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
 import { ObjectManager } from './ObjectManager';
-import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
 
 type VisibleObject = { visibility?: DeclarationVisibility };
 
@@ -322,7 +323,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.start!).line + 1;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                property.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                '', // TODO property.object.generateTypescript(ClassManager.config.resolver.generationOptions),
             ));
         }
 
@@ -369,7 +370,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.end!).line;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '\n' + method.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                '\n' + '', // TODO method.object.generateTypescript(ClassManager.config.resolver.generationOptions),
             ));
         }
 

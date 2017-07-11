@@ -1,4 +1,5 @@
 import { inject, injectable } from 'inversify';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import {
     CancellationToken,
     CompletionItem,
@@ -11,12 +12,26 @@ import {
 } from 'vscode';
 
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
-import { TypescriptParser } from '../../common/ts-parsing';
 import { Logger, LoggerFactory } from '../../common/utilities';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
 import { BaseExtension } from './BaseExtension';
+
+/**
+ * TODO
+ * 
+ */
+function getItemKind(): void {
+
+}
+
+/**
+ * TODO
+ * 
+ */
+function getSortKey(): void {
+
+}
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
@@ -34,7 +49,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         private parser: TypescriptParser,
-        private index: CalculatedDeclarationIndex,
+        private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');

@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { Disposable, ExtensionContext } from 'vscode';
 
 import { Container } from './IoC';

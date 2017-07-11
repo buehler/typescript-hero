@@ -1,4 +1,5 @@
 import { inject, injectable } from 'inversify';
+import { File, Node, TypescriptParser } from 'typescript-parser';
 import {
     commands,
     Event,
@@ -13,8 +14,6 @@ import {
 } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
-import { Node, TypescriptParser } from '../../common/ts-parsing';
-import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';

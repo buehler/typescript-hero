@@ -1,6 +1,3 @@
-import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
-import { CompletionItemKind } from 'vscode-languageserver-types';
-
 import {
     ClassDeclaration,
     Declaration,
@@ -9,8 +6,11 @@ import {
     MethodDeclaration,
     PropertyDeclaration,
     VariableDeclaration,
-} from '../../../common/ts-parsing/declarations';
-import { stringTemplate } from '../../../common/utilities/StringTemplate';
+} from 'typescript-parser';
+import { stringTemplate } from 'typescript-parser/utilities/StringTemplate';
+import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
+import { CompletionItemKind } from 'vscode-languageserver-types';
+
 import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 
 const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;

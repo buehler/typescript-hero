@@ -1,17 +1,13 @@
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
+import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-parser';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
-import { Notification } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
-import { ImportUserDecision } from '../../common/transport-models';
-import { TypescriptParser } from '../../common/ts-parsing';
-import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { ClientConnection } from '../utilities/ClientConnection';
@@ -127,7 +123,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        private index: CalculatedDeclarationIndex,
+        private index: DeclarationIndex,
         private parser: TypescriptParser,
         private connection: ClientConnection,
     ) {
@@ -147,15 +143,16 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
-        this.connection.onNotification(
-            Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk,
-        );
-        this.connection.onNotification(
-            Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr,
-        );
-        this.connection.onNotification(
-            Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
-        );
+        // TODO
+        // this.connection.onNotification(
+        //     Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk,
+        // );
+        // this.connection.onNotification(
+        //     Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr,
+        // );
+        // this.connection.onNotification(
+        //     Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
+        // );
 
         this.context.subscriptions.push(
             commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
@@ -213,7 +210,7 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.text = resolverSyncing;
 
         const files = await findFiles(this.config);
-        this.connection.sendNotification(Notification.CreateIndexForFiles, files);
+        // this.connection.sendNotification(Notification.CreateIndexForFiles, files);
     }
 
     /**
@@ -440,6 +437,7 @@ export class ImportResolveExtension extends BaseExtension {
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,
     ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
+        // TODO
         const parsedDocument = await this.parser.parseSource(documentSource);
         const missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [];
         const declarations = getDeclarationsFilteredByImports(

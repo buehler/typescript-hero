@@ -1,10 +1,5 @@
-import { Logger, LoggerFactory } from '../../common/utilities';
-import { CodeAction } from '../code-actions/CodeAction';
-import { CodeActionCreator } from '../code-actions/CodeActionCreator';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
-import { iocSymbols } from '../IoCSymbols';
-import { BaseExtension } from './BaseExtension';
 import { inject, injectable, multiInject } from 'inversify';
+import { DeclarationIndex } from 'typescript-parser';
 import {
     CancellationToken,
     CodeActionContext,
@@ -17,6 +12,12 @@ import {
     TextDocument,
     window,
 } from 'vscode';
+
+import { Logger, LoggerFactory } from '../../common/utilities';
+import { CodeAction } from '../code-actions/CodeAction';
+import { CodeActionCreator } from '../code-actions/CodeActionCreator';
+import { iocSymbols } from '../IoCSymbols';
+import { BaseExtension } from './BaseExtension';
 
 /**
  * Provider instance that is responsible for the "light bulb" feature.
@@ -35,7 +36,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @multiInject(iocSymbols.codeActionCreators) private actionCreators: CodeActionCreator[],
-        private index: CalculatedDeclarationIndex,
+        private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeActionExtension');
