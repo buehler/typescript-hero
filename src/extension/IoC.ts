@@ -1,6 +1,6 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
-import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
+import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
@@ -22,6 +22,7 @@ container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
+container.bind(TypescriptCodeGenerator).to(TypescriptCodeGenerator);
 
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();

@@ -10,7 +10,6 @@ import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
-import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
@@ -125,7 +124,6 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         private index: DeclarationIndex,
         private parser: TypescriptParser,
-        private connection: ClientConnection,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');

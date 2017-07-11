@@ -18,22 +18,6 @@ import { ImportManager } from '../managers/ImportManager';
 import { BaseExtension } from './BaseExtension';
 
 /**
- * TODO
- * 
- */
-function getItemKind(): void {
-
-}
-
-/**
- * TODO
- * 
- */
-function getSortKey(): void {
-
-}
-
-/**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
  * 
  * @export

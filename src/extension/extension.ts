@@ -8,6 +8,10 @@ import { TypeScriptHero } from './TypeScriptHero';
 
 let extension: Disposable;
 
+function extendGenerator(): void {
+    // TODO
+}
+
 /**
  * Activates TypeScript Hero
  * 
@@ -19,6 +23,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         Container.unbind(iocSymbols.extensionContext);
     }
     Container.bind<ExtensionContext>(iocSymbols.extensionContext).toConstantValue(context);
+    extendGenerator();
     extension = Container.get(TypeScriptHero);
 }
 

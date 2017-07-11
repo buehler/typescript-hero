@@ -49,3 +49,20 @@ export function importSort(i1: Import, i2: Import, order: 'asc' | 'desc' = 'asc'
 export function specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
 }
+
+/**
+ * TODO
+ * 
+ * @export
+ */
+export function getItemKind(): void {
+
+}
+
+/**
+ * TODO
+ * 
+ */
+export function getSortKey(): void {
+
+}
