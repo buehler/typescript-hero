@@ -1,8 +1,6 @@
-import { DeclarationInfo, DeclarationVisibility } from '../../common/ts-parsing/declarations';
-import { ClassLikeDeclaration, GenericDeclaration } from '../../common/ts-parsing/declarations/Declaration';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { ClassManager } from '../managers/ClassManager';
 import { ImportManager } from '../managers/ImportManager';
+import { DeclarationIndex, DeclarationInfo } from 'typescript-parser';
 import { TextDocument } from 'vscode';
 
 /**
@@ -54,7 +52,7 @@ export class AddImportCodeAction implements CodeAction {
  * @implements {CodeAction}
  */
 export class AddMissingImportsCodeAction implements CodeAction {
-    constructor(private document: TextDocument, private resolveIndex: CalculatedDeclarationIndex) { }
+    constructor(private document: TextDocument, private resolveIndex: DeclarationIndex) { }
 
     /**
      * Executes the code action. Depending on the action, there are several actions performed.

@@ -1,9 +1,9 @@
 import { injectable } from 'inversify';
+import { TypescriptGenerationOptions } from 'typescript-parser';
 import { workspace } from 'vscode';
 
 import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { CodeOutlineConfig } from '../common/config/CodeOutlineConfig';
-import { GenerationOptions } from '../common/ts-generation';
 import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 
 const sectionKey = 'typescriptHero';
@@ -195,10 +195,10 @@ class VscodeResolverConfig implements ResolverConfig {
      * All information that are needed to print an import.
      * 
      * @readonly
-     * @type {TsImportOptions}
+     * @type {TypescriptGenerationOptions}
      * @memberof VscodeResolverConfig
      */
-    public get generationOptions(): GenerationOptions {
+    public get generationOptions(): TypescriptGenerationOptions {
         return {
             eol: this.insertSemicolons ? ';' : '',
             multiLineWrapThreshold: this.multiLineWrapThreshold,

@@ -1,12 +1,11 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
-import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
-import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
@@ -21,7 +20,7 @@ const container = new IoCContainer();
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
-container.bind(CalculatedDeclarationIndex).to(CalculatedDeclarationIndex).inSingletonScope();
+container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
 
 // Extensions

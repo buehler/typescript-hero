@@ -1,8 +1,9 @@
+import { inject, injectable, multiInject } from 'inversify';
+import { Disposable } from 'vscode';
+
 import { Logger, LoggerFactory } from '../common/utilities';
 import { BaseExtension } from './extensions/BaseExtension';
 import { iocSymbols } from './IoCSymbols';
-import { inject, injectable, multiInject } from 'inversify';
-import { Disposable } from 'vscode';
 
 /**
  * TypeScript Hero vscode extension.
