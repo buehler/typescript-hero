@@ -1,8 +1,17 @@
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
-import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-parser';
-import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+import { DeclarationIndex, DeclarationInfo, FileChanges, TypescriptParser } from 'typescript-parser';
+import {
+    commands,
+    ExtensionContext,
+    FileSystemWatcher,
+    StatusBarAlignment,
+    StatusBarItem,
+    Uri,
+    window,
+    workspace,
+} from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
@@ -117,6 +126,9 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
+    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
+        '{**/*.ts,**/package.json,**/typings.json}',
+    );
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
@@ -136,6 +148,8 @@ export class ImportResolveExtension extends BaseExtension {
      */
     public initialize(): void {
         this.context.subscriptions.push(this.statusBarItem);
+        this.context.subscriptions.push(this.fileWatcher);
+
         this.statusBarItem.text = resolverOk;
         this.statusBarItem.tooltip = 'Click to manually reindex all files.';
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
@@ -151,7 +165,36 @@ export class ImportResolveExtension extends BaseExtension {
             }
         }));
 
-        // TODO add update of files
+        let timeout: NodeJS.Timer | undefined;
+        let events: FileChanges | undefined;
+
+        const fileWatcherEvent = (event: string, uri: Uri) => {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            if (!events) {
+                events = {
+                    created: [],
+                    updated: [],
+                    deleted: [],
+                };
+            }
+            events[event].push(uri.fsPath);
+
+            timeout = setTimeout(
+                () => {
+                    if (events) {
+                        this.rebuildForFileChanges(events);
+                        events = undefined;
+                    }
+                },
+                500,
+            );
+        };
+
+        this.fileWatcher.onDidCreate(uri => fileWatcherEvent('created', uri));
+        this.fileWatcher.onDidChange(uri => fileWatcherEvent('updated', uri));
+        this.fileWatcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
 
         this.buildIndex();
 
@@ -168,7 +211,7 @@ export class ImportResolveExtension extends BaseExtension {
     }
 
     /**
-     * Instructs the tsh-server to build an index for the found files (actually searches for all files in the
+     * Instructs the index to build an index for the found files (actually searches for all files in the
      * current workspace).
      * 
      * @private
@@ -187,6 +230,27 @@ export class ImportResolveExtension extends BaseExtension {
             this.statusBarItem.text = resolverOk;
         } catch (e) {
             this.logger.error('There was an error during the index creation', e);
+            this.statusBarItem.text = resolverErr;
+        }
+    }
+
+    /**
+     * Instructs the index to rebuild the partial index for the changed files.
+     * 
+     * @private
+     * @param {FileChanges} changes 
+     * @returns {Promise<void>} 
+     * @memberof ImportResolveExtension
+     */
+    private async rebuildForFileChanges(changes: FileChanges): Promise<void> {
+        this.logger.info('Rebuilding index for changed files.', changes);
+        this.statusBarItem.text = resolverSyncing;
+
+        try {
+            this.index.reindexForChanges(changes);
+            this.statusBarItem.text = resolverOk;
+        } catch (e) {
+            this.logger.error('There was an error during the index rebuild', e);
             this.statusBarItem.text = resolverErr;
         }
     }
