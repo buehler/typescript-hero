@@ -32,14 +32,4 @@ export class RemainImportGroup implements ImportGroup {
         this.imports.push(tsImport);
         return true;
     }
-
-    // TODO    
-    // public generateTypescript(options: GenerationOptions): string {
-    //     if (!this.imports.length) {
-    //         return '';
-    //     }
-    //     return this.sortedImports
-    //         .map(imp => imp.generateTypescript(options))
-    //         .join('\n') + '\n';
-    // }
 }

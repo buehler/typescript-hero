@@ -38,16 +38,6 @@ export class KeywordImportGroup implements ImportGroup {
         }
     }
 
-    // TODO    
-    // public generateTypescript(options: GenerationOptions): string {
-    //     if (!this.imports.length) {
-    //         return '';
-    //     }
-    //     return this.sortedImports
-    //         .map(imp => imp.generateTypescript(options))
-    //         .join('\n') + '\n';
-    // }
-
     /**
      * Process a library import.
      * @example import ... from 'vscode';

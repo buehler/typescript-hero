@@ -48,14 +48,4 @@ export class RegexImportGroup implements ImportGroup {
         }
         return false;
     }
-
-    // TODO    
-    // public generateTypescript(options: GenerationOptions): string {
-    //     if (!this.imports.length) {
-    //         return '';
-    //     }
-    //     return this.sortedImports
-    //         .map(imp => imp.generateTypescript(options))
-    //         .join('\n') + '\n';
-    // }
 }

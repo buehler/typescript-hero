@@ -22,7 +22,14 @@ container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
 container.bind(TypescriptParser).to(TypescriptParser);
-container.bind(TypescriptCodeGenerator).to(TypescriptCodeGenerator);
+container
+    .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
+    .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
+        return () => {
+            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            return new TypescriptCodeGenerator(config.resolver.generationOptions);
+        };
+    });
 
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();

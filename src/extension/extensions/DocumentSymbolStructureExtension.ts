@@ -139,7 +139,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     /**
-     * TODO
+     * Method that recalculates the current document when the active window changed.
      * 
      * @private
      * 
