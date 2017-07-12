@@ -38,7 +38,8 @@ function restoreInputBox(stub: sinon.SinonStub): void {
 
 describe('ImportManager', () => {
 
-    const file = join(workspace.rootPath!, 'extension/managers/ImportManagerFile.ts');
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
+    const file = join(rootPath, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument;
     let documentText: string;
     let index: DeclarationIndex;
@@ -46,7 +47,7 @@ describe('ImportManager', () => {
 
     before(async () => {
         const config = new VscodeExtensionConfig();
-        files = await findFiles(config);
+        files = await findFiles(config, rootPath);
 
         index = index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(files);

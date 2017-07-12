@@ -28,6 +28,7 @@ class SpyCodeAction implements CodeAction {
 describe('CodeActionExtension', () => {
 
     let extension: any;
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
@@ -38,19 +39,19 @@ describe('CodeActionExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    workspace.rootPath!,
+                    rootPath,
                     'server/indices/MyClass.ts',
                 ),
                 join(
-                    workspace.rootPath!,
+                    rootPath,
                     'extension/extensions/codeActionExtension/exportedObjects.ts',
                 ),
                 join(
-                    workspace.rootPath!,
+                    rootPath,
                     'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts',
                 ),
                 join(
-                    workspace.rootPath!,
+                    rootPath,
                     'node_modules/fancy-library/FancierLibraryClass.d.ts',
                 ),
             ],
@@ -58,7 +59,7 @@ describe('CodeActionExtension', () => {
 
         const creators = [
             new MissingImportCreator(index as any),
-            new MissingImplementationInClassCreator(parser, index as any),
+            new MissingImplementationInClassCreator(parser, index as any, rootPath),
         ];
 
         extension = new CodeActionExtension(ctx, logger, creators, index as any);
@@ -67,7 +68,7 @@ describe('CodeActionExtension', () => {
     describe('executeCodeAction', () => {
 
         const file = join(
-            workspace.rootPath!,
+            rootPath,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
@@ -110,7 +111,7 @@ describe('CodeActionExtension', () => {
     describe('missingImport', () => {
 
         const file = join(
-            workspace.rootPath!,
+            rootPath,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
@@ -143,7 +144,7 @@ describe('CodeActionExtension', () => {
     });
 
     describe('missingPolymorphicElements', () => {
-        const file = join(workspace.rootPath!, 'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts');
+        const file = join(rootPath, 'extension/extensions/codeActionExtension/implementInterfaceOrAbstract.ts');
         let document: TextDocument;
         let documentText: string;
 
@@ -428,7 +429,7 @@ describe('CodeActionExtension', () => {
     describe('provideCodeActions', () => {
 
         const file = join(
-            workspace.rootPath!,
+            rootPath,
             'extension/extensions/codeActionExtension/empty.ts',
         );
         let document: TextDocument;
