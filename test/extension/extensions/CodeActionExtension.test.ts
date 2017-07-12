@@ -59,7 +59,7 @@ describe('CodeActionExtension', () => {
 
         const creators = [
             new MissingImportCreator(index as any),
-            new MissingImplementationInClassCreator(parser, index as any),
+            new MissingImplementationInClassCreator(parser, index as any, rootPath),
         ];
 
         extension = new CodeActionExtension(ctx, logger, creators, index as any);
