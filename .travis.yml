@@ -1,16 +1,18 @@
-sudo: false
+sudo: required
 
 language: node_js
 node_js:
-- '8'
+  - '8'
+
+notifications:
+  email: false
 
 env:
   global:
     - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/_workspace
-    - secure: ZFxa817TgXMaJc/zC0PUHFqPt4aSXJxuMAXpsthyZyCMC0M2HAyZH14fDf8o7LX24q90EO6eAn3/JRhHWyQK9MygM4wW3J5mTc4Hm/2sJpqmDgmwHaoa1jZSxf7bykb1dPvkdgR15U0Xd0vtmMVR0gY7yQ6pcRVUPO6TNceCsu6p1nUfPGBDjLAKAa5wdJhaxOmfKjoIyT36jrJ2U5lCs7YtYuJGSgu4wHBnVsNjZIYyA8cF6FNMYYe/lRTheCz9vE0IYlmXT5aPEQL2kWZRGyWZOzBbtQXI+5XVqlKNbao4l15K62BvKuBu70bOa9Hxz7nR2ycwcfcpdxiJeDbOYwF5zsXVYY633p3SngPrkKBOww6gqbkMDEN6dqkT7clSZzqHnlL/o35b8LKNwdO9pxqU5YFALFHMSms5zJpTo3TAz4wxlb6TZCJlk+9Y4QaE3JqwTRxfk0Xw79w6N6eQXY2qq0zmL4MMyu3Q0KTCRAYX9CoWEbDD4WanWrLyXTkQbkNO7rZ+nSbS7CmEnt4Zs8AlLqdtsdf93cw7LcDotWnLQ+Fj+hUnApivSJkcQCFpqaJqFJcUutkn70ziqPe3b/BZZtHsbc1Dvda2GLl9gR9jFh61wrlk2WM/Q5kr+BVfT5RtKMSXRrEasEjz15tS0EQMP1k7VXjGMV4P1b57i4A=
 
 os:
-- linux
+  - linux
 
 addons:
   apt:
@@ -27,34 +29,29 @@ addons:
       - libxkbfile-dev
 
 before_install:
-- if [ $TRAVIS_OS_NAME == "linux" ]; then
-    export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
-    sh -e /etc/init.d/xvfb start; 
-    sleep 3; 
-  fi
+  - if [ $TRAVIS_OS_NAME == "linux" ]; then
+      export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
+      sh -e /etc/init.d/xvfb start; 
+      sleep 3; 
+    fi
+  - rvm get stable
+  - rvm install 2.4
+  - gem install github_changelog_generator
 
 install:
-- npm install
+  - npm install
  
 before_script:
-- npm run build
+  - npm run build
 
 script:
-- npm test --silent
+  - npm test --silent
 
-deploy:
-  provider: script
-  script: npm install -g vsce && vsce package && vsce publish -p $VSCE_TOKEN
-  skip_cleanup: true
-  on:
-    tags: true
-    repo: buehler/typescript-hero
-    condition: $TRAVIS_OS_NAME = linux
+after_script:
+  - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature"
+  - npm install -g vsce
+  - npm run semantic-release
 
-notifications:
-  email: false
-  slack:
-    secure: Kinq9o5qmKd018gHOHFaLvJ3d9l2reBfpMf3PQdhwrVKzr+lwIxVfSo5O5+3fzAZMTH6VtiB3U1cN9LyqhrKr51nwcQIt1+0OftoY8xeNcL7/FHBs9J4zEGFG+MEpD2sTlMp3A3eI39+155UVkHN4WefIyF4R8HXkhVbd3na6NEUOqxyEuDfjUof1G5iaFdUmAe0pNEFLqo2WUL/zAfqaX2xHiQwxloPpHdvovngyA3kru44UtrNyO1Csts56+EA4MbsfbV+e7fYUf+DBpfLsJ/dUfZDw8QH++BbdIrAHEQ7k/QJq6FiVhpROqsA9puYQdGpXiS5H0/Iw5bzrDStGMpmDEfz+9wFCKl9Tc4IJwutzw3ZAo2BRjDRDTc9oVV4ekHNc9tcl5YXSKDiAcuvNMJoDlxodXjYZ9Cukw6/+hIGhZeYqRmReAqzQ9URjgy76v+bh5IfmjPiN0cwf8GboTkQmmJaNaaO2B2mVrYFRX9rJ1wO0st4wCOUZoyGItUTlV6QCzgiq3XzLAyqssRbOMPI4MZckQh7rCvD2Nh585M6dZ+bQzNHHfv7aEl8aTyDSZrtNslmHAHpbgVf4Ctjgmzh+RbygBd+XNrBd+vrDzNJfri5YxUHPC1DX/yVqjw90oea2W4ymSmFrztVzj5wuKPKS2JjcV3QRl8osG+7jq8=
-    on_success: never
-    on_failure: always
-    on_pull_requests: false
+branches:
+  except:
+    - /^v\d+\.\d+\.\d+$/

@@ -22,6 +22,9 @@
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "license": "MIT",
   "contributors": [],
+  "release": {
+    "getLastRelease": "semantic-release-visualstudio-marketplace-version"
+  },
   "badges": [
     {
       "url": "https://img.shields.io/travis/buehler/typescript-hero.svg",
@@ -63,7 +66,7 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "npm install && npm run build && npm prune --production",
+    "vscode:prepublish": "npm prune --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -71,7 +74,8 @@
     "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "npm run build && del-cli './*.vsix' && vsce package"
+    "package": "npm run build && del-cli './*.vsix' && vsce package",
+    "semantic-release": "semantic-release pre && vsce publish -p $VSCE_TOKEN && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
