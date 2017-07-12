@@ -55,7 +55,7 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
  * @param {ExtensionConfig} config
  * @returns {Promise<string[]>}
  */
-export async function findFiles(config: ExtensionConfig): Promise<string[]> {
+export async function findFiles(config: ExtensionConfig, rootPath: string): Promise<string[]> {
     const searches: PromiseLike<Uri[]>[] = [
         workspace.findFiles(
             '{**/*.ts,**/*.tsx}',
@@ -66,8 +66,8 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     let globs: string[] = [];
     let ignores = ['**/typings/**'];
 
-    if (workspace.rootPath && existsSync(join(workspace.rootPath, 'package.json'))) {
-        const packageJson = require(join(workspace.rootPath, 'package.json'));
+    if (rootPath && existsSync(join(rootPath, 'package.json'))) {
+        const packageJson = require(join(rootPath, 'package.json'));
         if (packageJson['dependencies']) {
             globs = globs.concat(
                 Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`),
@@ -101,7 +101,7 @@ export async function findFiles(config: ExtensionConfig): Promise<string[]> {
     uris = uris.map((o, idx) => idx === 0 ?
         o.filter(
             f => f.fsPath
-                .replace(workspace.rootPath || '', '')
+                .replace(rootPath || '', '')
                 .split(/\\|\//)
                 .every(p => excludePatterns.indexOf(p) < 0)) :
         o,
@@ -136,6 +136,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.rootPath) private rootPath: string,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
@@ -222,7 +223,7 @@ export class ImportResolveExtension extends BaseExtension {
     private async buildIndex(): Promise<void> {
         this.statusBarItem.text = resolverSyncing;
 
-        const files = await findFiles(this.config);
+        const files = await findFiles(this.config, this.rootPath);
         this.logger.info(`Building index for ${files.length} files.`);
         try {
             await this.index.buildIndex(files);
@@ -457,7 +458,7 @@ export class ImportResolveExtension extends BaseExtension {
             this.index.declarationInfos,
             documentPath,
             parsedSource.imports,
-            workspace.rootPath,
+            this.rootPath,
         ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
@@ -486,7 +487,7 @@ export class ImportResolveExtension extends BaseExtension {
             this.index.declarationInfos,
             documentPath,
             parsedDocument.imports,
-            workspace.rootPath,
+            this.rootPath,
         );
 
         for (const usage of parsedDocument.nonLocalUsages) {

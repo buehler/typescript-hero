@@ -17,8 +17,10 @@ describe('CodeCompletionExtension', () => {
     let extension: CodeCompletionExtension;
 
     before(async () => {
+        const rootPath = Container.get<string>(iocSymbols.rootPath);
+
         const file = join(
-            vscode.workspace.rootPath!,
+            rootPath,
             'extension/extensions/codeCompletionExtension/codeCompletionFile.ts',
         );
         document = await vscode.workspace.openTextDocument(file);
@@ -32,17 +34,17 @@ describe('CodeCompletionExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'extension/extensions/codeCompletionExtension/codeCompletionImports.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'server/indices/MyClass.ts',
                 ),
             ],
         );
 
-        extension = new CodeCompletionExtension(ctx, logger, parser, index as any);
+        extension = new CodeCompletionExtension(ctx, logger, parser, index as any, rootPath);
     });
 
     it('shoud resolve to null if typing in a string', async () => {

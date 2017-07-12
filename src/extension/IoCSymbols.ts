@@ -10,4 +10,5 @@ export const iocSymbols = {
     codeActionCreators: Symbol('codeActionCreators'),
     declarationIndex: Symbol('declarationIndex'),
     typescriptParser: Symbol('typescriptParser'),
+    rootPath: Symbol('rootPath'),
 };

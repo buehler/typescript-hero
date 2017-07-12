@@ -21,7 +21,8 @@ chai.use(sinonChai);
 
 describe('ClassManager', () => {
 
-    const file = join(workspace.rootPath!, 'extension/managers/ClassManagerFile.ts');
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
+    const file = join(rootPath, 'extension/managers/ClassManagerFile.ts');
     let document: TextDocument;
     let documentText: string;
     let index: DeclarationIndex;
@@ -29,7 +30,7 @@ describe('ClassManager', () => {
 
     before(async () => {
         const config = new VscodeExtensionConfig();
-        files = await findFiles(config);
+        files = await findFiles(config, rootPath);
 
         index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(files);

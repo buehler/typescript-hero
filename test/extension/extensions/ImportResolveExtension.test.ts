@@ -13,11 +13,13 @@ chai.should();
 
 describe('ImportResolveExtension', () => {
 
+    let rootPath: string;
     let extension: any;
 
     before(async () => {
+        rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
-            vscode.workspace.rootPath!,
+            rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
         );
         const document = await vscode.workspace.openTextDocument(file);
@@ -33,31 +35,31 @@ describe('ImportResolveExtension', () => {
         await index.buildIndex(
             [
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'typings/globals/body-parser/index.d.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'server/indices/MyClass.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'extension/extensions/importResolveExtension/sub1/sub2/sub3/subFile.ts',
                 ),
                 join(
-                    vscode.workspace.rootPath!,
+                    rootPath,
                     'extension/extensions/importResolveExtension/sameDirectory.ts',
                 ),
             ],
         );
 
-        extension = new ImportResolveExtension(ctx, logger, config, parser, index);
+        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
     });
 
     describe('addImportToDocument', () => {
-
+        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
-            vscode.workspace.rootPath!,
+            rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
         );
         let document: vscode.TextDocument;
@@ -141,7 +143,7 @@ describe('ImportResolveExtension', () => {
 
     describe('organizeImports', () => {
 
-        const file = join(vscode.workspace.rootPath!, 'extension/extensions/importResolveExtension/organizeImports.ts');
+        const file = join(rootPath, 'extension/extensions/importResolveExtension/organizeImports.ts');
         let document: vscode.TextDocument;
         let documentText: string;
 
