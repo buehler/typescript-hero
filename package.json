@@ -7,7 +7,7 @@
     "color": "#1e324c",
     "theme": "dark"
   },
-  "version": "1.1.0",
+  "version": "0.0.0-development",
   "publisher": "rbbit",
   "engines": {
     "vscode": "^1.13.0",
@@ -21,12 +21,10 @@
   "main": "./out/src/extension/extension",
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "license": "MIT",
-  "contributors": [
-    {
-      "name": "Dominique Wirz",
-      "email": "dominique.wirz@gmail.com"
-    }
-  ],
+  "contributors": [],
+  "release": {
+    "getLastRelease": "semantic-release-visualstudio-marketplace-version"
+  },
   "badges": [
     {
       "url": "https://img.shields.io/travis/buehler/typescript-hero.svg",
@@ -54,6 +52,11 @@
       "description": "GitHub pull requests"
     },
     {
+      "url": "https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg",
+      "href": "https://github.com/semantic-release/semantic-release",
+      "description": "Semantic release"
+    },
+    {
       "url": "https://img.shields.io/github/license/buehler/typescript-hero.svg",
       "href": "https://github.com/buehler/typescript-hero/blob/master/LICENSE",
       "description": "License"
@@ -68,7 +71,7 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "npm install && npm run build && npm prune --production",
+    "vscode:prepublish": "npm prune --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
@@ -76,7 +79,8 @@
     "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "npm run build && del-cli './*.vsix' && vsce package"
+    "package": "npm run build && del-cli './*.vsix' && vsce package",
+    "semantic-release": "semantic-release pre && vsce package && vsce publish -p $VSCE_TOKEN && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
@@ -89,6 +93,8 @@
     "del-cli": "^1.1.0",
     "filewalker": "^0.1.3",
     "mocha-testdata": "^1.2.0",
+    "semantic-release": "^6.3.6",
+    "semantic-release-visualstudio-marketplace-version": "^1.0.0",
     "sinon": "^2.3.7",
     "sinon-chai": "^2.11.0",
     "tslint": "^5.5.0",
