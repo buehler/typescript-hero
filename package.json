@@ -168,7 +168,8 @@
       "explorer": [
         {
           "id": "documentCodeOutline",
-          "name": "Code outline"
+          "name": "Code outline",
+          "when": "config.typescriptHero.codeOutline.enabled != false"
         }
       ]
     },
