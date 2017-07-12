@@ -9,6 +9,7 @@ prepare-release.js
 config/**
 test/**
 src/**
+!src/extension/assets
 tsconfig.json
 tslint.json
 
