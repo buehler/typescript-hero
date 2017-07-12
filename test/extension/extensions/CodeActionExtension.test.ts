@@ -28,12 +28,12 @@ class SpyCodeAction implements CodeAction {
 describe('CodeActionExtension', () => {
 
     let extension: any;
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
 
         const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(
