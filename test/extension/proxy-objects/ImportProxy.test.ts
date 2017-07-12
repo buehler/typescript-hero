@@ -2,6 +2,7 @@ import * as chai from 'chai';
 import { given } from 'mocha-testdata';
 import {
     DefaultImport,
+    GENERATORS,
     NamedImport,
     SymbolSpecifier,
     TypescriptCodeGenerator,
@@ -181,6 +182,26 @@ describe('ImportProxy', () => {
         };
         let proxy: ImportProxy;
 
+        before(() => {
+            GENERATORS[ImportProxy.name] = (proxy: ImportProxy) => {
+                if (proxy.specifiers.length <= 0) {
+                    return generator.generate(
+                        new DefaultImport(
+                            proxy.libraryName, (proxy.defaultAlias || proxy.defaultPurposal)!, proxy.start, proxy.end,
+                        ),
+                    );
+                }
+                if (proxy.defaultAlias) {
+                    proxy.specifiers.push(new SymbolSpecifier('default', proxy.defaultAlias));
+                }
+                const named = new NamedImport(
+                    proxy.libraryName, proxy.start, proxy.end,
+                );
+                named.specifiers = proxy.specifiers;
+                return generator.generate(named);
+            };
+        });
+
         beforeEach(() => {
             generator = new TypescriptCodeGenerator(options);
             proxy = new ImportProxy('foo');
@@ -209,7 +230,7 @@ describe('ImportProxy', () => {
             generator.generate(proxy).should.equal(`import { bar, default as ALIAS } from 'foo';`);
         });
 
-        it.skip('should omit semicolons if configured', () => {
+        it('should omit semicolons if configured', () => {
             const optionsClone = Object.assign({}, options);
             optionsClone.eol = '';
             generator = new TypescriptCodeGenerator(optionsClone);
