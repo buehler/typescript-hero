@@ -37,17 +37,20 @@ before_install:
   - rvm get stable
   - rvm install 2.4
   - gem install github_changelog_generator
+  - npm install -g greenkeeper-lockfile@1
 
 install:
   - npm install
  
 before_script:
+  - greenkeeper-lockfile-update
   - npm run build
 
 script:
   - npm test --silent
 
 after_script:
+  - greenkeeper-lockfile-upload
   - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature"
   - npm install -g vsce
   - npm run semantic-release
