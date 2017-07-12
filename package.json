@@ -34,12 +34,12 @@
       "description": "Travis build"
     },
     {
-      "url": "http://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg",
+      "url": "https://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg",
       "href": "https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero",
       "description": "Marketplace"
     },
     {
-      "url": "http://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg",
+      "url": "https://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg",
       "href": "https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero",
       "description": "Installs"
     },
