@@ -234,7 +234,7 @@ describe('ImportManager', () => {
 
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
 
-            (ctrl as any).imports.should.have.lengthOf(2);
+            (ctrl as any).imports.should.have.lengthOf(1);
             (ctrl as any).imports[0].specifiers[0].specifier.should.equal('Class1');
             (ctrl as any).imports[0].specifiers[1].specifier.should.equal('Class2');
             (ctrl as any).imports[0].specifiers[2].specifier.should.equal('Class3');
@@ -389,17 +389,17 @@ describe('ImportManager', () => {
             await window.activeTextEditor!.edit((builder) => {
                 builder.insert(
                     new Position(1, 0),
-                    `import { AddImportSameDirectory } from '../../../files';\n`,
+                    `import { AddImportSameDirectory } from '../../../server/indices';\n`,
                 );
                 builder.insert(new Position(6, 0), `const foo = AddImportSameDirectory;\n`);
             });
             const ctrl = await ImportManager.create(document);
 
-            (ctrl as any).imports[0].libraryName.should.equal('../../files');
+            (ctrl as any).imports[0].libraryName.should.equal('../../server/indices');
 
             ctrl.organizeImports();
 
-            (ctrl as any).imports[0].libraryName.should.equal('../../../files');
+            (ctrl as any).imports[0].libraryName.should.equal('../../../server/indices');
         });
 
         it('should order string imports before normal imports', async () => {
@@ -653,7 +653,7 @@ describe('ImportManager', () => {
                     `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
                 );
                 document.lineAt(2).text.should.equal(
-                    `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../files';`,
+                    `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../server/indices';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -666,7 +666,7 @@ describe('ImportManager', () => {
             ctrl.addDeclarationImport(declaration!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../files';`);
+            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
         });
 
         it('should add multiple specifier to an existing import', async () => {
@@ -677,7 +677,7 @@ describe('ImportManager', () => {
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(0).text.should.equals(`import { Class1, Class2, Class3 } from '../../files';`);
+            document.lineAt(0).text.should.equals(`import { Class1, Class2, Class3 } from '../../server/indices';`);
         });
 
         it('should add a specifier with a default (first) and a normal (second) import to the doc', async () => {
@@ -716,7 +716,7 @@ describe('ImportManager', () => {
             document.lineAt(1).text.should.equals(
                 `import { myComponent } from '../../server/indices/MyReactTemplate';`,
             );
-            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../files';`);
+            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
         });
 
         it('should convert a default import when a normal specifier is added', async () => {
@@ -783,13 +783,13 @@ describe('ImportManager', () => {
                 `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
             );
             document.lineAt(0).text.should.equals(
-                `import { Class1, Class2 } from '../../files';`,
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
 
             await ctrl.organizeImports().commit();
 
             document.lineAt(0).text.should.equals(
-                `import { Class1, Class2 } from '../../files';`,
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
             document.lineAt(1).text.should.equals('');
         });
@@ -810,7 +810,7 @@ describe('ImportManager', () => {
                 `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
             );
             document.lineAt(0).text.should.equals(
-                `import { Class1 } from '../../files';`,
+                `import { Class1 } from '../../server/indices';`,
             );
         });
 
@@ -824,7 +824,7 @@ describe('ImportManager', () => {
             await ctrl.organizeImports().commit();
 
             document.lineAt(0).text.should.equals(
-                `import { Class1, Class2 } from '../../files';`,
+                `import { Class1, Class2 } from '../../server/indices';`,
             );
         });
 
