@@ -1,9 +1,10 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
 import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
-import { ExtensionContext } from 'vscode';
+import { ExtensionContext, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
+import { TypescriptParserFactory } from '../common/factories/index';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -20,8 +21,27 @@ const container = new IoCContainer();
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
-container.bind(DeclarationIndex).to(DeclarationIndex).inSingletonScope();
-container.bind(TypescriptParser).to(TypescriptParser);
+container
+    .bind<interfaces.Factory<DeclarationIndex>>(iocSymbols.declarationIndexFactory)
+    .toFactory<DeclarationIndex>((context: interfaces.Context) => {
+        let singleton: DeclarationIndex | undefined;
+        return () => {
+            console.log('get singleton', singleton);
+            if (singleton) {
+                return singleton;
+            }
+            const parser = context.container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
+            singleton = new DeclarationIndex(parser, workspace.rootPath || '');
+            return singleton;
+        };
+    });
+
+container
+    .bind<interfaces.Factory<TypescriptParser>>(iocSymbols.typescriptParserFactory)
+    .toFactory<TypescriptParser>(() => {
+        return () => new TypescriptParser();
+    });
+
 container
     .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
     .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {

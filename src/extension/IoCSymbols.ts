@@ -8,4 +8,6 @@ export const iocSymbols = {
     loggerFactory: Symbol('loggerFactory'),
     generatorFactory: Symbol('generatorFactory'),
     codeActionCreators: Symbol('codeActionCreators'),
+    declarationIndexFactory: Symbol('declarationIndexFactory'),
+    typescriptParserFactory: Symbol('typescriptParserFactory'),
 };
