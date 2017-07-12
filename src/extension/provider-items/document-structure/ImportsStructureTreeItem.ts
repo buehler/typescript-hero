@@ -1,14 +1,14 @@
-import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
-
 import {
     DefaultImport,
     ExternalModuleImport,
     Import,
     NamedImport,
     NamespaceImport,
+    Resource,
     StringImport,
-} from '../../../common/ts-parsing/imports';
-import { Resource } from '../../../common/ts-parsing/resources';
+} from 'typescript-parser';
+import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
+
 import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 
 /**

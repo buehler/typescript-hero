@@ -1,20 +1,24 @@
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
-import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+import { DeclarationIndex, DeclarationInfo, FileChanges, TypescriptParser } from 'typescript-parser';
+import {
+    commands,
+    ExtensionContext,
+    FileSystemWatcher,
+    StatusBarAlignment,
+    StatusBarItem,
+    Uri,
+    window,
+    workspace,
+} from 'vscode';
 
-import { Notification } from '../../common/communication';
 import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
-import { ImportUserDecision } from '../../common/transport-models';
-import { TypescriptParser } from '../../common/ts-parsing';
-import { DeclarationInfo } from '../../common/ts-parsing/declarations';
 import { Logger, LoggerFactory } from '../../common/utilities';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
-import { ClientConnection } from '../utilities/ClientConnection';
 import { BaseExtension } from './BaseExtension';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
@@ -122,14 +126,16 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
+    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
+        '{**/*.ts,**/package.json,**/typings.json}',
+    );
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        private index: CalculatedDeclarationIndex,
-        private parser: TypescriptParser,
-        private connection: ClientConnection,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
@@ -142,41 +148,14 @@ export class ImportResolveExtension extends BaseExtension {
      */
     public initialize(): void {
         this.context.subscriptions.push(this.statusBarItem);
+        this.context.subscriptions.push(this.fileWatcher);
+
         this.statusBarItem.text = resolverOk;
         this.statusBarItem.tooltip = 'Click to manually reindex all files.';
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
-        this.connection.onNotification(
-            Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk,
-        );
-        this.connection.onNotification(
-            Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr,
-        );
-        this.connection.onNotification(
-            Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
-        );
-
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addImportUnderCursor',
-                () => this.addImportUnderCursor(),
-            ),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports(),
-            ),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
-        );
-        this.context.subscriptions.push(
-            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
-        );
+        this.commandRegistrations();
 
         this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
             if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
@@ -185,6 +164,37 @@ export class ImportResolveExtension extends BaseExtension {
                 this.ignorePatterns = this.config.resolver.ignorePatterns;
             }
         }));
+
+        let timeout: NodeJS.Timer | undefined;
+        let events: FileChanges | undefined;
+
+        const fileWatcherEvent = (event: string, uri: Uri) => {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            if (!events) {
+                events = {
+                    created: [],
+                    updated: [],
+                    deleted: [],
+                };
+            }
+            events[event].push(uri.fsPath);
+
+            timeout = setTimeout(
+                () => {
+                    if (events) {
+                        this.rebuildForFileChanges(events);
+                        events = undefined;
+                    }
+                },
+                500,
+            );
+        };
+
+        this.fileWatcher.onDidCreate(uri => fileWatcherEvent('created', uri));
+        this.fileWatcher.onDidChange(uri => fileWatcherEvent('updated', uri));
+        this.fileWatcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
 
         this.buildIndex();
 
@@ -201,7 +211,7 @@ export class ImportResolveExtension extends BaseExtension {
     }
 
     /**
-     * Instructs the tsh-server to build an index for the found files (actually searches for all files in the
+     * Instructs the index to build an index for the found files (actually searches for all files in the
      * current workspace).
      * 
      * @private
@@ -213,7 +223,36 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.text = resolverSyncing;
 
         const files = await findFiles(this.config);
-        this.connection.sendNotification(Notification.CreateIndexForFiles, files);
+        this.logger.info(`Building index for ${files.length} files.`);
+        try {
+            await this.index.buildIndex(files);
+            this.logger.info('Index successfully built');
+            this.statusBarItem.text = resolverOk;
+        } catch (e) {
+            this.logger.error('There was an error during the index creation', e);
+            this.statusBarItem.text = resolverErr;
+        }
+    }
+
+    /**
+     * Instructs the index to rebuild the partial index for the changed files.
+     * 
+     * @private
+     * @param {FileChanges} changes 
+     * @returns {Promise<void>} 
+     * @memberof ImportResolveExtension
+     */
+    private async rebuildForFileChanges(changes: FileChanges): Promise<void> {
+        this.logger.info('Rebuilding index for changed files.', changes);
+        this.statusBarItem.text = resolverSyncing;
+
+        try {
+            this.index.reindexForChanges(changes);
+            this.statusBarItem.text = resolverOk;
+        } catch (e) {
+            this.logger.error('There was an error during the index rebuild', e);
+            this.statusBarItem.text = resolverErr;
+        }
     }
 
     /**
@@ -439,9 +478,10 @@ export class ImportResolveExtension extends BaseExtension {
      */
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,
-    ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
+    ): Promise<(DeclarationInfo)[]> {
+        // TODO
         const parsedDocument = await this.parser.parseSource(documentSource);
-        const missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [];
+        const missingDeclarations: (DeclarationInfo)[] = [];
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
@@ -457,10 +497,39 @@ export class ImportResolveExtension extends BaseExtension {
                 missingDeclarations.push(foundDeclarations[0]);
             } else {
                 // TODO handle decisions.
-                missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
+                // missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
             }
         }
 
         return missingDeclarations;
+    }
+
+    /**
+     * Registers the commands for this extension.
+     * 
+     * @private
+     * @memberof ImportResolveExtension
+     */
+    private commandRegistrations(): void {
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addImportUnderCursor',
+                () => this.addImportUnderCursor(),
+            ),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports(),
+            ),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
+        );
+        this.context.subscriptions.push(
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
+        );
     }
 }

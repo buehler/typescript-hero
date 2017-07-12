@@ -1,4 +1,4 @@
-import { File } from '../../common/ts-parsing/resources';
+import { File } from 'typescript-parser';
 import { TextDocument } from 'vscode';
 
 /**

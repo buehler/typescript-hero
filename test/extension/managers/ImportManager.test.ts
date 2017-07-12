@@ -2,15 +2,15 @@ import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
 import sinonChai = require('sinon-chai');
+import { DeclarationIndex, File } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { File } from '../../../src/common/ts-parsing/resources';
 import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../src/extension/IoC';
+import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { ImportManager } from '../../../src/extension/managers';
 import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
 import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import { Container } from '../../../src/server/IoC';
 
 const should = chai.should();
 chai.use(sinonChai);
@@ -48,8 +48,8 @@ describe('ImportManager', () => {
         const config = new VscodeExtensionConfig();
         files = await findFiles(config);
 
-        index = Container.get(DeclarationIndex);
-        await index.buildIndex(files, workspace.rootPath!);
+        index = index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        await index.buildIndex(files);
 
         document = await workspace.openTextDocument(file);
         await window.showTextDocument(document);

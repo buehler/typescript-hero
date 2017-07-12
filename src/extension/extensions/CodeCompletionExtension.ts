@@ -1,4 +1,5 @@
 import { inject, injectable } from 'inversify';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import {
     CancellationToken,
     CompletionItem,
@@ -11,11 +12,10 @@ import {
 } from 'vscode';
 
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
-import { TypescriptParser } from '../../common/ts-parsing';
 import { Logger, LoggerFactory } from '../../common/utilities';
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
+import { getItemKind } from '../utilities/utilityFunctions';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -33,8 +33,8 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        private parser: TypescriptParser,
-        private index: CalculatedDeclarationIndex,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
@@ -118,11 +118,10 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         for (const declaration of declarations.filter(
             o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
         ) {
-            const item = new CompletionItem(declaration.declaration.name, declaration.declaration.itemKind);
-            
+            const item = new CompletionItem(declaration.declaration.name, getItemKind(declaration.declaration));
+
             manager.addDeclarationImport(declaration);
             item.detail = declaration.from;
-            item.sortText = declaration.declaration.intellisenseSortKey;
             item.additionalTextEdits = manager.calculateTextEdits();
             items.push(item);
 

@@ -1,6 +1,6 @@
+import { Resource } from 'typescript-parser';
 import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
 
-import { Resource } from '../../../common/ts-parsing/resources';
 import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 import { DeclarationStructureTreeItem } from './DeclarationStructureTreeItem';
 import { ImportsStructureTreeItem } from './ImportsStructureTreeItem';

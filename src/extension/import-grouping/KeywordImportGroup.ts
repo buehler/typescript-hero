@@ -1,5 +1,5 @@
-import { GenerationOptions } from '../../common/ts-generation';
-import { Import, StringImport } from '../../common/ts-parsing/imports';
+import { Import, StringImport } from 'typescript-parser';
+
 import { importSort } from '../utilities/utilityFunctions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupKeyword } from './ImportGroupKeyword';
@@ -36,15 +36,6 @@ export class KeywordImportGroup implements ImportGroup {
             default:
                 return false;
         }
-    }
-
-    public generateTypescript(options: GenerationOptions): string {
-        if (!this.imports.length) {
-            return '';
-        }
-        return this.sortedImports
-            .map(imp => imp.generateTypescript(options))
-            .join('\n') + '\n';
     }
 
     /**

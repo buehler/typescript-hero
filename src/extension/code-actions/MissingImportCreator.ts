@@ -1,8 +1,10 @@
-import { CalculatedDeclarationIndex } from '../declarations/CalculatedDeclarationIndex';
+import { inject, injectable } from 'inversify';
+import { DeclarationIndex } from 'typescript-parser';
+import { Command, Diagnostic, TextDocument } from 'vscode';
+
+import { iocSymbols } from '../IoCSymbols';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
-import { injectable } from 'inversify';
-import { Command, Diagnostic, TextDocument } from 'vscode';
 
 /**
  * Action creator that handles missing imports in files.
@@ -13,7 +15,9 @@ import { Command, Diagnostic, TextDocument } from 'vscode';
  */
 @injectable()
 export class MissingImportCreator extends CodeActionCreator {
-    constructor(private index: CalculatedDeclarationIndex) {
+    constructor(
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+    ) {
         super();
     }
 
