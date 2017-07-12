@@ -18,13 +18,14 @@ import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 
 const container = new IoCContainer();
 
+container.bind(iocSymbols.rootPath).toConstantValue(workspace.rootPath || '');
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 container
     .bind<DeclarationIndex>(iocSymbols.declarationIndex)
     .toDynamicValue((context: interfaces.Context) => {
         const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        return new DeclarationIndex(parser, workspace.rootPath || '');
+        return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
     })
     .inSingletonScope();
 

@@ -53,6 +53,10 @@ export class ImportManager implements ObjectManager {
         return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
     }
 
+    private static get rootPath(): string {
+        return Container.get<string>(iocSymbols.rootPath);
+    }
+
     private importGroups: ImportGroup[];
     private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
@@ -122,7 +126,7 @@ export class ImportManager implements ObjectManager {
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
                 this.document.fileName,
-                workspace.rootPath,
+                ImportManager.rootPath,
             ) && o instanceof ImportProxy,
         ) as ImportProxy;
 
@@ -145,14 +149,14 @@ export class ImportManager implements ObjectManager {
                 imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
-                    workspace.rootPath,
+                    ImportManager.rootPath,
                 ));
                 (imp as ImportProxy).defaultPurposal = declarationInfo.declaration.name;
             } else {
                 imp = new ImportProxy(getRelativeLibraryName(
                     declarationInfo.from,
                     this.document.fileName,
-                    workspace.rootPath,
+                    ImportManager.rootPath,
                 ));
                 (imp as ImportProxy).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
@@ -177,7 +181,7 @@ export class ImportManager implements ObjectManager {
             index.declarationInfos,
             this.document.fileName,
             this.imports,
-            workspace.rootPath,
+            ImportManager.rootPath,
         );
 
         for (const usage of this._parsedDocument.nonLocalUsages) {

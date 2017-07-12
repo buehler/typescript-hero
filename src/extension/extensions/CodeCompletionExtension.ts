@@ -8,7 +8,6 @@ import {
     languages,
     Position,
     TextDocument,
-    workspace,
 } from 'vscode';
 
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
@@ -35,6 +34,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.rootPath) private rootPath: string,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
@@ -109,7 +109,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             this.index.declarationInfos,
             document.fileName,
             parsed.imports,
-            workspace.rootPath,
+            this.rootPath,
         )
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));

@@ -1,7 +1,6 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import { File, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
-import { workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
 import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
@@ -20,14 +19,15 @@ describe('RemainImportGroup', () => {
 
     before(async () => {
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const rootPath = Container.get<string>(iocSymbols.rootPath);
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
         file = await parser.parseFile(
             join(
-                workspace.rootPath!,
+                rootPath,
                 'extension/import-grouping/imports.ts',
             ),
-            workspace.rootPath!,
+            rootPath,
         );
     });
 

@@ -25,8 +25,9 @@ describe('DocumentSymbolStructureExtension', () => {
     let document: vscode.TextDocument;
 
     before(async () => {
+        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
-            vscode.workspace.rootPath!,
+            rootPath,
             'extension/extensions/documentSymbolStructureExtension/documentSymbolFile.ts',
         );
         document = await vscode.workspace.openTextDocument(file);
@@ -52,8 +53,9 @@ describe('DocumentSymbolStructureExtension', () => {
     });
 
     it('should return a "file not parsable" if it is no ts file', async () => {
+        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
-            vscode.workspace.rootPath!,
+            rootPath,
             'extension/extensions/documentSymbolStructureExtension/notParsable.txt',
         );
         const txtDocument = await vscode.workspace.openTextDocument(file);
