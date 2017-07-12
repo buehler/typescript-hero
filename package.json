@@ -7,7 +7,7 @@
     "color": "#1e324c",
     "theme": "dark"
   },
-  "version": "1.1.0",
+  "version": "0.0.0-development",
   "publisher": "rbbit",
   "engines": {
     "vscode": "^1.13.0",
@@ -21,12 +21,7 @@
   "main": "./out/src/extension/extension",
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "license": "MIT",
-  "contributors": [
-    {
-      "name": "Dominique Wirz",
-      "email": "dominique.wirz@gmail.com"
-    }
-  ],
+  "contributors": [],
   "badges": [
     {
       "url": "https://img.shields.io/travis/buehler/typescript-hero.svg",
