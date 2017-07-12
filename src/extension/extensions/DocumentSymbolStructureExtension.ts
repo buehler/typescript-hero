@@ -1,4 +1,5 @@
 import { inject, injectable } from 'inversify';
+import { File, Node, TypescriptParser } from 'typescript-parser';
 import {
     commands,
     Event,
@@ -13,8 +14,6 @@ import {
 } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
-import { Node, TypescriptParser } from '../../common/ts-parsing';
-import { File } from '../../common/ts-parsing/resources';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
@@ -44,7 +43,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        private parser: TypescriptParser,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
     ) {
         super(context);
         this.logger = loggerFactory('DocumentSymbolStructureExtension');
@@ -140,7 +139,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     /**
-     * TODO
+     * Method that recalculates the current document when the active window changed.
      * 
      * @private
      * 

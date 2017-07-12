@@ -1,12 +1,11 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
-import { ExtensionContext } from 'vscode';
+import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
+import { ExtensionContext, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
-import { TypescriptParser } from '../common/ts-parsing';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
-import { CalculatedDeclarationIndex } from './declarations/CalculatedDeclarationIndex';
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
@@ -21,8 +20,29 @@ const container = new IoCContainer();
 
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
-container.bind(CalculatedDeclarationIndex).to(CalculatedDeclarationIndex).inSingletonScope();
-container.bind(TypescriptParser).to(TypescriptParser);
+container
+    .bind<DeclarationIndex>(iocSymbols.declarationIndex)
+    .toDynamicValue((context: interfaces.Context) => {
+        const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        return new DeclarationIndex(parser, workspace.rootPath || '');
+    })
+    .inSingletonScope();
+
+container
+    .bind<TypescriptParser>(iocSymbols.typescriptParser)
+    .toDynamicValue(() => {
+        return new TypescriptParser();
+    })
+    .inSingletonScope();
+
+container
+    .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
+    .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
+        return () => {
+            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            return new TypescriptCodeGenerator(config.resolver.generationOptions);
+        };
+    });
 
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();

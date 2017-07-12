@@ -1,3 +1,16 @@
+import {
+    ClassDeclaration,
+    ConstructorDeclaration,
+    DeclarationVisibility,
+    File,
+    MethodDeclaration,
+    ParameterDeclaration,
+    PropertyDeclaration,
+    TypescriptCodeGenerator,
+    TypescriptParser,
+} from 'typescript-parser';
+import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
+
 import { ExtensionConfig } from '../../common/config';
 import {
     ClassNotFoundError,
@@ -6,21 +19,11 @@ import {
     PropertyDuplicated,
     PropertyNotFound,
 } from '../../common/errors';
-import { TypescriptParser } from '../../common/ts-parsing';
-import {
-    ClassDeclaration,
-    ConstructorDeclaration,
-    DeclarationVisibility,
-    MethodDeclaration,
-    ParameterDeclaration,
-    PropertyDeclaration,
-} from '../../common/ts-parsing/declarations';
-import { File } from '../../common/ts-parsing/resources';
+import { TypescriptCodeGeneratorFactory } from '../../common/factories';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
 import { ObjectManager } from './ObjectManager';
-import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
 
 type VisibleObject = { visibility?: DeclarationVisibility };
 
@@ -58,7 +61,11 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
  */
 export class ClassManager implements ObjectManager {
     private static get parser(): TypescriptParser {
-        return Container.get(TypescriptParser);
+        return Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+    }
+
+    private static get generator(): TypescriptCodeGenerator {
+        return Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
     }
 
     private static get config(): ExtensionConfig {
@@ -322,7 +329,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.start!).line + 1;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                property.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                ClassManager.generator.generate(property.object),
             ));
         }
 
@@ -369,7 +376,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.end!).line;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '\n' + method.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                '\n' + ClassManager.generator.generate(method.object),
             ));
         }
 

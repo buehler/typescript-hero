@@ -1,4 +1,4 @@
-import { DeclarationInfo } from '../ts-parsing/declarations';
+import { DeclarationInfo } from 'typescript-parser';
 import { QuickPickItem } from 'vscode';
 
 /**

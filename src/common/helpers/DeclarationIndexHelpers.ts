@@ -1,7 +1,13 @@
 import { join, normalize, parse, relative } from 'path';
-
-import { DeclarationInfo, DefaultDeclaration } from '../ts-parsing/declarations';
-import { DefaultImport, ExternalModuleImport, Import, NamedImport, NamespaceImport } from '../ts-parsing/imports';
+import {
+    DeclarationInfo,
+    DefaultDeclaration,
+    DefaultImport,
+    ExternalModuleImport,
+    Import,
+    NamedImport,
+    NamespaceImport,
+} from 'typescript-parser';
 
 /**
  * Calculates a list of declarationInfos filtered by the already imported ones in the given document.

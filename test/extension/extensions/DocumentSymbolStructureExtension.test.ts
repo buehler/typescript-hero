@@ -1,8 +1,8 @@
 import { join } from 'path';
+import { TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { DocumentSymbolStructureExtension } from '../../../src/extension/extensions/DocumentSymbolStructureExtension';
 import { Container } from '../../../src/extension/IoC';
@@ -34,7 +34,7 @@ describe('DocumentSymbolStructureExtension', () => {
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
 
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);

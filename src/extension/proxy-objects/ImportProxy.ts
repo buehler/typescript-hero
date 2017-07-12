@@ -1,6 +1,4 @@
-import { GenerationOptions } from '../../common/ts-generation';
-import { SymbolSpecifier } from '../../common/ts-parsing';
-import { DefaultImport, NamedImport } from '../../common/ts-parsing/imports';
+import { DefaultImport, NamedImport, SymbolSpecifier } from 'typescript-parser';
 
 /**
  * Proxy class that wraps a NamedImport or a DefaultImport. Is used by the DocumentController to
@@ -88,27 +86,5 @@ export class ImportProxy extends NamedImport {
             this.defaultPurposal === imp.defaultPurposal &&
             this.specifiers.length === imp.specifiers.length &&
             sameSpecifiers(this.specifiers, imp.specifiers);
-    }
-
-    /**
-     * Overwrites the base function, does return an import string based on specifiers used. If only a default
-     * specifier is used, a normal default import string is returned, otherwise a TsNamedImport with (or without)
-     * the default import is returned.
-     * 
-     * @param {GenerationOptions} options
-     * @returns {string}
-     * 
-     * @memberof ImportProxy
-     */
-    public generateTypescript(options: GenerationOptions): string {
-        if (this.specifiers.length <= 0) {
-            return new DefaultImport(
-                this.libraryName, (this.defaultAlias || this.defaultPurposal)!, this.start, this.end,
-            ).generateTypescript(options);
-        }
-        if (this.defaultAlias) {
-            this.specifiers.push(new SymbolSpecifier('default', this.defaultAlias));
-        }
-        return super.generateTypescript(options);
     }
 }

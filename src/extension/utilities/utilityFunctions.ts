@@ -1,5 +1,21 @@
-import { SymbolSpecifier } from '../../common/ts-parsing';
-import { Import } from '../../common/ts-parsing/imports';
+import {
+    ClassDeclaration,
+    ConstructorDeclaration,
+    Declaration,
+    DefaultDeclaration,
+    EnumDeclaration,
+    FunctionDeclaration,
+    Import,
+    InterfaceDeclaration,
+    MethodDeclaration,
+    ModuleDeclaration,
+    ParameterDeclaration,
+    PropertyDeclaration,
+    SymbolSpecifier,
+    TypeAliasDeclaration,
+    VariableDeclaration,
+} from 'typescript-parser';
+import { CompletionItemKind } from 'vscode';
 
 /**
  * String-Sort function.
@@ -49,4 +65,45 @@ export function importSort(i1: Import, i2: Import, order: 'asc' | 'desc' = 'asc'
  */
 export function specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number {
     return stringSort(i1.specifier, i2.specifier);
+}
+
+/**
+ * Returns the item kind for a given declaration.
+ * 
+ * @export
+ * @param {Declaration} declaration 
+ * @returns {CompletionItemKind} 
+ */
+export function getItemKind(declaration: Declaration): CompletionItemKind {
+    switch (true) {
+        case declaration instanceof ClassDeclaration:
+            return CompletionItemKind.Class;
+        case declaration instanceof ConstructorDeclaration:
+            return CompletionItemKind.Constructor;
+        case declaration instanceof DefaultDeclaration:
+            return CompletionItemKind.File;
+        case declaration instanceof EnumDeclaration:
+            return CompletionItemKind.Enum;
+        case declaration instanceof FunctionDeclaration:
+            return CompletionItemKind.Function;
+        case declaration instanceof InterfaceDeclaration:
+            return CompletionItemKind.Interface;
+        case declaration instanceof MethodDeclaration:
+            return CompletionItemKind.Method;
+        case declaration instanceof ModuleDeclaration:
+            return CompletionItemKind.Module;
+        case declaration instanceof ParameterDeclaration:
+            return CompletionItemKind.Variable;
+        case declaration instanceof PropertyDeclaration:
+            return CompletionItemKind.Property;
+        case declaration instanceof TypeAliasDeclaration:
+            return CompletionItemKind.TypeParameter;
+        case declaration instanceof VariableDeclaration:
+            const variable = declaration as VariableDeclaration;
+            return variable.isConst ?
+                CompletionItemKind.Constant :
+                CompletionItemKind.Variable;
+        default:
+            return CompletionItemKind.Reference;
+    }
 }

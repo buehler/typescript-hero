@@ -1,10 +1,10 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import { File, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptParser } from '../../../src/common/ts-parsing';
-import { File } from '../../../src/common/ts-parsing/resources';
+import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
 import { ImportGroupKeyword, KeywordImportGroup } from '../../../src/extension/import-grouping';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -16,10 +16,12 @@ describe('KeywordImportGroup', () => {
     let file: File;
     let importGroup: KeywordImportGroup;
     let config: ExtensionConfig;
+    let generator: TypescriptCodeGenerator;
 
     before(async () => {
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
         file = await parser.parseFile(
             join(
                 workspace.rootPath!,
@@ -57,7 +59,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import { AnotherModuleFoo } from 'anotherLib';\n` +
                 `import { ModuleFoobar } from 'myLib';\n`,
             );
@@ -70,7 +72,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import { ModuleFoobar } from 'myLib';\n` +
                 `import { AnotherModuleFoo } from 'anotherLib';\n`,
             );
@@ -106,7 +108,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import './workspaceSideEffectLib';\n` +
                 `import 'sideEffectLib';\n`,
             );
@@ -119,7 +121,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import 'sideEffectLib';\n` +
                 `import './workspaceSideEffectLib';\n`,
             );
@@ -155,7 +157,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import { AnotherFoobar } from './anotherFile';\n` +
                 `import { Foobar } from './myFile';\n`,
             );
@@ -168,7 +170,7 @@ describe('KeywordImportGroup', () => {
                     continue;
                 }
             }
-            importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+            generator.generate(importGroup as any).should.equal(
                 `import { Foobar } from './myFile';\n` +
                 `import { AnotherFoobar } from './anotherFile';\n`,
             );

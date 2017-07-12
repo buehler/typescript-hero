@@ -1,14 +1,13 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 
 chai.should();
 
@@ -28,9 +27,9 @@ describe('ImportResolveExtension', () => {
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
 
-        const index = new DeclarationIndex(logger, parser);
+        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(
             [
                 join(
@@ -50,10 +49,9 @@ describe('ImportResolveExtension', () => {
                     'extension/extensions/importResolveExtension/sameDirectory.ts',
                 ),
             ],
-            vscode.workspace.rootPath!,
         );
 
-        extension = new ImportResolveExtension(ctx, logger, config, index as any, parser, <any>null);
+        extension = new ImportResolveExtension(ctx, logger, config, parser, index);
     });
 
     describe('addImportToDocument', () => {
@@ -81,7 +79,7 @@ describe('ImportResolveExtension', () => {
         it('shoud write a module / namespace import correctly', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'bodyParser',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
@@ -91,7 +89,7 @@ describe('ImportResolveExtension', () => {
         it('shoud write a named import correctly', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'Class1',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
@@ -101,7 +99,7 @@ describe('ImportResolveExtension', () => {
         it('shoud update a named import correcty', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'Class',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
@@ -112,17 +110,17 @@ describe('ImportResolveExtension', () => {
         it('shoud use the correct relative path', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'Class1',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.match(/\.\.\/\.\.\/\.\.\/server\//);
+            document.getText().should.match(/\.\.\/\.\.\/\.\.\/server\/indices/);
         });
 
         it('shoud only use forward slashes', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'SubFileLevel3',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
@@ -132,7 +130,7 @@ describe('ImportResolveExtension', () => {
         it('shoud use ./ for same directory files', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'AddImportSameDirectory',
-                documentSource: '', 
+                documentSource: '',
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);

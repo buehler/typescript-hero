@@ -1,5 +1,6 @@
+import { TypescriptGenerationOptions } from 'typescript-parser';
+
 import { ImportGroup } from '../../extension/import-grouping';
-import { GenerationOptions } from '../ts-generation';
 
 /**
  * Configuration interface for the resolver extension.
@@ -99,8 +100,8 @@ export interface ResolverConfig {
      * All information that are needed to print an import.
      * 
      * @readonly
-     * @type {GenerationOptions}
+     * @type {TypescriptGenerationOptions}
      * @memberof ResolverConfig
      */
-    generationOptions: GenerationOptions;
+    generationOptions: TypescriptGenerationOptions;
 }

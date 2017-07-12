@@ -1,5 +1,5 @@
-import { Generatable } from '../../common/ts-generation';
-import { Import } from '../../common/ts-parsing/imports';
+import { Import } from 'typescript-parser';
+
 import { ImportGroupOrder } from './ImportGroupOrder';
 
 /**
@@ -10,7 +10,7 @@ import { ImportGroupOrder } from './ImportGroupOrder';
  * @interface ImportGroup
  * @extends {Generatable}
  */
-export interface ImportGroup extends Generatable {
+export interface ImportGroup {
     /**
      * The readonly list of imports for this group.
      * 
