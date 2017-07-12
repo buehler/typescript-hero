@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import { DeclarationIndex } from 'typescript-parser';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
-import { DeclarationIndexFactory } from '../../common/factories';
 import { iocSymbols } from '../IoCSymbols';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
@@ -16,13 +15,10 @@ import { CodeActionCreator } from './CodeActionCreator';
  */
 @injectable()
 export class MissingImportCreator extends CodeActionCreator {
-    private index: DeclarationIndex;
-
     constructor(
-        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super();
-        this.index = indexFactory();
     }
 
     /**

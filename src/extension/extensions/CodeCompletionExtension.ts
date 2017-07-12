@@ -11,7 +11,6 @@ import {
     workspace,
 } from 'vscode';
 
-import { DeclarationIndexFactory, TypescriptParserFactory } from '../../common/factories';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -30,19 +29,15 @@ import { BaseExtension } from './BaseExtension';
 @injectable()
 export class CodeCompletionExtension extends BaseExtension implements CompletionItemProvider {
     private logger: Logger;
-    private parser: TypescriptParser;
-    private index: DeclarationIndex;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
-        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
-        this.parser = parserFactory();
-        this.index = indexFactory();
     }
 
     /**

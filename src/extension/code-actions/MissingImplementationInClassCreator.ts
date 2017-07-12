@@ -8,7 +8,6 @@ import {
 } from 'typescript-parser';
 import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
-import { DeclarationIndexFactory, TypescriptParserFactory } from '../../common/factories';
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
@@ -23,16 +22,11 @@ import { CodeActionCreator } from './CodeActionCreator';
  */
 @injectable()
 export class MissingImplementationInClassCreator extends CodeActionCreator {
-    private parser: TypescriptParser;
-    private index: DeclarationIndex;
-
     constructor(
-        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
-        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super();
-        this.parser = parserFactory();
-        this.index = indexFactory();
     }
 
     /**

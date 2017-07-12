@@ -5,7 +5,6 @@ import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
-import { DeclarationIndexFactory, TypescriptParserFactory } from '../../common/factories';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
@@ -118,20 +117,16 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
-    private index: DeclarationIndex;
-    private parser: TypescriptParser;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
-        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
+        @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
-        this.parser = parserFactory();
-        this.index = indexFactory();
     }
 
     /**

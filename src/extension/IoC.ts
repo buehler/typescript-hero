@@ -4,7 +4,6 @@ import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typ
 import { ExtensionContext, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
-import { TypescriptParserFactory } from '../common/factories/index';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -22,25 +21,19 @@ const container = new IoCContainer();
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 container
-    .bind<DeclarationIndex>(iocSymbols.declarationIndexFactory)
+    .bind<DeclarationIndex>(iocSymbols.declarationIndex)
     .toDynamicValue((context: interfaces.Context) => {
-        const parser = context.container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
+        const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
         return new DeclarationIndex(parser, workspace.rootPath || '');
     })
     .inSingletonScope();
 
 container
-    .bind<TypescriptParser>(iocSymbols.typescriptParserFactory)
+    .bind<TypescriptParser>(iocSymbols.typescriptParser)
     .toDynamicValue(() => {
         return new TypescriptParser();
     })
     .inSingletonScope();
-
-container
-    .bind<interfaces.Factory<TypescriptParser>>(iocSymbols.typescriptParserFactory)
-    .toFactory<TypescriptParser>(() => {
-        return () => new TypescriptParser();
-    });
 
 container
     .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)

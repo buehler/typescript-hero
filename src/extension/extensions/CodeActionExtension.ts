@@ -13,7 +13,6 @@ import {
     window,
 } from 'vscode';
 
-import { DeclarationIndexFactory } from '../../common/factories';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { CodeAction } from '../code-actions/CodeAction';
 import { CodeActionCreator } from '../code-actions/CodeActionCreator';
@@ -32,17 +31,15 @@ import { BaseExtension } from './BaseExtension';
 @injectable()
 export class CodeActionExtension extends BaseExtension implements CodeActionProvider {
     private logger: Logger;
-    private index: DeclarationIndex;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @multiInject(iocSymbols.codeActionCreators) private actionCreators: CodeActionCreator[],
-        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
+        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
     ) {
         super(context);
         this.logger = loggerFactory('CodeActionExtension');
-        this.index = indexFactory();
     }
 
     /**

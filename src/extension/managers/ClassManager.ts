@@ -19,7 +19,7 @@ import {
     PropertyDuplicated,
     PropertyNotFound,
 } from '../../common/errors';
-import { TypescriptCodeGeneratorFactory, TypescriptParserFactory } from '../../common/factories';
+import { TypescriptCodeGeneratorFactory } from '../../common/factories';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
@@ -61,7 +61,7 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
  */
 export class ClassManager implements ObjectManager {
     private static get parser(): TypescriptParser {
-        return Container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
+        return Container.get<TypescriptParser>(iocSymbols.typescriptParser);
     }
 
     private static get generator(): TypescriptCodeGenerator {
