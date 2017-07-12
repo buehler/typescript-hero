@@ -1,7 +1,5 @@
 # TypeScript Hero
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/buehler/typescript-hero.svg)](https://greenkeeper.io/)
-
 TypeScript Hero is a vscode extension that makes your life easier.
 When you are coding a lot of `TypeScript` you may want vscode to automatically
 include your imports.
