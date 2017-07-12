@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
+#### Changed
+- The Code outline view is now hidden when disabled (`typescriptHero.codeOutline.enabled`) ([#236](https://github.com/buehler/typescript-hero/issues/236))
 #### Fixed
 - Some abstract methods were not implemented from interfaces
 - Optional parameters are implemented now ([#141](https://github.com/buehler/typescript-hero/issues/141))
