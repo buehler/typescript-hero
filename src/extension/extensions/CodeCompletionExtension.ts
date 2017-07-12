@@ -15,6 +15,7 @@ import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
+import { getItemKind } from '../utilities/utilityFunctions';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -117,11 +118,10 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         for (const declaration of declarations.filter(
             o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
         ) {
-            const item = new CompletionItem(declaration.declaration.name, declaration.declaration.itemKind);
+            const item = new CompletionItem(declaration.declaration.name, getItemKind(declaration.declaration));
             
             manager.addDeclarationImport(declaration);
             item.detail = declaration.from;
-            item.sortText = declaration.declaration.intellisenseSortKey;
             item.additionalTextEdits = manager.calculateTextEdits();
             items.push(item);
 

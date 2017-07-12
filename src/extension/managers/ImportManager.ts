@@ -12,6 +12,7 @@ import {
     NamespaceImport,
     StringImport,
     SymbolSpecifier,
+    TypescriptCodeGenerator,
     TypescriptParser,
 } from 'typescript-parser';
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
@@ -46,6 +47,10 @@ export class ImportManager implements ObjectManager {
 
     private static get config(): ExtensionConfig {
         return Container.get<ExtensionConfig>(iocSymbols.configuration);
+    }
+
+    private static get generator(): TypescriptCodeGenerator {
+        return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
     }
 
     private importGroups: ImportGroup[];
@@ -299,7 +304,7 @@ export class ImportManager implements ObjectManager {
             edits.push(TextEdit.insert(
                 getImportInsertPosition(window.activeTextEditor),
                 this.importGroups
-                    .map(_group => '') // TODOgroup.generateTypescript(ImportManager.config.resolver.generationOptions))
+                    .map(group => ImportManager.generator.generate(group as any))
                     .filter(Boolean)
                     .join('\n') + '\n',
             ));
@@ -335,7 +340,7 @@ export class ImportManager implements ObjectManager {
                                     this.document.positionAt(physicalLastImport.end!).line,
                                 ).rangeIncludingLineBreak.end,
                             ),
-                            '',// TODO group.generateTypescript(ImportManager.config.resolver.generationOptions),
+                            ImportManager.generator.generate(group as any),
                         ));
                     } else {
                         // Since the group has no imports, generate it at the top of the file.
@@ -343,7 +348,7 @@ export class ImportManager implements ObjectManager {
                             getImportInsertPosition(
                                 window.activeTextEditor,
                             ),
-                            '',// TODO group.generateTypescript(ImportManager.config.resolver.generationOptions) + '\n',
+                            ImportManager.generator.generate(group as any) + '\n',
                         ));
                     }
 

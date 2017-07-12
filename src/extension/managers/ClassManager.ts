@@ -6,6 +6,7 @@ import {
     MethodDeclaration,
     ParameterDeclaration,
     PropertyDeclaration,
+    TypescriptCodeGenerator,
     TypescriptParser,
 } from 'typescript-parser';
 import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
@@ -60,6 +61,10 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
 export class ClassManager implements ObjectManager {
     private static get parser(): TypescriptParser {
         return Container.get(TypescriptParser);
+    }
+    
+    private static get generator(): TypescriptCodeGenerator {
+        return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
     }
 
     private static get config(): ExtensionConfig {
@@ -323,7 +328,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.start!).line + 1;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '', // TODO property.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                ClassManager.generator.generate(property.object),
             ));
         }
 
@@ -370,7 +375,7 @@ export class ClassManager implements ObjectManager {
                 this.document.positionAt(this.managedClass.end!).line;
             edits.push(TextEdit.insert(
                 new Position(lastPosition, 0),
-                '\n' + '', // TODO method.object.generateTypescript(ClassManager.config.resolver.generationOptions),
+                '\n' + ClassManager.generator.generate(method.object),
             ));
         }
 
