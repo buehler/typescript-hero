@@ -8,9 +8,9 @@ import {
     VariableDeclaration,
 } from 'typescript-parser';
 import { stringTemplate } from 'typescript-parser/utilities/StringTemplate';
-import { ExtensionContext, TreeItemCollapsibleState } from 'vscode';
-import { CompletionItemKind } from 'vscode-languageserver-types';
+import { CompletionItemKind, ExtensionContext, TreeItemCollapsibleState } from 'vscode';
 
+import { getItemKind } from '../../utilities/utilityFunctions';
 import { BaseStructureTreeItem } from './BaseStructureTreeItem';
 
 const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
@@ -53,7 +53,7 @@ function getDeclarationLabel(declaration: Declaration): string {
  */
 export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
     public get iconPath(): string | undefined {
-        switch (this.declaration.itemKind) {
+        switch (getItemKind(this.declaration)) {
             case CompletionItemKind.Class:
             case CompletionItemKind.Keyword:
                 return this.context.asAbsolutePath(fileTemplate('class'));
@@ -72,7 +72,7 @@ export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
                 break;
         }
 
-        if (this.declaration.itemKind === CompletionItemKind.Variable) {
+        if (getItemKind(this.declaration) === CompletionItemKind.Variable) {
             return (this.declaration as VariableDeclaration).isConst ?
                 this.context.asAbsolutePath(fileTemplate('const')) :
                 this.context.asAbsolutePath(fileTemplate('variable'));
