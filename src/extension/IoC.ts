@@ -22,19 +22,19 @@ const container = new IoCContainer();
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
 container
-    .bind<interfaces.Factory<DeclarationIndex>>(iocSymbols.declarationIndexFactory)
-    .toFactory<DeclarationIndex>((context: interfaces.Context) => {
-        let singleton: DeclarationIndex | undefined;
-        return () => {
-            console.log('get singleton', singleton);
-            if (singleton) {
-                return singleton;
-            }
-            const parser = context.container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
-            singleton = new DeclarationIndex(parser, workspace.rootPath || '');
-            return singleton;
-        };
-    });
+    .bind<DeclarationIndex>(iocSymbols.declarationIndexFactory)
+    .toDynamicValue((context: interfaces.Context) => {
+        const parser = context.container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
+        return new DeclarationIndex(parser, workspace.rootPath || '');
+    })
+    .inSingletonScope();
+
+container
+    .bind<TypescriptParser>(iocSymbols.typescriptParserFactory)
+    .toDynamicValue(() => {
+        return new TypescriptParser();
+    })
+    .inSingletonScope();
 
 container
     .bind<interfaces.Factory<TypescriptParser>>(iocSymbols.typescriptParserFactory)

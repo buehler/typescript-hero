@@ -18,6 +18,7 @@ import {
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
+import { TypescriptParserFactory } from '../../common/factories';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
@@ -42,7 +43,7 @@ import { ObjectManager } from './ObjectManager';
  */
 export class ImportManager implements ObjectManager {
     private static get parser(): TypescriptParser {
-        return Container.get(TypescriptParser);
+        return Container.get<TypescriptParserFactory>(iocSymbols.typescriptParserFactory)();
     }
 
     private static get config(): ExtensionConfig {

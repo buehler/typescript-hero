@@ -14,6 +14,7 @@ import {
 } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
+import { TypescriptParserFactory } from '../../common/factories';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
@@ -38,15 +39,17 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     private _onDidChangeTreeData: EventEmitter<BaseStructureTreeItem | undefined>;
     private logger: Logger;
     private documentCache: File | undefined;
+    private parser: TypescriptParser;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        private parser: TypescriptParser,
+        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
     ) {
         super(context);
         this.logger = loggerFactory('DocumentSymbolStructureExtension');
+        this.parser = parserFactory();
         this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }

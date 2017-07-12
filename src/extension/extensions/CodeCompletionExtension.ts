@@ -11,6 +11,7 @@ import {
     workspace,
 } from 'vscode';
 
+import { DeclarationIndexFactory, TypescriptParserFactory } from '../../common/factories';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -29,15 +30,19 @@ import { BaseExtension } from './BaseExtension';
 @injectable()
 export class CodeCompletionExtension extends BaseExtension implements CompletionItemProvider {
     private logger: Logger;
+    private parser: TypescriptParser;
+    private index: DeclarationIndex;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        private parser: TypescriptParser,
-        private index: DeclarationIndex,
+        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
+        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
+        this.parser = parserFactory();
+        this.index = indexFactory();
     }
 
     /**
@@ -119,7 +124,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
         ) {
             const item = new CompletionItem(declaration.declaration.name, getItemKind(declaration.declaration));
-            
+
             manager.addDeclarationImport(declaration);
             item.detail = declaration.from;
             item.additionalTextEdits = manager.calculateTextEdits();

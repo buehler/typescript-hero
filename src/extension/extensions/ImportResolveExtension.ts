@@ -5,6 +5,7 @@ import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
+import { DeclarationIndexFactory, TypescriptParserFactory } from '../../common/factories';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
@@ -117,16 +118,20 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
+    private index: DeclarationIndex;
+    private parser: TypescriptParser;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
-        private index: DeclarationIndex,
-        private parser: TypescriptParser,
+        @inject(iocSymbols.typescriptParserFactory) parserFactory: TypescriptParserFactory,
+        @inject(iocSymbols.declarationIndexFactory) indexFactory: DeclarationIndexFactory,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
+        this.parser = parserFactory();
+        this.index = indexFactory();
     }
 
     /**
@@ -141,37 +146,7 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
-        // TODO
-        // this.connection.onNotification(
-        //     Notification.IndexCreationSuccessful, () => this.statusBarItem.text = resolverOk,
-        // );
-        // this.connection.onNotification(
-        //     Notification.IndexCreationFailed, () => this.statusBarItem.text = resolverErr,
-        // );
-        // this.connection.onNotification(
-        //     Notification.IndexCreationRunning, () => this.statusBarItem.text = resolverSyncing,
-        // );
-
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addImportUnderCursor',
-                () => this.addImportUnderCursor(),
-            ),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand(
-                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports(),
-            ),
-        );
-        this.context.subscriptions.push(
-            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
-        );
-        this.context.subscriptions.push(
-            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
-        );
+        this.commandRegistrations();
 
         this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
             if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
@@ -180,6 +155,8 @@ export class ImportResolveExtension extends BaseExtension {
                 this.ignorePatterns = this.config.resolver.ignorePatterns;
             }
         }));
+
+        // TODO add update of files
 
         this.buildIndex();
 
@@ -208,7 +185,15 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.text = resolverSyncing;
 
         const files = await findFiles(this.config);
-        // this.connection.sendNotification(Notification.CreateIndexForFiles, files);
+        this.logger.info(`Building index for ${files.length} files.`);
+        try {
+            await this.index.buildIndex(files);
+            this.logger.info('Index successfully built');
+            this.statusBarItem.text = resolverOk;
+        } catch (e) {
+            this.logger.error('There was an error during the index creation', e);
+            this.statusBarItem.text = resolverErr;
+        }
     }
 
     /**
@@ -434,10 +419,10 @@ export class ImportResolveExtension extends BaseExtension {
      */
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,
-    ): Promise<(DeclarationInfo | ImportUserDecision)[]> {
+    ): Promise<(DeclarationInfo)[]> {
         // TODO
         const parsedDocument = await this.parser.parseSource(documentSource);
-        const missingDeclarations: (DeclarationInfo | ImportUserDecision)[] = [];
+        const missingDeclarations: (DeclarationInfo)[] = [];
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             documentPath,
@@ -453,10 +438,39 @@ export class ImportResolveExtension extends BaseExtension {
                 missingDeclarations.push(foundDeclarations[0]);
             } else {
                 // TODO handle decisions.
-                missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
+                // missingDeclarations.push(...foundDeclarations.map(o => new ImportUserDecision(o, usage)));
             }
         }
 
         return missingDeclarations;
+    }
+
+    /**
+     * Registers the commands for this extension.
+     * 
+     * @private
+     * @memberof ImportResolveExtension
+     */
+    private commandRegistrations(): void {
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.addImport', () => this.addImport()),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addImportUnderCursor',
+                () => this.addImportUnderCursor(),
+            ),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand(
+                'typescriptHero.resolve.addMissingImports', () => this.addMissingImports(),
+            ),
+        );
+        this.context.subscriptions.push(
+            commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
+        );
+        this.context.subscriptions.push(
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
+        );
     }
 }
