@@ -1,13 +1,12 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 
 const should = chai.should();
 
@@ -27,8 +26,8 @@ describe('CodeCompletionExtension', () => {
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const parser = Container.get(TypescriptParser);
-        const index = new DeclarationIndex(logger, parser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
 
         await index.buildIndex(
             [
@@ -41,7 +40,6 @@ describe('CodeCompletionExtension', () => {
                     'server/indices/MyClass.ts',
                 ),
             ],
-            vscode.workspace.rootPath!,
         );
 
         extension = new CodeCompletionExtension(ctx, logger, parser, index as any);

@@ -1,9 +1,13 @@
 import * as chai from 'chai';
 import { given } from 'mocha-testdata';
+import {
+    DefaultImport,
+    NamedImport,
+    SymbolSpecifier,
+    TypescriptCodeGenerator,
+    TypescriptGenerationOptions,
+} from 'typescript-parser';
 
-import { GenerationOptions } from '../../../src/common/ts-generation';
-import { SymbolSpecifier } from '../../../src/common/ts-parsing';
-import { DefaultImport, NamedImport } from '../../../src/common/ts-parsing/imports';
 import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
 
 chai.should();
@@ -165,7 +169,9 @@ describe('ImportProxy', () => {
 
     describe('toImport()', () => {
 
-        const options: GenerationOptions = {
+        let generator: TypescriptCodeGenerator;
+
+        const options: TypescriptGenerationOptions = {
             eol: ';',
             multiLineWrapThreshold: 120,
             multiLineTrailingComma: false,
@@ -176,37 +182,39 @@ describe('ImportProxy', () => {
         let proxy: ImportProxy;
 
         beforeEach(() => {
+            generator = new TypescriptCodeGenerator(options);
             proxy = new ImportProxy('foo');
         });
 
         it('should generate a TsDefaultImport when no specifiers are provided', () => {
             proxy.defaultAlias = 'ALIAS';
-            proxy.generateTypescript(options).should.equal(`import ALIAS from 'foo';`);
+            generator.generate(proxy).should.equal(`import ALIAS from 'foo';`);
         });
 
         it('should generate a normal TsNamedImport when no default import is provided', () => {
             proxy.addSpecifier('bar');
             proxy.addSpecifier('baz');
-            proxy.generateTypescript(options).should.equal(`import { bar, baz } from 'foo';`);
+            generator.generate(proxy).should.equal(`import { bar, baz } from 'foo';`);
         });
 
         it('should generate a normal TsNamedImport with aliases when no default import is provided', () => {
             proxy.addSpecifier('bar');
             proxy.specifiers.push(new SymbolSpecifier('baz', 'blub'));
-            proxy.generateTypescript(options).should.equal(`import { bar, baz as blub } from 'foo';`);
+            generator.generate(proxy).should.equal(`import { bar, baz as blub } from 'foo';`);
         });
 
         it('should generate a TsNamedImport with default import', () => {
             proxy.defaultAlias = 'ALIAS';
             proxy.addSpecifier('bar');
-            proxy.generateTypescript(options).should.equal(`import { bar, default as ALIAS } from 'foo';`);
+            generator.generate(proxy).should.equal(`import { bar, default as ALIAS } from 'foo';`);
         });
 
         it('should omit semicolons if configured', () => {
             const optionsClone = Object.assign({}, options);
+            generator = new TypescriptCodeGenerator(optionsClone);
             optionsClone.eol = '';
             proxy.defaultAlias = 'ALIAS';
-            proxy.generateTypescript(optionsClone).should.equal(`import ALIAS from 'foo'`);
+            generator.generate(proxy).should.equal(`import ALIAS from 'foo'`);
         });
 
     });

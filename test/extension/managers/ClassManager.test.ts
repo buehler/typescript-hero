@@ -1,19 +1,20 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import sinonChai = require('sinon-chai');
-import { Position, Range, TextDocument, window, workspace } from 'vscode';
-
 import {
     ClassDeclaration,
+    DeclarationIndex,
     DeclarationVisibility,
     MethodDeclaration,
     ParameterDeclaration,
-} from '../../../src/common/ts-parsing/declarations';
+} from 'typescript-parser';
+import { Position, Range, TextDocument, window, workspace } from 'vscode';
+
 import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../src/extension/IoC';
+import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { ClassManager } from '../../../src/extension/managers/ClassManager';
 import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
-import { Container } from '../../../src/server/IoC';
 
 const should = chai.should();
 chai.use(sinonChai);
@@ -30,8 +31,8 @@ describe('ClassManager', () => {
         const config = new VscodeExtensionConfig();
         files = await findFiles(config);
 
-        index = Container.get(DeclarationIndex);
-        await index.buildIndex(files, workspace.rootPath!);
+        index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        await index.buildIndex(files);
 
         document = await workspace.openTextDocument(file);
         await window.showTextDocument(document);
@@ -41,21 +42,21 @@ describe('ClassManager', () => {
     describe('static create()', () => {
 
         it('should create an instance of a class manager', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClass');
+            const ctrl = await ClassManager.create(document, 'ManagedClass');
             ctrl.should.be.an.instanceof(ClassManager);
         });
 
         it('should select the correct class that should be managed', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClass');
-            let declaration = (ctrl as any).managedClass as ClassDeclaration;
+            const ctrl = await ClassManager.create(document, 'ManagedClass');
+            const declaration = (ctrl as any).managedClass as ClassDeclaration;
 
             should.exist(declaration);
             declaration.name.should.equal('ManagedClass');
             declaration.should.be.an.instanceof(ClassDeclaration);
         });
 
-        it('should throw when a class is not found', done => {
-            let fn = async () => await ClassManager.create(document, 'NonExistingClass');
+        it('should throw when a class is not found', (done) => {
+            const fn = async () => await ClassManager.create(document, 'NonExistingClass');
 
             fn()
                 .then(() => done(new Error('did not throw.')))
@@ -67,7 +68,7 @@ describe('ClassManager', () => {
     describe('addProperty()', () => {
 
         it('should add a property to the class array', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             (ctrl as any).properties.should.have.lengthOf(3);
             ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
@@ -76,23 +77,23 @@ describe('ClassManager', () => {
         });
 
         it('should set the isNew flag of Changeable<T>', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
             (ctrl as any).properties[3].isNew.should.be.true;
         });
 
         it('should not set the other flags of Changeable<T>', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'string');
             (ctrl as any).properties[3].isModified.should.be.false;
             (ctrl as any).properties[3].isDeleted.should.be.false;
         });
 
-        it('should throw when adding a duplicate property', done => {
-            let fn = async () => {
-                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+        it('should throw when adding a duplicate property', (done) => {
+            const fn = async () => {
+                const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
                 ctrl.addProperty('foo', DeclarationVisibility.Public, 'string');
             };
 
@@ -106,7 +107,7 @@ describe('ClassManager', () => {
     describe('removeProperty()', () => {
 
         it('should set the deleted flag of Changeable<T>', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             (ctrl as any).properties[0].isDeleted.should.be.false;
             ctrl.removeProperty('foo');
@@ -114,7 +115,7 @@ describe('ClassManager', () => {
         });
 
         it('should not remove the element from the array when not new', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             (ctrl as any).properties.should.have.lengthOf(3);
             ctrl.removeProperty('foo');
@@ -122,7 +123,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove a new property when deleted immediatly', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             (ctrl as any).properties.should.have.lengthOf(3);
             ctrl.addProperty('newProp', DeclarationVisibility.Public, 'string');
@@ -131,9 +132,9 @@ describe('ClassManager', () => {
             (ctrl as any).properties.should.have.lengthOf(3);
         });
 
-        it('should throw when a property is not found', done => {
-            let fn = async () => {
-                let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+        it('should throw when a property is not found', (done) => {
+            const fn = async () => {
+                const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
                 ctrl.removeProperty('whatever');
             };
 
@@ -147,7 +148,7 @@ describe('ClassManager', () => {
     describe('addMethod()', () => {
 
         it('should add a method to the class array with a name', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             (ctrl as any).methods.should.have.lengthOf(3);
             ctrl.addMethod('newMethod');
@@ -156,8 +157,8 @@ describe('ClassManager', () => {
         });
 
         it('should add a method to the class array with a declaration', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods'),
-                decl = new MethodDeclaration('newMethod', false, DeclarationVisibility.Public, 'string');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const decl = new MethodDeclaration('newMethod', false, DeclarationVisibility.Public, 'string');
 
             (ctrl as any).methods.should.have.lengthOf(3);
             ctrl.addMethod(decl);
@@ -166,15 +167,15 @@ describe('ClassManager', () => {
         });
 
         it('should set the isNew flag of Changeable<T>', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.addMethod('newMethod');
             (ctrl as any).methods[3].isNew.should.be.true;
         });
 
-        it('should throw when adding a duplicate method', done => {
-            let fn = async () => {
-                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+        it('should throw when adding a duplicate method', (done) => {
+            const fn = async () => {
+                const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
                 ctrl.addMethod('whatever');
             };
 
@@ -188,7 +189,7 @@ describe('ClassManager', () => {
     describe('removeMethod()', () => {
 
         it('should set the deleted flag of Changeable<T>', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             (ctrl as any).methods[0].isDeleted.should.be.false;
             ctrl.removeMethod('method');
@@ -196,7 +197,7 @@ describe('ClassManager', () => {
         });
 
         it('should not remove the element from the array when not new', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             (ctrl as any).methods.should.have.lengthOf(3);
             ctrl.removeMethod('method');
@@ -204,7 +205,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove a new method when deleted immediatly', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             (ctrl as any).methods.should.have.lengthOf(3);
             ctrl.addMethod('randomMethod');
@@ -213,9 +214,9 @@ describe('ClassManager', () => {
             (ctrl as any).methods.should.have.lengthOf(3);
         });
 
-        it('should throw when a method is not found', done => {
-            let fn = async () => {
-                let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+        it('should throw when a method is not found', (done) => {
+            const fn = async () => {
+                const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
                 ctrl.removeMethod('foobar');
             };
 
@@ -229,19 +230,19 @@ describe('ClassManager', () => {
     describe('commit()', () => {
 
         afterEach(async () => {
-            await window.activeTextEditor!.edit(builder => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.delete(new Range(
                     new Position(0, 0),
-                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
                 ));
                 builder.insert(new Position(0, 0), documentText);
             });
         });
 
         it('should not touch anything if there has nothing changed', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
-            await window.activeTextEditor!.edit(builder => {
+            await window.activeTextEditor!.edit((builder) => {
                 builder.replace(document.lineAt(10).rangeIncludingLineBreak, `public fooobar(): string {   }`);
             });
 
@@ -251,7 +252,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a new property to a class without properties', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Private, 'myType');
             (await ctrl.commit()).should.be.true;
@@ -260,7 +261,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a new property to a class with properties', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Public, 'taip');
             (await ctrl.commit()).should.be.true;
@@ -269,7 +270,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a property to an empty class', async () => {
-            let ctrl = await ClassManager.create(document, 'EmptyClass');
+            const ctrl = await ClassManager.create(document, 'EmptyClass');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
             (await ctrl.commit()).should.be.true;
@@ -278,7 +279,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove a property from a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             document.lineAt(22).text.should.equal('    public foo: string;');
             ctrl.removeProperty('foo');
@@ -288,7 +289,7 @@ describe('ClassManager', () => {
         });
 
         it('should add multiple properties to a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number')
                 .addProperty('pubProp', DeclarationVisibility.Public, 'string');
@@ -299,7 +300,7 @@ describe('ClassManager', () => {
         });
 
         it('should add multiple properties to an empty class', async () => {
-            let ctrl = await ClassManager.create(document, 'EmptyClass');
+            const ctrl = await ClassManager.create(document, 'EmptyClass');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number')
                 .addProperty('pubProp', DeclarationVisibility.Public, 'string');
@@ -310,7 +311,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a property in between properties', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addProperty('newProp', DeclarationVisibility.Protected, 'number');
             (await ctrl.commit()).should.be.true;
@@ -320,7 +321,7 @@ describe('ClassManager', () => {
         });
 
         it('should add multiple properties in between properties', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addProperty('protProp', DeclarationVisibility.Protected, 'number')
                 .addProperty('pubProp', DeclarationVisibility.Public, 'number')
@@ -336,7 +337,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove multiple properties from a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.removeProperty('foo').removeProperty('baz');
             (await ctrl.commit()).should.be.true;
@@ -347,7 +348,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove multiple properties to reach an empty class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.removeProperty('foo')
                 .removeProperty('bar')
@@ -359,7 +360,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove one and add one property', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.removeProperty('foo')
                 .addProperty('fooReplace', DeclarationVisibility.Public, 'type');
@@ -369,7 +370,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a method to a class with methods', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.addMethod(
                 'newMethod',
@@ -377,8 +378,8 @@ describe('ClassManager', () => {
                 'type',
                 [
                     new ParameterDeclaration('foo', undefined),
-                    new ParameterDeclaration('bar', 'baz')
-                ]
+                    new ParameterDeclaration('bar', 'baz'),
+                ],
             );
             (await ctrl.commit()).should.be.true;
 
@@ -388,7 +389,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a method to a class without methods', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithProperties');
 
             ctrl.addMethod(
                 'newMethod',
@@ -396,8 +397,8 @@ describe('ClassManager', () => {
                 'type',
                 [
                     new ParameterDeclaration('foo', undefined),
-                    new ParameterDeclaration('bar', 'baz')
-                ]
+                    new ParameterDeclaration('bar', 'baz'),
+                ],
             );
             (await ctrl.commit()).should.be.true;
 
@@ -407,7 +408,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove a method from a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.removeMethod('whatever');
             (await ctrl.commit()).should.be.true;
@@ -416,7 +417,7 @@ describe('ClassManager', () => {
         });
 
         it('should add multiple methods to a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.addMethod(
                 'newMethod',
@@ -424,7 +425,7 @@ describe('ClassManager', () => {
                 'type',
                 [
                     new ParameterDeclaration('foo', undefined),
-                    new ParameterDeclaration('bar', 'baz')
+                    new ParameterDeclaration('bar', 'baz'),
                 ])
                 .addMethod('protMethod', DeclarationVisibility.Protected, 'type');
             (await ctrl.commit()).should.be.true;
@@ -439,7 +440,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove multiple methods from a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
+            const ctrl = await ClassManager.create(document, 'ManagedClassWithMethods');
 
             ctrl.removeMethod('whatever').removeMethod('method').removeMethod('ohyea');
             (await ctrl.commit()).should.be.true;
@@ -449,7 +450,7 @@ describe('ClassManager', () => {
         });
 
         it('should add a property and a method to a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassFull');
+            const ctrl = await ClassManager.create(document, 'ManagedClassFull');
 
             ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'FOOBAR')
                 .addMethod('newMethod', DeclarationVisibility.Public);
@@ -463,7 +464,7 @@ describe('ClassManager', () => {
         });
 
         it('should remove a property and a method from a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassFull');
+            const ctrl = await ClassManager.create(document, 'ManagedClassFull');
 
             ctrl.removeProperty('bar')
                 .removeMethod('whatever');
@@ -475,7 +476,7 @@ describe('ClassManager', () => {
         });
 
         it('should add multiple properties and methods to a class', async () => {
-            let ctrl = await ClassManager.create(document, 'ManagedClassFull');
+            const ctrl = await ClassManager.create(document, 'ManagedClassFull');
 
             ctrl.addProperty('newProperty', DeclarationVisibility.Public, 'FOOBAR')
                 .addMethod('newMethod', DeclarationVisibility.Public)

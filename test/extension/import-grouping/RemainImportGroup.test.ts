@@ -1,10 +1,10 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import { File, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptParser } from '../../../src/common/ts-parsing';
-import { File } from '../../../src/common/ts-parsing/resources';
+import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
 import { RemainImportGroup } from '../../../src/extension/import-grouping';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -16,10 +16,12 @@ describe('RemainImportGroup', () => {
     let file: File;
     let importGroup: RemainImportGroup;
     let config: ExtensionConfig;
+    let generator: TypescriptCodeGenerator;
 
     before(async () => {
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
         file = await parser.parseFile(
             join(
                 workspace.rootPath!,
@@ -43,7 +45,7 @@ describe('RemainImportGroup', () => {
                 continue;
             }
         }
-        importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+        generator.generate(importGroup as any).should.equal(
             `import './workspaceSideEffectLib';\n` +
             `import 'sideEffectLib';\n` +
             `import { AnotherFoobar } from './anotherFile';\n` +
@@ -60,7 +62,7 @@ describe('RemainImportGroup', () => {
                 continue;
             }
         }
-        importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+        generator.generate(importGroup as any).should.equal(
             `import 'sideEffectLib';\n` +
             `import './workspaceSideEffectLib';\n` +
             `import { ModuleFoobar } from 'myLib';\n` +

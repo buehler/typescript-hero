@@ -1,11 +1,10 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import { File, NamedImport, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptParser } from '../../../src/common/ts-parsing';
-import { NamedImport } from '../../../src/common/ts-parsing/imports';
-import { File } from '../../../src/common/ts-parsing/resources';
+import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
 import { RegexImportGroup } from '../../../src/extension/import-grouping';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
@@ -17,10 +16,12 @@ describe('RegexImportGroup', () => {
     let file: File;
     let importGroup: RegexImportGroup;
     let config: ExtensionConfig;
+    let generator: TypescriptCodeGenerator;
 
     before(async () => {
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
         file = await parser.parseFile(
             join(
                 workspace.rootPath!,
@@ -52,7 +53,7 @@ describe('RegexImportGroup', () => {
                 continue;
             }
         }
-        importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+        generator.generate(importGroup as any).should.equal(
             `import './workspaceSideEffectLib';\n` +
             `import 'sideEffectLib';\n` +
             `import { AnotherModuleFoo } from 'anotherLib';\n` +
@@ -67,7 +68,7 @@ describe('RegexImportGroup', () => {
                 continue;
             }
         }
-        importGroup.generateTypescript(config.resolver.generationOptions).should.equal(
+        generator.generate(importGroup as any).should.equal(
             `import 'sideEffectLib';\n` +
             `import './workspaceSideEffectLib';\n` +
             `import { ModuleFoobar } from 'myLib';\n` +

@@ -1,9 +1,9 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
+import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { TypescriptParser } from '../../../src/common/ts-parsing';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../src/extension/code-actions/CodeAction';
 import {
@@ -13,7 +13,6 @@ import { MissingImportCreator } from '../../../src/extension/code-actions/Missin
 import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { DeclarationIndex } from '../../../src/server/indices/DeclarationIndex';
 
 chai.should();
 
@@ -33,9 +32,9 @@ describe('CodeActionExtension', () => {
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const parser = Container.get(TypescriptParser);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
 
-        const index = new DeclarationIndex(logger, parser);
+        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(
             [
                 join(
@@ -55,7 +54,6 @@ describe('CodeActionExtension', () => {
                     'node_modules/fancy-library/FancierLibraryClass.d.ts',
                 ),
             ],
-            workspace.rootPath!,
         );
 
         const creators = [
