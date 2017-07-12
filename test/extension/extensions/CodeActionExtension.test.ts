@@ -39,7 +39,7 @@ describe('CodeActionExtension', () => {
             [
                 join(
                     workspace.rootPath!,
-                    'files/MyClass.ts',
+                    'server/indices/MyClass.ts',
                 ),
                 join(
                     workspace.rootPath!,
@@ -137,7 +137,7 @@ describe('CodeActionExtension', () => {
                 null,
             );
             await extension.executeCodeAction(cmds[0].arguments[0]);
-            document.lineAt(0).text.should.equal(`import { Class1 } from '../../../files/MyClass';`);
+            document.lineAt(0).text.should.equal(`import { Class1 } from '../../../server/indices/MyClass';`);
         });
 
     });
@@ -460,7 +460,7 @@ describe('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(2);
                 const action = cmds[0];
-                action.title.should.equal('Import "Class1" from "/files/MyClass".');
+                action.title.should.equal('Import "Class1" from "/server/indices".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
             });
 
@@ -485,7 +485,7 @@ describe('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(3);
                 let action = cmds[0];
-                action.title.should.equal('Import "FancierLibraryClass" from "/files/MyClass".');
+                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
 
                 action = cmds[1];

@@ -38,7 +38,7 @@ describe('ImportResolveExtension', () => {
                 ),
                 join(
                     vscode.workspace.rootPath!,
-                    'files/MyClass.ts',
+                    'server/indices/MyClass.ts',
                 ),
                 join(
                     vscode.workspace.rootPath!,
@@ -93,7 +93,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.equal(`import { Class1 } from '../../../files/MyClass';\n\n`);
+            document.getText().should.equal(`import { Class1 } from '../../../server/indices/MyClass';\n\n`);
         });
 
         it('shoud update a named import correcty', async () => {
@@ -104,7 +104,7 @@ describe('ImportResolveExtension', () => {
             });
             await extension.addImportToDocument(items[0]);
             await extension.addImportToDocument(items[1]);
-            document.getText().should.equal(`import { Class1, Class2 } from '../../../files/MyClass';\n\n`);
+            document.getText().should.equal(`import { Class1, Class2 } from '../../../server/indices/MyClass';\n\n`);
         });
 
         it('shoud use the correct relative path', async () => {
@@ -114,7 +114,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.match(/\.\.\/\.\.\/\.\.\/server\//);
+            document.getText().should.match(/\.\.\/\.\.\/\.\.\/server\/indices/);
         });
 
         it('shoud only use forward slashes', async () => {

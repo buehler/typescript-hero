@@ -1,0 +1,1 @@
+import defaultImport from './lateDefaultExportedElement';
