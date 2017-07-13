@@ -146,6 +146,10 @@
         "title": "TS Hero (internal): Execute a code action"
       },
       {
+        "command": "typescriptHero.codeCompletion.executeIntellisenseItem",
+        "title": "TS Hero (internal): Execute the command for a intellisense item"
+      },
+      {
         "command": "typescriptHero.documentCodeOutline.gotoNode",
         "title": "TS Hero (internal): Jump to the given nodes location"
       }
