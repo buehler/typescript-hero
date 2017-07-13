@@ -95,7 +95,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             !this.index.indexReady ||
             (lineText.substring(0, position.character).match(/["'`]/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
-            lineText.match(/^import .*$/g) ||
+            lineText.startsWith('import ') ||
             lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
             return Promise.resolve(null);
         }
@@ -113,7 +113,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         )
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
-
+// TODO use command instead of additional text edits
         const items: CompletionItem[] = [];
         for (const declaration of declarations.filter(
             o => o.declaration.name.toLowerCase().indexOf(searchWord.toLowerCase()) >= 0)
