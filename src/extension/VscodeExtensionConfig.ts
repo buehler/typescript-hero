@@ -173,7 +173,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignoreImportsForOrganize(): string[] {
-        return workspace.getConfiguration().get<string[]>('resolver.ignoreImportsForOrganize') || [];
+        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignoreImportsForOrganize') || [];
     }
 
     /**
