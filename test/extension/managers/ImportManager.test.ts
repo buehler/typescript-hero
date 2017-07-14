@@ -545,6 +545,33 @@ describe('ImportManager', () => {
             (ctrl as any).imports.should.have.lengthOf(1);
         });
 
+        describe('with .tsx files', () => {
+
+            const tsxFile = join(rootPath, 'extension/managers/ImportManagerFile.tsx');
+            let tsxDocument: TextDocument;
+            let tsxDocumentText: string;
+
+            before(async () => {
+                tsxDocument = await workspace.openTextDocument(tsxFile);
+                await window.showTextDocument(tsxDocument);
+
+                tsxDocumentText = tsxDocument.getText();
+            });
+
+            after(async () => {
+                await window.showTextDocument(document);
+            });
+
+            it('should not remove "react" since it is ignored in config', async () => {
+                const ctrl = await ImportManager.create(tsxDocument);
+                ctrl.organizeImports();
+
+                (ctrl as any).imports.should.have.lengthOf(1);
+                (ctrl as any).imports[0].libraryName.should.equal('react');
+            });
+
+        });
+
     });
 
     describe('commit()', () => {
