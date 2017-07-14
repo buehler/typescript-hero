@@ -86,7 +86,7 @@
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
     "package": "npm run build && del-cli './*.vsix' && vsce package",
     "semantic-release-pre": "semantic-release pre",
-    "semantic-release": "vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
+    "semantic-release": "npm run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
