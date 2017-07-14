@@ -247,6 +247,17 @@
           "default": false,
           "description": "Defines if sorting is disable during organize imports."
         },
+        "typescriptHero.resolver.ignoreImportsForOrganize": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "react"
+          ],
+          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'."
+        },
         "typescriptHero.resolver.importGroups": {
           "type": "array",
           "items": {
