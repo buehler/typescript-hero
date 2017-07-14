@@ -19,13 +19,14 @@ import {
     NotParseableStructureTreeItem,
 } from '../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('DocumentSymbolStructureExtension', () => {
 
     let extension: DocumentSymbolStructureExtension;
     let document: vscode.TextDocument;
 
     before(async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/documentSymbolStructureExtension/documentSymbolFile.ts',

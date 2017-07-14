@@ -10,6 +10,8 @@ import { iocSymbols } from '../../../src/extension/IoCSymbols';
 
 chai.should();
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('KeywordImportGroup', () => {
 
     let file: File;
@@ -18,7 +20,6 @@ describe('KeywordImportGroup', () => {
     let generator: TypescriptCodeGenerator;
 
     before(async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();

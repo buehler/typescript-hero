@@ -10,6 +10,8 @@ import { iocSymbols } from '../../../src/extension/IoCSymbols';
 
 const should = chai.should();
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('CodeCompletionExtension', () => {
 
     const token = new vscode.CancellationTokenSource().token;
@@ -17,8 +19,6 @@ describe('CodeCompletionExtension', () => {
     let extension: CodeCompletionExtension;
 
     before(async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
-
         const file = join(
             rootPath,
             'extension/extensions/codeCompletionExtension/codeCompletionFile.ts',

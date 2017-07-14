@@ -25,10 +25,11 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('CodeActionExtension', () => {
 
     let extension: any;
-    const rootPath = Container.get<string>(iocSymbols.rootPath);
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);

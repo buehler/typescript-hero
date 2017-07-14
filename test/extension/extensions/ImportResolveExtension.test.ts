@@ -11,13 +11,13 @@ import { iocSymbols } from '../../../src/extension/IoCSymbols';
 
 chai.should();
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('ImportResolveExtension', () => {
 
-    let rootPath: string;
     let extension: any;
 
     before(async () => {
-        rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
@@ -57,7 +57,6 @@ describe('ImportResolveExtension', () => {
     });
 
     describe('addImportToDocument', () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
