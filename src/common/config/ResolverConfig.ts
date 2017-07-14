@@ -89,6 +89,14 @@ export interface ResolverConfig {
     disableImportSorting: boolean;
 
     /**
+     * List of import libraries ("from" part) which are ignored during the organize import function.
+     * 
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    ignoreImportsForOrganize: string[];
+
+    /**
      * Returns the configured import groups. On a parsing error, a default should be provided.
      * 
      * @type {ImportGroup[]}
