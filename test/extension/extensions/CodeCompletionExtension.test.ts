@@ -10,6 +10,8 @@ import { iocSymbols } from '../../../src/extension/IoCSymbols';
 
 const should = chai.should();
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('CodeCompletionExtension', () => {
 
     const token = new vscode.CancellationTokenSource().token;
@@ -17,8 +19,6 @@ describe('CodeCompletionExtension', () => {
     let extension: CodeCompletionExtension;
 
     before(async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
-
         const file = join(
             rootPath,
             'extension/extensions/codeCompletionExtension/codeCompletionFile.ts',
@@ -79,25 +79,20 @@ describe('CodeCompletionExtension', () => {
         result![0].detail!.should.equal('/server/indices/MyClass');
     });
 
-    it('shoud add an insert text edit if import would be new', async () => {
+    it('shoud add an insert command text edit if import would be new', async () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
 
         should.exist(result);
-        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits![0].newText.should.equal(
-            `import { MyClass } from '../../../server/indices/MyClass';\n` +
-            `import { AlreadyImported } from './codeCompletionImports';\n`,
-        );
+        result![0].command!.command.should.equal('typescriptHero.codeCompletion.executeIntellisenseItem');
+        result![0].command!.arguments![1].declaration.name.should.equal('MyClass');
     });
 
-    it('shoud add a replace text edit if import will be updated with new specifier', async () => {
+    it('shoud add a replace command text edit if import will be updated with new specifier', async () => {
         const result = await extension.provideCompletionItems(document, new vscode.Position(9, 10), token);
 
         should.exist(result);
-        result![0].additionalTextEdits!.should.be.an('array').with.lengthOf(1);
-        result![0].additionalTextEdits![0].newText.should.equal(
-            `import { AlreadyImported, ShouldBeImported } from './codeCompletionImports';\n`,
-        );
+        result![0].command!.command.should.equal('typescriptHero.codeCompletion.executeIntellisenseItem');
+        result![0].command!.arguments![1].declaration.name.should.equal('ShouldBeImported');
     });
 
     it('shoud resolve to no import if import is already imported', async () => {

@@ -86,7 +86,7 @@
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
     "package": "npm run build && del-cli './*.vsix' && vsce package",
     "semantic-release-pre": "semantic-release pre",
-    "semantic-release": "vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
+    "semantic-release": "npm run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
@@ -246,6 +246,17 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if sorting is disable during organize imports."
+        },
+        "typescriptHero.resolver.ignoreImportsForOrganize": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "react"
+          ],
+          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'."
         },
         "typescriptHero.resolver.importGroups": {
           "type": "array",

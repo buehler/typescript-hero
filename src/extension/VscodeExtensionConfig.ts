@@ -166,6 +166,17 @@ class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
+     * Returns the list of imports that should be ignored during organize import feature.
+     * 
+     * @readonly
+     * @type {string[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get ignoreImportsForOrganize(): string[] {
+        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignoreImportsForOrganize') || [];
+    }
+
+    /**
      * Returns the configured import groups. On a parsing error, the default is used.
      * 
      * @type {ImportGroup[]}

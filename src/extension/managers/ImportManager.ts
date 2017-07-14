@@ -212,6 +212,10 @@ export class ImportManager implements ObjectManager {
         let keep: Import[] = [];
 
         for (const actImport of this.imports) {
+            if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+                keep.push(actImport);
+                continue;
+            }
             if (actImport instanceof NamespaceImport ||
                 actImport instanceof ExternalModuleImport) {
                 if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {

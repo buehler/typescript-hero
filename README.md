@@ -73,6 +73,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line |
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
 | importGroups                          | The groups that are used for sorting the imports (description below)                 |
+| ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 
 ### Code outline view
 
