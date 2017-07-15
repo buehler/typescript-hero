@@ -128,7 +128,7 @@ export class ImportResolveExtension extends BaseExtension {
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
     private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
-        '{**/*.ts,**/package.json,**/typings.json}',
+        '{**/*.ts,**/*.tsx,**/package.json,**/typings.json}',
     );
 
     constructor(
