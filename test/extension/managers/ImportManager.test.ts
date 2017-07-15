@@ -565,18 +565,18 @@ describe('ImportManager', () => {
             document.lineAt(0).text.should.equals(`import {Class1} from '../resourceIndex';`);
         });
 
-        it('should add a single new import to the document (@correct place)', async () => {
+        it('should add a single new import to the document top', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
             ctrl.addDeclarationImport(declaration!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(1).text.should.equals(
+            document.lineAt(0).text.should.equals(
                 `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
         });
 
-        it('should add two new imports to the document (@correct place)', async () => {
+        it('should add two new imports to the document top', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
             const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
@@ -584,7 +584,7 @@ describe('ImportManager', () => {
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(2).text.should.equals(
+            document.lineAt(0).text.should.equals(
                 `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
             document.lineAt(1).text.should.equals(
@@ -592,7 +592,7 @@ describe('ImportManager', () => {
             );
         });
 
-        it('should add three new imports to the document (@correct place)', async () => {
+        it('should add three new imports to the document top', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
             const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
@@ -604,7 +604,7 @@ describe('ImportManager', () => {
 
             (await ctrl.commit()).should.be.true;
 
-            document.lineAt(3).text.should.equals(
+            document.lineAt(0).text.should.equals(
                 `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
             );
             document.lineAt(1).text.should.equals(
@@ -615,7 +615,7 @@ describe('ImportManager', () => {
             );
         });
 
-        it('should add a single new module import to the document (@correct place)', async () => {
+        it('should add a single new module import to the document top', async () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.from === 'body-parser');
             ctrl.addDeclarationImport(declaration!);
@@ -624,7 +624,7 @@ describe('ImportManager', () => {
             document.lineAt(0).text.should.equals(`import * as bodyParser from 'body-parser';`);
         });
 
-        it('should add a single default import to the document (@correct place)', async () => {
+        it('should add a single default import to the document top', async () => {
             const stub = mockInputBox('DEFAULT_IMPORT');
             try {
                 const ctrl = await ImportManager.create(document);
@@ -635,7 +635,7 @@ describe('ImportManager', () => {
                 (await ctrl.commit()).should.be.true;
 
                 stub.should.be.calledWithMatch({ value: 'myDefaultExportedFunction' });
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import DEFAULT_IMPORT from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
                 );
             } finally {
@@ -654,7 +654,7 @@ describe('ImportManager', () => {
                 document.lineAt(0).text.should.equal(
                     `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
                 );
-                document.lineAt(2).text.should.equal(
+                document.lineAt(1).text.should.equal(
                     `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../server/indices';`,
                 );
             } finally {
@@ -697,7 +697,7 @@ describe('ImportManager', () => {
                 }
                 (await ctrl.commit()).should.be.true;
 
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
@@ -715,10 +715,10 @@ describe('ImportManager', () => {
                 .addDeclarationImport(declaration2!)
                 .commit();
 
-            document.lineAt(1).text.should.equals(
+            document.lineAt(0).text.should.equals(
                 `import { myComponent } from '../../server/indices/MyReactTemplate';`,
             );
-            document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
+            document.lineAt(1).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
         });
 
         it('should convert a default import when a normal specifier is added', async () => {
@@ -728,14 +728,14 @@ describe('ImportManager', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import DEFAULT_IMPORT from '../../server/indices/defaultExport/multiExport';`,
                 );
 
                 declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
@@ -751,7 +751,7 @@ describe('ImportManager', () => {
                 let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
                 );
 
@@ -759,7 +759,7 @@ describe('ImportManager', () => {
                 ctrl.addDeclarationImport(declaration!);
                 await ctrl.commit();
 
-                document.lineAt(1).text.should.equals(
+                document.lineAt(0).text.should.equals(
                     `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
@@ -781,10 +781,10 @@ describe('ImportManager', () => {
                 .addDeclarationImport(declaration2!)
                 .commit();
 
-            document.lineAt(1).text.should.equals(
+            document.lineAt(0).text.should.equals(
                 `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
             );
-            document.lineAt(0).text.should.equals(
+            document.lineAt(1).text.should.equals(
                 `import { Class1, Class2 } from '../../server/indices';`,
             );
 
