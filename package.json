@@ -91,7 +91,7 @@
   "devDependencies": {
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.10",
+    "@types/node": "^8.0.13",
     "@types/reflect-metadata": "0.0.5",
     "@types/sinon": "^2.3.2",
     "@types/sinon-chai": "^2.7.28",
@@ -101,12 +101,12 @@
     "mocha-testdata": "^1.2.0",
     "semantic-release": "^6.3.6",
     "semantic-release-visualstudio-marketplace-version": "^1.0.0",
-    "sinon": "^2.3.7",
+    "sinon": "^2.3.8",
     "sinon-chai": "^2.11.0",
     "tslint": "^5.5.0",
     "tslint-config-airbnb": "^5.2.1",
-    "tsutils": "^2.6.0",
-    "vscode": "^1.1.2"
+    "tsutils": "^2.7.1",
+    "vscode": "^1.1.4"
   },
   "dependencies": {
     "inversify": "^4.2.0",
@@ -114,7 +114,7 @@
     "reflect-metadata": "^0.1.10",
     "tslib": "^1.7.1",
     "typescript": "^2.4.1",
-    "typescript-parser": "^1.2.0"
+    "typescript-parser": "^1.2.1"
   },
   "activationEvents": [
     "onLanguage:typescript",
