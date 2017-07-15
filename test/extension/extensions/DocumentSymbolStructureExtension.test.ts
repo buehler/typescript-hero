@@ -77,7 +77,7 @@ describe('DocumentSymbolStructureExtension', () => {
             const elements = await extension.getChildren() as BaseStructureTreeItem[];
             elements[0].should.be.instanceof(DisabledStructureTreeItem);
         } finally {
-            await config.update('codeOutline.enabled', undefined);
+            await config.update('codeOutline.enabled', true);
         }
     });
 
