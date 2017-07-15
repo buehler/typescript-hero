@@ -8,6 +8,15 @@ If you search for this feature: here's the solution (and many more). Typescript 
 in the future and there are many features in the pipeline that will enhance the way you
 work with typescript.
 
+[![Travis build](https://img.shields.io/travis/buehler/typescript-hero.svg)](https://travis-ci.org/buehler/typescript-hero)
+[![Marketplace](https://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
+[![GitHub issues](https://img.shields.io/github/issues/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/pulls)
+[![Semantic release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+[![Greenkeeper](https://badges.greenkeeper.io/buehler/typescript-hero.svg)](https://greenkeeper.io/)
+[![License](https://img.shields.io/github/license/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/blob/master/LICENSE)
+
 ## Features at a glance
 
 Here is a brief list, of what TypeScript Hero is capable of (more at the end):
@@ -73,6 +82,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line |
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
 | importGroups                          | The groups that are used for sorting the imports (description below)                 |
+| ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 
 ### Code outline view
 

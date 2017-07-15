@@ -19,13 +19,14 @@ import {
     NotParseableStructureTreeItem,
 } from '../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('DocumentSymbolStructureExtension', () => {
 
     let extension: DocumentSymbolStructureExtension;
     let document: vscode.TextDocument;
 
     before(async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/documentSymbolStructureExtension/documentSymbolFile.ts',
@@ -76,7 +77,7 @@ describe('DocumentSymbolStructureExtension', () => {
             const elements = await extension.getChildren() as BaseStructureTreeItem[];
             elements[0].should.be.instanceof(DisabledStructureTreeItem);
         } finally {
-            await config.update('codeOutline.enabled', undefined);
+            await config.update('codeOutline.enabled', true);
         }
     });
 

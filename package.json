@@ -85,12 +85,13 @@
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
     "package": "npm run build && del-cli './*.vsix' && vsce package",
-    "semantic-release": "semantic-release pre && vsce package && vsce publish -p $VSCE_TOKEN && npm install semantic-release && semantic-release post"
+    "semantic-release-pre": "semantic-release pre",
+    "semantic-release": "npm run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.1",
     "@types/mocha": "^2.2.41",
-    "@types/node": "^8.0.10",
+    "@types/node": "^8.0.13",
     "@types/reflect-metadata": "0.0.5",
     "@types/sinon": "^2.3.2",
     "@types/sinon-chai": "^2.7.28",
@@ -100,12 +101,12 @@
     "mocha-testdata": "^1.2.0",
     "semantic-release": "^6.3.6",
     "semantic-release-visualstudio-marketplace-version": "^1.0.0",
-    "sinon": "^2.3.7",
+    "sinon": "^2.3.8",
     "sinon-chai": "^2.11.0",
     "tslint": "^5.5.0",
     "tslint-config-airbnb": "^5.2.1",
-    "tsutils": "^2.6.0",
-    "vscode": "^1.1.2"
+    "tsutils": "^2.7.1",
+    "vscode": "^1.1.4"
   },
   "dependencies": {
     "inversify": "^4.2.0",
@@ -113,7 +114,7 @@
     "reflect-metadata": "^0.1.10",
     "tslib": "^1.7.1",
     "typescript": "^2.4.1",
-    "typescript-parser": "^1.2.0"
+    "typescript-parser": "^1.2.1"
   },
   "activationEvents": [
     "onLanguage:typescript",
@@ -144,6 +145,10 @@
       {
         "command": "typescriptHero.codeFix.executeCodeAction",
         "title": "TS Hero (internal): Execute a code action"
+      },
+      {
+        "command": "typescriptHero.codeCompletion.executeIntellisenseItem",
+        "title": "TS Hero (internal): Execute the command for a intellisense item"
       },
       {
         "command": "typescriptHero.documentCodeOutline.gotoNode",
@@ -241,6 +246,17 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if sorting is disable during organize imports."
+        },
+        "typescriptHero.resolver.ignoreImportsForOrganize": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "react"
+          ],
+          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'."
         },
         "typescriptHero.resolver.importGroups": {
           "type": "array",

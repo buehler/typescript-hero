@@ -19,9 +19,10 @@ import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionCon
 const should = chai.should();
 chai.use(sinonChai);
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('ClassManager', () => {
 
-    const rootPath = Container.get<string>(iocSymbols.rootPath);
     const file = join(rootPath, 'extension/managers/ClassManagerFile.ts');
     let document: TextDocument;
     let documentText: string;

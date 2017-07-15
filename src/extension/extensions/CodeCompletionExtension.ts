@@ -1,7 +1,8 @@
 import { inject, injectable } from 'inversify';
-import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
+import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-parser';
 import {
     CancellationToken,
+    commands,
     CompletionItem,
     CompletionItemProvider,
     ExtensionContext,
@@ -49,6 +50,14 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         this.context.subscriptions.push(languages.registerCompletionItemProvider('typescript', this));
         this.context.subscriptions.push(languages.registerCompletionItemProvider('typescriptreact', this));
 
+        this.context.subscriptions.push(
+            commands.registerCommand(
+                'typescriptHero.codeCompletion.executeIntellisenseItem',
+                (document: TextDocument, declaration: DeclarationInfo) =>
+                    this.executeIntellisenseItem(document, declaration),
+            ),
+        );
+
         this.logger.info('Initialized');
     }
 
@@ -95,7 +104,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             !this.index.indexReady ||
             (lineText.substring(0, position.character).match(/["'`]/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
-            lineText.match(/^import .*$/g) ||
+            lineText.startsWith('import ') ||
             lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
             return Promise.resolve(null);
         }
@@ -103,8 +112,6 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         this.logger.info('Search completion for word.', { searchWord });
 
         const parsed = await this.parser.parseSource(document.getText());
-        const manager = await ImportManager.create(document);
-
         const declarations = getDeclarationsFilteredByImports(
             this.index.declarationInfos,
             document.fileName,
@@ -120,13 +127,30 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         ) {
             const item = new CompletionItem(declaration.declaration.name, getItemKind(declaration.declaration));
 
-            manager.addDeclarationImport(declaration);
             item.detail = declaration.from;
-            item.additionalTextEdits = manager.calculateTextEdits();
+            item.command = {
+                arguments: [document, declaration],
+                title: 'Execute intellisense insert',
+                command: 'typescriptHero.codeCompletion.executeIntellisenseItem',
+            };
             items.push(item);
-
-            manager.reset();
         }
         return items;
+    }
+
+    /**
+     * Executes a intellisense item that provided a document and a declaration to add.
+     * Does make the calculation of the text edits async.
+     * 
+     * @private
+     * @param {TextDocument} document 
+     * @param {DeclarationInfo} declaration 
+     * @returns {Promise<void>} 
+     * @memberof CodeCompletionExtension
+     */
+    private async executeIntellisenseItem(document: TextDocument, declaration: DeclarationInfo): Promise<void> {
+        const manager = await ImportManager.create(document);
+        manager.addDeclarationImport(declaration);
+        await manager.commit();
     }
 }

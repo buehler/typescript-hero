@@ -6,6 +6,7 @@ import {
     commands,
     ExtensionContext,
     FileSystemWatcher,
+    ProgressLocation,
     StatusBarAlignment,
     StatusBarItem,
     Uri,
@@ -221,18 +222,11 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async buildIndex(): Promise<void> {
-        this.statusBarItem.text = resolverSyncing;
-
-        const files = await findFiles(this.config, this.rootPath);
-        this.logger.info(`Building index for ${files.length} files.`);
-        try {
+        await this.abstractIndexFunction('Create index.', async () => {
+            const files = await findFiles(this.config, this.rootPath);
+            this.logger.info(`Calculating index for ${files.length} files.`);
             await this.index.buildIndex(files);
-            this.logger.info('Index successfully built');
-            this.statusBarItem.text = resolverOk;
-        } catch (e) {
-            this.logger.error('There was an error during the index creation', e);
-            this.statusBarItem.text = resolverErr;
-        }
+        });
     }
 
     /**
@@ -244,16 +238,43 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private async rebuildForFileChanges(changes: FileChanges): Promise<void> {
-        this.logger.info('Rebuilding index for changed files.', changes);
-        this.statusBarItem.text = resolverSyncing;
+        this.abstractIndexFunction('Reindex changes.', async () => {
+            await this.index.reindexForChanges(changes);
+        });
+    }
 
-        try {
-            this.index.reindexForChanges(changes);
-            this.statusBarItem.text = resolverOk;
-        } catch (e) {
-            this.logger.error('There was an error during the index rebuild', e);
-            this.statusBarItem.text = resolverErr;
-        }
+    /**
+     * Abstracts the build and rebuild functions to be just one call withProgress.
+     * 
+     * @private
+     * @param {string} title 
+     * @param {() => Promise<void>} func 
+     * @returns {Promise<void>} 
+     * @memberof ImportResolveExtension
+     */
+    private async abstractIndexFunction(title: string, func: () => Promise<void>): Promise<void> {
+        await window.withProgress(
+            {
+                title,
+                location: ProgressLocation.Window,
+            },
+            async (progress) => {
+                this.logger.info('(Re-)Calculating index.');
+                progress.report({ message: '(Re-)Calculating index.' });
+                this.statusBarItem.text = resolverSyncing;
+
+                try {
+                    await func();
+                    this.logger.info('(Re-)Calculate finished.');
+                    progress.report({ message: '(Re-)Calculate finished.' });
+                    this.statusBarItem.text = resolverOk;
+                } catch (e) {
+                    this.logger.error('There was an error during the index (re)calculation.', e);
+                    progress.report({ message: 'There was an error during the index (re)calculation.' });
+                    this.statusBarItem.text = resolverErr;
+                }
+            },
+        );
     }
 
     /**

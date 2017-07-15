@@ -11,13 +11,13 @@ import { iocSymbols } from '../../../src/extension/IoCSymbols';
 
 chai.should();
 
+const rootPath = Container.get<string>(iocSymbols.rootPath);
+
 describe('ImportResolveExtension', () => {
 
-    let rootPath: string;
     let extension: any;
 
     before(async () => {
-        rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
@@ -57,7 +57,6 @@ describe('ImportResolveExtension', () => {
     });
 
     describe('addImportToDocument', () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/importResolveExtension/addImportToDocument.ts',
@@ -85,7 +84,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n\n`);
+            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n`);
         });
 
         it('shoud write a named import correctly', async () => {
@@ -95,7 +94,7 @@ describe('ImportResolveExtension', () => {
                 docuemntPath: document.fileName,
             });
             await extension.addImportToDocument(items[0]);
-            document.getText().should.equal(`import { Class1 } from '../../../server/indices/MyClass';\n\n`);
+            document.getText().should.equal(`import { Class1 } from '../../../server/indices/MyClass';\n`);
         });
 
         it('shoud update a named import correcty', async () => {
@@ -106,7 +105,7 @@ describe('ImportResolveExtension', () => {
             });
             await extension.addImportToDocument(items[0]);
             await extension.addImportToDocument(items[1]);
-            document.getText().should.equal(`import { Class1, Class2 } from '../../../server/indices/MyClass';\n\n`);
+            document.getText().should.equal(`import { Class1, Class2 } from '../../../server/indices/MyClass';\n`);
         });
 
         it('shoud use the correct relative path', async () => {
