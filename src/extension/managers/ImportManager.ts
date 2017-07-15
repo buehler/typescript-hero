@@ -325,42 +325,27 @@ export class ImportManager implements ObjectManager {
                     edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
                 }
             }
-            const proxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
-            for (const group of this.importGroups) {
-                const grpImports = group.sortedImports;
-                for (const imp of grpImports) {
-                    if (imp instanceof ImportProxy &&
-                        proxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
-                        continue;
-                    }
-
-                    const physicalFirstImport = grpImports.find(grpImp => grpImp.start !== undefined);
-                    const physicalLastImport = [...grpImports].reverse().find(grpImp => grpImp.end !== undefined);
-
-                    if (physicalFirstImport && physicalLastImport) {
-                        // If the group has more than 0 imports, delete the whole group (like in organize)
-                        // and regenerate it at the start of it's first import that has a start position
-                        // if there is an import that is there already
-                        edits.push(TextEdit.replace(
-                            new Range(
-                                this.document.positionAt(physicalFirstImport.start!),
-                                this.document.lineAt(
-                                    this.document.positionAt(physicalLastImport.end!).line,
-                                ).rangeIncludingLineBreak.end,
-                            ),
-                            ImportManager.generator.generate(group as any),
-                        ));
-                    } else {
-                        // Since the group has no imports, generate it at the top of the file.
-                        edits.push(TextEdit.insert(
-                            getImportInsertPosition(
-                                window.activeTextEditor,
-                            ),
-                            ImportManager.generator.generate(group as any) + '\n',
-                        ));
-                    }
-
-                    break;
+            const actualDocumentsProxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
+            for (const imp of this.imports) {
+                if (imp instanceof ImportProxy &&
+                    actualDocumentsProxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
+                    continue;
+                }
+                if (imp.isNew) {
+                    edits.push(TextEdit.insert(
+                        getImportInsertPosition(
+                            window.activeTextEditor,
+                        ),
+                        ImportManager.generator.generate(imp) + '\n',
+                    ));
+                } else {
+                    edits.push(TextEdit.replace(
+                        new Range(
+                            this.document.positionAt(imp.start!),
+                            this.document.positionAt(imp.end!),
+                        ),
+                        ImportManager.generator.generate(imp),
+                    ));
                 }
             }
         }
