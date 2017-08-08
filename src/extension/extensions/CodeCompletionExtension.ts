@@ -9,8 +9,11 @@ import {
     languages,
     Position,
     TextDocument,
+    Disposable,
+    workspace,
 } from 'vscode';
 
+import { ExtensionConfig } from '../../common/config';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -29,6 +32,7 @@ import { BaseExtension } from './BaseExtension';
 @injectable()
 export class CodeCompletionExtension extends BaseExtension implements CompletionItemProvider {
     private logger: Logger;
+    private languageRegisters: Disposable[] = [];
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
@@ -36,6 +40,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
         @inject(iocSymbols.rootPath) private rootPath: string,
+        @inject(iocSymbols.configuration) private config: ExtensionConfig,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
@@ -47,8 +52,22 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberof CodeCompletionExtension
      */
     public initialize(): void {
-        this.context.subscriptions.push(languages.registerCompletionItemProvider('typescript', this));
-        this.context.subscriptions.push(languages.registerCompletionItemProvider('typescriptreact', this));
+        for (const lang of this.config.resolver.resolverModeLanguages) {
+            this.languageRegisters.push(languages.registerCompletionItemProvider(lang, this));
+        }
+
+        this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+            if (this.languageRegisters.length !== this.config.resolver.resolverModeLanguages.length) {
+                this.logger.info('ResolverMode has changed, registering to new configuration languages');
+                for (const register of this.languageRegisters) {
+                    register.dispose();
+                }
+                this.languageRegisters = [];
+                for (const lang of this.config.resolver.resolverModeLanguages) {
+                    this.languageRegisters.push(languages.registerCompletionItemProvider(lang, this));
+                }
+            }
+        }));
 
         this.context.subscriptions.push(
             commands.registerCommand(
@@ -67,6 +86,9 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberof CodeCompletionExtension
      */
     public dispose(): void {
+        for (const register of this.languageRegisters) {
+            register.dispose();
+        }
         this.logger.info('Disposed');
     }
 
