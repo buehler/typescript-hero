@@ -93,7 +93,9 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
             return [];
         }
 
-        if (!['typescript', 'typescriptreact'].some(lang => lang === window.activeTextEditor!.document.languageId)) {
+        if (!this.config.resolver.resolverModeLanguages.some(
+            lang => lang === window.activeTextEditor!.document.languageId,
+        )) {
             return [new NotParseableStructureTreeItem()];
         }
 
