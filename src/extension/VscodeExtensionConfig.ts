@@ -1,6 +1,7 @@
+import { ResolverMode } from '../common/enums';
 import { injectable } from 'inversify';
 import { TypescriptGenerationOptions } from 'typescript-parser';
-import { workspace } from 'vscode';
+import { workspace, WorkspaceConfiguration } from 'vscode';
 
 import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { CodeOutlineConfig } from '../common/config/CodeOutlineConfig';
@@ -17,6 +18,7 @@ const sectionKey = 'typescriptHero';
  */
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
+    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
     private resolverConfig: ResolverConfig = new VscodeResolverConfig();
     private codeOutlineConfig: CodeOutlineConfig = new VscodeCodeOutlineConfig();
 
@@ -28,7 +30,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * @memberof VscodeExtensionConfig
      */
     public get verbosity(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('verbosity') || 'Warning';
+        return this.workspaceSection.get<string>('verbosity') || 'Warning';
     }
 
     /**
@@ -60,6 +62,8 @@ export class VscodeExtensionConfig implements ExtensionConfig {
  * @class VscodeResolverConfig
  */
 class VscodeResolverConfig implements ResolverConfig {
+    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
+
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }
@@ -69,7 +73,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
-        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
+        const value = this.workspaceSection.get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
         return value !== undefined ? value : true;
     }
 
@@ -82,7 +86,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
-        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.insertSemicolons');
+        const value = this.workspaceSection.get<boolean>('resolver.insertSemicolons');
         return value !== undefined ? value : true;
     }
 
@@ -94,7 +98,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get stringQuoteStyle(): string {
-        return workspace.getConfiguration(sectionKey).get<string>('resolver.stringQuoteStyle') || `'`;
+        return this.workspaceSection.get<string>('resolver.stringQuoteStyle') || `'`;
     }
 
     /**
@@ -106,7 +110,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
-        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignorePatterns') || [
+        return this.workspaceSection.get<string[]>('resolver.ignorePatterns') || [
             'build',
             'out',
             'dist',
@@ -121,7 +125,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
-        return workspace.getConfiguration(sectionKey).get<number>('resolver.multiLineWrapThreshold') || 125;
+        return this.workspaceSection.get<number>('resolver.multiLineWrapThreshold') || 125;
     }
 
     /**
@@ -138,7 +142,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * } from 'whatever';
      */
     public get multiLineTrailingComma(): boolean {
-        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.multiLineTrailingComma');
+        const value = this.workspaceSection.get<boolean>('resolver.multiLineTrailingComma');
         return value !== undefined ? value : true;
     }
 
@@ -150,7 +154,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
-        const value = workspace.getConfiguration(sectionKey).get<boolean>('resolver.disableImportsSorting');
+        const value = this.workspaceSection.get<boolean>('resolver.disableImportsSorting');
         return value !== undefined ? value : false;
     }
 
@@ -173,7 +177,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignoreImportsForOrganize(): string[] {
-        return workspace.getConfiguration(sectionKey).get<string[]>('resolver.ignoreImportsForOrganize') || [];
+        return this.workspaceSection.get<string[]>('resolver.ignoreImportsForOrganize') || [];
     }
 
     /**
@@ -183,7 +187,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get importGroups(): ImportGroup[] {
-        const groups = workspace.getConfiguration(sectionKey).get<ImportGroupSetting[]>('resolver.importGroups');
+        const groups = this.workspaceSection.get<ImportGroupSetting[]>('resolver.importGroups');
         let importGroups: ImportGroup[] = [];
 
         try {
@@ -219,6 +223,74 @@ class VscodeResolverConfig implements ResolverConfig {
             tabSize: this.tabSize,
         };
     }
+
+    /**
+     * Current mode of the resolver.
+     * 
+     * @readonly
+     * @type {ResolverMode}
+     * @memberof VscodeResolverConfig
+     */
+    public get resolverMode(): ResolverMode {
+        const mode = this.workspaceSection.get<string>('resolver.resolverMode', 'TypeScript');
+        return ResolverMode[mode] || ResolverMode.TypeScript;
+    }
+
+    /**
+     * Returns a list of file globs for the actual set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['\*\*\/\*.ts', '\*\*\/\*.tsx']
+     *
+     * @example `ES6`
+     * Will return: ['\*\*\/\*.js', '\*\*\/\*.jsx']
+     * 
+     * @type {string[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get resolverModeFileGlobs(): string[] {
+        const mode = this.resolverMode;
+        const globs: string[] = [];
+
+        if (mode === ResolverMode.TypeScript || mode === ResolverMode.Both) {
+            globs.push('**/*.ts');
+            globs.push('**/*.tsx');
+        }
+
+        if (mode === ResolverMode.ES6 || mode === ResolverMode.Both) {
+            globs.push('**/*.js');
+            globs.push('**/*.jsx');
+        }
+
+        return globs;
+    }
+    
+    /**
+     * Returns a list of usable languages for the set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['typescript', 'typescriptreact']
+     * 
+     * @readonly
+     * @type {string[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get resolverModeLanguages(): string[] {
+        const mode = this.resolverMode;
+        const languages: string[] = [];
+
+        if (mode === ResolverMode.TypeScript || mode === ResolverMode.Both) {
+            languages.push('typescript');
+            languages.push('typescriptreact');
+        }
+
+        if (mode === ResolverMode.ES6 || mode === ResolverMode.Both) {
+            languages.push('javascript');
+            languages.push('javascriptreact');
+        }
+
+        return languages;
+    }
 }
 
 /**
@@ -228,6 +300,7 @@ class VscodeResolverConfig implements ResolverConfig {
  * @implements {CodeOutlineConfig}
  */
 class VscodeCodeOutlineConfig implements CodeOutlineConfig {
+    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
 
     /**
      * Defined if the code outline feature is enabled or not.
@@ -237,7 +310,7 @@ class VscodeCodeOutlineConfig implements CodeOutlineConfig {
      * @memberof VscodeCodeOutlineConfig
      */
     public get outlineEnabled(): boolean {
-        const value = workspace.getConfiguration(sectionKey).get<boolean>('codeOutline.enabled');
+        const value = this.workspaceSection.get<boolean>('codeOutline.enabled');
         return value !== undefined ? value : true;
     }
 }

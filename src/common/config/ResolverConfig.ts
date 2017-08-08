@@ -121,4 +121,29 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     resolverMode: ResolverMode;
+
+    /**
+     * Returns a list of file globs for the actual set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['\*\*\/\*.ts', '\*\*\/\*.tsx']
+     *
+     * @example `ES6`
+     * Will return: ['\*\*\/\*.js', '\*\*\/\*.jsx']
+     * 
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    resolverModeFileGlobs: string[];
+
+    /**
+     * Returns a list of usable languages for the set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['typescript', 'typescriptreact']
+     * 
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    resolverModeLanguages: string[];
 }
