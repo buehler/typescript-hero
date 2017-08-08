@@ -15,6 +15,7 @@ import {
 } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
+import { ResolverMode } from '../../common/enums';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
@@ -59,10 +60,12 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
 export async function findFiles(config: ExtensionConfig, rootPath: string): Promise<string[]> {
     const searches: PromiseLike<Uri[]>[] = [
         workspace.findFiles(
-            '{**/*.ts,**/*.tsx}',
+            `{${config.resolver.resolverModeFileGlobs.join(',')}}`,
             '{**/node_modules/**,**/typings/**}',
         ),
     ];
+
+    // TODO: check the package json and index javascript file in node_modules (?)
 
     let globs: string[] = [];
     let ignores = ['**/typings/**'];
@@ -127,9 +130,8 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
-    private fileWatcher: FileSystemWatcher = workspace.createFileSystemWatcher(
-        '{**/*.ts,**/*.tsx,**/package.json,**/typings.json}',
-    );
+    private fileWatcher: FileSystemWatcher;
+    private actualMode: ResolverMode;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
@@ -149,21 +151,36 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     public initialize(): void {
+        this.actualMode = this.config.resolver.resolverMode;
+        this.fileWatcher = workspace.createFileSystemWatcher(
+            `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
+        );
+
         this.context.subscriptions.push(this.statusBarItem);
         this.context.subscriptions.push(this.fileWatcher);
 
         this.statusBarItem.text = resolverOk;
-        this.statusBarItem.tooltip = 'Click to manually reindex all files.';
+        this.statusBarItem.tooltip =
+            `Click to manually reindex all files; Actual mode: ${ResolverMode[this.config.resolver.resolverMode]}`;
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
         this.statusBarItem.show();
 
         this.commandRegistrations();
 
         this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+            let build = false;
             if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
                 this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
-                this.buildIndex();
                 this.ignorePatterns = this.config.resolver.ignorePatterns;
+                build = true;
+            }
+            if (this.actualMode !== this.config.resolver.resolverMode) {
+                this.logger.info('The typescriptHero.resolver.resolverMode setting was modified, reload the index.');
+                this.actualMode = this.config.resolver.resolverMode;
+                build = true;
+            }
+            if (build) {
+                this.buildIndex();
             }
         }));
 

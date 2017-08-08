@@ -4,6 +4,7 @@ import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typ
 import { ExtensionContext, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
+import { ResolverMode } from '../common/enums';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -17,6 +18,7 @@ import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 
 const container = new IoCContainer();
+const config = new VscodeExtensionConfig();
 
 container.bind(iocSymbols.rootPath).toConstantValue(workspace.rootPath || '');
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
@@ -48,8 +50,10 @@ container
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
-container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
+if (config.resolver.resolverMode !== ResolverMode.ES6) {
+    container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
+}
 
 // Logging
 container
