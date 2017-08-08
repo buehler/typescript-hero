@@ -18,9 +18,12 @@ const sectionKey = 'typescriptHero';
  */
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
-    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
     private resolverConfig: ResolverConfig = new VscodeResolverConfig();
     private codeOutlineConfig: CodeOutlineConfig = new VscodeCodeOutlineConfig();
+
+    private get workspaceSection(): WorkspaceConfiguration {
+        return workspace.getConfiguration(sectionKey);
+    }
 
     /**
      * The actual log level.
@@ -62,7 +65,9 @@ export class VscodeExtensionConfig implements ExtensionConfig {
  * @class VscodeResolverConfig
  */
 class VscodeResolverConfig implements ResolverConfig {
-    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
+    private get workspaceSection(): WorkspaceConfiguration {
+        return workspace.getConfiguration(sectionKey);
+    }
 
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
@@ -264,7 +269,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
         return globs;
     }
-    
+
     /**
      * Returns a list of usable languages for the set resolver mode.
      *
@@ -300,7 +305,9 @@ class VscodeResolverConfig implements ResolverConfig {
  * @implements {CodeOutlineConfig}
  */
 class VscodeCodeOutlineConfig implements CodeOutlineConfig {
-    private workspaceSection: WorkspaceConfiguration = workspace.getConfiguration(sectionKey);
+    private get workspaceSection(): WorkspaceConfiguration {
+        return workspace.getConfiguration(sectionKey);
+    }
 
     /**
      * Defined if the code outline feature is enabled or not.

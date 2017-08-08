@@ -152,6 +152,8 @@ export class ImportResolveExtension extends BaseExtension {
      */
     public initialize(): void {
         this.actualMode = this.config.resolver.resolverMode;
+        this.ignorePatterns = this.config.resolver.ignorePatterns;
+
         this.fileWatcher = workspace.createFileSystemWatcher(
             `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
         );
@@ -176,6 +178,8 @@ export class ImportResolveExtension extends BaseExtension {
             }
             if (this.actualMode !== this.config.resolver.resolverMode) {
                 this.logger.info('The typescriptHero.resolver.resolverMode setting was modified, reload the index.');
+                this.statusBarItem.tooltip =
+                    `Click to manually reindex all files; Actual mode: ${ResolverMode[this.config.resolver.resolverMode]}`;
                 this.actualMode = this.config.resolver.resolverMode;
                 build = true;
             }
