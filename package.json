@@ -118,7 +118,9 @@
   },
   "activationEvents": [
     "onLanguage:typescript",
-    "onLanguage:typescriptreact"
+    "onLanguage:typescriptreact",
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact"
   ],
   "contributes": {
     "commands": [
