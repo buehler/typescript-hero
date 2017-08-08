@@ -327,6 +327,15 @@
           ],
           "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
         },
+        "typescriptHero.resolver.resolverMode": {
+          "enum": [
+            "TypeScript",
+            "ES6",
+            "Both"
+          ],
+          "default": "TypeScript",
+          "description": "Defines the mode of the symbol resolver (i.e. if JavaScript files should be indexed as well (experimental)."
+        },
         "typescriptHero.codeOutline.enabled": {
           "type": "boolean",
           "default": true,

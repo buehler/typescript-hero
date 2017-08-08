@@ -1,6 +1,7 @@
 import { TypescriptGenerationOptions } from 'typescript-parser';
 
 import { ImportGroup } from '../../extension/import-grouping';
+import { ResolverMode } from '../enums';
 
 /**
  * Configuration interface for the resolver extension.
@@ -112,4 +113,12 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     generationOptions: TypescriptGenerationOptions;
+
+    /**
+     * Current mode of the resolver.
+     * 
+     * @type {ResolverMode}
+     * @memberof ResolverConfig
+     */
+    resolverMode: ResolverMode;
 }
