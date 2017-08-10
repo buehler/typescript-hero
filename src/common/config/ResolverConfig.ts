@@ -1,6 +1,7 @@
 import { TypescriptGenerationOptions } from 'typescript-parser';
 
 import { ImportGroup } from '../../extension/import-grouping';
+import { ResolverMode } from '../enums';
 
 /**
  * Configuration interface for the resolver extension.
@@ -112,4 +113,37 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     generationOptions: TypescriptGenerationOptions;
+
+    /**
+     * Current mode of the resolver.
+     * 
+     * @type {ResolverMode}
+     * @memberof ResolverConfig
+     */
+    resolverMode: ResolverMode;
+
+    /**
+     * Returns a list of file globs for the actual set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['\*\*\/\*.ts', '\*\*\/\*.tsx']
+     *
+     * @example `ES6`
+     * Will return: ['\*\*\/\*.js', '\*\*\/\*.jsx']
+     * 
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    resolverModeFileGlobs: string[];
+
+    /**
+     * Returns a list of usable languages for the set resolver mode.
+     *
+     * @example `TypeScript`
+     * Will return: ['typescript', 'typescriptreact']
+     * 
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    resolverModeLanguages: string[];
 }

@@ -48,8 +48,8 @@ container
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
-container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
 
 // Logging
 container

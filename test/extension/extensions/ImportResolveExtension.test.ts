@@ -13,7 +13,7 @@ chai.should();
 
 const rootPath = Container.get<string>(iocSymbols.rootPath);
 
-describe('ImportResolveExtension', () => {
+describe('TypeScript Mode: ImportResolveExtension', () => {
 
     let extension: any;
 
@@ -181,6 +181,252 @@ describe('ImportResolveExtension', () => {
         it('shoud order specifiers by name', async () => {
             await extension.organizeImports();
             document.lineAt(2).text.should.match(/ExportAlias.*FancierLibraryClass/);
+        });
+
+    });
+
+});
+
+describe('JavaScript Mode: ImportResolveExtension', () => {
+
+    let extension: any;
+
+    before(async () => {
+        const file = join(
+            rootPath,
+            'extension/extensions/importResolveExtension/addImportToDocument.js',
+        );
+        const document = await vscode.workspace.openTextDocument(file);
+
+        await vscode.window.showTextDocument(document);
+
+        const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
+        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+
+        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        await index.buildIndex(
+            [
+                join(
+                    rootPath,
+                    'typings/globals/body-parser/index.d.ts',
+                ),
+                join(
+                    rootPath,
+                    'extension/extensions/importResolveExtension/jsfile.js',
+                ),
+                join(
+                    rootPath,
+                    'extension/extensions/importResolveExtension/jsxfile.jsx',
+                ),
+            ],
+        );
+
+        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
+    });
+
+    describe('addImportToDocument', () => {
+        const file = join(
+            rootPath,
+            'extension/extensions/importResolveExtension/addImportToDocument.js',
+        );
+        let document: vscode.TextDocument;
+
+        before(async () => {
+            document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document);
+        });
+
+        afterEach(async () => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+            });
+        });
+
+        it('shoud write a module / namespace import correctly', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'bodyParser',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n`);
+        });
+
+        it('shoud write a named import correctly', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'JSFoobar',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
+        });
+
+        it('shoud update a named import correcty', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'JSX',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            await extension.addImportToDocument(items[1]);
+            document.getText().should.equal(`import { JSXClass, JSXFunction } from './jsxfile';\n`);
+        });
+
+    });
+
+});
+
+describe('Mixed Mode: ImportResolveExtension', () => {
+
+    let extension: any;
+
+    before(async () => {
+        const file = join(
+            rootPath,
+            'extension/extensions/importResolveExtension/addImportToDocument.ts',
+        );
+        const document = await vscode.workspace.openTextDocument(file);
+
+        await vscode.window.showTextDocument(document);
+
+        const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
+        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+
+        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        await index.buildIndex(
+            [
+                join(
+                    rootPath,
+                    'typings/globals/body-parser/index.d.ts',
+                ),
+                join(
+                    rootPath,
+                    'extension/extensions/importResolveExtension/jsfile.js',
+                ),
+                join(
+                    rootPath,
+                    'extension/extensions/importResolveExtension/jsxfile.jsx',
+                ),
+                join(
+                    rootPath,
+                    'extension/extensions/importResolveExtension/sameDirectory.ts',
+                ),
+            ],
+        );
+
+        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
+    });
+
+    describe('addImportToDocument in .js file', () => {
+        const file = join(
+            rootPath,
+            'extension/extensions/importResolveExtension/addImportToDocument.js',
+        );
+        let document: vscode.TextDocument;
+
+        before(async () => {
+            document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document);
+        });
+
+        afterEach(async () => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+            });
+        });
+
+        it('shoud write a module / namespace import correctly', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'bodyParser',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n`);
+        });
+
+        it('shoud write a named import correctly (JS)', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'JSFoobar',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
+        });
+        
+        it('shoud write a named import correctly (TS)', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'AddImportSameDirectory',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import { AddImportSameDirectory } from './sameDirectory';\n`);
+        });
+
+    });
+    
+    describe('addImportToDocument in .ts file', () => {
+        const file = join(
+            rootPath,
+            'extension/extensions/importResolveExtension/addImportToDocument.ts',
+        );
+        let document: vscode.TextDocument;
+
+        before(async () => {
+            document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document);
+        });
+
+        afterEach(async () => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+            });
+        });
+
+        it('shoud write a module / namespace import correctly', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'bodyParser',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import * as bodyParser from 'body-parser';\n`);
+        });
+
+        it('shoud write a named import correctly (JS)', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'JSFoobar',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
+        });
+        
+        it('shoud write a named import correctly (TS)', async () => {
+            const items = await extension.getDeclarationsForImport({
+                cursorSymbol: 'AddImportSameDirectory',
+                documentSource: '',
+                docuemntPath: document.fileName,
+            });
+            await extension.addImportToDocument(items[0]);
+            document.getText().should.equal(`import { AddImportSameDirectory } from './sameDirectory';\n`);
         });
 
     });

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
+import { ExtensionConfig } from '../../../src/common/config';
 import { LoggerFactory } from '../../../src/common/utilities';
 import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
 import { Container } from '../../../src/extension/IoC';
@@ -27,6 +28,7 @@ describe('CodeCompletionExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
+        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
@@ -44,7 +46,7 @@ describe('CodeCompletionExtension', () => {
             ],
         );
 
-        extension = new CodeCompletionExtension(ctx, logger, parser, index as any, rootPath);
+        extension = new CodeCompletionExtension(ctx, logger, parser, index as any, rootPath, config);
     });
 
     it('shoud resolve to null if typing in a string', async () => {
