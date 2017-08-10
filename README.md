@@ -28,6 +28,10 @@ Here is a brief list, of what TypeScript Hero is capable of (more at the end):
 - "Light bulb feature" that fixes code you wrote
 - Sort and organize your imports (sort and remove unused)
 - Code outline view of your open TS / TSX document
+- All the cool stuff for JavaScript as well! (experimental stage though, better description below.)
+  - Add imports from javascript files
+  - Code outline for JS / JSX files
+  - Intellisense for JS / JSX files
 
 ## Commands
 
@@ -83,6 +87,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
 | importGroups                          | The groups that are used for sorting the imports (description below)                 |
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
+| resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
 
 ### Code outline view
 
@@ -212,6 +217,16 @@ see what's in them. If you click on an element, the editor will jump to the loca
 
 By now, only typescript / typescript-react is supported. Maybe this will wander in it's own extension to support
 more languages than those two.
+
+### ES6 / JavaScript support
+
+As of now, this is kind of an experimental stage. TypeScript Hero can be set into an `ES6` or `Both` mode, instead
+of only `TypeScript`. With one of either modes, it will scan for javascript files in the workspace.
+
+Right now, only files in the workspace are considered "worth", because of the immense amount of javascript files
+in the `node_modules`. So if you set TSH to `ES6` it will scan all typescript declarations in the `node_modules`, and
+your javascript files in the workspace. If you set it to `Both`, it will scan all typescript files and the javascript
+files in the workspace (as well as the declarations).
 
 ## Known Issues
 
