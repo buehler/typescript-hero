@@ -26,7 +26,7 @@ function extendGenerator(generator: TypescriptCodeGenerator): void {
     GENERATORS[RegexImportGroup.name] = simpleGenerator;
     GENERATORS[RemainImportGroup.name] = simpleGenerator;
     GENERATORS[ImportProxy.name] = (proxy: ImportProxy) => {
-        if (proxy.specifiers.length <= 0) {
+        if (proxy.specifiers.length <= 0 && (proxy.defaultAlias || proxy.defaultPurposal)) {
             return generator.generate(
                 new DefaultImport(
                     proxy.libraryName, (proxy.defaultAlias || proxy.defaultPurposal)!, proxy.start, proxy.end,
