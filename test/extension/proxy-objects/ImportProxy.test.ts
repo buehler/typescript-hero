@@ -184,7 +184,7 @@ describe('ImportProxy', () => {
 
         before(() => {
             GENERATORS[ImportProxy.name] = (proxy: ImportProxy) => {
-                if (proxy.specifiers.length <= 0) {
+                if (proxy.specifiers.length <= 0 && (proxy.defaultAlias || proxy.defaultPurposal)) {
                     return generator.generate(
                         new DefaultImport(
                             proxy.libraryName, (proxy.defaultAlias || proxy.defaultPurposal)!, proxy.start, proxy.end,
@@ -236,6 +236,10 @@ describe('ImportProxy', () => {
             generator = new TypescriptCodeGenerator(optionsClone);
             proxy.defaultAlias = 'ALIAS';
             generator.generate(proxy).should.equal(`import ALIAS from 'foo'`);
+        });
+
+        it('should generate an empty named import if no specifiers and no default is set', () => {
+            generator.generate(proxy).should.equal(`import { } from 'foo';`);
         });
 
     });
