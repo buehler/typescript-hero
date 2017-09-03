@@ -35,4 +35,15 @@ export interface ExtensionConfig {
     * @memberof ExtensionConfig
     */
     codeOutline: CodeOutlineConfig;
+
+    /**
+     * Completion sorting mode:
+     *  default: Use default VSCode sorting mode
+     *  bottom: Push to bottom
+     * 
+     * @readonly
+     * @type {'default'|'bottom'}
+     * @memberof ExtensionConfig
+     */
+    completionSortMode: 'default' | 'bottom';
 }

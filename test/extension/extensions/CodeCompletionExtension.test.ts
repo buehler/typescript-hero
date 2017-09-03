@@ -18,6 +18,7 @@ describe('CodeCompletionExtension', () => {
     const token = new vscode.CancellationTokenSource().token;
     let document: vscode.TextDocument;
     let extension: CodeCompletionExtension;
+    let config: ExtensionConfig;
 
     before(async () => {
         const file = join(
@@ -28,10 +29,10 @@ describe('CodeCompletionExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        config = Container.get<ExtensionConfig>(iocSymbols.configuration);
 
         await index.buildIndex(
             [
@@ -79,6 +80,17 @@ describe('CodeCompletionExtension', () => {
         should.exist(result);
         result![0].label.should.equal('MyClass');
         result![0].detail!.should.equal('/server/indices/MyClass');
+
+        should.not.exist(result![0].sortText);
+    });
+
+    it('should use custom sort order when config.completionSortMode is bottom', async () => {
+        Object.defineProperty(config, 'completionSortMode', { value: 'bottom', writable: true });
+        const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
+        should.exist(result![0].sortText);
+        result![0].sortText!.should.equal('9999-MyClass');
+
+        Object.defineProperty(config, 'completionSortMode', { value: 'default' });
     });
 
     it('shoud add an insert command text edit if import would be new', async () => {
