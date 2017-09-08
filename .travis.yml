@@ -27,6 +27,7 @@ addons:
       - libgtk2.0-0
       - libx11-dev
       - libxkbfile-dev
+      - libsecret-1
 
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
