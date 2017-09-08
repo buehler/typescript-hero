@@ -69,23 +69,28 @@ export async function findFiles(config: ExtensionConfig, rootPath: string): Prom
 
     let globs: string[] = [];
     let ignores = ['**/typings/**'];
+    const excludePatterns = config.resolver.ignorePatterns;
 
     if (rootPath && existsSync(join(rootPath, 'package.json'))) {
         const packageJson = require(join(rootPath, 'package.json'));
         if (packageJson['dependencies']) {
             globs = globs.concat(
-                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`),
+                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
             );
             ignores = ignores.concat(
-                Object.keys(packageJson['dependencies']).map(o => `**/node_modules/${o}/node_modules/**`),
+                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/node_modules/**`),
             );
         }
         if (packageJson['devDependencies']) {
             globs = globs.concat(
-                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/**/*.d.ts`),
+                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
             );
             ignores = ignores.concat(
-                Object.keys(packageJson['devDependencies']).map(o => `**/node_modules/${o}/node_modules/**`),
+                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/node_modules/**`),
             );
         }
     } else {
@@ -101,7 +106,6 @@ export async function findFiles(config: ExtensionConfig, rootPath: string): Prom
 
     let uris = await Promise.all(searches);
 
-    const excludePatterns = config.resolver.ignorePatterns;
     uris = uris.map((o, idx) => idx === 0 ?
         o.filter(
             f => f.fsPath
