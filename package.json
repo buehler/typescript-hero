@@ -201,6 +201,14 @@
           "default": "Warnings",
           "description": "Defines the log output level in the output window."
         },
+        "typescriptHero.completionSortMode": {
+          "enum": [
+            "default",
+            "bottom"
+          ],
+          "default": "default",
+          "description": "Import completion sort order"
+        },
         "typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces": {
           "type": "boolean",
           "default": true,
