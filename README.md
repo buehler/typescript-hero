@@ -67,9 +67,10 @@ All settings are preceeded by `typescriptHero`.
 
 These settings do not have a prefix.
 
-| Setting   | Description                                                                |
-| --------- | -------------------------------------------------------------------------- |
-| verbosity | The log level that the extension writes its messages to the output channel |
+| Setting             | Description                                                                   |
+| ------------------- | ----------------------------------------------------------------------------- |
+| verbosity           | The log level that the extension writes its messages to the output channel    |
+| completionSortOrder | The order of import completions in suggestion list, `bottom` pushes them down |
 
 ### Import resolver
 

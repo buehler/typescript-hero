@@ -57,6 +57,17 @@ export class VscodeExtensionConfig implements ExtensionConfig {
     public get codeOutline(): CodeOutlineConfig {
         return this.codeOutlineConfig;
     }
+
+    /**
+     * Completion sort mode
+     *
+     * @readonly
+     * @type {'default'|'bottom'}
+     * @memberof VscodeExtensionConfig
+     */
+    public get completionSortMode(): 'default' | 'bottom' {
+        return this.workspaceSection.get<'default' | 'bottom'>('completionSortMode') || 'default';
+    }
 }
 
 /**

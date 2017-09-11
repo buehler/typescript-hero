@@ -155,6 +155,9 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
                 title: 'Execute intellisense insert',
                 command: 'typescriptHero.codeCompletion.executeIntellisenseItem',
             };
+            if (this.config.completionSortMode === 'bottom') {
+                item.sortText = `9999-${declaration.declaration.name}`;
+            }
             items.push(item);
         }
         return items;
