@@ -38,6 +38,7 @@ before_install:
   - rvm get stable
   - rvm install 2.4
   - gem install github_changelog_generator
+  - npm install -g npm@5.2
   - npm install -g greenkeeper-lockfile@1
 
 install:

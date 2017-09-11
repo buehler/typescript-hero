@@ -76,7 +76,7 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "del-cli ./node_modules && npm install vscode && npm install --production && npm uninstall vscode",
+    "vscode:prepublish": "npm prune --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./node_modules/vscode/bin/install",
