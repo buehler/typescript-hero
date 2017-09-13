@@ -184,6 +184,40 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
         });
 
     });
+    
+    describe('organizeImports with exports', () => {
+
+        const file = join(rootPath, 'extension/extensions/importResolveExtension/organizeImportsWithExports.ts');
+        let document: vscode.TextDocument;
+        let documentText: string;
+
+        before(async () => {
+            document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document);
+            documentText = document.getText();
+        });
+
+        afterEach(async () => {
+            await vscode.window.activeTextEditor!.edit((builder) => {
+                builder.delete(new vscode.Range(
+                    new vscode.Position(0, 0),
+                    document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                ));
+                builder.insert(new vscode.Position(0, 0), documentText);
+            });
+        });
+
+        it('shoud remove unused imports', async () => {
+            await extension.organizeImports();
+            document.getText().should.not.match(/notUsed/);
+        });
+
+        it('shoud not remove the used import beneath an export', async () => {
+            await extension.organizeImports();
+            document.lineAt(0).text.should.equal(`import { moduleFunc } from 'SomeModule';`);
+        });
+
+    });
 
 });
 
