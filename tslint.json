@@ -29,6 +29,7 @@
                 ]
             }
         ],
+        "strict-boolean-expressions": false,
         "ter-indent": [
             true,
             4,
