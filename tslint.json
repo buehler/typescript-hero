@@ -17,7 +17,9 @@
                     "public-instance-field",
                     "protected-instance-field",
                     "private-instance-field",
-                    "constructor",
+                    "public-constructor",
+                    "protected-constructor",
+                    "private-constructor",
                     "public-static-method",
                     "protected-static-method",
                     "private-static-method",
@@ -27,6 +29,7 @@
                 ]
             }
         ],
+        "strict-boolean-expressions": false,
         "ter-indent": [
             true,
             4,
