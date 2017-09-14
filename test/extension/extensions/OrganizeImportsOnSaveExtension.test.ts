@@ -60,7 +60,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
         await ctrl.commit();
 
         document.lineAt(0).text.should.equals(
-            `import { Class1 } from '../../../server/indices/MyClass';`,
+            `import { Class1 } from '../../../server/indices';`,
         );
 
         await document.save();
