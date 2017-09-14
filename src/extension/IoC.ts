@@ -11,6 +11,7 @@ import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
 import { DocumentSymbolStructureExtension } from './extensions/DocumentSymbolStructureExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
+import { OrganizeImportsOnSaveExtension } from './extensions/OrganizeImportsOnSaveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { VscodeLogger } from './utilities/VscodeLogger';
@@ -50,6 +51,7 @@ container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
+container.bind<BaseExtension>(iocSymbols.extensions).to(OrganizeImportsOnSaveExtension).inSingletonScope();
 
 // Logging
 container
