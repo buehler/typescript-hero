@@ -60,7 +60,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
         await ctrl.commit();
 
         document.lineAt(0).text.should.equals(
-            `import { Class1 } from '../../../server/indices';`,
+            `import { Class1 } from '../../../server/indices/MyClass';`,
         );
 
         await document.save();
@@ -76,7 +76,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
         await ctrl.commit();
 
         document.lineAt(0).text.should.equals(
-            `import { Class1, Class2 } from '../../../server/indices';`,
+            `import { Class1, Class2 } from '../../../server/indices/MyClass';`,
         );
 
         await vscode.window.activeTextEditor!.edit((builder) => {
@@ -89,7 +89,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
         await document.save();
 
         document.lineAt(0).text.should.equals(
-            `import { Class2 } from '../../../server/indices';`,
+            `import { Class2 } from '../../../server/indices/MyClass';`,
         );
     });
 
