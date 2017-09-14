@@ -8,7 +8,7 @@ import { ImportManager } from '../managers';
 import { BaseExtension } from './BaseExtension';
 
 /**
- * 
+ * Extension that does sort and organize the imports as soon as a document will be saved.
  * 
  * @export
  * @class OrganizeImportsOnSaveExtension
@@ -40,7 +40,8 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
             }
 
             event.waitUntil(
-                ImportManager.create(event.document)
+                ImportManager
+                    .create(event.document)
                     .then(manager => manager.organizeImports().calculateTextEdits()),
             );
         }));
