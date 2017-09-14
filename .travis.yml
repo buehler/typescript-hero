@@ -38,25 +38,24 @@ before_install:
   - rvm get stable
   - rvm install 2.4
   - gem install github_changelog_generator
-  - npm install -g npm@5.2
-  - npm install -g greenkeeper-lockfile@1
+  - yarn global add greenkeeper-lockfile@1
 
 install:
-  - npm install
+  - yarn install
  
 before_script:
   - greenkeeper-lockfile-update
-  - npm run build
+  - yarn run build
 
 script:
-  - npm test --silent
+  - yarn test --silent
 
 after_script:
   - greenkeeper-lockfile-upload
-  - npm run semantic-release-pre
+  - yarn run semantic-release-pre
   - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
-  - npm install -g vsce
-  - npm run semantic-release
+  - yarn install -g vsce
+  - yarn run semantic-release
 
 branches:
   except:
