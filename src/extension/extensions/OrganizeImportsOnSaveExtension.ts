@@ -24,7 +24,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
     ) {
         super(context);
-        this.logger = loggerFactory('ImportResolveExtension');
+        this.logger = loggerFactory('OrganizeImportsOnSaveExtension');
     }
 
     /**
