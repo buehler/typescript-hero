@@ -76,17 +76,17 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "npm prune --production",
+    "vscode:prepublish": "yarn install --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && npm run lint",
+    "postinstall": "test -f ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
+    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && yarn run lint",
     "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "npm run build && del-cli './*.vsix' && vsce package",
+    "package": "yarn run build && del-cli './*.vsix' && vsce package",
     "semantic-release-pre": "semantic-release pre",
-    "semantic-release": "npm run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && npm install && semantic-release post"
+    "semantic-release": "yarn run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && yarn install && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
