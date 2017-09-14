@@ -257,6 +257,11 @@
           "default": false,
           "description": "Defines if sorting is disable during organize imports."
         },
+        "typescriptHero.resolver.organizeOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if the imports should be organized on save."
+        },
         "typescriptHero.resolver.ignoreImportsForOrganize": {
           "type": "array",
           "items": {

@@ -307,6 +307,19 @@ class VscodeResolverConfig implements ResolverConfig {
 
         return languages;
     }
+
+    /**
+     * Defines if typescript hero tries to organize your imports of a
+     * file as soon as the file would be saved.
+     * 
+     * @readonly
+     * @type {boolean}
+     * @memberof VscodeResolverConfig
+     */
+    public get organizeOnSave(): boolean {
+        const value = this.workspaceSection.get<boolean>('resolver.organizeOnSave');
+        return value !== undefined ? value : false;
+    }
 }
 
 /**
