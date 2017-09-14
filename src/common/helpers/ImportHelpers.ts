@@ -12,5 +12,17 @@ export function getImportInsertPosition(editor: TextEditor | undefined): Positio
     if (!editor) {
         return new Position(0, 0);
     }
-    return editor.document.lineAt(0).text.match(/use strict/) ? new Position(1, 0) : new Position(0, 0);
+    if (editor.document.lineAt(0).text.trim().match(/^\/\//)) {
+        let i = 1;
+        while (editor.document.lineAt(i).text.trim().match(/^\/\//)) i += 1;
+        return new Position(i, 0);
+    } else if (editor.document.lineAt(0).text.trim().match(/\/\*/)) {
+        let i = 1;
+        while (!editor.document.lineAt(i).text.match(/\*\//)) i += 1;
+        i += 1;
+        return new Position(i, 0);
+    } else if (editor.document.lineAt(0).text.trim().match(/use strict/)) {
+        return new Position(1, 0);
+    }
+    return new Position(0, 0);
 }
