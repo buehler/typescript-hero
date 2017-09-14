@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ImportManager } from '../../../src/extension/managers';
 
 chai.should();
 
@@ -33,6 +34,14 @@ describe('OrganizeImportsOnSaveExtension', () => {
                 ),
             ],
         );
+
+        const config = vscode.workspace.getConfiguration('typescriptHero');
+        await config.update('resolver.organizeOnSave', true);
+    });
+
+    after(async () => {
+        const config = vscode.workspace.getConfiguration('typescriptHero');
+        await config.update('resolver.organizeOnSave', false);
     });
 
     afterEach(async () => {
@@ -45,11 +54,43 @@ describe('OrganizeImportsOnSaveExtension', () => {
     });
 
     it('should remove an unused import on save', async () => {
-        console.log(document, index);
+        const ctrl = await ImportManager.create(document);
+        const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
+        ctrl.addDeclarationImport(declaration!);
+        await ctrl.commit();
+
+        document.lineAt(0).text.should.equals(
+            `import { Class1 } from '../../../server/indices/MyClass';`,
+        );
+
+        await document.save();
+
+        document.lineAt(0).text.should.equals('');
     });
 
-    it('should not remove a used import on save');
+    it('should not remove a used import on save', async () => {
+        const ctrl = await ImportManager.create(document);
+        const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
+        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+        await ctrl.commit();
 
-    it('should not remove something if not saved');
+        document.lineAt(0).text.should.equals(
+            `import { Class1, Class2 } from '../../../server/indices';`,
+        );
+
+        await vscode.window.activeTextEditor!.edit((builder) => {
+            builder.insert(
+                new vscode.Position(1, 0),
+                'let a = new Class2()',
+            );
+        });
+
+        await document.save();
+
+        document.lineAt(0).text.should.equals(
+            `import { Class2 } from '../../../server/indices';`,
+        );
+    });
 
 });

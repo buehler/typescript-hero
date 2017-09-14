@@ -9,7 +9,7 @@ import { BaseExtension } from './BaseExtension';
 
 /**
  * Extension that does sort and organize the imports as soon as a document will be saved.
- * 
+ *
  * @export
  * @class OrganizeImportsOnSaveExtension
  * @extends {BaseExtension}
@@ -29,7 +29,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
 
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
-     * 
+     *
      * @memberof OrganizeImportsOnSaveExtension
      */
     public initialize(): void {
@@ -39,6 +39,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
                 return;
             }
 
+            this.logger.info(`Organize on save for document "${event.document.fileName}".`);
             event.waitUntil(
                 ImportManager
                     .create(event.document)
@@ -51,7 +52,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
 
     /**
      * Disposes the extension.
-     * 
+     *
      * @memberof OrganizeImportsOnSaveExtension
      */
     public dispose(): void {
