@@ -11,6 +11,7 @@
     ],
     "typescriptHero.verbosity": "Warnings",
     "tslint.enable": false,
-    "typescript.check.tscVersion": false,
-    "typescriptHero.codeOutline.enabled": true
+    "typescriptHero.codeOutline.enabled": true,
+    "typescriptHero.resolver.organizeOnSave": false,
+    "editor.formatOnSave": true
 }

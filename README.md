@@ -89,6 +89,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | importGroups                          | The groups that are used for sorting the imports (description below)                 |
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 | resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
+| organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document               |
 
 ### Code outline view
 
@@ -109,6 +110,8 @@ TypeScript Hero can manage your imports. It is capable of:
 - Import something that is beneath your current cursor position (and ask you if it's not sure which one)
 - Import all missing identifiers of the current file
 - Remove unused imports and sort the remaining ones by alphabet
+- Do organize the imports when a document is saved
+  - Note that this feature is only enabled if the vscode setting `editor.formatOnSave` is enabled as well!
 
 #### Import groups
 

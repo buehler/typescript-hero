@@ -146,4 +146,13 @@ export interface ResolverConfig {
      * @memberof ResolverConfig
      */
     resolverModeLanguages: string[];
+
+    /**
+     * Defines if typescript hero tries to organize your imports of a
+     * file as soon as the file would be saved.
+     * 
+     * @type {boolean}
+     * @memberof ResolverConfig
+     */
+    organizeOnSave: boolean;
 }
