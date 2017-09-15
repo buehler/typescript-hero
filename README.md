@@ -111,6 +111,7 @@ TypeScript Hero can manage your imports. It is capable of:
 - Import all missing identifiers of the current file
 - Remove unused imports and sort the remaining ones by alphabet
 - Do organize the imports when a document is saved
+  - Note that this feature is only enabled if the vscode setting `editor.formatOnSave` is enabled as well!
 
 #### Import groups
 
