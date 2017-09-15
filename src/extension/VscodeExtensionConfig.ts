@@ -12,7 +12,7 @@ const sectionKey = 'typescriptHero';
 /**
  * Configuration class for TypeScript Hero
  * Contains all exposed config endpoints.
- * 
+ *
  * @export
  * @class VscodeExtensionConfig
  */
@@ -27,7 +27,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
 
     /**
      * The actual log level.
-     * 
+     *
      * @readonly
      * @type {string}
      * @memberof VscodeExtensionConfig
@@ -38,7 +38,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
 
     /**
      * Configuration object for the resolver extension.
-     * 
+     *
      * @readonly
      * @type {ResolverConfig}
      * @memberof VscodeExtensionConfig
@@ -49,7 +49,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
 
     /**
      * Configuration object for the code outline extension.
-     * 
+     *
      * @readonly
      * @type {CodeOutlineConfig}
      * @memberof VscodeExtensionConfig
@@ -72,7 +72,7 @@ export class VscodeExtensionConfig implements ExtensionConfig {
 
 /**
  * Configuration class for the resolver extension.
- * 
+ *
  * @class VscodeResolverConfig
  */
 class VscodeResolverConfig implements ResolverConfig {
@@ -83,7 +83,7 @@ class VscodeResolverConfig implements ResolverConfig {
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }
-     * 
+     *
      * @readonly
      * @type {boolean}
      * @memberof VscodeResolverConfig
@@ -96,7 +96,7 @@ class VscodeResolverConfig implements ResolverConfig {
     /**
      * Defines, if there should be a semicolon at the end of a statement.
      * import Symbol from 'symbol' vs import Symbol from 'symbol';
-     * 
+     *
      * @readonly
      * @type {boolean}
      * @memberof VscodeResolverConfig
@@ -108,7 +108,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Defines the quote style (' or ").
-     * 
+     *
      * @readonly
      * @type {string}
      * @memberof VscodeResolverConfig
@@ -120,7 +120,7 @@ class VscodeResolverConfig implements ResolverConfig {
     /**
      * Array of string that are excluded from indexing (e.g. build, out, node_modules).
      * If those parts are found after the workspace path is striped away, the file is ignored.
-     * 
+     *
      * @readonly
      * @type {string[]}
      * @memberof VscodeResolverConfig
@@ -135,7 +135,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * A length number after which the import is transformed into a multiline import.
-     * 
+     *
      * @readonly
      * @type {number}
      * @memberof VscodeResolverConfig
@@ -164,7 +164,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Defines, if sorting is obligatory during organize imports
-     * 
+     *
      * @readonly
      * @type {boolean}
      * @memberof ResolverConfig
@@ -176,7 +176,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Returns the tab size that is configured in vscode.
-     * 
+     *
      * @readonly
      * @type {number}
      * @memberof VscodeResolverConfig
@@ -187,7 +187,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Returns the list of imports that should be ignored during organize import feature.
-     * 
+     *
      * @readonly
      * @type {string[]}
      * @memberof VscodeResolverConfig
@@ -198,7 +198,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Returns the configured import groups. On a parsing error, the default is used.
-     * 
+     *
      * @type {ImportGroup[]}
      * @memberof VscodeResolverConfig
      */
@@ -224,7 +224,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * All information that are needed to print an import.
-     * 
+     *
      * @readonly
      * @type {TypescriptGenerationOptions}
      * @memberof VscodeResolverConfig
@@ -242,7 +242,7 @@ class VscodeResolverConfig implements ResolverConfig {
 
     /**
      * Current mode of the resolver.
-     * 
+     *
      * @readonly
      * @type {ResolverMode}
      * @memberof VscodeResolverConfig
@@ -260,7 +260,7 @@ class VscodeResolverConfig implements ResolverConfig {
      *
      * @example `ES6`
      * Will return: ['\*\*\/\*.js', '\*\*\/\*.jsx']
-     * 
+     *
      * @type {string[]}
      * @memberof VscodeResolverConfig
      */
@@ -286,7 +286,7 @@ class VscodeResolverConfig implements ResolverConfig {
      *
      * @example `TypeScript`
      * Will return: ['typescript', 'typescriptreact']
-     * 
+     *
      * @readonly
      * @type {string[]}
      * @memberof VscodeResolverConfig
@@ -311,20 +311,22 @@ class VscodeResolverConfig implements ResolverConfig {
     /**
      * Defines if typescript hero tries to organize your imports of a
      * file as soon as the file would be saved.
-     * 
+     * Is a combination between the editor.formatOnSave and the resolver settings.
+     *
      * @readonly
      * @type {boolean}
      * @memberof VscodeResolverConfig
      */
     public get organizeOnSave(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.organizeOnSave');
-        return value !== undefined ? value : false;
+        const typescriptHeroValue = this.workspaceSection.get<boolean>('resolver.organizeOnSave', true);
+        const editorValue = workspace.getConfiguration().get('editor.formatOnSave', false);
+        return typescriptHeroValue && editorValue;
     }
 }
 
 /**
  * Configuration interface for the code outline feature.
- * 
+ *
  * @class VscodeCodeOutlineConfig
  * @implements {CodeOutlineConfig}
  */
@@ -335,7 +337,7 @@ class VscodeCodeOutlineConfig implements CodeOutlineConfig {
 
     /**
      * Defined if the code outline feature is enabled or not.
-     * 
+     *
      * @readonly
      * @type {boolean}
      * @memberof VscodeCodeOutlineConfig
