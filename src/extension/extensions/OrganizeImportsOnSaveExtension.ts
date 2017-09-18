@@ -44,7 +44,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
                 this.logger.info('Organize on save is deactivated through config.');
                 return;
             }
-            if (this.compatibleLanguages.indexOf(event.document.languageId) <= 0) {
+            if (this.compatibleLanguages.indexOf(event.document.languageId) < 0) {
                 this.logger.info(`Organize imports for languageId "${event.document.languageId}" not possible.`);
                 return;
             }
