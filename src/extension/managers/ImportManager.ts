@@ -444,7 +444,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
-        // TODO CONFIG
+        if (!ImportManager.config.resolver.promptForSpecifiers) {
+            return specifierName;
+        }
         const result = await this.vscodeInputBox({
             placeHolder: `Alias for specifier "${specifierName}"`,
             prompt: `Please enter an alias for the specifier "${specifierName}"...`,
@@ -463,7 +465,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
-        // TODO CONFIG
+        if (!ImportManager.config.resolver.promptForSpecifiers) {
+            return declarationName;
+        }
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export...',
