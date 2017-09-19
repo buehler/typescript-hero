@@ -351,6 +351,11 @@
           "default": "TypeScript",
           "description": "Defines the mode of the symbol resolver (i.e. if JavaScript files should be indexed as well (experimental)."
         },
+        "typescriptHero.resolver.promptForSpecifiers": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases."
+        },
         "typescriptHero.codeOutline.enabled": {
           "type": "boolean",
           "default": true,

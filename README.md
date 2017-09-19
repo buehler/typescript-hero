@@ -90,6 +90,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 | resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
 | organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document               |
+| promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers            |
 
 ### Code outline view
 
