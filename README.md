@@ -17,6 +17,10 @@ work with typescript.
 [![Greenkeeper](https://badges.greenkeeper.io/buehler/typescript-hero.svg)](https://greenkeeper.io/)
 [![License](https://img.shields.io/github/license/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/blob/master/LICENSE)
 
+If you'd like to buy me a beer :-)
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/rbbit)
+
 ## Features at a glance
 
 Here is a brief list, of what TypeScript Hero is capable of (more at the end):
