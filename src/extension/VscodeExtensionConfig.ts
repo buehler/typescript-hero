@@ -1,10 +1,10 @@
-import { ResolverMode } from '../common/enums';
 import { injectable } from 'inversify';
 import { TypescriptGenerationOptions } from 'typescript-parser';
 import { workspace, WorkspaceConfiguration } from 'vscode';
 
 import { ExtensionConfig, ResolverConfig } from '../common/config';
 import { CodeOutlineConfig } from '../common/config/CodeOutlineConfig';
+import { ResolverMode } from '../common/enums';
 import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
 
 const sectionKey = 'typescriptHero';
@@ -321,6 +321,18 @@ class VscodeResolverConfig implements ResolverConfig {
         const typescriptHeroValue = this.workspaceSection.get<boolean>('resolver.organizeOnSave', true);
         const editorValue = workspace.getConfiguration().get('editor.formatOnSave', false);
         return typescriptHeroValue && editorValue;
+    }
+
+    /**
+     * Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases.
+     * If true, tsh does ask the user.
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof VscodeResolverConfig
+     */
+    public get promptForSpecifiers(): boolean {
+        return this.workspaceSection.get<boolean>('resolver.promptForSpecifiers', false);
     }
 }
 
