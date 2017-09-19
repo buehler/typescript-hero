@@ -428,7 +428,10 @@ export class ImportManager implements ObjectManager {
 
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
-                if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
+                if (
+                    specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1 &&
+                    ImportManager.config.resolver.promptForSpecifiers
+                ) {
                     spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }
             }
@@ -444,9 +447,6 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
-        if (!ImportManager.config.resolver.promptForSpecifiers) {
-            return specifierName;
-        }
         const result = await this.vscodeInputBox({
             placeHolder: `Alias for specifier "${specifierName}"`,
             prompt: `Please enter an alias for the specifier "${specifierName}"...`,
