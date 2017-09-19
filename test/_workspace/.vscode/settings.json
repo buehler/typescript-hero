@@ -13,5 +13,6 @@
     "tslint.enable": false,
     "typescriptHero.codeOutline.enabled": true,
     "typescriptHero.resolver.organizeOnSave": false,
+    "typescriptHero.resolver.promptForSpecifiers": true,
     "editor.formatOnSave": true
 }

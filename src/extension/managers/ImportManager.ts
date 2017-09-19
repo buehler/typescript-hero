@@ -428,7 +428,10 @@ export class ImportManager implements ObjectManager {
 
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
-                if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
+                if (
+                    specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1 &&
+                    ImportManager.config.resolver.promptForSpecifiers
+                ) {
                     spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }
             }
@@ -462,6 +465,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
+        if (!ImportManager.config.resolver.promptForSpecifiers) {
+            return declarationName;
+        }
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export...',

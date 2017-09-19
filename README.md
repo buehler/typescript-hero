@@ -17,6 +17,10 @@ work with typescript.
 [![Greenkeeper](https://badges.greenkeeper.io/buehler/typescript-hero.svg)](https://greenkeeper.io/)
 [![License](https://img.shields.io/github/license/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/blob/master/LICENSE)
 
+If you'd like to buy me a beer :-)
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/rbbit)
+
 ## Features at a glance
 
 Here is a brief list, of what TypeScript Hero is capable of (more at the end):
@@ -90,6 +94,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 | resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
 | organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document               |
+| promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers            |
 
 ### Code outline view
 

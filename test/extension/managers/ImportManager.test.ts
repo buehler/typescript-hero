@@ -17,7 +17,7 @@ chai.use(sinonChai);
 
 /**
  * Mock window input box.
- * 
+ *
  * @param {string} returnValue
  * @returns {sinon.SinonStub}
  */
@@ -29,7 +29,7 @@ function mockInputBox(returnValue: string): sinon.SinonStub {
 
 /**
  * Restore window.
- * 
+ *
  * @param {sinon.SinonStub} stub
  */
 function restoreInputBox(stub: sinon.SinonStub): void {
@@ -828,6 +828,58 @@ describe('ImportManager', () => {
             document.lineAt(0).text.should.equals(
                 `import { Class1, Class2 } from '../../server/indices';`,
             );
+        });
+
+        describe('resolver.promptForSpecifiers: false', () => {
+
+            before(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.promptForSpecifiers', false);
+            });
+
+            after(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.promptForSpecifiers', true);
+            });
+
+            it('should not ask for a default alias', async () => {
+                const stub = mockInputBox('DEFAULT_IMPORT');
+                try {
+                    const ctrl = await ImportManager.create(document);
+                    const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
+                    await ctrl.addDeclarationImport(declaration!).commit();
+
+                    document.lineAt(0).text.should.equals(
+                        `import multiExport from '../../server/indices/defaultExport/multiExport';`,
+                    );
+
+                    stub.should.not.be.called;
+                } finally {
+                    restoreInputBox(stub);
+                }
+            });
+
+            it('should not ask for an alias on duplicate specifiers', async () => {
+                const stub = mockInputBox('ALIASED_IMPORT');
+                try {
+                    const ctrl = await ImportManager.create(document);
+                    const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
+                    ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
+                    (await ctrl.commit()).should.be.true;
+
+                    document.lineAt(0).text.should.equal(
+                        `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
+                    );
+                    document.lineAt(1).text.should.equal(
+                        `import { Class1, FancierLibraryClass } from '../../server/indices';`,
+                    );
+
+                    stub.should.not.be.called;
+                } finally {
+                    restoreInputBox(stub);
+                }
+            });
+
         });
 
     });
