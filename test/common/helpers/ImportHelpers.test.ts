@@ -1,57 +1,74 @@
 import * as chai from 'chai';
-import { join } from 'path';
-import { DeclarationIndex } from 'typescript-parser';
-import * as vscode from 'vscode';
 
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { getImportInsertPosition } from '../../../src/common/helpers';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
+class MockDocument {
+    constructor(private documentText: string) { }
+
+    public getText(): string {
+        return this.documentText;
+    }
+}
 
 describe('ImportHelpers', () => {
 
-    const file = join(rootPath, 'common/helpers/importHelperFile.ts');
-    let document: vscode.TextDocument;
-
-    before(async () => {
-        document = await vscode.workspace.openTextDocument(file);
-        await vscode.window.showTextDocument(document);
-
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
-        await index.buildIndex(
-            [
-                join(
-                    rootPath,
-                    'server/indices/MyClass.ts',
-                ),
-            ],
-        );
-    });
-
-    afterEach(async () => {
-        await vscode.window.activeTextEditor!.edit((builder) => {
-            builder.delete(new vscode.Range(
-                new vscode.Position(0, 0),
-                document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
-            ));
-        });
-    });
-
     describe('getImportInsertPosition', () => {
 
-        it('should return the top position if empty file');
+        it('should return top position if no editor is specified', () => {
+            const pos = getImportInsertPosition(undefined);
+            pos.character.should.equal(0);
+            pos.line.should.equal(0);
+        });
 
-        it('should return correct position for commented file');
+        it('should return the top position if empty file', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument(''),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(0);
+        });
 
-        it('should return correct position for use strict');
+        it('should return correct position for commented file', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument('    // This is a file header\nStart of file\n'),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(1);
+        });
 
-        it('should return correct position for jsdoc comment open');
+        it('should return correct position for use strict', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument(`'use strict'\nStart of file\n`),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(1);
+        });
 
-        it('should return correct position for jsdoc comment line');
+        it('should return correct position for jsdoc comment open', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument('/** start of a jsdoc\n'),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(1);
+        });
 
-        it('should return correct position for jsdoc comment close');
+        it('should return correct position for jsdoc comment line', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument(' * jsdoc line\n'),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(1);
+        });
+
+        it('should return correct position for jsdoc comment close', () => {
+            const pos = getImportInsertPosition({
+                document: new MockDocument('*/\n'),
+            } as any);
+            pos.character.should.equal(0);
+            pos.line.should.equal(1);
+        });
 
     });
 
