@@ -42,6 +42,17 @@ describe('DocumentSymbolStructureExtension', () => {
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);
     });
 
+    it.skip('should return an empty array if no active window is set', async () => {
+        try {
+            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+            const elements = await extension.getChildren() as BaseStructureTreeItem[];
+            elements.should.have.lengthOf(0);
+        } finally {
+            await vscode.window.showTextDocument(document);
+        }
+    });
+
     it('should return a "file not parsable" if it is no ts file', async () => {
         const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(

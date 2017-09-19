@@ -11,8 +11,8 @@
   "publisher": "rbbit",
   "engines": {
     "vscode": "^1.13.0",
-    "node": ">=6.0.0",
-    "npm": ">=3.9.5"
+    "node": ">=8.0.0",
+    "npm": ">=5.3.0"
   },
   "categories": [
     "Other",
