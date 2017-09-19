@@ -26,7 +26,7 @@ import { BaseExtension } from './BaseExtension';
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
- * 
+ *
  * @export
  * @class DocumentSymbolStructureExtension
  * @extends {BaseExtension}
@@ -53,7 +53,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
-     * 
+     *
      * @memberof DocumentSymbolStructureExtension
      */
     public initialize(): void {
@@ -73,7 +73,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
     /**
      * Disposes the extension.
-     * 
+     *
      * @memberof DocumentSymbolStructureExtension
      */
     public dispose(): void {
@@ -100,7 +100,12 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         }
 
         if (!this.documentCache) {
-            this.documentCache = await this.parser.parseSource(window.activeTextEditor.document.getText());
+            try {
+                this.documentCache = await this.parser.parseSource(window.activeTextEditor.document.getText());
+            } catch (e) {
+                this.logger.error('Document could not be parsed.', e);
+                return [];
+            }
         }
 
         if (!element) {
@@ -117,11 +122,11 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
     /**
      * Takes a node (or undefined) and jumps to the nodes location. If undefined is passed, a warning message is displayed.
-     * 
+     *
      * @private
-     * @param {(Node | undefined)} node 
-     * @returns {Promise<void>} 
-     * 
+     * @param {(Node | undefined)} node
+     * @returns {Promise<void>}
+     *
      * @memberof DocumentSymbolStructureExtension
      */
     private async jumpToNode(node: Node | undefined): Promise<void> {
@@ -142,9 +147,9 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
     /**
      * Method that recalculates the current document when the active window changed.
-     * 
+     *
      * @private
-     * 
+     *
      * @memberof DocumentSymbolStructureExtension
      */
     private activeWindowChanged(): void {
