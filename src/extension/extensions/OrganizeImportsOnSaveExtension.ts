@@ -16,6 +16,12 @@ import { BaseExtension } from './BaseExtension';
  */
 @injectable()
 export class OrganizeImportsOnSaveExtension extends BaseExtension {
+    private compatibleLanguages: string[] = [
+        'typescript',
+        'typescriptreact',
+        'javascript',
+        'javascriptreact',
+    ];
     private logger: Logger;
 
     constructor(
@@ -36,6 +42,10 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
         this.context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
             if (!this.config.resolver.organizeOnSave) {
                 this.logger.info('Organize on save is deactivated through config.');
+                return;
+            }
+            if (this.compatibleLanguages.indexOf(event.document.languageId) < 0) {
+                this.logger.info(`Organize imports for languageId "${event.document.languageId}" not possible.`);
                 return;
             }
 
