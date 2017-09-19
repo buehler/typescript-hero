@@ -36,7 +36,7 @@ import { ObjectManager } from './ObjectManager';
 /**
  * Management class for the imports of a document. Can add and remove imports to the document
  * and commit the virtual document to the TextEditor.
- * 
+ *
  * @export
  * @class ImportManager
  */
@@ -64,7 +64,7 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Document resource for this controller. Contains the parsed document.
-     * 
+     *
      * @readonly
      * @type {File}
      * @memberof ImportManager
@@ -84,11 +84,11 @@ export class ImportManager implements ObjectManager {
      * Creates an instance of an ImportManager.
      * Does parse the document text first and returns a promise that
      * resolves to an ImportManager.
-     * 
+     *
      * @static
      * @param {TextDocument} document The document that should be managed
      * @returns {Promise<ImportManager>}
-     * 
+     *
      * @memberof ImportManager
      */
     public static async create(document: TextDocument): Promise<ImportManager> {
@@ -101,7 +101,7 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Resets the imports and the import groups back to the initial state of the parsed document.
-     * 
+     *
      * @memberof ImportManager
      */
     public reset(): void {
@@ -114,10 +114,10 @@ export class ImportManager implements ObjectManager {
      * Adds an import for a declaration to the documents imports.
      * This index is merged and commited during the commit() function.
      * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
-     * 
+     *
      * @param {DeclarationInfo} declarationInfo The import that should be added to the document
      * @returns {ImportManager}
-     * 
+     *
      * @memberof ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
@@ -170,10 +170,10 @@ export class ImportManager implements ObjectManager {
     /**
      * Adds all missing imports to the actual document. If multiple declarations are found for one missing
      * specifier, the user is asked when the commit() function is executed.
-     * 
+     *
      * @param {DeclarationIndex} index
      * @returns {this}
-     * 
+     *
      * @memberof ImportManager
      */
     public addMissingImports(index: DeclarationIndex): this {
@@ -202,9 +202,9 @@ export class ImportManager implements ObjectManager {
      * Order:
      * 1. string-only imports (e.g. import 'reflect-metadata')
      * 2. rest, but in alphabetical order
-     * 
+     *
      * @returns {ImportManager}
-     * 
+     *
      * @memberof ImportManager
      */
     public organizeImports(): this {
@@ -255,9 +255,9 @@ export class ImportManager implements ObjectManager {
      * Does commit the currently virtual document to the TextEditor.
      * Returns a promise that resolves to a boolean if all changes
      * could be applied.
-     * 
+     *
      * @returns {Promise<boolean>}
-     * 
+     *
      * @memberof ImportManager
      */
     public async commit(): Promise<boolean> {
@@ -288,9 +288,9 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Calculate the needed {@link TextEdit} array for the actual changes in the imports.
-     * 
-     * @returns {TextEdit[]} 
-     * 
+     *
+     * @returns {TextEdit[]}
+     *
      * @memberof ImportManager
      */
     public calculateTextEdits(): TextEdit[] {
@@ -309,13 +309,16 @@ export class ImportManager implements ObjectManager {
                     }
                 }
             }
-            edits.push(TextEdit.insert(
-                getImportInsertPosition(window.activeTextEditor),
-                this.importGroups
-                    .map(group => ImportManager.generator.generate(group as any))
-                    .filter(Boolean)
-                    .join('\n') + '\n',
-            ));
+            const imports = this.importGroups
+                .map(group => ImportManager.generator.generate(group as any))
+                .filter(Boolean)
+                .join('\n');
+            if (!!imports) {
+                edits.push(TextEdit.insert(
+                    getImportInsertPosition(window.activeTextEditor),
+                    `${imports}\n`,
+                ));
+            }
         } else {
             // Commit the documents imports:
             // 1. Remove imports that are in the document, but not anymore
@@ -355,10 +358,10 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Add a list of imports to the groups of the ImportManager.
-     * 
+     *
      * @private
-     * @param {Import[]} imports 
-     * 
+     * @param {Import[]} imports
+     *
      * @memberof ImportManager
      */
     private addImportsToGroups(imports: Import[]): void {
@@ -374,10 +377,10 @@ export class ImportManager implements ObjectManager {
     /**
      * Solves conflicts in named specifiers and does ask the user for aliases. Also resolves namings for default
      * imports. As long as the user has a duplicate, he will be asked again.
-     * 
+     *
      * @private
      * @returns {Promise<void>}
-     * 
+     *
      * @memberof ImportManager
      */
     private async resolveImportSpecifiers(): Promise<void> {
@@ -425,7 +428,10 @@ export class ImportManager implements ObjectManager {
 
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
-                if (specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1) {
+                if (
+                    specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1 &&
+                    ImportManager.config.resolver.promptForSpecifiers
+                ) {
                     spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }
             }
@@ -434,10 +440,10 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Does resolve a duplicate specifier issue.
-     * 
+     *
      * @private
      * @returns {Promise<string | undefined>}
-     * 
+     *
      * @memberof ImportManager
      */
     private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
@@ -451,14 +457,17 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Calls the vscode input box to ask for an indentifier for a default export.
-     * 
+     *
      * @private
      * @param {string} declarationName
      * @returns {Promise<string | undefined>}
-     * 
+     *
      * @memberof ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
+        if (!ImportManager.config.resolver.promptForSpecifiers) {
+            return declarationName;
+        }
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
             prompt: 'Please enter a variable name for the default export...',
@@ -470,11 +479,11 @@ export class ImportManager implements ObjectManager {
 
     /**
      * Ultimately asks the user for an input.
-     * 
+     *
      * @private
      * @param {InputBoxOptions} options
      * @returns {Promise<string | undefined>}
-     * 
+     *
      * @memberof ImportManager
      */
     private async vscodeInputBox(options: InputBoxOptions): Promise<string | undefined> {

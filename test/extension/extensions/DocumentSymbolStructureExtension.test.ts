@@ -42,7 +42,7 @@ describe('DocumentSymbolStructureExtension', () => {
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);
     });
 
-    it('should return an empty array if no active window is set', async () => {
+    it.skip('should return an empty array if no active window is set', async () => {
         try {
             await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
