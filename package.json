@@ -101,7 +101,7 @@
     "mocha-testdata": "^1.2.0",
     "semantic-release": "^8.0.0",
     "semantic-release-visualstudio-marketplace-version": "^1.0.0",
-    "sinon": "^3.2.1",
+    "sinon": "^4.0.0",
     "sinon-chai": "^2.13.0",
     "tslint": "^5.7.0",
     "tslint-config-airbnb": "^5.3.0-beta",
