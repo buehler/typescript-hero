@@ -3134,8 +3134,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 typescript-parser@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.0.0.tgz#b75065cb4bd36aeb92a25a5820fe7573240abb4a"
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.0.1.tgz#ee6bc35b7e0cea47e0ab2f828e3ff6c16b6e3115"
   dependencies:
     coveralls "^2.13.3"
     lodash "^4.17.4"
