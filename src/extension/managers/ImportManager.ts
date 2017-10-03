@@ -2,7 +2,6 @@ import {
     DeclarationIndex,
     DeclarationInfo,
     DefaultDeclaration,
-    DefaultImport,
     ExternalModuleImport,
     File,
     Import,
