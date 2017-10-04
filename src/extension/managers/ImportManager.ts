@@ -1,27 +1,27 @@
 import {
-    DeclarationIndex,
-    DeclarationInfo,
-    DefaultDeclaration,
-    ExternalModuleImport,
-    File,
-    Import,
-    isAliasedImport,
-    ModuleDeclaration,
-    NamedImport,
-    NamespaceImport,
-    StringImport,
-    SymbolSpecifier,
-    TypescriptCodeGenerator,
-    TypescriptParser,
+  DeclarationIndex,
+  DeclarationInfo,
+  DefaultDeclaration,
+  ExternalModuleImport,
+  File,
+  Import,
+  isAliasedImport,
+  ModuleDeclaration,
+  NamedImport,
+  NamespaceImport,
+  StringImport,
+  SymbolSpecifier,
+  TypescriptCodeGenerator,
+  TypescriptParser,
 } from 'typescript-parser';
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
 import {
-    getAbsolutLibraryName,
-    getDeclarationsFilteredByImports,
-    getImportInsertPosition,
-    getRelativeLibraryName,
+  getAbsolutLibraryName,
+  getDeclarationsFilteredByImports,
+  getImportInsertPosition,
+  getRelativeLibraryName,
 } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { importRange } from '../helpers';
@@ -213,27 +213,31 @@ export class ImportManager implements ObjectManager {
         this.organize = true;
         let keep: Import[] = [];
 
-        for (const actImport of this.imports) {
-            if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
-                keep.push(actImport);
-                continue;
-            }
-            if (actImport instanceof NamespaceImport ||
-                actImport instanceof ExternalModuleImport) {
-                if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+        if (ImportManager.config.resolver.disableUnsedImportsRemove) {
+            keep = this.imports;
+        } else {
+            for (const actImport of this.imports) {
+                if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+                    keep.push(actImport);
+                    continue;
+                }
+                if (actImport instanceof NamespaceImport ||
+                    actImport instanceof ExternalModuleImport) {
+                    if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof NamedImport) {
+                    actImport.specifiers = actImport.specifiers
+                        .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
+                        .sort(specifierSort);
+                    const defaultSpec = actImport.defaultAlias;
+                    if (actImport.specifiers.length ||
+                        (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof StringImport) {
                     keep.push(actImport);
                 }
-            } else if (actImport instanceof NamedImport) {
-                actImport.specifiers = actImport.specifiers
-                    .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
-                    .sort(specifierSort);
-                const defaultSpec = actImport.defaultAlias;
-                if (actImport.specifiers.length ||
-                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
-                    keep.push(actImport);
-                }
-            } else if (actImport instanceof StringImport) {
-                keep.push(actImport);
             }
         }
 

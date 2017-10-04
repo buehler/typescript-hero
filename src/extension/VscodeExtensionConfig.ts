@@ -175,6 +175,18 @@ class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
+     * Defines, if removal unsed is obligatory during organize imports
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof ResolverConfig
+     */
+    public get disableUnsedImportsRemove(): boolean {
+        const value = this.workspaceSection.get<boolean>('resolver.disableUnsedImportsRemove');
+        return value !== undefined ? value : false;
+    }
+
+    /**
      * Returns the tab size that is configured in vscode.
      *
      * @readonly
