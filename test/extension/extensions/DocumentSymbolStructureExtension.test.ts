@@ -24,16 +24,12 @@ const rootPath = Container.get<string>(iocSymbols.rootPath);
 describe('DocumentSymbolStructureExtension', () => {
 
     let extension: DocumentSymbolStructureExtension;
-    let document: vscode.TextDocument;
+    const file = join(
+        rootPath,
+        'extension/extensions/documentSymbolStructureExtension/documentSymbolFile.ts',
+    );
 
     before(async () => {
-        const file = join(
-            rootPath,
-            'extension/extensions/documentSymbolStructureExtension/documentSymbolFile.ts',
-        );
-        document = await vscode.workspace.openTextDocument(file);
-        await vscode.window.showTextDocument(document);
-
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
@@ -42,15 +38,20 @@ describe('DocumentSymbolStructureExtension', () => {
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);
     });
 
-    it.skip('should return an empty array if no active window is set', async () => {
-        try {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    beforeEach(async () => {
+        const document = await vscode.workspace.openTextDocument(file);
+        await vscode.window.showTextDocument(document);
+    });
 
-            const elements = await extension.getChildren() as BaseStructureTreeItem[];
-            elements.should.have.lengthOf(0);
-        } finally {
-            await vscode.window.showTextDocument(document);
-        }
+    afterEach(async () => {
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+    });
+
+    it.skip('should return an empty array if no active window is set', async () => {
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+
+        const elements = await extension.getChildren() as BaseStructureTreeItem[];
+        elements.should.have.lengthOf(0);
     });
 
     it('should return a "file not parsable" if it is no ts file', async () => {
@@ -66,7 +67,6 @@ describe('DocumentSymbolStructureExtension', () => {
         elements[0].should.be.instanceof(NotParseableStructureTreeItem);
 
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-        await vscode.window.showTextDocument(document);
     });
 
     it('should return a "not enabled" if the part is disabled via config', async () => {
