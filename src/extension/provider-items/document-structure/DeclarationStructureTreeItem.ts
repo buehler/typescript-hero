@@ -2,9 +2,11 @@ import {
     ClassDeclaration,
     Declaration,
     FunctionDeclaration,
+    GetterDeclaration,
     InterfaceDeclaration,
     MethodDeclaration,
     PropertyDeclaration,
+    SetterDeclaration,
     VariableDeclaration,
 } from 'typescript-parser';
 import { stringTemplate } from 'typescript-parser/utilities/StringTemplate';
@@ -17,9 +19,9 @@ const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${
 
 /**
  * Function to calculate the displayed name of the declaration structure item.
- * 
- * @param {Declaration} declaration 
- * @returns {string} 
+ *
+ * @param {Declaration} declaration
+ * @returns {string}
  */
 function getDeclarationLabel(declaration: Declaration): string {
     if (
@@ -41,12 +43,20 @@ function getDeclarationLabel(declaration: Declaration): string {
         return declaration.name + (declaration.typeParameters ? `<${declaration.typeParameters.join(', ')}>` : '');
     }
 
+    if (
+        declaration instanceof GetterDeclaration ||
+        declaration instanceof SetterDeclaration
+    ) {
+        return `${declaration instanceof GetterDeclaration ? 'get' : 'set'}() ${declaration.name}` +
+            `${declaration.type ? `: ${declaration.type}` : ''}`;
+    }
+
     return declaration.name;
 }
 
 /**
  * Structure item that represents a typescript declaration of any way.
- * 
+ *
  * @export
  * @class DeclarationStructureTreeItem
  * @extends {BaseStructureTreeItem}
@@ -100,6 +110,7 @@ export class DeclarationStructureTreeItem extends BaseStructureTreeItem {
             this.declaration instanceof InterfaceDeclaration
         ) {
             return [
+                ...this.declaration.accessors.map(p => new DeclarationStructureTreeItem(p, this.context)),
                 ...this.declaration.properties.map(p => new DeclarationStructureTreeItem(p, this.context)),
                 ...this.declaration.methods.map(m => new DeclarationStructureTreeItem(m, this.context)),
             ];

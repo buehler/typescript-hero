@@ -5,12 +5,14 @@ import {
     DefaultDeclaration,
     EnumDeclaration,
     FunctionDeclaration,
+    GetterDeclaration,
     Import,
     InterfaceDeclaration,
     MethodDeclaration,
     ModuleDeclaration,
     ParameterDeclaration,
     PropertyDeclaration,
+    SetterDeclaration,
     SymbolSpecifier,
     TypeAliasDeclaration,
     VariableDeclaration,
@@ -19,12 +21,12 @@ import { CompletionItemKind } from 'vscode';
 
 /**
  * String-Sort function.
- * 
+ *
  * @export
- * @param {string} strA 
- * @param {string} strB 
- * @param {('asc' | 'desc')} [order='asc'] 
- * @returns {number} 
+ * @param {string} strA
+ * @param {string} strB
+ * @param {('asc' | 'desc')} [order='asc']
+ * @returns {number}
  */
 export function stringSort(strA: string, strB: string, order: 'asc' | 'desc' = 'asc'): number {
     let result: number = 0;
@@ -41,12 +43,12 @@ export function stringSort(strA: string, strB: string, order: 'asc' | 'desc' = '
 
 /**
  * Order imports by library name.
- * 
+ *
  * @export
- * @param {Import} i1 
- * @param {Import} i2 
- * @param {('asc' | 'desc')} [order='asc'] 
- * @returns {number} 
+ * @param {Import} i1
+ * @param {Import} i2
+ * @param {('asc' | 'desc')} [order='asc']
+ * @returns {number}
  */
 export function importSort(i1: Import, i2: Import, order: 'asc' | 'desc' = 'asc'): number {
     const strA = i1.libraryName.toLowerCase();
@@ -69,10 +71,10 @@ export function specifierSort(i1: SymbolSpecifier, i2: SymbolSpecifier): number 
 
 /**
  * Returns the item kind for a given declaration.
- * 
+ *
  * @export
- * @param {Declaration} declaration 
- * @returns {CompletionItemKind} 
+ * @param {Declaration} declaration
+ * @returns {CompletionItemKind}
  */
 export function getItemKind(declaration: Declaration): CompletionItemKind {
     switch (true) {
@@ -103,6 +105,9 @@ export function getItemKind(declaration: Declaration): CompletionItemKind {
             return variable.isConst ?
                 CompletionItemKind.Constant :
                 CompletionItemKind.Variable;
+        case declaration instanceof GetterDeclaration:
+        case declaration instanceof SetterDeclaration:
+            return CompletionItemKind.Method;
         default:
             return CompletionItemKind.Reference;
     }
