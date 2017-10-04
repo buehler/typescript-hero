@@ -142,7 +142,7 @@ export class ImportManager implements ObjectManager {
             if (declarationInfo.declaration instanceof DefaultDeclaration) {
                 delete alreadyImported.defaultAlias;
                 alreadyImported.defaultAlias = declarationInfo.declaration.name;
-            } else {
+            } else if (!alreadyImported.specifiers.some(o => o.specifier === declarationInfo.declaration.name)) {
                 alreadyImported.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
         } else {

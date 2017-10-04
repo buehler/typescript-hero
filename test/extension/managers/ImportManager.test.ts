@@ -213,8 +213,7 @@ describe('ImportManager', () => {
             (ctrl as any).imports[1].libraryName.should.equal(
                 '../../server/indices/defaultExport/lateDefaultExportedElement',
             );
-            (ctrl as any).imports[1].defaultPurposal.should.equal('myDefaultExportedFunction');
-            should.not.exist((ctrl as any).imports[1].defaultAlias);
+            (ctrl as any).imports[1].defaultAlias.should.equal('myDefaultExportedFunction');
         });
 
         it('should add multiple imports to the import index', async () => {
@@ -633,9 +632,9 @@ describe('ImportManager', () => {
                 ctrl.addDeclarationImport(declaration!);
                 (await ctrl.commit()).should.be.true;
 
-                stub.should.be.calledWithMatch({ value: 'myDefaultExportedFunction' });
+                stub.should.not.be.called;
                 document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
+                    `import myDefaultExportedFunction from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -697,7 +696,7 @@ describe('ImportManager', () => {
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
@@ -728,14 +727,14 @@ describe('ImportManager', () => {
                 await ctrl.addDeclarationImport(declaration!).commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/multiExport';`,
+                    `import multiExport from '../../server/indices/defaultExport/multiExport';`,
                 );
 
                 declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
@@ -759,7 +758,7 @@ describe('ImportManager', () => {
                 await ctrl.commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
