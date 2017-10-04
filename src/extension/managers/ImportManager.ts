@@ -424,11 +424,15 @@ export class ImportManager implements ObjectManager {
         const named = this.imports.filter(o => o instanceof NamedImport) as NamedImport[];
 
         for (const imp of named) {
-            // TODO:
-            // if (imp.defaultPurposal && !imp.defaultAlias) {
-            //     imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal);
-            //     delete imp.defaultPurposal;
-            // }
+            if (imp.defaultAlias) {
+                const specifiers = getSpecifiers();
+                if (
+                    specifiers.filter(o => o === imp.defaultAlias).length > 1 &&
+                    ImportManager.config.resolver.promptForSpecifiers
+                ) {
+                    imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultAlias);
+                }
+            }
 
             for (const spec of imp.specifiers) {
                 const specifiers = getSpecifiers();
@@ -468,18 +472,15 @@ export class ImportManager implements ObjectManager {
      *
      * @memberof ImportManager
      */
-    // private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
-    //     if (!ImportManager.config.resolver.promptForSpecifiers) {
-    //         return declarationName;
-    //     }
-    //     const result = await this.vscodeInputBox({
-    //         placeHolder: 'Default export name',
-    //         prompt: 'Please enter a variable name for the default export...',
-    //         validateInput: s => !!s ? '' : 'Please enter a variable name',
-    //         value: declarationName,
-    //     });
-    //     return !!result ? result : undefined;
-    // }
+    private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
+        const result = await this.vscodeInputBox({
+            placeHolder: 'Default export name',
+            prompt: 'Please enter an alias name for the default export...',
+            validateInput: s => !!s ? '' : 'Please enter a variable name',
+            value: declarationName,
+        });
+        return !!result ? result.replace(/[,.-_]/g, '') : undefined;
+    }
 
     /**
      * Ultimately asks the user for an input.
