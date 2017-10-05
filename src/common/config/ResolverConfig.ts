@@ -95,7 +95,7 @@ export interface ResolverConfig {
      * @type {boolean}
      * @memberof ResolverConfig
      */
-    disableUnsedImportsRemove: boolean;
+    disableImportRemovalOnOrganize: boolean;
 
     /**
      * List of import libraries ("from" part) which are ignored during the organize import function.

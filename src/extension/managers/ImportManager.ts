@@ -213,7 +213,7 @@ export class ImportManager implements ObjectManager {
         this.organize = true;
         let keep: Import[] = [];
 
-        if (ImportManager.config.resolver.disableUnsedImportsRemove) {
+        if (ImportManager.config.resolver.disableImportRemovalOnOrganize) {
             keep = this.imports;
         } else {
             for (const actImport of this.imports) {

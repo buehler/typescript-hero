@@ -93,9 +93,9 @@ describe('OrganizeImportsOnSaveExtension', () => {
         );
     });
 
-    it('should not remove an unused import on save when disableUnsedImportsRemove is true', async () => {
+    it('should not remove an unused import on save when disableImportRemovalOnOrganize is true', async () => {
         const config = vscode.workspace.getConfiguration('typescriptHero');
-        await config.update('resolver.disableUnsedImportsRemove', true);
+        await config.update('resolver.disableImportRemovalOnOrganize', true);
 
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');

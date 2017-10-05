@@ -181,8 +181,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @type {boolean}
      * @memberof ResolverConfig
      */
-    public get disableUnsedImportsRemove(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.disableUnsedImportsRemove');
+    public get disableImportRemovalOnOrganize(): boolean {
+        const value = this.workspaceSection.get<boolean>('resolver.disableImportRemovalOnOrganize');
         return value !== undefined ? value : false;
     }
 

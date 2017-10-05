@@ -257,7 +257,7 @@
           "default": false,
           "description": "Defines if sorting is disable during organize imports."
         },
-        "typescriptHero.resolver.disableUnsedImportsRemove": {
+        "typescriptHero.resolver.disableImportRemovalOnOrganize": {
           "type": "boolean",
           "default": false,
           "description": "Defines, if removal unsed imports is obligatory during organize imports"
