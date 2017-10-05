@@ -213,27 +213,31 @@ export class ImportManager implements ObjectManager {
         this.organize = true;
         let keep: Import[] = [];
 
-        for (const actImport of this.imports) {
-            if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
-                keep.push(actImport);
-                continue;
-            }
-            if (actImport instanceof NamespaceImport ||
-                actImport instanceof ExternalModuleImport) {
-                if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+        if (ImportManager.config.resolver.disableImportRemovalOnOrganize) {
+            keep = this.imports;
+        } else {
+            for (const actImport of this.imports) {
+                if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+                    keep.push(actImport);
+                    continue;
+                }
+                if (actImport instanceof NamespaceImport ||
+                    actImport instanceof ExternalModuleImport) {
+                    if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof NamedImport) {
+                    actImport.specifiers = actImport.specifiers
+                        .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
+                        .sort(specifierSort);
+                    const defaultSpec = actImport.defaultAlias;
+                    if (actImport.specifiers.length ||
+                        (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof StringImport) {
                     keep.push(actImport);
                 }
-            } else if (actImport instanceof NamedImport) {
-                actImport.specifiers = actImport.specifiers
-                    .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
-                    .sort(specifierSort);
-                const defaultSpec = actImport.defaultAlias;
-                if (actImport.specifiers.length ||
-                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
-                    keep.push(actImport);
-                }
-            } else if (actImport instanceof StringImport) {
-                keep.push(actImport);
             }
         }
 

@@ -90,6 +90,14 @@ export interface ResolverConfig {
     disableImportSorting: boolean;
 
     /**
+     * Disables removal of the unsed imports on organize.
+     *
+     * @type {boolean}
+     * @memberof ResolverConfig
+     */
+    disableImportRemovalOnOrganize: boolean;
+
+    /**
      * List of import libraries ("from" part) which are ignored during the organize import function.
      *
      * @type {string[]}
