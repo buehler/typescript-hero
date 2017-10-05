@@ -264,7 +264,7 @@
         },
         "typescriptHero.resolver.organizeOnSave": {
           "type": "boolean",
-          "default": true,
+          "default": false,
           "description": "Defines if the imports should be organized on save."
         },
         "typescriptHero.resolver.ignoreImportsForOrganize": {
