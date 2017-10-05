@@ -119,6 +119,8 @@ describe('OrganizeImportsOnSaveExtension', () => {
         document.lineAt(0).text.should.equals(
             `import { Class1, Class2 } from '../../../server/indices/MyClass';`,
         );
+
+        await config.update('resolver.disableImportRemovalOnOrganize', false);
     });
 
 });
