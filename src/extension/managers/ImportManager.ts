@@ -1,27 +1,27 @@
 import {
-  DeclarationIndex,
-  DeclarationInfo,
-  DefaultDeclaration,
-  ExternalModuleImport,
-  File,
-  Import,
-  isAliasedImport,
-  ModuleDeclaration,
-  NamedImport,
-  NamespaceImport,
-  StringImport,
-  SymbolSpecifier,
-  TypescriptCodeGenerator,
-  TypescriptParser,
+    DeclarationIndex,
+    DeclarationInfo,
+    DefaultDeclaration,
+    ExternalModuleImport,
+    File,
+    Import,
+    isAliasedImport,
+    ModuleDeclaration,
+    NamedImport,
+    NamespaceImport,
+    StringImport,
+    SymbolSpecifier,
+    TypescriptCodeGenerator,
+    TypescriptParser,
 } from 'typescript-parser';
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
 import {
-  getAbsolutLibraryName,
-  getDeclarationsFilteredByImports,
-  getImportInsertPosition,
-  getRelativeLibraryName,
+    getAbsolutLibraryName,
+    getDeclarationsFilteredByImports,
+    getImportInsertPosition,
+    getRelativeLibraryName,
 } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { importRange } from '../helpers';

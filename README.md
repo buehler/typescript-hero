@@ -90,6 +90,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                     |
 | multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line |
 | disableImportSorting                  | Disable sorting during organize imports action                                       |
+| disableUnsedImportsRemove             | Disable removal unsed imports during organize imports action                         |
 | importGroups                          | The groups that are used for sorting the imports (description below)                 |
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 | resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
