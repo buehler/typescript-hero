@@ -10,7 +10,7 @@
   "version": "0.0.0-development",
   "publisher": "rbbit",
   "engines": {
-    "vscode": "^1.13.0",
+    "vscode": "^1.17.0",
     "node": ">=8.0.0",
     "npm": ">=5.3.0"
   },

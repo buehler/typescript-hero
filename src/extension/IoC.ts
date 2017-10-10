@@ -4,6 +4,7 @@ import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typ
 import { ExtensionContext, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
+import { DeclarationIndexMapper } from '../common/helpers/DeclarationIndexMapper';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -19,6 +20,7 @@ import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 
 const container = new IoCContainer();
 
+// DEPRECATED
 container.bind(iocSymbols.rootPath).toConstantValue(workspace.rootPath || '');
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
 container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
@@ -29,6 +31,8 @@ container
         return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
     })
     .inSingletonScope();
+
+container.bind<DeclarationIndexMapper>(iocSymbols.declarationIndexMapper).to(DeclarationIndexMapper).inSingletonScope();
 
 container
     .bind<TypescriptParser>(iocSymbols.typescriptParser)
