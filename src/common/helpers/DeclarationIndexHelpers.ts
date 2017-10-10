@@ -1,5 +1,9 @@
+import { existsSync } from 'fs';
 import { join, normalize, parse, relative } from 'path';
 import { DeclarationInfo, ExternalModuleImport, Import, NamedImport, NamespaceImport } from 'typescript-parser';
+import { RelativePattern, Uri, workspace, WorkspaceFolder } from 'vscode';
+
+import { ExtensionConfig } from '../config';
 
 /**
  * Calculates a list of declarationInfos filtered by the already imported ones in the given document.
@@ -32,7 +36,7 @@ export function getDeclarationsFilteredByImports(
             //         declarations = declarations
             //             .filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
             //     }
-            // }
+            // } // TODO
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         }
@@ -87,4 +91,80 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
         relativePath += '/';
     }
     return relativePath.replace(/\\/g, '/');
+}
+
+/**
+ * TODO
+ *
+ * @export
+ * @param {ExtensionConfig} config
+ * @param {WorkspaceFolder} workspaceFolder
+ * @returns {Promise<string[]>}
+ */
+export async function findFiles(config: ExtensionConfig, workspaceFolder: WorkspaceFolder): Promise<string[]> {
+    const searches: PromiseLike<Uri[]>[] = [
+        workspace.findFiles(
+            new RelativePattern(workspaceFolder, `{${config.resolver.resolverModeFileGlobs.join(',')}}`),
+            new RelativePattern(workspaceFolder, '{**/node_modules/**,**/typings/**}'),
+        ),
+    ];
+
+    // TODO: check the package json and index javascript file in node_modules (?)
+
+    let globs: string[] = [];
+    let ignores = ['**/typings/**'];
+    const excludePatterns = config.resolver.ignorePatterns; // convert to resource config
+    const rootPath = workspaceFolder.uri.path;
+
+    if (rootPath && existsSync(join(rootPath, 'package.json'))) {
+        const packageJson = require(join(rootPath, 'package.json'));
+        if (packageJson['dependencies']) {
+            globs = globs.concat(
+                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
+            );
+            ignores = ignores.concat(
+                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/node_modules/**`),
+            );
+        }
+        if (packageJson['devDependencies']) {
+            globs = globs.concat(
+                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
+            );
+            ignores = ignores.concat(
+                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
+                    .map(o => `**/node_modules/${o}/node_modules/**`),
+            );
+        }
+    } else {
+        globs.push('**/node_modules/**/*.d.ts');
+    }
+
+    searches.push(
+        workspace.findFiles(
+            new RelativePattern(workspaceFolder, `{${globs.join(',')}}`),
+            new RelativePattern(workspaceFolder, `{${ignores.join(',')}}`),
+        ),
+    );
+
+    searches.push(
+        workspace.findFiles(
+            new RelativePattern(workspaceFolder, '**/typings/**/*.d.ts'),
+            new RelativePattern(workspaceFolder, '**/node_modules/**'),
+        ),
+    );
+
+    let uris = await Promise.all(searches);
+
+    uris = uris.map((o, idx) => idx === 0 ?
+        o.filter(
+            f => f.fsPath
+                .replace(rootPath || '', '')
+                .split(/\\|\//)
+                .every(p => excludePatterns.indexOf(p) < 0)) :
+        o,
+    );
+    return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
 }
