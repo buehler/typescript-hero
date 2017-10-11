@@ -9,6 +9,7 @@ import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCr
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
+import { DeclarationIndexMapper } from './extensions/DeclarationIndexMapper';
 import { DocumentSymbolStructureExtension } from './extensions/DocumentSymbolStructureExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { OrganizeImportsOnSaveExtension } from './extensions/OrganizeImportsOnSaveExtension';
@@ -32,6 +33,8 @@ container
     })
     .inSingletonScope();
 
+container.bind<DeclarationIndexMapper>(iocSymbols.declarationIndexMapper).to(DeclarationIndexMapper).inSingletonScope();
+
 container
     .bind<TypescriptParser>(iocSymbols.typescriptParser)
     .toDynamicValue(() => {
@@ -53,7 +56,6 @@ container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeCompletionExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(DocumentSymbolStructureExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(CodeActionExtension).inSingletonScope();
-container.bind<BaseExtension>(iocSymbols.extensions).to(OrganizeImportsOnSaveExtension).inSingletonScope();
 container.bind<BaseExtension>(iocSymbols.extensions).to(OrganizeImportsOnSaveExtension).inSingletonScope();
 
 // Logging

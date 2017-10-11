@@ -1,18 +1,8 @@
 import { existsSync } from 'fs';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
-import { DeclarationIndex, DeclarationInfo, FileChanges, TypescriptParser } from 'typescript-parser';
-import {
-    commands,
-    ExtensionContext,
-    FileSystemWatcher,
-    ProgressLocation,
-    StatusBarAlignment,
-    StatusBarItem,
-    Uri,
-    window,
-    workspace,
-} from 'vscode';
+import { DeclarationInfo, TypescriptParser } from 'typescript-parser';
+import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
 import { ResolverMode } from '../../common/enums';
@@ -22,13 +12,14 @@ import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { BaseExtension } from './BaseExtension';
+import { DeclarationIndexMapper } from './DeclarationIndexMapper';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
 
 /**
  * Compares the ignorepatterns (if they have the same elements ignored).
- * 
+ *
  * @param {string[]} local
  * @param {string[]} config
  * @returns {boolean}
@@ -52,7 +43,7 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
 /**
  * Search for typescript / typescript react files in the workspace and return the path to them.
  * This is needed for the initial load of the index.
- * 
+ *
  * @export
  * @param {ExtensionConfig} config
  * @returns {Promise<string[]>}
@@ -118,13 +109,13 @@ export async function findFiles(config: ExtensionConfig, rootPath: string): Prom
 }
 
 const resolverOk = 'TSH Resolver $(check)';
-const resolverSyncing = 'TSH Resolver $(sync)';
-const resolverErr = 'TSH Resolver $(flame)';
+// const resolverSyncing = 'TSH Resolver $(sync)';
+// const resolverErr = 'TSH Resolver $(flame)';
 
 /**
  * Extension that resolves imports. Contains various actions to add imports to a document, add missing
  * imports and organize imports. Also can rebuild the symbol cache.
- * 
+ *
  * @export
  * @class ImportResolveExtension
  * @extends {BaseExtension}
@@ -134,7 +125,6 @@ export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     private ignorePatterns: string[];
-    private fileWatcher: FileSystemWatcher;
     private actualMode: ResolverMode;
 
     constructor(
@@ -142,7 +132,7 @@ export class ImportResolveExtension extends BaseExtension {
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
-        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
         @inject(iocSymbols.rootPath) private rootPath: string,
     ) {
         super(context);
@@ -151,19 +141,14 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     public initialize(): void {
         this.actualMode = this.config.resolver.resolverMode;
         this.ignorePatterns = this.config.resolver.ignorePatterns;
 
-        this.fileWatcher = workspace.createFileSystemWatcher(
-            `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
-        );
-
         this.context.subscriptions.push(this.statusBarItem);
-        this.context.subscriptions.push(this.fileWatcher);
 
         this.statusBarItem.text = resolverOk;
         this.statusBarItem.tooltip =
@@ -188,49 +173,16 @@ export class ImportResolveExtension extends BaseExtension {
                 build = true;
             }
             if (build) {
-                this.buildIndex();
+                this.indices.rebuildAll();
             }
         }));
-
-        let timeout: NodeJS.Timer | undefined;
-        let events: FileChanges | undefined;
-
-        const fileWatcherEvent = (event: string, uri: Uri) => {
-            if (timeout) {
-                clearTimeout(timeout);
-            }
-            if (!events) {
-                events = {
-                    created: [],
-                    updated: [],
-                    deleted: [],
-                };
-            }
-            events[event].push(uri.fsPath);
-
-            timeout = setTimeout(
-                () => {
-                    if (events) {
-                        this.rebuildForFileChanges(events);
-                        events = undefined;
-                    }
-                },
-                500,
-            );
-        };
-
-        this.fileWatcher.onDidCreate(uri => fileWatcherEvent('created', uri));
-        this.fileWatcher.onDidChange(uri => fileWatcherEvent('updated', uri));
-        this.fileWatcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
-
-        this.buildIndex();
 
         this.logger.info('Initialized');
     }
 
     /**
      * Disposes the extension.
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     public dispose(): void {
@@ -238,87 +190,26 @@ export class ImportResolveExtension extends BaseExtension {
     }
 
     /**
-     * Instructs the index to build an index for the found files (actually searches for all files in the
-     * current workspace).
-     * 
-     * @private
-     * @returns {Promise<void>}
-     * 
-     * @memberof ImportResolveExtension
-     */
-    private async buildIndex(): Promise<void> {
-        await this.abstractIndexFunction('Create index.', async () => {
-            const files = await findFiles(this.config, this.rootPath);
-            this.logger.info(`Calculating index for ${files.length} files.`);
-            await this.index.buildIndex(files);
-        });
-    }
-
-    /**
-     * Instructs the index to rebuild the partial index for the changed files.
-     * 
-     * @private
-     * @param {FileChanges} changes 
-     * @returns {Promise<void>} 
-     * @memberof ImportResolveExtension
-     */
-    private async rebuildForFileChanges(changes: FileChanges): Promise<void> {
-        this.abstractIndexFunction('Reindex changes.', async () => {
-            await this.index.reindexForChanges(changes);
-        });
-    }
-
-    /**
-     * Abstracts the build and rebuild functions to be just one call withProgress.
-     * 
-     * @private
-     * @param {string} title 
-     * @param {() => Promise<void>} func 
-     * @returns {Promise<void>} 
-     * @memberof ImportResolveExtension
-     */
-    private async abstractIndexFunction(title: string, func: () => Promise<void>): Promise<void> {
-        await window.withProgress(
-            {
-                title,
-                location: ProgressLocation.Window,
-            },
-            async (progress) => {
-                this.logger.info('(Re-)Calculating index.');
-                progress.report({ message: '(Re-)Calculating index.' });
-                this.statusBarItem.text = resolverSyncing;
-
-                try {
-                    await func();
-                    this.logger.info('(Re-)Calculate finished.');
-                    progress.report({ message: '(Re-)Calculate finished.' });
-                    this.statusBarItem.text = resolverOk;
-                } catch (e) {
-                    this.logger.error('There was an error during the index (re)calculation.', e);
-                    progress.report({ message: 'There was an error during the index (re)calculation.' });
-                    this.statusBarItem.text = resolverErr;
-                }
-            },
-        );
-    }
-
-    /**
      * Add an import from the whole list. Calls the vscode gui, where the user can
      * select a symbol to import.
-     * 
+     *
      * @private
      * @returns {Promise<void>}
-     * 
+     *
      * @memberof ResolveExtension
      */
     private async addImport(): Promise<void> {
-        if (!this.index.indexReady) {
+        if (!window.activeTextEditor) {
+            return;
+        }
+        const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
+        if (!index || !index.indexReady) {
             this.showCacheWarning();
             return;
         }
         try {
             const selectedItem = await window.showQuickPick(
-                this.index.declarationInfos.map(o => new ResolveQuickPickItem(o)),
+                index.declarationInfos.map(o => new ResolveQuickPickItem(o)),
                 { placeHolder: 'Add import to document:' },
             );
             if (selectedItem) {
@@ -334,17 +225,18 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Add an import from the whole list. Calls the vscode gui, where the user can
      * select a symbol to import.
-     * 
+     *
      * @private
      * @returns {Promise<void>}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async addImportUnderCursor(): Promise<void> {
         if (!window.activeTextEditor) {
             return;
         }
-        if (!this.index.indexReady) {
+        const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
+        if (!index || !index.indexReady) {
             this.showCacheWarning();
             return;
         }
@@ -384,17 +276,18 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Adds all missing imports to the actual document if possible. If multiple declarations are found,
      * a quick pick list is shown to the user and he needs to decide, which import to use.
-     * 
+     *
      * @private
      * @returns {Promise<void>}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async addMissingImports(): Promise<void> {
         if (!window.activeTextEditor) {
             return;
         }
-        if (!this.index.indexReady) {
+        const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
+        if (!index || !index.indexReady) {
             this.showCacheWarning();
             return;
         }
@@ -417,10 +310,10 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Organizes the imports of the actual document. Sorts and formats them correctly.
-     * 
+     *
      * @private
      * @returns {Promise<boolean>}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async organizeImports(): Promise<boolean> {
@@ -438,11 +331,11 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Effectifely adds an import quick pick item to a document
-     * 
+     *
      * @private
      * @param {DeclarationInfo} declaration
      * @returns {Promise<boolean>}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async addImportToDocument(declaration: DeclarationInfo): Promise<boolean> {
@@ -455,10 +348,10 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Returns the string under the cursor.
-     * 
+     *
      * @private
      * @returns {string}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private getSymbolUnderCursor(): string {
@@ -474,9 +367,9 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Shows a user warning if the resolve index is not ready yet.
-     * 
+     *
      * @private
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private showCacheWarning(): void {
@@ -486,22 +379,28 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Calculates the possible imports for a given document source with a filter for the given symbol.
      * Returns a list of declaration infos that may be used for select picker or something.
-     * 
+     *
      * @private
      * @param {DeclarationsForImportOptions} {cursorSymbol, documentSource, documentPath}
      * @returns {(Promise<DeclarationInfo[] | undefined>)}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async getDeclarationsForImport(
         { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions,
     ): Promise<DeclarationInfo[]> {
         this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
-
+        if (!window.activeTextEditor) {
+            return [];
+        }
+        const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
+        if (!index || !index.indexReady) {
+            return [];
+        }
         const parsedSource = await this.parser.parseSource(documentSource);
         const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
         const declarations = getDeclarationsFilteredByImports(
-            this.index.declarationInfos,
+            index.declarationInfos,
             documentPath,
             parsedSource.imports,
             this.rootPath,
@@ -516,21 +415,28 @@ export class ImportResolveExtension extends BaseExtension {
     /**
      * Calculates the missing imports of a document. Parses the documents source and then
      * tries to resolve all possible declaration infos for the usages (used identifiers).
-     * 
+     *
      * @private
      * @param {MissingDeclarationsForFileOptions} {documentSource, documentPath}
      * @returns {(Promise<(DeclarationInfo | ImportUserDecision)[]>)}
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     private async getMissingDeclarationsForFile(
         { documentSource, documentPath }: MissingDeclarationsForFileOptions,
     ): Promise<(DeclarationInfo)[]> {
-        // TODO
+        if (!window.activeTextEditor) {
+            return [];
+        }
+        const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
+        if (!index || !index.indexReady) {
+            return [];
+        }
+
         const parsedDocument = await this.parser.parseSource(documentSource);
         const missingDeclarations: (DeclarationInfo)[] = [];
         const declarations = getDeclarationsFilteredByImports(
-            this.index.declarationInfos,
+            index.declarationInfos,
             documentPath,
             parsedDocument.imports,
             this.rootPath,
@@ -553,7 +459,7 @@ export class ImportResolveExtension extends BaseExtension {
 
     /**
      * Registers the commands for this extension.
-     * 
+     *
      * @private
      * @memberof ImportResolveExtension
      */
@@ -576,7 +482,7 @@ export class ImportResolveExtension extends BaseExtension {
             commands.registerTextEditorCommand('typescriptHero.resolve.organizeImports', () => this.organizeImports()),
         );
         this.context.subscriptions.push(
-            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.buildIndex()),
+            commands.registerCommand('typescriptHero.resolve.rebuildCache', () => this.indices.rebuildAll()),
         );
     }
 }

@@ -1,4 +1,4 @@
-import { inject, injectable } from 'inversify';
+import { inject, injectable, postConstruct } from 'inversify';
 import { DeclarationIndex, FileChanges, TypescriptParser } from 'typescript-parser';
 import {
     ExtensionContext,
@@ -14,7 +14,6 @@ import { ExtensionConfig } from '../../common/config';
 import { findFiles } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../../extension/IoCSymbols';
-import { BaseExtension } from './BaseExtension';
 
 // const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
 // return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
@@ -34,21 +33,20 @@ interface WorkspaceIndex {
 }
 
 @injectable()
-export class DeclarationIndexMapperExtension extends BaseExtension {
-    protected context: ExtensionContext;
+export class DeclarationIndexMapper {
     private logger: Logger;
     private indizes: { [uri: string]: WorkspaceIndex } = {};
 
     constructor(
-        @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.extensionContext) private context: ExtensionContext,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
     ) {
-        super(context);
         this.logger = loggerFactory('DeclarationIndexMapper');
     }
 
+    @postConstruct()
     public initialize(): void {
         this.context.subscriptions.push(workspace.onDidChangeWorkspaceFolders(e => this.workspaceChanged(e)));
         this.logger.info(
@@ -61,12 +59,15 @@ export class DeclarationIndexMapperExtension extends BaseExtension {
         this.logger.info('Initialized');
     }
 
-    public dispose(): void {
+    public rebuildAll(): void {
         for (const index of Object.values(this.indizes)) {
             index.watcher.dispose();
             index.index.reset();
         }
         this.indizes = {};
+        for (const folder of (workspace.workspaceFolders || []).filter(workspace => workspace.uri.scheme === 'file')) {
+            this.initializeIndex(folder);
+        }
     }
 
     public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
