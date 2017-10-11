@@ -1,9 +1,10 @@
 import { inject, injectable } from 'inversify';
-import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
+import { DeclarationIndex, FileChanges, TypescriptParser } from 'typescript-parser';
 import {
     ExtensionContext,
     FileSystemWatcher,
     RelativePattern,
+    Uri,
     workspace,
     WorkspaceFolder,
     WorkspaceFoldersChangeEvent,
@@ -68,8 +69,13 @@ export class DeclarationIndexMapperExtension extends BaseExtension {
         this.indizes = {};
     }
 
-    public getIndexForFile(fileUri: string): DeclarationIndex {
-        return '' as any;
+    public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
+        const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
+        if (!workspaceFolder || !this.indizes[workspaceFolder.uri.path]) {
+            return;
+        }
+
+        return this.indizes[workspaceFolder.uri.path].index;
     }
 
     private workspaceChanged(event: WorkspaceFoldersChangeEvent): void {
@@ -98,7 +104,40 @@ export class DeclarationIndexMapperExtension extends BaseExtension {
                 `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
             ),
         );
-        // watcher.onDidChange()
+
+        let timeout: NodeJS.Timer | undefined;
+        let events: FileChanges | undefined;
+
+        const fileWatcherEvent = (event: string, uri: Uri) => {
+            if (timeout) {
+                clearTimeout(timeout);
+            }
+            if (!events) {
+                events = {
+                    created: [],
+                    updated: [],
+                    deleted: [],
+                };
+            }
+            events[event].push(uri.fsPath);
+
+            timeout = setTimeout(
+                async () => {
+                    if (events) {
+                        this.logger.info(`Refreshing index for workspace ${folder.name}.`);
+                        await index.reindexForChanges(events);
+                        this.logger.info(`Finished indexing for workspace ${folder.name}.`);
+                        events = undefined;
+                    }
+                },
+                500,
+            );
+        };
+
+        watcher.onDidCreate(uri => fileWatcherEvent('created', uri));
+        watcher.onDidChange(uri => fileWatcherEvent('updated', uri));
+        watcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
+
         await index.buildIndex(files);
         this.indizes[folder.uri.path] = {
             index,
