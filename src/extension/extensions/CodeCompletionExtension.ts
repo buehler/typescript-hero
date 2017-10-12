@@ -1,15 +1,15 @@
 import { inject, injectable } from 'inversify';
-import { DeclarationIndex, DeclarationInfo, TypescriptParser } from 'typescript-parser';
+import { DeclarationInfo, TypescriptParser } from 'typescript-parser';
 import {
     CancellationToken,
     commands,
     CompletionItem,
     CompletionItemProvider,
+    Disposable,
     ExtensionContext,
     languages,
     Position,
     TextDocument,
-    Disposable,
     workspace,
 } from 'vscode';
 
@@ -20,10 +20,11 @@ import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
 import { getItemKind } from '../utilities/utilityFunctions';
 import { BaseExtension } from './BaseExtension';
+import { DeclarationIndexMapper } from './DeclarationIndexMapper';
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
- * 
+ *
  * @export
  * @class CodeCompletionExtension
  * @extends {BaseExtension}
@@ -38,7 +39,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
-        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
         @inject(iocSymbols.rootPath) private rootPath: string,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
     ) {
@@ -48,7 +49,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
-     * 
+     *
      * @memberof CodeCompletionExtension
      */
     public initialize(): void {
@@ -82,7 +83,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
     /**
      * Disposes the extension.
-     * 
+     *
      * @memberof CodeCompletionExtension
      */
     public dispose(): void {
@@ -94,12 +95,12 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
     /**
      * Provides completion items for a given position in the given document.
-     * 
-     * @param {TextDocument} document 
-     * @param {Position} position 
-     * @param {CancellationToken} token 
-     * @returns {Promise<(CompletionItem[] | null)>} 
-     * 
+     *
+     * @param {TextDocument} document
+     * @param {Position} position
+     * @param {CancellationToken} token
+     * @returns {Promise<(CompletionItem[] | null)>}
+     *
      * @memberof CodeCompletionExtension
      */
     public async provideCompletionItems(
@@ -107,7 +108,8 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         position: Position,
         token: CancellationToken,
     ): Promise<CompletionItem[] | null> {
-        if (!this.index.indexReady) {
+        const index = this.indices.getIndexForFile(document.uri);
+        if (!index || !index.indexReady) {
             return null;
         }
 
@@ -123,7 +125,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
         if (!searchWord ||
             token.isCancellationRequested ||
-            !this.index.indexReady ||
+            !index.indexReady ||
             (lineText.substring(0, position.character).match(/["'`]/g) || []).length % 2 === 1 ||
             lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
             lineText.startsWith('import ') ||
@@ -135,7 +137,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
 
         const parsed = await this.parser.parseSource(document.getText());
         const declarations = getDeclarationsFilteredByImports(
-            this.index.declarationInfos,
+            index.declarationInfos,
             document.fileName,
             parsed.imports,
             this.rootPath,
@@ -166,11 +168,11 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
     /**
      * Executes a intellisense item that provided a document and a declaration to add.
      * Does make the calculation of the text edits async.
-     * 
+     *
      * @private
-     * @param {TextDocument} document 
-     * @param {DeclarationInfo} declaration 
-     * @returns {Promise<void>} 
+     * @param {TextDocument} document
+     * @param {DeclarationInfo} declaration
+     * @returns {Promise<void>}
      * @memberof CodeCompletionExtension
      */
     private async executeIntellisenseItem(document: TextDocument, declaration: DeclarationInfo): Promise<void> {
