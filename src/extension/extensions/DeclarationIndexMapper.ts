@@ -15,22 +15,16 @@ import { findFiles } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../../extension/IoCSymbols';
 
-// const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
-// return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
-
-/*
-1. pro rootpath 1 index
-2. build index
-3. add workspace changed thingy pro index
-spöter:
-4. luege öbs im gliche folder isch zum imports etc resolve
-*/
-
 interface WorkspaceIndex {
     index: DeclarationIndex;
     folder: WorkspaceFolder;
     watcher: FileSystemWatcher;
 }
+
+// TODO documentation
+// TODO change settings to scoped settings
+// TODO move did change configuration to all indices
+// TODO error handling of each index
 
 @injectable()
 export class DeclarationIndexMapper {
