@@ -18,9 +18,9 @@ import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { getItemKind } from '../utilities/utilityFunctions';
 import { BaseExtension } from './BaseExtension';
-import { DeclarationIndexMapper } from './DeclarationIndexMapper';
 
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.

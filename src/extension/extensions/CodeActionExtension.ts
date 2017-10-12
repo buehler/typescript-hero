@@ -16,8 +16,8 @@ import { Logger, LoggerFactory } from '../../common/utilities';
 import { CodeAction } from '../code-actions/CodeAction';
 import { CodeActionCreator } from '../code-actions/CodeActionCreator';
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { BaseExtension } from './BaseExtension';
-import { DeclarationIndexMapper } from './DeclarationIndexMapper';
 
 /**
  * Provider instance that is responsible for the "light bulb" feature.

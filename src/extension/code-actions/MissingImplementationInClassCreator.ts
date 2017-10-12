@@ -3,8 +3,8 @@ import { ClassLikeDeclaration, GenericDeclaration, NamedImport, TypescriptParser
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
 import { getAbsolutLibraryName } from '../../common/helpers';
-import { DeclarationIndexMapper } from '../extensions/DeclarationIndexMapper';
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 

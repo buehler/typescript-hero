@@ -11,8 +11,8 @@ import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { BaseExtension } from './BaseExtension';
-import { DeclarationIndexMapper } from './DeclarationIndexMapper';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };

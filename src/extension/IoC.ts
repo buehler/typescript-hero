@@ -9,12 +9,12 @@ import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCr
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
-import { DeclarationIndexMapper } from './extensions/DeclarationIndexMapper';
 import { DocumentSymbolStructureExtension } from './extensions/DocumentSymbolStructureExtension';
 import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { OrganizeImportsOnSaveExtension } from './extensions/OrganizeImportsOnSaveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
+import { DeclarationIndexMapper } from './utilities/DeclarationIndexMapper';
 import { VscodeLogger } from './utilities/VscodeLogger';
 import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 

@@ -1,8 +1,8 @@
 import { inject, injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
-import { DeclarationIndexMapper } from '../extensions/DeclarationIndexMapper';
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
