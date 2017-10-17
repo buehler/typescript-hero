@@ -12,10 +12,10 @@ export interface CodeOutlineConfig {
      * Is needed to determine the actual config values for multi root environments.
      *
      * @readonly
-     * @type {(Uri | undefined)}
+     * @type {Uri}
      * @memberof CodeOutlineConfig
      */
-    resource: Uri | undefined;
+    resource?: Uri;
 
     /**
      * Defined if the code outline feature is enabled or not.

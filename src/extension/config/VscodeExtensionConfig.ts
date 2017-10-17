@@ -2,6 +2,7 @@ import { injectable } from 'inversify';
 import { Uri, workspace, WorkspaceConfiguration } from 'vscode';
 
 import { CodeCompletionConfig, CodeOutlineConfig, ExtensionConfig, ResolverConfig } from '../../common/config';
+import { VscodeCodeCompletionConfig } from './VscodeCodeCompletionConfig';
 import { VscodeCodeOutlineConfig } from './VscodeCodeOutlineConfig';
 import { VscodeResolverConfig } from './VscodeResolverConfig';
 
@@ -16,9 +17,9 @@ const sectionKey = 'typescriptHero';
  */
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
-    private resolverConfig: ResolverConfig = new VscodeResolverConfig();
-    private codeOutlineConfig: CodeOutlineConfig = new VscodeCodeOutlineConfig();
-    private codeCompletionConfig: CodeCompletionConfig = '' as any;
+    private resolverConfig: ResolverConfig;
+    private codeOutlineConfig: CodeOutlineConfig;
+    private codeCompletionConfig: CodeCompletionConfig;
 
     private get workspaceSection(): WorkspaceConfiguration {
         return workspace.getConfiguration(sectionKey, this.resource);
@@ -68,7 +69,11 @@ export class VscodeExtensionConfig implements ExtensionConfig {
         return this.codeCompletionConfig;
     }
 
-    constructor(public readonly resource?: Uri) { }
+    constructor(public readonly resource?: Uri) {
+        this.codeCompletionConfig = new VscodeCodeCompletionConfig(resource);
+        this.codeOutlineConfig = new VscodeCodeOutlineConfig(resource);
+        this.resolverConfig = new VscodeResolverConfig(resource);
+    }
 }
 
 
