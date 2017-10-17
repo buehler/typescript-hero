@@ -1,11 +1,12 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
-import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
-import { ExtensionContext, workspace } from 'vscode';
+import { TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
+import { ExtensionContext, Uri } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
+import { VscodeExtensionConfig } from './config/VscodeExtensionConfig';
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
@@ -20,18 +21,7 @@ import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 
 const container = new IoCContainer();
 
-// DEPRECATED
-container.bind(iocSymbols.rootPath).toConstantValue(workspace.rootPath || '');
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
-container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
-// DEPRECATED
-container
-    .bind<DeclarationIndex>(iocSymbols.declarationIndex)
-    .toDynamicValue((context: interfaces.Context) => {
-        const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
-    })
-    .inSingletonScope();
 
 container.bind<DeclarationIndexMapper>(iocSymbols.declarationIndexMapper).to(DeclarationIndexMapper).inSingletonScope();
 
@@ -50,6 +40,10 @@ container
             return new TypescriptCodeGenerator(config.resolver.generationOptions);
         };
     });
+
+container
+    .bind<interfaces.Factory<ExtensionConfig>>(iocSymbols.configuration)
+    .toFactory<VscodeExtensionConfig>(() => (resource?: Uri) => new VscodeExtensionConfig(resource));
 
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
