@@ -1,5 +1,6 @@
 import { Uri } from 'vscode';
 
+import { CodeCompletionConfig } from './CodeCompletionConfig';
 import { CodeOutlineConfig } from './CodeOutlineConfig';
 import { ResolverConfig } from './ResolverConfig';
 
@@ -16,10 +17,10 @@ export interface ExtensionConfig {
      * Is needed to determine the actual config values for multi root environments.
      *
      * @readonly
-     * @type {(Uri | undefined)}
+     * @type {Uri}
      * @memberof ExtensionConfig
      */
-    resource: Uri | undefined;
+    resource?: Uri;
 
     /**
      * The actual log level.
@@ -49,13 +50,11 @@ export interface ExtensionConfig {
     codeOutline: CodeOutlineConfig;
 
     /**
-     * Completion sorting mode:
-     *  default: Use default VSCode sorting mode
-     *  bottom: Push to bottom
+     * Configuration object for the code completion extension.
      *
      * @readonly
-     * @type {'default'|'bottom'}
+     * @type {CodeCompletionConfig}
      * @memberof ExtensionConfig
      */
-    completionSortMode: 'default' | 'bottom';
+    codeCompletion: CodeCompletionConfig;
 }

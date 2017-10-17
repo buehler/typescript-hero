@@ -15,10 +15,10 @@ export interface ResolverConfig {
      * Is needed to determine the actual config values for multi root environments.
      *
      * @readonly
-     * @type {(Uri | undefined)}
+     * @type {Uri}
      * @memberof ResolverConfig
      */
-    resource: Uri | undefined;
+    resource?: Uri;
 
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
