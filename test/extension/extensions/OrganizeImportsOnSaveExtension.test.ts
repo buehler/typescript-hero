@@ -93,4 +93,34 @@ describe('OrganizeImportsOnSaveExtension', () => {
         );
     });
 
+    it('should not remove an unused import on save when disableImportRemovalOnOrganize is true', async () => {
+        const config = vscode.workspace.getConfiguration('typescriptHero');
+        await config.update('resolver.disableImportRemovalOnOrganize', true);
+
+        const ctrl = await ImportManager.create(document);
+        const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
+        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
+        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+        await ctrl.commit();
+
+        document.lineAt(0).text.should.equals(
+            `import { Class1, Class2 } from '../../../server/indices/MyClass';`,
+        );
+
+        await vscode.window.activeTextEditor!.edit((builder) => {
+            builder.insert(
+                new vscode.Position(1, 0),
+                'let a = new Class2()',
+            );
+        });
+
+        await document.save();
+
+        document.lineAt(0).text.should.equals(
+            `import { Class1, Class2 } from '../../../server/indices/MyClass';`,
+        );
+
+        await config.update('resolver.disableImportRemovalOnOrganize', false);
+    });
+
 });

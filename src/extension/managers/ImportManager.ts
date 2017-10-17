@@ -2,7 +2,6 @@ import {
     DeclarationIndex,
     DeclarationInfo,
     DefaultDeclaration,
-    DefaultImport,
     ExternalModuleImport,
     File,
     Import,
@@ -29,9 +28,20 @@ import { importRange } from '../helpers';
 import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { ImportProxy } from '../proxy-objects/ImportProxy';
 import { importSort, specifierSort } from '../utilities/utilityFunctions';
 import { ObjectManager } from './ObjectManager';
+
+function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): boolean {
+    for (const spec of specs1) {
+        const spec2 = specs2[specs1.indexOf(spec)];
+        if (!spec2 ||
+            spec.specifier !== spec2.specifier ||
+            spec.alias !== spec2.alias) {
+            return false;
+        }
+    }
+    return true;
+}
 
 /**
  * Management class for the imports of a document. Can add and remove imports to the document
@@ -93,9 +103,6 @@ export class ImportManager implements ObjectManager {
      */
     public static async create(document: TextDocument): Promise<ImportManager> {
         const source = await ImportManager.parser.parseSource(document.getText());
-        source.imports = source.imports.map(
-            o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
-        );
         return new ImportManager(document, source);
     }
 
@@ -121,44 +128,39 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
-        // If there is something already imported, it must be a NamedImport or a DefaultImport
-        const alreadyImported: ImportProxy = this.imports.find(
+        // If there is something already imported, it must be a NamedImport
+        const alreadyImported: NamedImport = this.imports.find(
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
                 this.document.fileName,
                 ImportManager.rootPath,
-            ) && o instanceof ImportProxy,
-        ) as ImportProxy;
+            ) && o instanceof NamedImport,
+        ) as NamedImport;
 
         if (alreadyImported) {
-            // If we found an import for this declaration, it's either a default import or a named import
+            // If we found an import for this declaration, it's named import (with a possible default declaration)
             if (declarationInfo.declaration instanceof DefaultDeclaration) {
                 delete alreadyImported.defaultAlias;
-                alreadyImported.defaultPurposal = declarationInfo.declaration.name;
-            } else {
-                alreadyImported.addSpecifier(declarationInfo.declaration.name);
+                alreadyImported.defaultAlias = declarationInfo.declaration.name;
+            } else if (!alreadyImported.specifiers.some(o => o.specifier === declarationInfo.declaration.name)) {
+                alreadyImported.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
         } else {
-            let imp: Import;
+            let imp: Import = new NamedImport(getRelativeLibraryName(
+                declarationInfo.from,
+                this.document.fileName,
+                ImportManager.rootPath,
+            ));
+
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
                 imp = new NamespaceImport(
                     declarationInfo.from,
                     declarationInfo.declaration.name,
                 );
             } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-                imp = new ImportProxy(getRelativeLibraryName(
-                    declarationInfo.from,
-                    this.document.fileName,
-                    ImportManager.rootPath,
-                ));
-                (imp as ImportProxy).defaultPurposal = declarationInfo.declaration.name;
+                (imp as NamedImport).defaultAlias = declarationInfo.declaration.name;
             } else {
-                imp = new ImportProxy(getRelativeLibraryName(
-                    declarationInfo.from,
-                    this.document.fileName,
-                    ImportManager.rootPath,
-                ));
-                (imp as ImportProxy).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
+                (imp as NamedImport).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
             }
             this.imports.push(imp);
             this.addImportsToGroups([imp]);
@@ -211,27 +213,31 @@ export class ImportManager implements ObjectManager {
         this.organize = true;
         let keep: Import[] = [];
 
-        for (const actImport of this.imports) {
-            if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
-                keep.push(actImport);
-                continue;
-            }
-            if (actImport instanceof NamespaceImport ||
-                actImport instanceof ExternalModuleImport) {
-                if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+        if (ImportManager.config.resolver.disableImportRemovalOnOrganize) {
+            keep = this.imports;
+        } else {
+            for (const actImport of this.imports) {
+                if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+                    keep.push(actImport);
+                    continue;
+                }
+                if (actImport instanceof NamespaceImport ||
+                    actImport instanceof ExternalModuleImport) {
+                    if (this._parsedDocument.nonLocalUsages.indexOf(actImport.alias) > -1) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof NamedImport) {
+                    actImport.specifiers = actImport.specifiers
+                        .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
+                        .sort(specifierSort);
+                    const defaultSpec = actImport.defaultAlias;
+                    if (actImport.specifiers.length ||
+                        (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
+                        keep.push(actImport);
+                    }
+                } else if (actImport instanceof StringImport) {
                     keep.push(actImport);
                 }
-            } else if (actImport instanceof ImportProxy) {
-                actImport.specifiers = actImport.specifiers
-                    .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
-                    .sort(specifierSort);
-                const defaultSpec = actImport.defaultAlias || actImport.defaultPurposal;
-                if (actImport.specifiers.length ||
-                    (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
-                    keep.push(actImport);
-                }
-            } else if (actImport instanceof StringImport) {
-                keep.push(actImport);
             }
         }
 
@@ -273,9 +279,6 @@ export class ImportManager implements ObjectManager {
         if (result) {
             delete this.organize;
             this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
-            this._parsedDocument.imports = this._parsedDocument.imports.map(
-                o => o instanceof NamedImport || o instanceof DefaultImport ? new ImportProxy(o) : o,
-            );
             this.imports = this._parsedDocument.imports.map(o => o.clone());
             for (const group of this.importGroups) {
                 group.reset();
@@ -328,10 +331,14 @@ export class ImportManager implements ObjectManager {
                     edits.push(TextEdit.delete(importRange(this.document, imp.start, imp.end)));
                 }
             }
-            const actualDocumentsProxies = this._parsedDocument.imports.filter(o => o instanceof ImportProxy);
+            const actualDocumentsNamed = this._parsedDocument.imports.filter(o => o instanceof NamedImport);
             for (const imp of this.imports) {
-                if (imp instanceof ImportProxy &&
-                    actualDocumentsProxies.some((o: ImportProxy) => o.isEqual(imp as ImportProxy))) {
+                if (imp instanceof NamedImport &&
+                    actualDocumentsNamed.some((o: NamedImport) =>
+                        o.libraryName === imp.libraryName &&
+                        o.defaultAlias === imp.defaultAlias &&
+                        o.specifiers.length === imp.specifiers.length &&
+                        sameSpecifiers(o.specifiers, imp.specifiers))) {
                     continue;
                 }
                 if (imp.isNew) {
@@ -388,7 +395,7 @@ export class ImportManager implements ObjectManager {
             .reduce(
             (all, cur) => {
                 let specifiers = all;
-                if (cur instanceof ImportProxy) {
+                if (cur instanceof NamedImport) {
                     specifiers = specifiers.concat(cur.specifiers.map(o => o.alias || o.specifier));
                     if (cur.defaultAlias) {
                         specifiers.push(cur.defaultAlias);
@@ -399,7 +406,7 @@ export class ImportManager implements ObjectManager {
                 }
                 return specifiers;
             },
-            <string[]>[],
+            [] as string[],
         );
 
         for (const decision of Object.keys(
@@ -418,12 +425,17 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        const proxies = this.imports.filter(o => o instanceof ImportProxy) as ImportProxy[];
+        const named = this.imports.filter(o => o instanceof NamedImport) as NamedImport[];
 
-        for (const imp of proxies) {
-            if (imp.defaultPurposal && !imp.defaultAlias) {
-                imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultPurposal);
-                delete imp.defaultPurposal;
+        for (const imp of named) {
+            if (imp.defaultAlias) {
+                const specifiers = getSpecifiers();
+                if (
+                    specifiers.filter(o => o === imp.defaultAlias).length > 1 &&
+                    ImportManager.config.resolver.promptForSpecifiers
+                ) {
+                    imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultAlias);
+                }
             }
 
             for (const spec of imp.specifiers) {
@@ -465,16 +477,13 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
-        if (!ImportManager.config.resolver.promptForSpecifiers) {
-            return declarationName;
-        }
         const result = await this.vscodeInputBox({
             placeHolder: 'Default export name',
-            prompt: 'Please enter a variable name for the default export...',
+            prompt: 'Please enter an alias name for the default export...',
             validateInput: s => !!s ? '' : 'Please enter a variable name',
             value: declarationName,
         });
-        return !!result ? result : undefined;
+        return !!result ? result.replace(/[,.-_]/g, '') : undefined;
     }
 
     /**

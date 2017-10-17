@@ -2,14 +2,13 @@ import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
 import sinonChai = require('sinon-chai');
-import { DeclarationIndex, File } from 'typescript-parser';
+import { DeclarationIndex, File, NamedImport } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
 import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../src/extension/IoC';
 import { iocSymbols } from '../../../src/extension/IoCSymbols';
 import { ImportManager } from '../../../src/extension/managers';
-import { ImportProxy } from '../../../src/extension/proxy-objects/ImportProxy';
 import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
 
 const should = chai.should();
@@ -86,7 +85,7 @@ describe('ImportManager', () => {
             const ctrl = await ImportManager.create(document);
             const imps = (ctrl as any).parsedDocument.imports;
 
-            imps[0].should.be.an.instanceof(ImportProxy);
+            imps[0].should.be.an.instanceof(NamedImport);
             should.not.exist(imps[0].defaultAlias);
         });
 
@@ -104,7 +103,7 @@ describe('ImportManager', () => {
             const ctrl = await ImportManager.create(document);
             const imps = (ctrl as any).parsedDocument.imports;
 
-            imps[0].should.be.an.instanceof(ImportProxy);
+            imps[0].should.be.an.instanceof(NamedImport);
             imps[0].defaultAlias.should.equal('myDefaultExportedFunction');
         });
 
@@ -119,9 +118,9 @@ describe('ImportManager', () => {
             const ctrl = await ImportManager.create(document);
             const imps = (ctrl as any).parsedDocument.imports;
 
-            imps[0].should.be.an.instanceof(ImportProxy);
+            imps[0].should.be.an.instanceof(NamedImport);
             imps[0].defaultAlias.should.equal('myDefaultExportedFunction');
-            imps[1].should.be.an.instanceof(ImportProxy);
+            imps[1].should.be.an.instanceof(NamedImport);
             should.not.exist(imps[1].defaultAlias);
         });
 
@@ -140,7 +139,7 @@ describe('ImportManager', () => {
             const imps = (ctrl as any).parsedDocument.imports;
 
             imps.should.have.lengthOf(1);
-            imps[0].should.not.be.an.instanceof(ImportProxy);
+            imps[0].should.not.be.an.instanceof(NamedImport);
         });
 
         it('should not add a proxy for an external import', async () => {
@@ -158,7 +157,7 @@ describe('ImportManager', () => {
             const imps = (ctrl as any).parsedDocument.imports;
 
             imps.should.have.lengthOf(1);
-            imps[0].should.not.be.an.instanceof(ImportProxy);
+            imps[0].should.not.be.an.instanceof(NamedImport);
         });
 
         it('should not add a proxy for a string import', async () => {
@@ -176,7 +175,7 @@ describe('ImportManager', () => {
             const imps = (ctrl as any).parsedDocument.imports;
 
             imps.should.have.lengthOf(1);
-            imps[0].should.not.be.an.instanceof(ImportProxy);
+            imps[0].should.not.be.an.instanceof(NamedImport);
         });
 
     });
@@ -200,7 +199,7 @@ describe('ImportManager', () => {
 
             (ctrl as any).imports.should.have.lengthOf(2);
             (ctrl as any).imports[1].libraryName.should.equal('body-parser');
-            (ctrl as any).imports[1].should.not.be.an.instanceof(ImportProxy);
+            (ctrl as any).imports[1].should.not.be.an.instanceof(NamedImport);
         });
 
         it('should add a default import to the import index.', async () => {
@@ -214,8 +213,7 @@ describe('ImportManager', () => {
             (ctrl as any).imports[1].libraryName.should.equal(
                 '../../server/indices/defaultExport/lateDefaultExportedElement',
             );
-            (ctrl as any).imports[1].defaultPurposal.should.equal('myDefaultExportedFunction');
-            should.not.exist((ctrl as any).imports[1].defaultAlias);
+            (ctrl as any).imports[1].defaultAlias.should.equal('myDefaultExportedFunction');
         });
 
         it('should add multiple imports to the import index', async () => {
@@ -634,9 +632,9 @@ describe('ImportManager', () => {
                 ctrl.addDeclarationImport(declaration!);
                 (await ctrl.commit()).should.be.true;
 
-                stub.should.be.calledWithMatch({ value: 'myDefaultExportedFunction' });
+                stub.should.not.be.called;
                 document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
+                    `import myDefaultExportedFunction from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
                 );
             } finally {
                 restoreInputBox(stub);
@@ -698,7 +696,7 @@ describe('ImportManager', () => {
                 (await ctrl.commit()).should.be.true;
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
@@ -729,14 +727,14 @@ describe('ImportManager', () => {
                 await ctrl.addDeclarationImport(declaration!).commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import DEFAULT_IMPORT from '../../server/indices/defaultExport/multiExport';`,
+                    `import multiExport from '../../server/indices/defaultExport/multiExport';`,
                 );
 
                 declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
                 await ctrl.addDeclarationImport(declaration!).commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {
@@ -760,7 +758,7 @@ describe('ImportManager', () => {
                 await ctrl.commit();
 
                 document.lineAt(0).text.should.equals(
-                    `import { default as DEFAULT_IMPORT, MultiExportClass } ` +
+                    `import multiExport, { MultiExportClass } ` +
                     `from '../../server/indices/defaultExport/multiExport';`,
                 );
             } finally {

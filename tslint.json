@@ -30,13 +30,12 @@
             }
         ],
         "strict-boolean-expressions": false,
-        "ter-indent": [
+        "indent": [
             true,
-            4,
-            {
-                "SwitchCase": 1
-            }
+            "spaces",
+            4
         ],
+        "ter-indent": false,
         "typedef": [
             true,
             "call-signature",

@@ -1,18 +1,10 @@
 import { join, normalize, parse, relative } from 'path';
-import {
-    DeclarationInfo,
-    DefaultDeclaration,
-    DefaultImport,
-    ExternalModuleImport,
-    Import,
-    NamedImport,
-    NamespaceImport,
-} from 'typescript-parser';
+import { DeclarationInfo, ExternalModuleImport, Import, NamedImport, NamespaceImport } from 'typescript-parser';
 
 /**
  * Calculates a list of declarationInfos filtered by the already imported ones in the given document.
  * The result is a list of declarations that are not already imported by the document.
- * 
+ *
  * @export
  * @param {ResolveIndex} resolveIndex
  * @param {string} documentPath
@@ -35,11 +27,14 @@ export function getDeclarationsFilteredByImports(
             declarations = declarations
                 .filter(o => o.from !== importedLib || !(tsImport as NamedImport).specifiers
                     .some(s => s.specifier === o.declaration.name));
+            // if (tsImport.defaultAlias) {
+            //     else if (tsImport instanceof DefaultImport) {
+            //         declarations = declarations
+            //             .filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
+            //     }
+            // }
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
-        } else if (tsImport instanceof DefaultImport) {
-            declarations = declarations
-                .filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
         }
     }
 
@@ -51,7 +46,7 @@ export function getDeclarationsFilteredByImports(
  * If the library is a node module or a typings module, the name
  * is returned. If the "lib" is in the local workspace, then the
  * absolut path from the workspace root is returned.
- * 
+ *
  * @param {string} library Name of the library
  * @param {string} actualFilePath Filepath of the actually open file
  * @param {string} [rootPath] Root path of the workspace
@@ -72,7 +67,7 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string, r
  * If the library is a node module or a typings module, the name
  * is returned. If the "lib" is in the local workspace, then the
  * relative path from the actual file is returned.
- * 
+ *
  * @param {string} library Name of the library
  * @param {string} actualFilePath Filepath of the actually open file
  * @param {string} [rootPath] Root path of the workspace
