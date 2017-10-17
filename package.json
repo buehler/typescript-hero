@@ -373,13 +373,13 @@
           "type": "boolean",
           "default": true,
           "description": "Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases.",
-          "scope": "resource"
+          "scope": "window"
         },
         "typescriptHero.codeOutline.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Defines if the code outline feature (and window) are enabled or not.",
-          "scope": "resource"
+          "scope": "window"
         }
       }
     }
