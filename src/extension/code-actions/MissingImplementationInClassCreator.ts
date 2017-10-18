@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { ClassLikeDeclaration, GenericDeclaration, NamedImport, TypescriptParser } from 'typescript-parser';
-import { Command, Diagnostic, TextDocument } from 'vscode';
+import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
@@ -20,7 +20,6 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
     constructor(
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
-        @inject(iocSymbols.rootPath) private rootPath: string,
     ) {
         super();
     }
@@ -53,7 +52,9 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.exec(diagnostic.message);
 
         const index = this.indices.getIndexForFile(document.uri);
-        if (!match || !index) {
+        const rootFolder = workspace.getWorkspaceFolder(document.uri);
+
+        if (!match || !index || !rootFolder) {
             return commands;
         }
 
@@ -74,7 +75,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
         const declaration = (parsedDocument.declarations.find(o => o.name === specifier) ||
             (index.declarationInfos.find(
                 o => o.declaration.name === specifier &&
-                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, this.rootPath),
+                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, rootFolder.uri.fsPath),
             ) || { declaration: undefined }).declaration) as (ClassLikeDeclaration & GenericDeclaration) | undefined;
 
         if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {

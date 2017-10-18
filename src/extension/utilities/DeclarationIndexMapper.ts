@@ -12,7 +12,7 @@ import {
     WorkspaceFoldersChangeEvent,
 } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
+import { ConfigFactory } from '../../common/factories';
 import { findFiles } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../../extension/IoCSymbols';
@@ -71,7 +71,7 @@ export class DeclarationIndexMapper {
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.extensionContext) private context: ExtensionContext,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
     ) {
         this._onFinishIndexing = new EventEmitter();
         this._onStartIndexing = new EventEmitter();
@@ -140,11 +140,12 @@ export class DeclarationIndexMapper {
 
     private async initializeIndex(folder: WorkspaceFolder): Promise<void> {
         const index = new DeclarationIndex(this.parser, folder.uri.fsPath);
-        const files = await findFiles(this.config, folder);
+        const config = this.config(folder.uri);
+        const files = await findFiles(config, folder);
         const watcher = workspace.createFileSystemWatcher(
             new RelativePattern(
                 folder,
-                `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
+                `{${config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
             ),
         );
         const workspaceIndex = {

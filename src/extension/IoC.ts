@@ -55,7 +55,7 @@ container
     .toFactory<Logger>((context: interfaces.Context) => {
         return (prefix?: string) => {
             const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
-            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
 
             return new VscodeLogger(extContext, config, prefix);
         };

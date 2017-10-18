@@ -11,5 +11,4 @@ export const iocSymbols = {
     declarationIndex: Symbol('declarationIndex'),
     declarationIndexMapper: Symbol('declarationIndexMapper'),
     typescriptParser: Symbol('typescriptParser'),
-    rootPath: Symbol('rootPath'),
 };
