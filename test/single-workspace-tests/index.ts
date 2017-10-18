@@ -19,7 +19,6 @@ import { iocSymbols } from '../src/extension/IoCSymbols';
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 
-
 class ContextMock implements ExtensionContext {
     subscriptions: { dispose(): any }[] = [];
     workspaceState: Memento;

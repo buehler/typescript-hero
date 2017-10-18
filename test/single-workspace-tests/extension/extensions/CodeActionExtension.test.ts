@@ -25,16 +25,21 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
-
 describe('CodeActionExtension', () => {
 
     let extension: any;
+    let rootPath: string;
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        let document: TextDocument;
+
+        before(async () => {
+            document = await workspace.openTextDocument(file);
+            await window.showTextDocument(document);
+        });
 
         const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
         await index.buildIndex(
@@ -187,7 +192,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                            `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
+                                `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
                         },
                     ],
                 },
@@ -254,7 +259,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message: `non-abstract class 'Foobar' ` +
-                            `implement inherited from class 'GenericAbstractClass<string, string, string>'.`,
+                                `implement inherited from class 'GenericAbstractClass<string, string, string>'.`,
                         },
                     ],
                 },
@@ -310,7 +315,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message: `non-abstract class 'AbstractImplement' ` +
-                            `implement inherited from class 'CodeFixImplementAbstract'.`,
+                                `implement inherited from class 'CodeFixImplementAbstract'.`,
                         },
                     ],
                 },
@@ -358,8 +363,8 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                            `non-abstract class 'InternalAbstractImplement' ` +
-                            `implement inherited from class 'InternalAbstract'.`,
+                                `non-abstract class 'InternalAbstractImplement' ` +
+                                `implement inherited from class 'InternalAbstract'.`,
                         },
                     ],
                 },
@@ -381,7 +386,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                            `class 'ImplementGenericInterface' incorrectly implements 'GenericInterface<string, number>'.`,
+                                `class 'ImplementGenericInterface' incorrectly implements 'GenericInterface<string, number>'.`,
                         },
                     ],
                 },
@@ -405,8 +410,8 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                            `non-abstract class 'ImplementGenericAbstract' ` +
-                            `implement inherited from class 'GenericAbstractClass<string, number, boolean>'.`,
+                                `non-abstract class 'ImplementGenericAbstract' ` +
+                                `implement inherited from class 'GenericAbstractClass<string, number, boolean>'.`,
                         },
                     ],
                 },
