@@ -13,7 +13,7 @@ import {
     workspace,
 } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
+import { ConfigFactory } from '../../common/factories';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
@@ -42,7 +42,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
     ) {
         super(context);
@@ -85,15 +85,17 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<BaseStructureTreeItem[]>> {
-        if (!this.config.codeOutline.outlineEnabled) {
-            return [new DisabledStructureTreeItem()];
-        }
-
         if (!window.activeTextEditor) {
             return [];
         }
 
-        if (!this.config.resolver.resolverModeLanguages.some(
+        const config = this.config(window.activeTextEditor.document.uri);
+
+        if (!config.codeOutline.outlineEnabled) {
+            return [new DisabledStructureTreeItem()];
+        }
+
+        if (!config.resolver.resolverModeLanguages.some(
             lang => lang === window.activeTextEditor!.document.languageId,
         )) {
             return [new NotParseableStructureTreeItem()];
