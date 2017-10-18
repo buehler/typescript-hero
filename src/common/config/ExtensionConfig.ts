@@ -32,6 +32,14 @@ export interface ExtensionConfig {
     verbosity: string;
 
     /**
+     * Returns a list of possible language IDs that are registered within this extension.
+     *
+     * @type {string[]}
+     * @memberof ExtensionConfig
+     */
+    possibleLanguages: string[];
+
+    /**
      * Configuration object for the resolver extension.
      *
      * @readonly

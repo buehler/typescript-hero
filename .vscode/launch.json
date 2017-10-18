@@ -17,6 +17,21 @@
             ]
         },
         {
+            "name": "Launch Extension Multi-Root",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "${workspaceRoot}/test/_workspace",
+                "--extensionDevelopmentPath=${workspaceRoot}"
+            ],
+            "stopOnEntry": false,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceRoot}/out/src/**/*.js"
+            ]
+        },
+        {
             "name": "Launch Tests",
             "type": "extensionHost",
             "request": "launch",

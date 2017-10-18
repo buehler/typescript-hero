@@ -5,7 +5,6 @@ import {
     commands,
     CompletionItem,
     CompletionItemProvider,
-    Disposable,
     ExtensionContext,
     languages,
     Position,
@@ -13,7 +12,7 @@ import {
     workspace,
 } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
+import { ConfigFactory } from '../../common/factories';
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -33,15 +32,13 @@ import { BaseExtension } from './BaseExtension';
 @injectable()
 export class CodeCompletionExtension extends BaseExtension implements CompletionItemProvider {
     private logger: Logger;
-    private languageRegisters: Disposable[] = [];
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
-        @inject(iocSymbols.rootPath) private rootPath: string,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
     ) {
         super(context);
         this.logger = loggerFactory('CodeCompletionExtension');
@@ -53,22 +50,9 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberof CodeCompletionExtension
      */
     public initialize(): void {
-        for (const lang of this.config.resolver.resolverModeLanguages) {
-            this.languageRegisters.push(languages.registerCompletionItemProvider(lang, this));
+        for (const lang of this.config().possibleLanguages) {
+            this.context.subscriptions.push(languages.registerCompletionItemProvider(lang, this));
         }
-
-        this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
-            if (this.languageRegisters.length !== this.config.resolver.resolverModeLanguages.length) {
-                this.logger.info('ResolverMode has changed, registering to new configuration languages');
-                for (const register of this.languageRegisters) {
-                    register.dispose();
-                }
-                this.languageRegisters = [];
-                for (const lang of this.config.resolver.resolverModeLanguages) {
-                    this.languageRegisters.push(languages.registerCompletionItemProvider(lang, this));
-                }
-            }
-        }));
 
         this.context.subscriptions.push(
             commands.registerCommand(
@@ -87,9 +71,6 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberof CodeCompletionExtension
      */
     public dispose(): void {
-        for (const register of this.languageRegisters) {
-            register.dispose();
-        }
         this.logger.info('Disposed');
     }
 
@@ -109,7 +90,14 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         token: CancellationToken,
     ): Promise<CompletionItem[] | null> {
         const index = this.indices.getIndexForFile(document.uri);
-        if (!index || !index.indexReady) {
+        const config = this.config(document.uri);
+        const rootFolder = workspace.getWorkspaceFolder(document.uri);
+
+        if (!index ||
+            !index.indexReady ||
+            !config.resolver.resolverModeLanguages.some(lng => lng === document.languageId) ||
+            !rootFolder
+        ) {
             return null;
         }
 
@@ -140,7 +128,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             index.declarationInfos,
             document.fileName,
             parsed.imports,
-            this.rootPath,
+            rootFolder.uri.fsPath,
         )
             .filter(o => !parsed.declarations.some(d => d.name === o.declaration.name))
             .filter(o => !parsed.usages.some(d => d === o.declaration.name));
@@ -157,7 +145,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
                 title: 'Execute intellisense insert',
                 command: 'typescriptHero.codeCompletion.executeIntellisenseItem',
             };
-            if (this.config.completionSortMode === 'bottom') {
+            if (config.codeCompletion.completionSortMode === 'bottom') {
                 item.sortText = `9999-${declaration.declaration.name}`;
             }
             items.push(item);

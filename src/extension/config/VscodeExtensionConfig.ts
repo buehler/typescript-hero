@@ -17,6 +17,13 @@ const sectionKey = 'typescriptHero';
  */
 @injectable()
 export class VscodeExtensionConfig implements ExtensionConfig {
+    public readonly possibleLanguages: string[] = [
+        'typescript',
+        'typescriptreact',
+        'javascript',
+        'javascriptreact',
+    ];
+
     private resolverConfig: ResolverConfig;
     private codeOutlineConfig: CodeOutlineConfig;
     private codeCompletionConfig: CodeCompletionConfig;

@@ -4,7 +4,7 @@ import { TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Uri } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
-import { VscodeConfigFactory } from '../common/factories';
+import { ConfigFactory } from '../common/factories';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { VscodeExtensionConfig } from './config/VscodeExtensionConfig';
@@ -27,16 +27,13 @@ container.bind<DeclarationIndexMapper>(iocSymbols.declarationIndexMapper).to(Dec
 
 container
     .bind<TypescriptParser>(iocSymbols.typescriptParser)
-    .toDynamicValue(() => {
-        return new TypescriptParser();
-    })
-    .inSingletonScope();
+    .toConstantValue(new TypescriptParser());
 
 container
     .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
     .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
         return (resource?: Uri) => {
-            const configFactory = context.container.get<VscodeConfigFactory>(iocSymbols.configuration);
+            const configFactory = context.container.get<ConfigFactory>(iocSymbols.configuration);
             return new TypescriptCodeGenerator(configFactory(resource).resolver.generationOptions);
         };
     });

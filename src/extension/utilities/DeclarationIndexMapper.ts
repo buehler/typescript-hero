@@ -66,32 +66,32 @@ export class DeclarationIndexMapper {
 
     public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
         const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
-        if (!workspaceFolder || !this.indizes[workspaceFolder.uri.path]) {
+        if (!workspaceFolder || !this.indizes[workspaceFolder.uri.fsPath]) {
             return;
         }
 
-        return this.indizes[workspaceFolder.uri.path].index;
+        return this.indizes[workspaceFolder.uri.fsPath].index;
     }
 
     private workspaceChanged(event: WorkspaceFoldersChangeEvent): void {
         this.logger.info('Workspaces changed.', event);
         for (const add of event.added) {
-            if (this.indizes[add.uri.path]) {
-                this.logger.warning(`The workspace with the path ${add.uri.path} already exists. Skipping.`);
+            if (this.indizes[add.uri.fsPath]) {
+                this.logger.warning(`The workspace with the path ${add.uri.fsPath} already exists. Skipping.`);
                 continue;
             }
             this.initializeIndex(add);
         }
 
         for (const remove of event.removed) {
-            this.indizes[remove.uri.path].index.reset();
-            this.indizes[remove.uri.path].watcher.dispose();
-            delete this.indizes[remove.uri.path];
+            this.indizes[remove.uri.fsPath].index.reset();
+            this.indizes[remove.uri.fsPath].watcher.dispose();
+            delete this.indizes[remove.uri.fsPath];
         }
     }
 
     private async initializeIndex(folder: WorkspaceFolder): Promise<void> {
-        const index = new DeclarationIndex(this.parser, folder.uri.path);
+        const index = new DeclarationIndex(this.parser, folder.uri.fsPath);
         const files = await findFiles(this.config, folder);
         const watcher = workspace.createFileSystemWatcher(
             new RelativePattern(
@@ -134,7 +134,7 @@ export class DeclarationIndexMapper {
         watcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
 
         await index.buildIndex(files);
-        this.indizes[folder.uri.path] = {
+        this.indizes[folder.uri.fsPath] = {
             index,
             folder,
             watcher,

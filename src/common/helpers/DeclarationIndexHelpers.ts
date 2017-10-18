@@ -114,7 +114,7 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
     let globs: string[] = [];
     let ignores = ['**/typings/**'];
     const excludePatterns = config.resolver.ignorePatterns; // convert to resource config
-    const rootPath = workspaceFolder.uri.path;
+    const rootPath = workspaceFolder.uri.fsPath;
 
     if (rootPath && existsSync(join(rootPath, 'package.json'))) {
         const packageJson = require(join(rootPath, 'package.json'));
