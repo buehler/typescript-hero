@@ -29,6 +29,31 @@ interface WorkspaceIndex {
 // TODO error handling of each index
 // TODO events for indexing part
 
+// TODO: update index on change of configs
+// this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
+//     if (!window.activeTextEditor) {
+//         return;
+//     }
+//     let build = false;
+//     const config = this.config(window.activeTextEditor.document.uri);
+
+//     if (!compareIgnorePatterns(this.ignorePatterns, config.resolver.ignorePatterns)) {
+//         this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
+//         this.ignorePatterns = config.resolver.ignorePatterns;
+//         build = true;
+//     }
+//     if (this.actualMode !== config.resolver.resolverMode) {
+//         this.logger.info('The typescriptHero.resolver.resolverMode setting was modified, reload the index.');
+//         this.statusBarItem.tooltip =
+//             `Click to manually reindex all files; Actual mode: ${ResolverMode[config.resolver.resolverMode]}`;
+//         this.actualMode = config.resolver.resolverMode;
+//         build = true;
+//     }
+//     if (build) {
+//         this.indices.rebuildAll();
+//     }
+// }));
+
 @injectable()
 export class DeclarationIndexMapper {
     public readonly onStartIndexing: Event<WorkspaceIndex>;

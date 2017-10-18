@@ -1,10 +1,8 @@
-import { ConfigFactory } from '../../common/factories';
 import { inject, injectable } from 'inversify';
 import { DeclarationInfo, TypescriptParser } from 'typescript-parser';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
-import { ResolverMode } from '../../common/enums';
+import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -14,29 +12,6 @@ import { BaseExtension } from './BaseExtension';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
 type MissingDeclarationsForFileOptions = { documentSource: string, documentPath: string };
-
-/**
- * Compares the ignorepatterns (if they have the same elements ignored).
- *
- * @param {string[]} local
- * @param {string[]} config
- * @returns {boolean}
- */
-function compareIgnorePatterns(local: string[], config: string[]): boolean {
-    if (local.length !== config.length) {
-        return false;
-    }
-    const localSorted = local.sort();
-    const configSorted = config.sort();
-
-    for (let x = 0; x < configSorted.length; x += 1) {
-        if (configSorted[x] !== localSorted[x]) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 const resolverOk = 'TSH Resolver $(check)';
 const resolverSyncing = 'TSH Resolver $(sync)';
@@ -54,13 +29,10 @@ const resolverErr = 'TSH Resolver $(flame)';
 export class ImportResolveExtension extends BaseExtension {
     private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
-    private ignorePatterns: string[];
-    private actualMode: ResolverMode;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ConfigFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
@@ -74,9 +46,6 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     public initialize(): void {
-        this.actualMode = this.config.resolver.resolverMode;
-        this.ignorePatterns = this.config.resolver.ignorePatterns;
-
         this.context.subscriptions.push(this.statusBarItem);
 
         this.statusBarItem.text = resolverOk;
@@ -94,25 +63,6 @@ export class ImportResolveExtension extends BaseExtension {
         this.statusBarItem.show();
 
         this.commandRegistrations();
-
-        this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
-            let build = false;
-            if (!compareIgnorePatterns(this.ignorePatterns, this.config.resolver.ignorePatterns)) {
-                this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
-                this.ignorePatterns = this.config.resolver.ignorePatterns;
-                build = true;
-            }
-            if (this.actualMode !== this.config.resolver.resolverMode) {
-                this.logger.info('The typescriptHero.resolver.resolverMode setting was modified, reload the index.');
-                this.statusBarItem.tooltip =
-                    `Click to manually reindex all files; Actual mode: ${ResolverMode[this.config.resolver.resolverMode]}`;
-                this.actualMode = this.config.resolver.resolverMode;
-                build = true;
-            }
-            if (build) {
-                this.indices.rebuildAll();
-            }
-        }));
 
         this.logger.info('Initialized');
     }
@@ -330,17 +280,21 @@ export class ImportResolveExtension extends BaseExtension {
         if (!window.activeTextEditor) {
             return [];
         }
+
         const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
-        if (!index || !index.indexReady) {
+        const rootFolder = workspace.getWorkspaceFolder(window.activeTextEditor.document.uri);
+
+        if (!index || !index.indexReady || !rootFolder) {
             return [];
         }
+
         const parsedSource = await this.parser.parseSource(documentSource);
         const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             documentPath,
             parsedSource.imports,
-            this.rootPath,
+            rootFolder.uri.fsPath,
         ).filter(o => o.declaration.name.startsWith(cursorSymbol));
 
         return [
@@ -365,8 +319,11 @@ export class ImportResolveExtension extends BaseExtension {
         if (!window.activeTextEditor) {
             return [];
         }
+
         const index = this.indices.getIndexForFile(window.activeTextEditor.document.uri);
-        if (!index || !index.indexReady) {
+        const rootFolder = workspace.getWorkspaceFolder(window.activeTextEditor.document.uri);
+
+        if (!index || !index.indexReady || !rootFolder) {
             return [];
         }
 
@@ -376,7 +333,7 @@ export class ImportResolveExtension extends BaseExtension {
             index.declarationInfos,
             documentPath,
             parsedDocument.imports,
-            this.rootPath,
+            rootFolder.uri.fsPath,
         );
 
         for (const usage of parsedDocument.nonLocalUsages) {
