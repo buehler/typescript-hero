@@ -24,12 +24,9 @@ interface WorkspaceIndex {
 }
 
 // TODO documentation
-// TODO change settings to scoped settings
 // TODO move did change configuration to all indices
-// TODO error handling of each index
-// TODO events for indexing part
-
 // TODO: update index on change of configs
+
 // this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
 //     if (!window.activeTextEditor) {
 //         return;

@@ -11,7 +11,7 @@
         }
     ],
     "settings": {
-        "typescriptHero.verbosity": "All",
+        "typescriptHero.verbosity": "Warnings",
         "typescriptHero.codeOutline.enabled": true,
         "typescriptHero.resolver.organizeOnSave": false,
         "typescriptHero.resolver.promptForSpecifiers": true,
