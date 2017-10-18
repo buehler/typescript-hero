@@ -1,12 +1,10 @@
-import { existsSync } from 'fs';
+import { ConfigFactory } from '../../common/factories';
 import { inject, injectable } from 'inversify';
-import { join } from 'path';
 import { DeclarationInfo, TypescriptParser } from 'typescript-parser';
-import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
 import { ResolverMode } from '../../common/enums';
-import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
@@ -40,77 +38,9 @@ function compareIgnorePatterns(local: string[], config: string[]): boolean {
     return true;
 }
 
-/**
- * Search for typescript / typescript react files in the workspace and return the path to them.
- * This is needed for the initial load of the index.
- *
- * @export
- * @param {ExtensionConfig} config
- * @returns {Promise<string[]>}
- */
-export async function findFiles(config: ExtensionConfig, rootPath: string): Promise<string[]> {
-    const searches: PromiseLike<Uri[]>[] = [
-        workspace.findFiles(
-            `{${config.resolver.resolverModeFileGlobs.join(',')}}`,
-            '{**/node_modules/**,**/typings/**}',
-        ),
-    ];
-
-    // TODO: check the package json and index javascript file in node_modules (?)
-
-    let globs: string[] = [];
-    let ignores = ['**/typings/**'];
-    const excludePatterns = config.resolver.ignorePatterns;
-
-    if (rootPath && existsSync(join(rootPath, 'package.json'))) {
-        const packageJson = require(join(rootPath, 'package.json'));
-        if (packageJson['dependencies']) {
-            globs = globs.concat(
-                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
-            );
-            ignores = ignores.concat(
-                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/node_modules/**`),
-            );
-        }
-        if (packageJson['devDependencies']) {
-            globs = globs.concat(
-                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
-            );
-            ignores = ignores.concat(
-                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/node_modules/**`),
-            );
-        }
-    } else {
-        globs.push('**/node_modules/**/*.d.ts');
-    }
-    searches.push(
-        workspace.findFiles(`{${globs.join(',')}}`, `{${ignores.join(',')}}`),
-    );
-
-    searches.push(
-        workspace.findFiles('**/typings/**/*.d.ts', '**/node_modules/**'),
-    );
-
-    let uris = await Promise.all(searches);
-
-    uris = uris.map((o, idx) => idx === 0 ?
-        o.filter(
-            f => f.fsPath
-                .replace(rootPath || '', '')
-                .split(/\\|\//)
-                .every(p => excludePatterns.indexOf(p) < 0)) :
-        o,
-    );
-    return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
-}
-
 const resolverOk = 'TSH Resolver $(check)';
-// const resolverSyncing = 'TSH Resolver $(sync)';
-// const resolverErr = 'TSH Resolver $(flame)';
+const resolverSyncing = 'TSH Resolver $(sync)';
+const resolverErr = 'TSH Resolver $(flame)';
 
 /**
  * Extension that resolves imports. Contains various actions to add imports to a document, add missing
@@ -130,10 +60,9 @@ export class ImportResolveExtension extends BaseExtension {
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
-        @inject(iocSymbols.rootPath) private rootPath: string,
     ) {
         super(context);
         this.logger = loggerFactory('ImportResolveExtension');
@@ -151,9 +80,17 @@ export class ImportResolveExtension extends BaseExtension {
         this.context.subscriptions.push(this.statusBarItem);
 
         this.statusBarItem.text = resolverOk;
-        this.statusBarItem.tooltip =
-            `Click to manually reindex all files; Actual mode: ${ResolverMode[this.config.resolver.resolverMode]}`;
+        this.statusBarItem.tooltip = 'Click to manually reindex all files';
         this.statusBarItem.command = 'typescriptHero.resolve.rebuildCache';
+        this.context.subscriptions.push(this.indices.onStartIndexing(() => {
+            this.statusBarItem.text = resolverSyncing;
+        }));
+        this.context.subscriptions.push(this.indices.onFinishIndexing(() => {
+            this.statusBarItem.text = resolverOk;
+        }));
+        this.context.subscriptions.push(this.indices.onIndexingError(() => {
+            this.statusBarItem.text = resolverErr;
+        }));
         this.statusBarItem.show();
 
         this.commandRegistrations();

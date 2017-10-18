@@ -1,6 +1,8 @@
 import { inject, injectable, postConstruct } from 'inversify';
 import { DeclarationIndex, FileChanges, TypescriptParser } from 'typescript-parser';
 import {
+    Event,
+    EventEmitter,
     ExtensionContext,
     FileSystemWatcher,
     RelativePattern,
@@ -25,9 +27,18 @@ interface WorkspaceIndex {
 // TODO change settings to scoped settings
 // TODO move did change configuration to all indices
 // TODO error handling of each index
+// TODO events for indexing part
 
 @injectable()
 export class DeclarationIndexMapper {
+    public readonly onStartIndexing: Event<WorkspaceIndex>;
+    public readonly onFinishIndexing: Event<WorkspaceIndex>;
+    public readonly onIndexingError: Event<{ index: WorkspaceIndex, error: Error }>;
+
+    private _onStartIndexing: EventEmitter<WorkspaceIndex>;
+    private _onFinishIndexing: EventEmitter<WorkspaceIndex>;
+    private _onIndexingError: EventEmitter<{ index: WorkspaceIndex, error: Error }>;
+
     private logger: Logger;
     private indizes: { [uri: string]: WorkspaceIndex } = {};
 
@@ -37,6 +48,18 @@ export class DeclarationIndexMapper {
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.configuration) private config: ExtensionConfig,
     ) {
+        this._onFinishIndexing = new EventEmitter();
+        this._onStartIndexing = new EventEmitter();
+        this._onIndexingError = new EventEmitter();
+
+        this.onFinishIndexing = this._onFinishIndexing.event;
+        this.onStartIndexing = this._onStartIndexing.event;
+        this.onIndexingError = this._onIndexingError.event;
+
+        this.context.subscriptions.push(this._onFinishIndexing);
+        this.context.subscriptions.push(this._onIndexingError);
+        this.context.subscriptions.push(this._onStartIndexing);
+
         this.logger = loggerFactory('DeclarationIndexMapper');
     }
 
@@ -99,6 +122,13 @@ export class DeclarationIndexMapper {
                 `{${this.config.resolver.resolverModeFileGlobs.join(',')},**/package.json,**/typings.json}`,
             ),
         );
+        const workspaceIndex = {
+            index,
+            folder,
+            watcher,
+        };
+
+        this._onStartIndexing.fire(workspaceIndex);
 
         let timeout: NodeJS.Timer | undefined;
         let events: FileChanges | undefined;
@@ -133,12 +163,14 @@ export class DeclarationIndexMapper {
         watcher.onDidChange(uri => fileWatcherEvent('updated', uri));
         watcher.onDidDelete(uri => fileWatcherEvent('deleted', uri));
 
-        await index.buildIndex(files);
-        this.indizes[folder.uri.fsPath] = {
-            index,
-            folder,
-            watcher,
-        };
-        this.logger.info(`Finished building index for workspace "${folder.name}".`);
+        try {
+            await index.buildIndex(files);
+            this.indizes[folder.uri.fsPath] = workspaceIndex;
+            this.logger.info(`Finished building index for workspace "${folder.name}".`);
+            this._onFinishIndexing.fire(workspaceIndex);
+        } catch (error) {
+            this.logger.error(`Error during build of index for workspace "${folder.name}"`, error);
+            this._onIndexingError.fire({ error, index: workspaceIndex });
+        }
     }
 }
