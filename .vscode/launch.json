@@ -22,7 +22,7 @@
             "request": "launch",
             "runtimeExecutable": "${execPath}",
             "args": [
-                "${workspaceRoot}/test/_workspace",
+                "${workspaceRoot}/test/multi-root.code-workspace",
                 "--extensionDevelopmentPath=${workspaceRoot}"
             ],
             "stopOnEntry": false,
