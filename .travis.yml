@@ -7,10 +7,6 @@ node_js:
 notifications:
   email: false
 
-env:
-  global:
-    - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/_workspace
-
 os:
   - linux
 
@@ -32,8 +28,8 @@ addons:
 before_install:
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0;
-      sh -e /etc/init.d/xvfb start; 
-      sleep 3; 
+      sh -e /etc/init.d/xvfb start;
+      sleep 3;
     fi
   - rvm get stable
   - rvm install 2.4
@@ -42,7 +38,7 @@ before_install:
 
 install:
   - yarn install
- 
+
 before_script:
   - greenkeeper-lockfile-update
   - yarn run build
