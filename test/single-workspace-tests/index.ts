@@ -2,8 +2,8 @@ import 'reflect-metadata';
 
 import { ExtensionContext, Memento } from 'vscode';
 
-import { Container } from '../src/extension/IoC';
-import { iocSymbols } from '../src/extension/IoCSymbols';
+import { Container } from '../../src/extension/IoC';
+import { iocSymbols } from '../../src/extension/IoCSymbols';
 
 // tslint:disable
 
