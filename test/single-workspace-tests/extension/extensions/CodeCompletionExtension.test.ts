@@ -10,6 +10,7 @@ import { CodeCompletionExtension } from '../../../../src/extension/extensions/Co
 import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
 
 const should = chai.should();
 
@@ -88,19 +89,20 @@ describe('CodeCompletionExtension', () => {
     });
 
     it('should use custom sort order when config.completionSortMode is bottom', async () => {
-        const config = vscode.workspace.getConfiguration(
-            'typescriptHero.codeCompletion',
-            vscode.workspace.workspaceFolders![0].uri,
-        );
+        const orig = (extension as any).config;
+        const config = new VscodeExtensionConfig();
+        (config as any).codeCompletionConfig = {
+            completionSortMode: 'bottom',
+        };
 
-        config.update('completionSortMode', 'bottom');
+        (extension as any).config = sinon.spy(() => config);
 
         try {
             const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
             should.exist(result![0].sortText);
             result![0].sortText!.should.equal('9999-MyClass');
         } finally {
-            config.update('completionSortMode', 'default');
+            (extension as any).config = orig;
         }
     });
 

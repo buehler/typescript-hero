@@ -20,6 +20,7 @@ export interface CodeCompletionConfig {
     /**
      * Defines the used completion sort mode (i.e. if the completions should be sorted to the bottom of the list).
      *
+     * @readonly
      * @type {('default' | 'bottom')}
      * @memberof CodeCompletionConfig
      */
