@@ -39,12 +39,12 @@
             "args": [
                 "${workspaceRoot}/test/_workspace",
                 "--extensionDevelopmentPath=${workspaceRoot}",
-                "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests"
+                "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceRoot}/out/test/**/*.js"
+                "${workspaceRoot}/out/test/single-workspace-tests/**/*.js"
             ]
         },
         {

@@ -27,7 +27,7 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe.only('CodeActionExtension', () => {
+describe('CodeActionExtension', () => {
 
     const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
@@ -96,7 +96,7 @@ describe.only('CodeActionExtension', () => {
         it('should call the execute method of a code action', async () => {
             const spy = sinon.spy();
             await extension.executeCodeAction(new SpyCodeAction(spy, true));
-            spy.should.be.calledOnce;
+            spy.calledOnce;
         });
 
         it('should warn the user if the result is false', async () => {
@@ -106,7 +106,7 @@ describe.only('CodeActionExtension', () => {
 
             try {
                 await extension.executeCodeAction(new SpyCodeAction(sinon.spy(), false));
-                stub.should.be.calledWith('The provided code action could not complete. Please see the logs.');
+                stub.calledWith('The provided code action could not complete. Please see the logs.');
             } finally {
                 stub.restore();
             }
@@ -467,7 +467,7 @@ describe.only('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(2);
                 const action = cmds[0];
-                action.title.should.equal('Import "Class1" from "/server/indices".');
+                action.title.should.equal('Import "Class1" from "/server/indices/MyClass".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
             });
 
@@ -492,7 +492,7 @@ describe.only('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(3);
                 let action = cmds[0];
-                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices".');
+                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices/MyClass".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
 
                 action = cmds[1];
