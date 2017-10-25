@@ -1,6 +1,7 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
+import sinonChai = require('sinon-chai');
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
@@ -17,6 +18,7 @@ import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
 
 chai.should();
+chai.use(sinonChai);
 
 class SpyCodeAction implements CodeAction {
     constructor(private spy: sinon.SinonSpy, private result: boolean) { }
@@ -96,7 +98,7 @@ describe('CodeActionExtension', () => {
         it('should call the execute method of a code action', async () => {
             const spy = sinon.spy();
             await extension.executeCodeAction(new SpyCodeAction(spy, true));
-            spy.calledOnce;
+            spy.should.be.calledOnce;
         });
 
         it('should warn the user if the result is false', async () => {
@@ -106,7 +108,7 @@ describe('CodeActionExtension', () => {
 
             try {
                 await extension.executeCodeAction(new SpyCodeAction(sinon.spy(), false));
-                stub.calledWith('The provided code action could not complete. Please see the logs.');
+                stub.should.be.calledWith('The provided code action could not complete. Please see the logs.');
             } finally {
                 stub.restore();
             }

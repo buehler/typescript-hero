@@ -2,7 +2,7 @@ import { join } from 'path';
 import { TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../../src/common/config';
+import { ConfigFactory } from '../../../../src/common/factories';
 import { LoggerFactory } from '../../../../src/common/utilities';
 import { DocumentSymbolStructureExtension } from '../../../../src/extension/extensions/DocumentSymbolStructureExtension';
 import { Container } from '../../../../src/extension/IoC';
@@ -24,7 +24,7 @@ import {
 
 describe('DocumentSymbolStructureExtension', () => {
 
-    const rootPath = Container.get<string>(iocSymbols.rootPath);
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let extension: DocumentSymbolStructureExtension;
     const file = join(
         rootPath,
@@ -35,7 +35,7 @@ describe('DocumentSymbolStructureExtension', () => {
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
 
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);
     });
@@ -57,7 +57,6 @@ describe('DocumentSymbolStructureExtension', () => {
     });
 
     it('should return a "file not parsable" if it is no ts file', async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/documentSymbolStructureExtension/notParsable.txt',

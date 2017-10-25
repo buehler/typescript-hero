@@ -5,10 +5,13 @@ import sinonChai = require('sinon-chai');
 import { DeclarationIndex, File, NamedImport } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-// import { findFiles } from '../../../../src/extension/extensions/ImportResolveExtension';
+import { findFiles } from '../../../../src/common/helpers';
+import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
 import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { ImportManager } from '../../../../src/extension/managers';
+
+// import { findFiles } from '../../../../src/extension/extensions/ImportResolveExtension';
 // import { VscodeExtensionConfig } from '../../../../src/extension/VscodeExtensionConfig';
 
 const should = chai.should();
@@ -35,10 +38,9 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-
 describe('ImportManager', () => {
 
-    const rootPath = Container.get<string>(iocSymbols.rootPath);
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     const file = join(rootPath, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument;
     let documentText: string;
@@ -46,10 +48,10 @@ describe('ImportManager', () => {
     let files: string[];
 
     before(async () => {
-        const config = new VscodeExtensionConfig();
-        files = await findFiles(config, rootPath);
+        const config = new VscodeExtensionConfig(workspace.workspaceFolders![0].uri);
+        files = await findFiles(config, workspace.workspaceFolders![0]);
 
-        index = index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        index = new DeclarationIndex(Container.get(iocSymbols.typescriptParser), rootPath);
         await index.buildIndex(files);
 
         document = await workspace.openTextDocument(file);
@@ -886,6 +888,7 @@ describe('ImportManager', () => {
 
 describe('ImportManager with .tsx files', () => {
 
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     const file = join(rootPath, 'extension/managers/ImportManagerFile.tsx');
     let document: TextDocument;
     let documentText: string;
@@ -893,10 +896,10 @@ describe('ImportManager with .tsx files', () => {
     let files: string[];
 
     before(async () => {
-        const config = new VscodeExtensionConfig();
-        files = await findFiles(config, rootPath);
+        const config = new VscodeExtensionConfig(workspace.workspaceFolders![0].uri);
+        files = await findFiles(config, workspace.workspaceFolders![0]);
 
-        index = index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        index = new DeclarationIndex(Container.get(iocSymbols.typescriptParser), rootPath);
         await index.buildIndex(files);
 
         document = await workspace.openTextDocument(file);

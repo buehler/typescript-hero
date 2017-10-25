@@ -12,7 +12,7 @@ chai.should();
 
 describe('OrganizeImportsOnSaveExtension', () => {
 
-    const rootPath = Container.get<string>(iocSymbols.rootPath);
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let document: vscode.TextDocument;
     let index: DeclarationIndex;
 
@@ -25,7 +25,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
 
         await vscode.window.showTextDocument(document);
 
-        index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        index = new DeclarationIndex(Container.get(iocSymbols.typescriptParser), rootPath);
         await index.buildIndex(
             [
                 join(
