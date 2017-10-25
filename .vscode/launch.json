@@ -55,7 +55,7 @@
             "args": [
                 "${workspaceRoot}/test/multi-root.code-workspace",
                 "--extensionDevelopmentPath=${workspaceRoot}",
-                "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests"
+                "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests/"
             ],
             "stopOnEntry": false,
             "sourceMaps": true,
