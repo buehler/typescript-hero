@@ -3,18 +3,18 @@ import { join } from 'path';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ExtensionConfig } from '../../../../src/common/config';
+import { LoggerFactory } from '../../../../src/common/utilities';
+import { ImportResolveExtension } from '../../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('TypeScript Mode: ImportResolveExtension', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     let extension: any;
 
     before(async () => {
@@ -184,7 +184,7 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
         });
 
     });
-    
+
     describe('organizeImports with exports', () => {
 
         const file = join(rootPath, 'extension/extensions/importResolveExtension/organizeImportsWithExports.ts');
@@ -399,7 +399,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
             await extension.addImportToDocument(items[0]);
             document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
         });
-        
+
         it('shoud write a named import correctly (TS)', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'AddImportSameDirectory',
@@ -411,7 +411,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
         });
 
     });
-    
+
     describe('addImportToDocument in .ts file', () => {
         const file = join(
             rootPath,
@@ -452,7 +452,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
             await extension.addImportToDocument(items[0]);
             document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
         });
-        
+
         it('shoud write a named import correctly (TS)', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'AddImportSameDirectory',

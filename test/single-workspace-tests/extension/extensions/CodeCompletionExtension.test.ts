@@ -3,17 +3,17 @@ import { join } from 'path';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ExtensionConfig } from '../../../../src/common/config';
+import { LoggerFactory } from '../../../../src/common/utilities';
+import { CodeCompletionExtension } from '../../../../src/extension/extensions/CodeCompletionExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 
 const should = chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('CodeCompletionExtension', () => {
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
 
     const token = new vscode.CancellationTokenSource().token;
     let document: vscode.TextDocument;

@@ -10,19 +10,19 @@ import {
 } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { ClassManager } from '../../../src/extension/managers/ClassManager';
-import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
+// import { findFiles } from '../../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { ClassManager } from '../../../../src/extension/managers/ClassManager';
+// import { VscodeExtensionConfig } from '../../../../src/extension/VscodeExtensionConfig';
 
 const should = chai.should();
 chai.use(sinonChai);
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('ClassManager', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     const file = join(rootPath, 'extension/managers/ClassManagerFile.ts');
     let document: TextDocument;
     let documentText: string;

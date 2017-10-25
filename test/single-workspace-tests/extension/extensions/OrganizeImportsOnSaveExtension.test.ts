@@ -3,16 +3,16 @@ import { join } from 'path';
 import { DeclarationIndex } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { ImportManager } from '../../../src/extension/managers';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { ImportManager } from '../../../../src/extension/managers';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('OrganizeImportsOnSaveExtension', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     let document: vscode.TextDocument;
     let index: DeclarationIndex;
 

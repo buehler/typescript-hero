@@ -2,27 +2,29 @@ import { join } from 'path';
 import { TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { DocumentSymbolStructureExtension } from '../../../src/extension/extensions/DocumentSymbolStructureExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { BaseStructureTreeItem } from '../../../src/extension/provider-items/document-structure/BaseStructureTreeItem';
+import { ExtensionConfig } from '../../../../src/common/config';
+import { LoggerFactory } from '../../../../src/common/utilities';
+import { DocumentSymbolStructureExtension } from '../../../../src/extension/extensions/DocumentSymbolStructureExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { BaseStructureTreeItem } from '../../../../src/extension/provider-items/document-structure/BaseStructureTreeItem';
 import {
     DeclarationStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/DeclarationStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/DeclarationStructureTreeItem';
 import {
     DisabledStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/DisabledStructureTreeItem';
-import { ImportsStructureTreeItem } from '../../../src/extension/provider-items/document-structure/ImportsStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/DisabledStructureTreeItem';
+import {
+    ImportsStructureTreeItem,
+} from '../../../../src/extension/provider-items/document-structure/ImportsStructureTreeItem';
 import {
     NotParseableStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('DocumentSymbolStructureExtension', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     let extension: DocumentSymbolStructureExtension;
     const file = join(
         rootPath,

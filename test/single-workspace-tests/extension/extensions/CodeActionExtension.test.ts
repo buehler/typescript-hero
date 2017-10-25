@@ -4,15 +4,17 @@ import * as sinon from 'sinon';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { LoggerFactory } from '../../../src/common/utilities';
-import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../src/extension/code-actions/CodeAction';
+import { ConfigFactory } from '../../../../src/common/factories';
+import { LoggerFactory } from '../../../../src/common/utilities';
+import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../../src/extension/code-actions';
 import {
     MissingImplementationInClassCreator,
-} from '../../../src/extension/code-actions/MissingImplementationInClassCreator';
-import { MissingImportCreator } from '../../../src/extension/code-actions/MissingImportCreator';
-import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+} from '../../../../src/extension/code-actions/MissingImplementationInClassCreator';
+import { MissingImportCreator } from '../../../../src/extension/code-actions/MissingImportCreator';
+import { CodeActionExtension } from '../../../../src/extension/extensions/CodeActionExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
 
 chai.should();
 
@@ -25,23 +27,19 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-describe('CodeActionExtension', () => {
+describe.only('CodeActionExtension', () => {
 
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
-    let rootPath: string;
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
         const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        let document: TextDocument;
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
-        before(async () => {
-            document = await workspace.openTextDocument(file);
-            await window.showTextDocument(document);
-        });
-
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -63,12 +61,14 @@ describe('CodeActionExtension', () => {
             ],
         );
 
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
         const creators = [
-            new MissingImportCreator(index as any),
-            new MissingImplementationInClassCreator(parser, index as any, rootPath),
+            new MissingImportCreator(fakeMapper),
+            new MissingImplementationInClassCreator(parser, fakeMapper),
         ];
 
-        extension = new CodeActionExtension(ctx, logger, creators, index as any);
+        extension = new CodeActionExtension(ctx, logger, creators, fakeMapper);
     });
 
     describe('executeCodeAction', () => {
@@ -385,8 +385,8 @@ describe('CodeActionExtension', () => {
                 <any>{
                     diagnostics: [
                         {
-                            message:
-                                `class 'ImplementGenericInterface' incorrectly implements 'GenericInterface<string, number>'.`,
+                            message: `class 'ImplementGenericInterface' incorrectly ` +
+                                `implements 'GenericInterface<string, number>'.`,
                         },
                     ],
                 },

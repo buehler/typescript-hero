@@ -5,11 +5,11 @@ import sinonChai = require('sinon-chai');
 import { DeclarationIndex, File, NamedImport } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { ImportManager } from '../../../src/extension/managers';
-import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
+// import { findFiles } from '../../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { ImportManager } from '../../../../src/extension/managers';
+// import { VscodeExtensionConfig } from '../../../../src/extension/VscodeExtensionConfig';
 
 const should = chai.should();
 chai.use(sinonChai);
@@ -35,10 +35,10 @@ function restoreInputBox(stub: sinon.SinonStub): void {
     stub.restore();
 }
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('ImportManager', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     const file = join(rootPath, 'extension/managers/ImportManagerFile.ts');
     let document: TextDocument;
     let documentText: string;

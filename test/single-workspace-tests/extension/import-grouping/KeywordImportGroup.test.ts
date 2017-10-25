@@ -2,18 +2,18 @@ import * as chai from 'chai';
 import { join } from 'path';
 import { File, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
-import { ImportGroupKeyword, KeywordImportGroup } from '../../../src/extension/import-grouping';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ExtensionConfig } from '../../../../src/common/config';
+import { TypescriptCodeGeneratorFactory } from '../../../../src/common/factories';
+import { ImportGroupKeyword, KeywordImportGroup } from '../../../../src/extension/import-grouping';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('KeywordImportGroup', () => {
 
+    const rootPath = Container.get<string>(iocSymbols.rootPath);
     let file: File;
     let importGroup: KeywordImportGroup;
     let config: ExtensionConfig;
