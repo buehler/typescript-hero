@@ -11,9 +11,6 @@ import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { ImportManager } from '../../../../src/extension/managers';
 
-// import { findFiles } from '../../../../src/extension/extensions/ImportResolveExtension';
-// import { VscodeExtensionConfig } from '../../../../src/extension/VscodeExtensionConfig';
-
 const should = chai.should();
 chai.use(sinonChai);
 

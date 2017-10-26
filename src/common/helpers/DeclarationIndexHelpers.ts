@@ -28,15 +28,11 @@ export function getDeclarationsFilteredByImports(
         const importedLib = getAbsolutLibraryName(tsImport.libraryName, documentPath, rootPath);
 
         if (tsImport instanceof NamedImport) {
-            declarations = declarations
-                .filter(o => o.from !== importedLib || !(tsImport as NamedImport).specifiers
-                    .some(s => s.specifier === o.declaration.name));
-            // if (tsImport.defaultAlias) {
-            //     else if (tsImport instanceof DefaultImport) {
-            //         declarations = declarations
-            //             .filter(o => (!(o.declaration instanceof DefaultDeclaration) || importedLib !== o.from));
-            //     }
-            // } // TODO
+            declarations = declarations.filter(
+                o => o.from !== importedLib ||
+                    !tsImport.specifiers.some(s => s.specifier === o.declaration.name) ||
+                    tsImport.defaultAlias !== o.declaration.name,
+            );
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         }
@@ -94,7 +90,8 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
 }
 
 /**
- * TODO
+ * This function searches for files in a specific workspace folder. The files are relative to the given
+ * workspace folder and the searched type is determined by the configuration of the extension (TS, JS or Both mode).
  *
  * @export
  * @param {ExtensionConfig} config
@@ -113,7 +110,7 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
 
     let globs: string[] = [];
     let ignores = ['**/typings/**'];
-    const excludePatterns = config.resolver.ignorePatterns; // convert to resource config
+    const excludePatterns = config.resolver.ignorePatterns;
     const rootPath = workspaceFolder.uri.fsPath;
 
     if (rootPath && existsSync(join(rootPath, 'package.json'))) {

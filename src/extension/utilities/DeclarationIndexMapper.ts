@@ -23,33 +23,8 @@ interface WorkspaceIndex {
     watcher: FileSystemWatcher;
 }
 
-// TODO documentation
 // TODO move did change configuration to all indices
 // TODO: update index on change of configs
-
-// this.context.subscriptions.push(workspace.onDidChangeConfiguration(() => {
-//     if (!window.activeTextEditor) {
-//         return;
-//     }
-//     let build = false;
-//     const config = this.config(window.activeTextEditor.document.uri);
-
-//     if (!compareIgnorePatterns(this.ignorePatterns, config.resolver.ignorePatterns)) {
-//         this.logger.info('The typescriptHero.resolver.ignorePatterns setting was modified, reload the index.');
-//         this.ignorePatterns = config.resolver.ignorePatterns;
-//         build = true;
-//     }
-//     if (this.actualMode !== config.resolver.resolverMode) {
-//         this.logger.info('The typescriptHero.resolver.resolverMode setting was modified, reload the index.');
-//         this.statusBarItem.tooltip =
-//             `Click to manually reindex all files; Actual mode: ${ResolverMode[config.resolver.resolverMode]}`;
-//         this.actualMode = config.resolver.resolverMode;
-//         build = true;
-//     }
-//     if (build) {
-//         this.indices.rebuildAll();
-//     }
-// }));
 
 @injectable()
 export class DeclarationIndexMapper {
