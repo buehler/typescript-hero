@@ -50,7 +50,7 @@ after_script:
   - greenkeeper-lockfile-upload
   - yarn run semantic-release-pre
   - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
-  - yarn install -g vsce
+  - yarn global add vsce
   - yarn run semantic-release
 
 branches:
