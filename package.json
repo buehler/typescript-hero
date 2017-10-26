@@ -116,7 +116,8 @@
     "reflect-metadata": "^0.1.10",
     "tslib": "^1.7.1",
     "typescript": "~2.5.3",
-    "typescript-parser": "^2.0.0"
+    "typescript-parser": "^2.0.0",
+    "winston": "^3.0.0-rc1"
   },
   "activationEvents": [
     "onLanguage:typescript",
@@ -195,13 +196,13 @@
       "properties": {
         "typescriptHero.verbosity": {
           "enum": [
-            "Nothing",
-            "Errors",
-            "Warnings",
-            "All"
+            "Error",
+            "Warning",
+            "Info",
+            "Debug"
           ],
-          "default": "Warnings",
-          "description": "Defines the log output level in the output window.",
+          "default": "Warning",
+          "description": "Defines the log output level in the output window. In the log file, it's always info or debug.",
           "scope": "window"
         },
         "typescriptHero.codeCompletion.completionSortMode": {
