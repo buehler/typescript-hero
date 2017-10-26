@@ -30,8 +30,8 @@ export function getDeclarationsFilteredByImports(
         if (tsImport instanceof NamedImport) {
             declarations = declarations.filter(
                 o => o.from !== importedLib ||
-                    !tsImport.specifiers.some(s => s.specifier === o.declaration.name) ||
-                    tsImport.defaultAlias !== o.declaration.name,
+                    !tsImport.specifiers.some(s => s.specifier === o.declaration.name),
+                // || tsImport.defaultAlias !== o.declaration.name,
             );
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
