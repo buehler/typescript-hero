@@ -1,27 +1,24 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import { File, NamedImport, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
+import { workspace } from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { TypescriptCodeGeneratorFactory } from '../../../src/common/factories';
-import { RegexImportGroup } from '../../../src/extension/import-grouping';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { TypescriptCodeGeneratorFactory } from '../../../../src/common/factories';
+import { RegexImportGroup } from '../../../../src/extension/import-grouping';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
-
 describe('RegexImportGroup', () => {
 
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     let file: File;
     let importGroup: RegexImportGroup;
-    let config: ExtensionConfig;
     let generator: TypescriptCodeGenerator;
 
     before(async () => {
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        config = Container.get<ExtensionConfig>(iocSymbols.configuration);
         generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
         file = await parser.parseFile(
             join(

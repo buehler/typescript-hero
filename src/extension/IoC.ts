@@ -1,11 +1,13 @@
 import { Container as IoCContainer, interfaces } from 'inversify';
 import inversifyInjectDecorators from 'inversify-inject-decorators';
-import { DeclarationIndex, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
-import { ExtensionContext, workspace } from 'vscode';
+import { TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
+import { ExtensionContext, Uri } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
+import { ConfigFactory } from '../common/factories';
 import { Logger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
+import { VscodeExtensionConfig } from './config/VscodeExtensionConfig';
 import { BaseExtension } from './extensions/BaseExtension';
 import { CodeActionExtension } from './extensions/CodeActionExtension';
 import { CodeCompletionExtension } from './extensions/CodeCompletionExtension';
@@ -14,37 +16,31 @@ import { ImportResolveExtension } from './extensions/ImportResolveExtension';
 import { OrganizeImportsOnSaveExtension } from './extensions/OrganizeImportsOnSaveExtension';
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
+import { DeclarationIndexMapper } from './utilities/DeclarationIndexMapper';
 import { VscodeLogger } from './utilities/VscodeLogger';
-import { VscodeExtensionConfig } from './VscodeExtensionConfig';
 
 const container = new IoCContainer();
 
-container.bind(iocSymbols.rootPath).toConstantValue(workspace.rootPath || '');
 container.bind(TypeScriptHero).to(TypeScriptHero).inSingletonScope();
-container.bind(iocSymbols.configuration).to(VscodeExtensionConfig).inSingletonScope();
-container
-    .bind<DeclarationIndex>(iocSymbols.declarationIndex)
-    .toDynamicValue((context: interfaces.Context) => {
-        const parser = context.container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        return new DeclarationIndex(parser, context.container.get<string>(iocSymbols.rootPath));
-    })
-    .inSingletonScope();
+
+container.bind<DeclarationIndexMapper>(iocSymbols.declarationIndexMapper).to(DeclarationIndexMapper).inSingletonScope();
 
 container
     .bind<TypescriptParser>(iocSymbols.typescriptParser)
-    .toDynamicValue(() => {
-        return new TypescriptParser();
-    })
-    .inSingletonScope();
+    .toConstantValue(new TypescriptParser());
 
 container
     .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
     .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
-        return () => {
-            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
-            return new TypescriptCodeGenerator(config.resolver.generationOptions);
+        return (resource?: Uri) => {
+            const configFactory = context.container.get<ConfigFactory>(iocSymbols.configuration);
+            return new TypescriptCodeGenerator(configFactory(resource).resolver.generationOptions);
         };
     });
+
+container
+    .bind<interfaces.Factory<ExtensionConfig>>(iocSymbols.configuration)
+    .toFactory<VscodeExtensionConfig>(() => (resource?: Uri) => new VscodeExtensionConfig(resource));
 
 // Extensions
 container.bind<BaseExtension>(iocSymbols.extensions).to(ImportResolveExtension).inSingletonScope();
@@ -59,7 +55,7 @@ container
     .toFactory<Logger>((context: interfaces.Context) => {
         return (prefix?: string) => {
             const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
-            const config = context.container.get<ExtensionConfig>(iocSymbols.configuration);
+            const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
 
             return new VscodeLogger(extContext, config, prefix);
         };

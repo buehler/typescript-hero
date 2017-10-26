@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { ExtensionContext, workspace } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
+import { ConfigFactory } from '../../common/factories';
 import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
@@ -27,7 +27,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
     ) {
         super(context);
         this.logger = loggerFactory('OrganizeImportsOnSaveExtension');
@@ -40,7 +40,8 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
      */
     public initialize(): void {
         this.context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
-            if (!this.config.resolver.organizeOnSave) {
+            const config = this.config(event.document.uri);
+            if (!config.resolver.organizeOnSave) {
                 this.logger.info('Organize on save is deactivated through config.');
                 return;
             }

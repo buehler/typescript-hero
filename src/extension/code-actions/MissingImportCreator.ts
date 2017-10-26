@@ -1,14 +1,14 @@
 import { inject, injectable } from 'inversify';
-import { DeclarationIndex } from 'typescript-parser';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
 /**
  * Action creator that handles missing imports in files.
- * 
+ *
  * @export
  * @class MissingImportCreator
  * @extends {CodeActionCreator}
@@ -16,17 +16,17 @@ import { CodeActionCreator } from './CodeActionCreator';
 @injectable()
 export class MissingImportCreator extends CodeActionCreator {
     constructor(
-        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super();
     }
 
     /**
      * Determines if the given diagnostic can be handled by this creator.
-     * 
-     * @param {Diagnostic} diagnostic 
-     * @returns {boolean} 
-     * 
+     *
+     * @param {Diagnostic} diagnostic
+     * @returns {boolean}
+     *
      * @memberof MissingImportCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
@@ -35,21 +35,23 @@ export class MissingImportCreator extends CodeActionCreator {
 
     /**
      * Handles the given diagnostic. Must return an array of commands that are given to the light bulb.
-     * 
+     *
      * @param {TextDocument} document The commands that are created until now
      * @param {Command[]} commands The commands that are created until now
      * @param {Diagnostic} diagnostic The diagnostic to handle
-     * @returns {Promise<Command[]>} 
-     * 
+     * @returns {Promise<Command[]>}
+     *
      * @memberof MissingImportCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
         const match = /cannot find name ['"](.*)['"]/ig.exec(diagnostic.message);
-        if (!match) {
+        const index = this.indices.getIndexForFile(document.uri);
+
+        if (!match || !index) {
             return commands;
         }
 
-        const infos = this.index.declarationInfos.filter(o => o.declaration.name === match[1]);
+        const infos = index.declarationInfos.filter(o => o.declaration.name === match[1]);
         if (infos.length > 0) {
             for (const info of infos) {
                 commands.push(this.createCommand(
@@ -65,7 +67,7 @@ export class MissingImportCreator extends CodeActionCreator {
             ) {
                 commands.push(this.createCommand(
                     'Add all missing imports if possible.',
-                    new AddMissingImportsCodeAction(document, this.index),
+                    new AddMissingImportsCodeAction(document, index),
                 ));
             }
         } else {

@@ -1,21 +1,16 @@
 import { inject, injectable } from 'inversify';
-import {
-    ClassLikeDeclaration,
-    DeclarationIndex,
-    GenericDeclaration,
-    NamedImport,
-    TypescriptParser,
-} from 'typescript-parser';
-import { Command, Diagnostic, TextDocument } from 'vscode';
+import { ClassLikeDeclaration, GenericDeclaration, NamedImport, TypescriptParser } from 'typescript-parser';
+import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
 /**
  * Action creator that handles missing implementations in a class.
- * 
+ *
  * @export
  * @class MissingImplementationInClassCreator
  * @extends {CodeActionCreator}
@@ -24,18 +19,17 @@ import { CodeActionCreator } from './CodeActionCreator';
 export class MissingImplementationInClassCreator extends CodeActionCreator {
     constructor(
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
-        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
-        @inject(iocSymbols.rootPath) private rootPath: string,
+        @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super();
     }
 
     /**
      * Determines if the given diagnostic can be handled by this creator.
-     * 
-     * @param {Diagnostic} diagnostic 
-     * @returns {boolean} 
-     * 
+     *
+     * @param {Diagnostic} diagnostic
+     * @returns {boolean}
+     *
      * @memberof MissingImplementationInClassCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
@@ -45,19 +39,22 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
 
     /**
      * Handles the given diagnostic. Must return an array of commands that are given to the light bulb.
-     * 
+     *
      * @param {TextDocument} document The commands that are created until now
      * @param {Command[]} commands The commands that are created until now
      * @param {Diagnostic} diagnostic The diagnostic to handle
-     * @returns {Promise<Command[]>} 
-     * 
+     * @returns {Promise<Command[]>}
+     *
      * @memberof MissingImplementationInClassCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
         const match = /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.exec(diagnostic.message) ||
             /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.exec(diagnostic.message);
 
-        if (!match) {
+        const index = this.indices.getIndexForFile(document.uri);
+        const rootFolder = workspace.getWorkspaceFolder(document.uri);
+
+        if (!match || !index || !rootFolder) {
             return commands;
         }
 
@@ -76,9 +73,9 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === specifier),
         );
         const declaration = (parsedDocument.declarations.find(o => o.name === specifier) ||
-            (this.index.declarationInfos.find(
+            (index.declarationInfos.find(
                 o => o.declaration.name === specifier &&
-                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, this.rootPath),
+                    o.from === getAbsolutLibraryName(alreadyImported!.libraryName, document.fileName, rootFolder.uri.fsPath),
             ) || { declaration: undefined }).declaration) as (ClassLikeDeclaration & GenericDeclaration) | undefined;
 
         if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {

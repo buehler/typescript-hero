@@ -10,7 +10,7 @@
   "version": "0.0.0-development",
   "publisher": "rbbit",
   "engines": {
-    "vscode": "^1.13.0",
+    "vscode": "^1.17.0",
     "node": ">=8.0.0",
     "npm": ">=5.3.0"
   },
@@ -80,13 +80,15 @@
     "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "test -f ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
-    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && yarn run lint",
-    "test": "node ./node_modules/vscode/bin/test",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
+    "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && yarn lint",
+    "test": "yarn test:single-workspace",
+    "test:single-workspace": "CODE_TESTS_WORKSPACE=$(pwd)/test/_workspace CODE_TESTS_PATH=$(pwd)/out/test/single-workspace-tests node ./node_modules/vscode/bin/test",
+    "test:multi-workspace": "CODE_TESTS_WORKSPACE=$(pwd)/test/multi-root.code-workspace CODE_TESTS_PATH=$(pwd)/out/test/multi-root-workspace-tests node ./node_modules/vscode/bin/test",
     "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "yarn run build && del-cli './*.vsix' && vsce package",
+    "package": "yarn build && del-cli './*.vsix' && vsce package",
     "semantic-release-pre": "semantic-release pre",
-    "semantic-release": "yarn run semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && yarn install && semantic-release post"
+    "semantic-release": "yarn semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && yarn install && semantic-release post"
   },
   "devDependencies": {
     "@types/chai": "^4.0.4",
@@ -199,25 +201,29 @@
             "All"
           ],
           "default": "Warnings",
-          "description": "Defines the log output level in the output window."
+          "description": "Defines the log output level in the output window.",
+          "scope": "window"
         },
-        "typescriptHero.completionSortMode": {
+        "typescriptHero.codeCompletion.completionSortMode": {
           "enum": [
             "default",
             "bottom"
           ],
           "default": "default",
-          "description": "Import completion sort order"
+          "description": "Defines the sortmode of the code completion in intellisense (bottom means sorted to bottom).",
+          "scope": "resource"
         },
         "typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces": {
           "type": "boolean",
           "default": true,
-          "description": "Defines if there should be a space inside the curly braces of an import statement."
+          "description": "Defines if there should be a space inside the curly braces of an import statement.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.insertSemicolons": {
           "type": "boolean",
           "default": true,
-          "description": "Defines if there should be a semicolon at the end of a statement."
+          "description": "Defines if there should be a semicolon at the end of a statement.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.stringQuoteStyle": {
           "enum": [
@@ -225,7 +231,8 @@
             "\""
           ],
           "default": "'",
-          "description": "Defines if single or double quotes should be used."
+          "description": "Defines if single or double quotes should be used.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.ignorePatterns": {
           "type": "array",
@@ -238,24 +245,28 @@
             "out",
             "dist"
           ],
-          "description": "Defines partial pathes that are ignored during indexing (e.g. 'node_modules' would exclude all modules)."
+          "description": "Defines partial pathes that are ignored during indexing (e.g. 'node_modules' would exclude all modules).",
+          "scope": "resource"
         },
         "typescriptHero.resolver.multiLineWrapThreshold": {
           "type": "number",
           "minimum": 1,
           "multipleOf": 1,
           "default": 125,
-          "description": "Defines the threshold when an import should be wrapped into a multiline import."
+          "description": "Defines the threshold when an import should be wrapped into a multiline import.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.multiLineTrailingComma": {
           "type": "boolean",
           "default": true,
-          "description": "Defined if multi line imports contain the last trailing comma."
+          "description": "Defined if multi line imports contain the last trailing comma.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.disableImportsSorting": {
           "type": "boolean",
           "default": false,
-          "description": "Defines if sorting is disable during organize imports."
+          "description": "Defines if sorting is disable during organize imports.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.disableImportRemovalOnOrganize": {
           "type": "boolean",
@@ -265,7 +276,8 @@
         "typescriptHero.resolver.organizeOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Defines if the imports should be organized on save."
+          "description": "Defines if the imports should be organized on save.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.ignoreImportsForOrganize": {
           "type": "array",
@@ -276,7 +288,8 @@
           "default": [
             "react"
           ],
-          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'."
+          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.importGroups": {
           "type": "array",
@@ -345,7 +358,8 @@
             "Modules",
             "Workspace"
           ],
-          "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions."
+          "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions.",
+          "scope": "resource"
         },
         "typescriptHero.resolver.resolverMode": {
           "enum": [
@@ -353,18 +367,21 @@
             "ES6",
             "Both"
           ],
-          "default": "TypeScript",
-          "description": "Defines the mode of the symbol resolver (i.e. if JavaScript files should be indexed as well (experimental)."
+          "default": "Both",
+          "description": "Defines the mode of the symbol resolver. (Note that JavaScript mode only indexes workspace files)",
+          "scope": "resource"
         },
         "typescriptHero.resolver.promptForSpecifiers": {
           "type": "boolean",
           "default": true,
-          "description": "Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases."
+          "description": "Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases.",
+          "scope": "window"
         },
         "typescriptHero.codeOutline.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Defines if the code outline feature (and window) are enabled or not."
+          "description": "Defines if the code outline feature (and window) are enabled or not.",
+          "scope": "window"
         }
       }
     }

@@ -5,7 +5,7 @@ import { ExtensionContext, OutputChannel, window } from 'vscode';
 
 /**
  * Central logger instance of the extension.
- * 
+ *
  * @export
  * @class VscodeLogger
  */
@@ -21,10 +21,10 @@ export class VscodeLogger implements Logger {
 
     /**
      * Logs an error message. Provided data is logged out after the message.
-     * 
+     *
      * @param {string} message
      * @param {*} [data]
-     * 
+     *
      * @memberof VscodeLogger
      */
     public error(message: string, data?: any): void {
@@ -38,10 +38,10 @@ export class VscodeLogger implements Logger {
 
     /**
      * Logs a warning message. Provided data is logged out after the message.
-     * 
+     *
      * @param {string} message
      * @param {*} [data]
-     * 
+     *
      * @memberof VscodeLogger
      */
     public warning(message: string, data?: any): void {
@@ -55,10 +55,10 @@ export class VscodeLogger implements Logger {
 
     /**
      * Logs an info message. Provided data is logged out after the message.
-     * 
+     *
      * @param {string} message
      * @param {*} [data]
-     * 
+     *
      * @memberof VscodeLogger
      */
     public info(message: string, data?: any): void {
@@ -73,13 +73,13 @@ export class VscodeLogger implements Logger {
     /**
      * Internal method to actually do the logging. Checks if the output should be done and logs
      * the data into the output channel and the console (if debugging).
-     * 
+     *
      * @private
      * @param {LogLevel} level
      * @param {string} severity
      * @param {string} message
      * @param {*} [data]
-     * 
+     *
      * @memberof VscodeLogger
      */
     private log(level: LogLevel, severity: string, message: string, data?: any): void {
@@ -101,10 +101,10 @@ export class VscodeLogger implements Logger {
 
     /**
      * Returns a propper formatted date for logging.
-     * 
+     *
      * @private
      * @returns {string}
-     * 
+     *
      * @memberof Logger
      */
     private getDate(): string {
@@ -127,10 +127,10 @@ export class VscodeLogger implements Logger {
 
     /**
      * Maps the configuration string to a propper enum value of LogLevel.
-     * 
+     *
      * @private
      * @returns {LogLevel}
-     * 
+     *
      * @memberof VscodeLogger
      */
     private getLogLevel(): LogLevel {

@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 
-import { getImportInsertPosition } from '../../../src/common/helpers';
+import { getImportInsertPosition } from '../../../../src/common/helpers';
 
 chai.should();
 

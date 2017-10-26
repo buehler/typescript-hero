@@ -1,5 +1,4 @@
 import { inject, injectable, multiInject } from 'inversify';
-import { DeclarationIndex } from 'typescript-parser';
 import {
     CancellationToken,
     CodeActionContext,
@@ -17,13 +16,14 @@ import { Logger, LoggerFactory } from '../../common/utilities';
 import { CodeAction } from '../code-actions/CodeAction';
 import { CodeActionCreator } from '../code-actions/CodeActionCreator';
 import { iocSymbols } from '../IoCSymbols';
+import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { BaseExtension } from './BaseExtension';
 
 /**
  * Provider instance that is responsible for the "light bulb" feature.
- * It provides actions to take when errors occur in the current document (such as missing imports or 
+ * It provides actions to take when errors occur in the current document (such as missing imports or
  * non implemented interfaces.).
- * 
+ *
  * @export
  * @class CodeActionExtension
  * @implements {CodeActionProvider}
@@ -36,7 +36,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
         @multiInject(iocSymbols.codeActionCreators) private actionCreators: CodeActionCreator[],
-        @inject(iocSymbols.declarationIndex) private index: DeclarationIndex,
+        @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super(context);
         this.logger = loggerFactory('CodeActionExtension');
@@ -44,7 +44,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
 
     /**
      * Initialized the extension. Registers the commands and other disposables to the context.
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     public initialize(): void {
@@ -60,7 +60,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
 
     /**
      * Disposes the extension.
-     * 
+     *
      * @memberof ImportResolveExtension
      */
     public dispose(): void {
@@ -69,13 +69,13 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
 
     /**
      * Provides the commands to execute for a given problem.
-     * 
+     *
      * @param {TextDocument} document
      * @param {Range} range
      * @param {CodeActionContext} context
      * @param {CancellationToken} token
      * @returns {Promise<Command[]>}
-     * 
+     *
      * @memberof CodeActionExtension
      */
     public async provideCodeActions(
@@ -84,7 +84,8 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         context: CodeActionContext,
         _token: CancellationToken,
     ): Promise<Command[]> {
-        if (!this.index.indexReady) {
+        const index = this.indices.getIndexForFile(document.uri);
+        if (!index || !index.indexReady) {
             return [];
         }
 
@@ -102,11 +103,11 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
 
     /**
      * Executes a code action. If the result is false, a warning is shown.
-     * 
+     *
      * @private
      * @param {CodeAction} codeAction
      * @returns {Promise<void>}
-     * 
+     *
      * @memberof CodeFixExtension
      */
     private async executeCodeAction(codeAction: CodeAction | undefined): Promise<void> {
