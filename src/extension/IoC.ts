@@ -5,7 +5,7 @@ import { ExtensionContext, Uri } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
 import { ConfigFactory } from '../common/factories';
-import { Logger } from '../common/utilities';
+import { Logger as OldLogger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { VscodeExtensionConfig } from './config/VscodeExtensionConfig';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -18,6 +18,7 @@ import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { DeclarationIndexMapper } from './utilities/DeclarationIndexMapper';
 import { VscodeLogger } from './utilities/VscodeLogger';
+import winstonLogger, { Logger } from './utilities/winstonLogger';
 
 const container = new IoCContainer();
 
@@ -51,8 +52,8 @@ container.bind<BaseExtension>(iocSymbols.extensions).to(OrganizeImportsOnSaveExt
 
 // Logging
 container
-    .bind<interfaces.Factory<Logger>>(iocSymbols.loggerFactory)
-    .toFactory<Logger>((context: interfaces.Context) => {
+    .bind<interfaces.Factory<OldLogger>>(iocSymbols.loggerFactory)
+    .toFactory<OldLogger>((context: interfaces.Context) => {
         return (prefix?: string) => {
             const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
             const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
@@ -60,6 +61,15 @@ container
             return new VscodeLogger(extContext, config, prefix);
         };
     });
+
+container
+    .bind<Logger>(iocSymbols.logger)
+    .toDynamicValue((context: interfaces.Context) => {
+        const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
+        const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
+        return winstonLogger(config.verbosity, extContext.extensionPath);
+    })
+    .inSingletonScope();
 
 // Code Action Extension (action creators)
 container.bind<CodeActionCreator>(iocSymbols.codeActionCreators).to(MissingImportCreator);

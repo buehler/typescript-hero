@@ -196,12 +196,12 @@
       "properties": {
         "typescriptHero.verbosity": {
           "enum": [
-            "Error",
-            "Warning",
-            "Info",
-            "Debug"
+            "error",
+            "warn",
+            "info",
+            "debug"
           ],
-          "default": "Warning",
+          "default": "warn",
           "description": "Defines the log output level in the output window. In the log file, it's always info or debug.",
           "scope": "window"
         },
