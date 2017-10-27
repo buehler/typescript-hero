@@ -178,9 +178,16 @@ export class DeclarationIndexMapper {
             timeout = setTimeout(
                 async () => {
                     if (events) {
-                        this.logger.info(`Refreshing index for workspace ${folder.name}.`);
+                        const profiler = this.logger.startTimer();
+                        this.logger.debug(
+                            '[%s] rebuilding index for index "%s"',
+                            DeclarationIndexMapper.name,
+                            folder.uri.fsPath,
+                        );
                         await index.reindexForChanges(events);
-                        this.logger.info(`Finished indexing for workspace ${folder.name}.`);
+                        profiler.done({
+                            message: `[${DeclarationIndexMapper.name}] rebuilt index for workspace "${folder.name}"`,
+                        });
                         events = undefined;
                     }
                 },
