@@ -1,4 +1,3 @@
-import { Logger } from '../utilities/winstonLogger';
 import { inject, injectable } from 'inversify';
 import { DeclarationInfo, TypescriptParser } from 'typescript-parser';
 import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
@@ -34,17 +33,10 @@ export class ImportResolveExtension extends BaseExtension {
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
         @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.logger) private loggerX: Logger,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super(context);
-        this.loggerX.debug('This is a debug message');
-        this.loggerX.info('This is a info message', { more: 'data' });
-        this.loggerX.warn('This is a warn message: %s', 'second string.');
-        this.loggerX.error('This is a error message %s', new Error('TEST ERROR'));
-        this.loggerX.error('This is a error message', new Error('TEST ERROR'));
-        this.loggerX.error('This is a error message', { err: new Error('TEST ERROR') });
         this.logger = loggerFactory('ImportResolveExtension');
     }
 

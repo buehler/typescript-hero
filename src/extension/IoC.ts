@@ -67,7 +67,7 @@ container
     .toDynamicValue((context: interfaces.Context) => {
         const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
         const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
-        return winstonLogger(config.verbosity, extContext.extensionPath);
+        return winstonLogger(config.verbosity, extContext);
     })
     .inSingletonScope();
 
