@@ -5,7 +5,6 @@ import { ExtensionContext, Uri } from 'vscode';
 
 import { ExtensionConfig } from '../common/config';
 import { ConfigFactory } from '../common/factories';
-import { Logger as OldLogger } from '../common/utilities';
 import { CodeActionCreator, MissingImplementationInClassCreator, MissingImportCreator } from './code-actions';
 import { VscodeExtensionConfig } from './config/VscodeExtensionConfig';
 import { BaseExtension } from './extensions/BaseExtension';
@@ -17,7 +16,6 @@ import { OrganizeImportsOnSaveExtension } from './extensions/OrganizeImportsOnSa
 import { iocSymbols } from './IoCSymbols';
 import { TypeScriptHero } from './TypeScriptHero';
 import { DeclarationIndexMapper } from './utilities/DeclarationIndexMapper';
-import { VscodeLogger } from './utilities/VscodeLogger';
 import winstonLogger, { Logger } from './utilities/winstonLogger';
 
 const container = new IoCContainer();

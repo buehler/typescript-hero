@@ -12,11 +12,11 @@ import {
     window,
 } from 'vscode';
 
-import { Logger, LoggerFactory } from '../../common/utilities';
 import { CodeAction } from '../code-actions/CodeAction';
 import { CodeActionCreator } from '../code-actions/CodeActionCreator';
 import { iocSymbols } from '../IoCSymbols';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
+import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -30,16 +30,13 @@ import { BaseExtension } from './BaseExtension';
  */
 @injectable()
 export class CodeActionExtension extends BaseExtension implements CodeActionProvider {
-    private logger: Logger;
-
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.logger) private logger: Logger,
         @multiInject(iocSymbols.codeActionCreators) private actionCreators: CodeActionCreator[],
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super(context);
-        this.logger = loggerFactory('CodeActionExtension');
     }
 
     /**
@@ -55,7 +52,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescript', this));
         this.context.subscriptions.push(languages.registerCodeActionsProvider('typescriptreact', this));
 
-        this.logger.info('Initialized');
+        this.logger.info('[%s] initialized', CodeActionCreator.name);
     }
 
     /**
@@ -64,7 +61,7 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      * @memberof ImportResolveExtension
      */
     public dispose(): void {
-        this.logger.info('Disposed');
+        this.logger.info('[%s] disposed', CodeActionCreator.name);
     }
 
     /**
@@ -89,6 +86,13 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
             return [];
         }
 
+        this.logger.debug(
+            '[%s] provide code actions for file',
+            CodeActionCreator.name,
+            { file: document.fileName },
+        );
+        const profiler = this.logger.startTimer();
+
         let commands: Command[] = [];
         for (const diagnostic of context.diagnostics) {
             for (const creator of this.actionCreators) {
@@ -97,6 +101,8 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
                 }
             }
         }
+
+        profiler.done({ message: `[${CodeActionCreator.name}] calculated diagnostics` });
 
         return commands;
     }
@@ -112,10 +118,12 @@ export class CodeActionExtension extends BaseExtension implements CodeActionProv
      */
     private async executeCodeAction(codeAction: CodeAction | undefined): Promise<void> {
         if (!codeAction) {
+            this.logger.warn('[%s] executeCodeAction used without param', CodeActionCreator.name);
             window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
             return;
         }
         if (!await codeAction.execute()) {
+            this.logger.warn('[%s] code action could not complete', CodeActionCreator.name, { codeAction });
             window.showWarningMessage('The provided code action could not complete. Please see the logs.');
         }
     }
