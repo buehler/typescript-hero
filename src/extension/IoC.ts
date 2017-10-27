@@ -52,17 +52,6 @@ container.bind<BaseExtension>(iocSymbols.extensions).to(OrganizeImportsOnSaveExt
 
 // Logging
 container
-    .bind<interfaces.Factory<OldLogger>>(iocSymbols.loggerFactory)
-    .toFactory<OldLogger>((context: interfaces.Context) => {
-        return (prefix?: string) => {
-            const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
-            const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
-
-            return new VscodeLogger(extContext, config, prefix);
-        };
-    });
-
-container
     .bind<Logger>(iocSymbols.logger)
     .toDynamicValue((context: interfaces.Context) => {
         const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
