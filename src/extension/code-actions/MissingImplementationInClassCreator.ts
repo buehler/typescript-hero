@@ -5,6 +5,7 @@ import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
+import { Logger } from '../utilities/winstonLogger';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
@@ -20,6 +21,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
     constructor(
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
+        @inject(iocSymbols.logger) private logger: Logger,
     ) {
         super();
     }
@@ -55,6 +57,10 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
         const rootFolder = workspace.getWorkspaceFolder(document.uri);
 
         if (!match || !index || !rootFolder) {
+            this.logger.debug(
+                '[%s] cannot handle the diagnostic',
+                MissingImplementationInClassCreator.name,
+            );
             return commands;
         }
 
@@ -80,10 +86,19 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
 
         if (commands.some((o: Command) => o.title.indexOf(specifier) >= 0)) {
             // Do leave the method when a command with the found class is already added.
+            this.logger.debug(
+                '[%s] command with the found class is already added',
+                MissingImplementationInClassCreator.name,
+            );
             return commands;
         }
 
         if (!declaration) {
+            this.logger.debug(
+                '[%s] class definition not found in the index',
+                MissingImplementationInClassCreator.name,
+                { specifier },
+            );
             commands.push(this.createCommand(
                 `Cannot find "${specifier}" in the index or the actual file.`,
                 new NoopCodeAction(),
@@ -102,6 +117,12 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             `Implement missing elements from "${genericMatch && types ? `${specifier}<${types.join(', ')}>` : specifier}".`,
             new ImplementPolymorphElements(document, match[1], declaration, typeParams),
         ));
+
+        this.logger.debug(
+            '[%s] adding commands to handle missing implementation',
+            MissingImplementationInClassCreator.name,
+            { specifier, types },
+        );
 
         return commands;
     }

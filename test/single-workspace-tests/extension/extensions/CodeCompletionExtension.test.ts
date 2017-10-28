@@ -5,12 +5,12 @@ import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
 import { ConfigFactory } from '../../../../src/common/factories';
-import { LoggerFactory } from '../../../../src/common/utilities';
+import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
 import { CodeCompletionExtension } from '../../../../src/extension/extensions/CodeCompletionExtension';
 import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
-import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 const should = chai.should();
 
@@ -30,7 +30,7 @@ describe('CodeCompletionExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);

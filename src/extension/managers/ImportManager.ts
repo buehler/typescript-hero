@@ -30,6 +30,7 @@ import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { importSort, specifierSort } from '../utilities/utilityFunctions';
+import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
 function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): boolean {
@@ -64,6 +65,10 @@ export class ImportManager implements ObjectManager {
         return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
     }
 
+    private static get logger(): Logger {
+        return Container.get(iocSymbols.logger);
+    }
+
     private importGroups: ImportGroup[];
     private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
@@ -93,6 +98,11 @@ export class ImportManager implements ObjectManager {
         public readonly document: TextDocument,
         private _parsedDocument: File,
     ) {
+        ImportManager.logger.debug(
+            '[%s] create import manager',
+            ImportManager.name,
+            { file: document.fileName },
+        );
         this.reset();
     }
 
@@ -134,6 +144,11 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
+        ImportManager.logger.debug(
+            '[%s] add declaration as import',
+            ImportManager.name,
+            { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
+        );
         // If there is something already imported, it must be a NamedImport
         const alreadyImported: NamedImport = this.imports.find(
             o => declarationInfo.from === getAbsolutLibraryName(
@@ -185,6 +200,11 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public addMissingImports(index: DeclarationIndex): this {
+        ImportManager.logger.debug(
+            '[%s] add all missing imports',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,
@@ -216,6 +236,11 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public organizeImports(): this {
+        ImportManager.logger.debug(
+            '[%s] organize the imports',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
         this.organize = true;
         let keep: Import[] = [];
 
@@ -279,6 +304,12 @@ export class ImportManager implements ObjectManager {
         const workspaceEdit = new WorkspaceEdit();
 
         workspaceEdit.set(this.document.uri, edits);
+
+        ImportManager.logger.debug(
+            '[%s] commit the file',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
 
         const result = await workspace.applyEdit(workspaceEdit);
 

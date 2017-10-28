@@ -1,3 +1,4 @@
+import { Logger } from '../utilities/winstonLogger';
 import { inject, injectable } from 'inversify';
 import { Command, Diagnostic, TextDocument } from 'vscode';
 
@@ -17,6 +18,7 @@ import { CodeActionCreator } from './CodeActionCreator';
 export class MissingImportCreator extends CodeActionCreator {
     constructor(
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
+        @inject(iocSymbols.logger) private logger: Logger,
     ) {
         super();
     }
@@ -48,6 +50,10 @@ export class MissingImportCreator extends CodeActionCreator {
         const index = this.indices.getIndexForFile(document.uri);
 
         if (!match || !index) {
+            this.logger.debug(
+                '[%s] cannot handle the diagnostic',
+                MissingImportCreator.name,
+            );
             return commands;
         }
 
@@ -58,6 +64,11 @@ export class MissingImportCreator extends CodeActionCreator {
                     `Import "${info.declaration.name}" from "${info.from}".`,
                     new AddImportCodeAction(document, info),
                 ));
+                this.logger.debug(
+                    '[%s] add command to import missing specifier',
+                    MissingImportCreator.name,
+                    { symbol: info.declaration.name, library: info.from },
+                );
             }
             if (
                 !commands.some(o =>
@@ -69,12 +80,21 @@ export class MissingImportCreator extends CodeActionCreator {
                     'Add all missing imports if possible.',
                     new AddMissingImportsCodeAction(document, index),
                 ));
+                this.logger.debug(
+                    '[%s] add "import all missing imports" command',
+                    MissingImportCreator.name,
+                );
             }
         } else {
             commands.push(this.createCommand(
                 `Cannot find "${match[1]}" in the index.`,
                 new NoopCodeAction(),
             ));
+            this.logger.debug(
+                '[%s] class not found in index',
+                MissingImportCreator.name,
+                { specifier: match[1] },
+            );
         }
 
         return commands;

@@ -26,10 +26,10 @@ export interface ExtensionConfig {
      * The actual log level.
      *
      * @readonly
-     * @type {string}
+     * @type {'error' | 'warn' | 'info' | 'debug'}
      * @memberof ExtensionConfig
      */
-    verbosity: string;
+    verbosity: 'error' | 'warn' | 'info' | 'debug';
 
     /**
      * Returns a list of possible language IDs that are registered within this extension.

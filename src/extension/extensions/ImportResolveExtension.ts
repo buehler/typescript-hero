@@ -4,10 +4,10 @@ import { commands, ExtensionContext, StatusBarAlignment, StatusBarItem, window, 
 
 import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { ResolveQuickPickItem } from '../../common/quick-pick-items';
-import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
+import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
 type DeclarationsForImportOptions = { cursorSymbol: string, documentSource: string, documentPath: string };
@@ -27,17 +27,15 @@ const resolverErr = 'TSH Resolver $(flame)';
  */
 @injectable()
 export class ImportResolveExtension extends BaseExtension {
-    private logger: Logger;
     private statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.logger) private logger: Logger,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.declarationIndexMapper) private indices: DeclarationIndexMapper,
     ) {
         super(context);
-        this.logger = loggerFactory('ImportResolveExtension');
     }
 
     /**
@@ -64,7 +62,7 @@ export class ImportResolveExtension extends BaseExtension {
 
         this.commandRegistrations();
 
-        this.logger.info('Initialized');
+        this.logger.info('[%s] initialized', ImportResolveExtension.name);
     }
 
     /**
@@ -73,7 +71,7 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     public dispose(): void {
-        this.logger.info('Disposed');
+        this.logger.info('[%s] disposed', ImportResolveExtension.name);
     }
 
     /**
@@ -100,11 +98,20 @@ export class ImportResolveExtension extends BaseExtension {
                 { placeHolder: 'Add import to document:' },
             );
             if (selectedItem) {
-                this.logger.info('Add import to document', { resolveItem: selectedItem });
+                this.logger.info(
+                    '[%s] add import to document',
+                    ImportResolveExtension.name,
+                    { specifier: selectedItem.declarationInfo.declaration.name, library: selectedItem.declarationInfo.from },
+                );
                 this.addImportToDocument(selectedItem.declarationInfo);
             }
         } catch (e) {
-            this.logger.error('An error happend during import picking', e);
+            this.logger.error(
+                '[%s] import could not be added to document, error: %s',
+                ImportResolveExtension.name,
+                e,
+                { file: window.activeTextEditor.document.fileName },
+            );
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         }
     }
@@ -129,6 +136,7 @@ export class ImportResolveExtension extends BaseExtension {
         }
         try {
             const selectedSymbol = this.getSymbolUnderCursor();
+            this.logger.debug('[%s] add import for symbol under cursor', ImportResolveExtension.name, { selectedSymbol });
             if (!!!selectedSymbol) {
                 return;
             }
@@ -139,23 +147,47 @@ export class ImportResolveExtension extends BaseExtension {
             });
 
             if (resolveItems.length < 1) {
+                this.logger.info(
+                    '[%s] the symbol was not found or is already imported',
+                    ImportResolveExtension.name,
+                    { selectedSymbol },
+                );
                 window.showInformationMessage(
                     `The symbol '${selectedSymbol}' was not found in the index or is already imported.`,
                 );
             } else if (resolveItems.length === 1 && resolveItems[0].declaration.name === selectedSymbol) {
-                this.logger.info('Add import to document', { resolveItem: resolveItems[0] });
+                this.logger.info(
+                    '[%s] add import to document',
+                    ImportResolveExtension.name,
+                    {
+                        specifier: resolveItems[0].declaration.name,
+                        library: resolveItems[0].from,
+                    },
+                );
                 this.addImportToDocument(resolveItems[0]);
             } else {
                 const selectedItem = await window.showQuickPick(
                     resolveItems.map(o => new ResolveQuickPickItem(o)), { placeHolder: 'Multiple declarations found:' },
                 );
                 if (selectedItem) {
-                    this.logger.info('Add import to document', { resolveItem: selectedItem });
+                    this.logger.info(
+                        '[%s] add import to document',
+                        ImportResolveExtension.name,
+                        {
+                            specifier: selectedItem.declarationInfo.declaration.name,
+                            library: selectedItem.declarationInfo.from,
+                        },
+                    );
                     this.addImportToDocument(selectedItem.declarationInfo);
                 }
             }
         } catch (e) {
-            this.logger.error('An error happend during import picking', e);
+            this.logger.error(
+                '[%s] import could not be added to document, error: %s',
+                ImportResolveExtension.name,
+                e,
+                { file: window.activeTextEditor.document.fileName },
+            );
             window.showErrorMessage('The import cannot be completed, there was an error during the process.');
         }
     }
@@ -179,6 +211,11 @@ export class ImportResolveExtension extends BaseExtension {
             return;
         }
         try {
+            this.logger.debug(
+                '[%s] add all missing imports to the document',
+                ImportResolveExtension.name,
+                { file: window.activeTextEditor.document.fileName },
+            );
             const missing = await this.getMissingDeclarationsForFile({
                 documentSource: window.activeTextEditor.document.getText(),
                 documentPath: window.activeTextEditor.document.fileName,
@@ -190,7 +227,12 @@ export class ImportResolveExtension extends BaseExtension {
                 await ctrl.commit();
             }
         } catch (e) {
-            this.logger.error('An error happend during import fixing', e);
+            this.logger.error(
+                '[%s] missing imports could not be added, error: %s',
+                ImportResolveExtension.name,
+                e,
+                { file: window.activeTextEditor.document.fileName },
+            );
             window.showErrorMessage('The operation cannot be completed, there was an error during the process.');
         }
     }
@@ -208,10 +250,20 @@ export class ImportResolveExtension extends BaseExtension {
             return false;
         }
         try {
+            this.logger.debug(
+                '[%s] organize the imports in the document',
+                ImportResolveExtension.name,
+                { file: window.activeTextEditor.document.fileName },
+            );
             const ctrl = await ImportManager.create(window.activeTextEditor.document);
             return await ctrl.organizeImports().commit();
         } catch (e) {
-            this.logger.error('An error happend during "organize imports".', { error: e });
+            this.logger.error(
+                '[%s] imports could not be organized, error: %s',
+                ImportResolveExtension.name,
+                e,
+                { file: window.activeTextEditor.document.fileName },
+            );
             return false;
         }
     }
@@ -260,6 +312,10 @@ export class ImportResolveExtension extends BaseExtension {
      * @memberof ImportResolveExtension
      */
     private showCacheWarning(): void {
+        this.logger.warn(
+            '[%s] index was not ready or not index for this file found',
+            ImportResolveExtension.name,
+        );
         window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
     }
 
@@ -276,7 +332,6 @@ export class ImportResolveExtension extends BaseExtension {
     private async getDeclarationsForImport(
         { cursorSymbol, documentSource, documentPath }: DeclarationsForImportOptions,
     ): Promise<DeclarationInfo[]> {
-        this.logger.info(`Calculate possible imports for document with filter "${cursorSymbol}"`);
         if (!window.activeTextEditor) {
             return [];
         }
@@ -287,6 +342,12 @@ export class ImportResolveExtension extends BaseExtension {
         if (!index || !index.indexReady || !rootFolder) {
             return [];
         }
+
+        this.logger.debug(
+            '[%s] calculate possible imports for document',
+            ImportResolveExtension.name,
+            { cursorSymbol, file: documentPath },
+        );
 
         const parsedSource = await this.parser.parseSource(documentSource);
         const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
@@ -326,6 +387,12 @@ export class ImportResolveExtension extends BaseExtension {
         if (!index || !index.indexReady || !rootFolder) {
             return [];
         }
+
+        this.logger.debug(
+            '[%s] calculate missing imports for document',
+            ImportResolveExtension.name,
+            { file: documentPath },
+        );
 
         const parsedDocument = await this.parser.parseSource(documentSource);
         const missingDeclarations: (DeclarationInfo)[] = [];

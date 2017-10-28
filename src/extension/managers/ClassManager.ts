@@ -22,6 +22,7 @@ import { TypescriptCodeGeneratorFactory } from '../../common/factories';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
+import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
 type VisibleObject = { visibility?: DeclarationVisibility };
@@ -67,6 +68,10 @@ export class ClassManager implements ObjectManager {
         return Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
     }
 
+    private static get logger(): Logger {
+        return Container.get(iocSymbols.logger);
+    }
+
     private ctor: Changeable<ConstructorDeclaration>;
     private properties: Changeable<PropertyDeclaration>[] = [];
     private methods: Changeable<MethodDeclaration>[] = [];
@@ -76,6 +81,11 @@ export class ClassManager implements ObjectManager {
         public readonly parsedDocument: File,
         private readonly managedClass: ClassDeclaration,
     ) {
+        ClassManager.logger.debug(
+            '[%s] create class manager',
+            ClassManager.name,
+            { file: document.fileName, class: managedClass.name },
+        );
         this.ctor = new Changeable(managedClass.ctor);
         this.properties = managedClass.properties.map(o => new Changeable(o));
         this.methods = managedClass.methods.map(o => new Changeable(o));
@@ -147,6 +157,11 @@ export class ClassManager implements ObjectManager {
         }
 
         this.properties.push(new Changeable(declaration, true));
+        ClassManager.logger.debug(
+            '[%s] add property to class',
+            ClassManager.name,
+            { property: declaration.name, class: this.managedClass.name },
+        );
 
         return this;
     }
@@ -171,6 +186,11 @@ export class ClassManager implements ObjectManager {
         if (property.isNew) {
             this.properties.splice(this.properties.indexOf(property), 1);
         }
+        ClassManager.logger.debug(
+            '[%s] remove property from class',
+            ClassManager.name,
+            { property: name, class: this.managedClass.name },
+        );
         return this;
     }
 
@@ -219,6 +239,11 @@ export class ClassManager implements ObjectManager {
         }
 
         this.methods.push(new Changeable(declaration, true));
+        ClassManager.logger.debug(
+            '[%s] add method to class',
+            ClassManager.name,
+            { property: declaration.name, class: this.managedClass.name },
+        );
 
         return this;
     }
@@ -243,6 +268,11 @@ export class ClassManager implements ObjectManager {
         if (method.isNew) {
             this.methods.splice(this.methods.indexOf(method), 1);
         }
+        ClassManager.logger.debug(
+            '[%s] remove method from class',
+            ClassManager.name,
+            { property: name, class: this.managedClass.name },
+        );
         return this;
     }
 
@@ -265,6 +295,11 @@ export class ClassManager implements ObjectManager {
 
         const workspaceEdit = new WorkspaceEdit();
         workspaceEdit.set(this.document.uri, edits);
+        ClassManager.logger.debug(
+            '[%s] commit the class',
+            ClassManager.name,
+            { class: this.managedClass.name },
+        );
         return workspace.applyEdit(workspaceEdit);
     }
 

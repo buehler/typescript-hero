@@ -6,7 +6,6 @@ import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
 import { ConfigFactory } from '../../../../src/common/factories';
-import { LoggerFactory } from '../../../../src/common/utilities';
 import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../../src/extension/code-actions';
 import {
     MissingImplementationInClassCreator,
@@ -16,6 +15,7 @@ import { CodeActionExtension } from '../../../../src/extension/extensions/CodeAc
 import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 chai.should();
 chai.use(sinonChai);
@@ -36,7 +36,7 @@ describe('CodeActionExtension', () => {
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
@@ -66,8 +66,8 @@ describe('CodeActionExtension', () => {
         fakeMapper.getIndexForFile = sinon.spy(() => index);
 
         const creators = [
-            new MissingImportCreator(fakeMapper),
-            new MissingImplementationInClassCreator(parser, fakeMapper),
+            new MissingImportCreator(fakeMapper, logger),
+            new MissingImplementationInClassCreator(parser, fakeMapper, logger),
         ];
 
         extension = new CodeActionExtension(ctx, logger, creators, fakeMapper);
@@ -194,7 +194,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                                `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
+                            `non-abstract class 'Foobar' implement inherited from class 'CodeFixImplementAbstract'.`,
                         },
                     ],
                 },
@@ -261,7 +261,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message: `non-abstract class 'Foobar' ` +
-                                `implement inherited from class 'GenericAbstractClass<string, string, string>'.`,
+                            `implement inherited from class 'GenericAbstractClass<string, string, string>'.`,
                         },
                     ],
                 },
@@ -317,7 +317,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message: `non-abstract class 'AbstractImplement' ` +
-                                `implement inherited from class 'CodeFixImplementAbstract'.`,
+                            `implement inherited from class 'CodeFixImplementAbstract'.`,
                         },
                     ],
                 },
@@ -365,8 +365,8 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                                `non-abstract class 'InternalAbstractImplement' ` +
-                                `implement inherited from class 'InternalAbstract'.`,
+                            `non-abstract class 'InternalAbstractImplement' ` +
+                            `implement inherited from class 'InternalAbstract'.`,
                         },
                     ],
                 },
@@ -388,7 +388,7 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message: `class 'ImplementGenericInterface' incorrectly ` +
-                                `implements 'GenericInterface<string, number>'.`,
+                            `implements 'GenericInterface<string, number>'.`,
                         },
                     ],
                 },
@@ -412,8 +412,8 @@ describe('CodeActionExtension', () => {
                     diagnostics: [
                         {
                             message:
-                                `non-abstract class 'ImplementGenericAbstract' ` +
-                                `implement inherited from class 'GenericAbstractClass<string, number, boolean>'.`,
+                            `non-abstract class 'ImplementGenericAbstract' ` +
+                            `implement inherited from class 'GenericAbstractClass<string, number, boolean>'.`,
                         },
                     ],
                 },

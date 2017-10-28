@@ -9,7 +9,7 @@
         "dist",
         "resourceParser"
     ],
-    "typescriptHero.verbosity": "Warnings",
+    "typescriptHero.verbosity": "All",
     "tslint.enable": false,
     "typescriptHero.codeOutline.enabled": true,
     "typescriptHero.resolver.organizeOnSave": false,

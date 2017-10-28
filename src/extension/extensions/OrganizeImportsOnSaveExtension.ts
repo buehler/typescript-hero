@@ -2,9 +2,9 @@ import { inject, injectable } from 'inversify';
 import { ExtensionContext, workspace } from 'vscode';
 
 import { ConfigFactory } from '../../common/factories';
-import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
+import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -22,15 +22,13 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
         'javascript',
         'javascriptreact',
     ];
-    private logger: Logger;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.logger) private logger: Logger,
         @inject(iocSymbols.configuration) private config: ConfigFactory,
     ) {
         super(context);
-        this.logger = loggerFactory('OrganizeImportsOnSaveExtension');
     }
 
     /**
@@ -42,15 +40,26 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
         this.context.subscriptions.push(workspace.onWillSaveTextDocument((event) => {
             const config = this.config(event.document.uri);
             if (!config.resolver.organizeOnSave) {
-                this.logger.info('Organize on save is deactivated through config.');
+                this.logger.debug(
+                    '[%s] organizeOnSave is deactivated through config',
+                    OrganizeImportsOnSaveExtension.name,
+                );
                 return;
             }
             if (this.compatibleLanguages.indexOf(event.document.languageId) < 0) {
-                this.logger.info(`Organize imports for languageId "${event.document.languageId}" not possible.`);
+                this.logger.debug(
+                    '[%s] organizeOnSave not possible for given language',
+                    OrganizeImportsOnSaveExtension.name,
+                    { language: event.document.languageId },
+                );
                 return;
             }
 
-            this.logger.info(`Organize on save for document "${event.document.fileName}".`);
+            this.logger.info(
+                '[%s] organizeOnSave for file',
+                OrganizeImportsOnSaveExtension.name,
+                { file: event.document.fileName },
+            );
             event.waitUntil(
                 ImportManager
                     .create(event.document)
@@ -58,7 +67,7 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
             );
         }));
 
-        this.logger.info('Initialized');
+        this.logger.info('[%s] initialized', OrganizeImportsOnSaveExtension.name);
     }
 
     /**
@@ -67,6 +76,6 @@ export class OrganizeImportsOnSaveExtension extends BaseExtension {
      * @memberof OrganizeImportsOnSaveExtension
      */
     public dispose(): void {
-        this.logger.info('Disposed');
+        this.logger.info('[%s] disposed', OrganizeImportsOnSaveExtension.name);
     }
 }

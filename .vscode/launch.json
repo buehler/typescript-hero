@@ -10,6 +10,9 @@
                 "${workspaceRoot}/test/_workspace",
                 "--extensionDevelopmentPath=${workspaceRoot}"
             ],
+            "env": {
+                "EXT_DEBUG": "true"
+            },
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
@@ -25,6 +28,9 @@
                 "${workspaceRoot}/test/multi-root.code-workspace",
                 "--extensionDevelopmentPath=${workspaceRoot}"
             ],
+            "env": {
+                "EXT_DEBUG": "true"
+            },
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [

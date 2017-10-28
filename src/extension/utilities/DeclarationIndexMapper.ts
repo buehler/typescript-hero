@@ -14,8 +14,8 @@ import {
 
 import { ConfigFactory } from '../../common/factories';
 import { findFiles } from '../../common/helpers';
-import { Logger, LoggerFactory } from '../../common/utilities';
 import { iocSymbols } from '../../extension/IoCSymbols';
+import { Logger } from './winstonLogger';
 
 interface WorkspaceIndex {
     index: DeclarationIndex;
@@ -36,11 +36,10 @@ export class DeclarationIndexMapper {
     private _onFinishIndexing: EventEmitter<WorkspaceIndex>;
     private _onIndexingError: EventEmitter<{ index: WorkspaceIndex, error: Error }>;
 
-    private logger: Logger;
     private indizes: { [uri: string]: WorkspaceIndex } = {};
 
     constructor(
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
+        @inject(iocSymbols.logger) private logger: Logger,
         @inject(iocSymbols.extensionContext) private context: ExtensionContext,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
         @inject(iocSymbols.configuration) private config: ConfigFactory,
@@ -56,24 +55,28 @@ export class DeclarationIndexMapper {
         this.context.subscriptions.push(this._onFinishIndexing);
         this.context.subscriptions.push(this._onIndexingError);
         this.context.subscriptions.push(this._onStartIndexing);
-
-        this.logger = loggerFactory('DeclarationIndexMapper');
     }
 
     @postConstruct()
     public initialize(): void {
         this.context.subscriptions.push(workspace.onDidChangeWorkspaceFolders(e => this.workspaceChanged(e)));
         this.logger.info(
-            `Fired up index mapper, got ${(workspace.workspaceFolders || []).length} workspaces.`,
-            workspace.workspaceFolders,
+            '[%s] initializing index mapper for %d workspaces',
+            DeclarationIndexMapper.name,
+            (workspace.workspaceFolders || []).length,
         );
+
         for (const folder of (workspace.workspaceFolders || []).filter(workspace => workspace.uri.scheme === 'file')) {
             this.initializeIndex(folder);
         }
-        this.logger.info('Initialized');
+        this.logger.info('[%s] initialized', DeclarationIndexMapper.name);
     }
 
     public rebuildAll(): void {
+        this.logger.info(
+            '[%s] rebuilding all indices',
+            DeclarationIndexMapper.name,
+        );
         for (const index of Object.values(this.indizes)) {
             index.watcher.dispose();
             index.index.reset();
@@ -87,6 +90,11 @@ export class DeclarationIndexMapper {
     public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
         const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
         if (!workspaceFolder || !this.indizes[workspaceFolder.uri.fsPath]) {
+            this.logger.debug(
+                '[%s] did not find index for file',
+                DeclarationIndexMapper.name,
+                { file: fileUri.fsPath },
+            );
             return;
         }
 
@@ -94,16 +102,33 @@ export class DeclarationIndexMapper {
     }
 
     private workspaceChanged(event: WorkspaceFoldersChangeEvent): void {
-        this.logger.info('Workspaces changed.', event);
+        this.logger.info(
+            '[%s] workspaces changed, adjusting indices',
+            DeclarationIndexMapper.name,
+        );
         for (const add of event.added) {
+            this.logger.debug(
+                '[%s] add workspace for "%s"',
+                DeclarationIndexMapper.name,
+                add.uri.fsPath,
+            );
             if (this.indizes[add.uri.fsPath]) {
-                this.logger.warning(`The workspace with the path ${add.uri.fsPath} already exists. Skipping.`);
+                this.logger.warn(
+                    '[%s] workspace index "%s" already exists, skipping',
+                    DeclarationIndexMapper.name,
+                    add.uri.fsPath,
+                );
                 continue;
             }
             this.initializeIndex(add);
         }
 
         for (const remove of event.removed) {
+            this.logger.debug(
+                '[%s] remove workspace for "%s"',
+                DeclarationIndexMapper.name,
+                remove.uri.fsPath,
+            );
             this.indizes[remove.uri.fsPath].index.reset();
             this.indizes[remove.uri.fsPath].watcher.dispose();
             delete this.indizes[remove.uri.fsPath];
@@ -111,6 +136,12 @@ export class DeclarationIndexMapper {
     }
 
     private async initializeIndex(folder: WorkspaceFolder): Promise<void> {
+        const profiler = this.logger.startTimer();
+        this.logger.debug(
+            '[%s] initialize index for "%s"',
+            DeclarationIndexMapper.name,
+            folder.uri.fsPath,
+        );
         const index = new DeclarationIndex(this.parser, folder.uri.fsPath);
         const config = this.config(folder.uri);
         const files = await findFiles(config, folder);
@@ -147,9 +178,16 @@ export class DeclarationIndexMapper {
             timeout = setTimeout(
                 async () => {
                     if (events) {
-                        this.logger.info(`Refreshing index for workspace ${folder.name}.`);
+                        const profiler = this.logger.startTimer();
+                        this.logger.debug(
+                            '[%s] rebuilding index for index "%s"',
+                            DeclarationIndexMapper.name,
+                            folder.uri.fsPath,
+                        );
                         await index.reindexForChanges(events);
-                        this.logger.info(`Finished indexing for workspace ${folder.name}.`);
+                        profiler.done({
+                            message: `[${DeclarationIndexMapper.name}] rebuilt index for workspace "${folder.name}"`,
+                        });
                         events = undefined;
                     }
                 },
@@ -164,10 +202,17 @@ export class DeclarationIndexMapper {
         try {
             await index.buildIndex(files);
             this.indizes[folder.uri.fsPath] = workspaceIndex;
-            this.logger.info(`Finished building index for workspace "${folder.name}".`);
             this._onFinishIndexing.fire(workspaceIndex);
+            profiler.done({
+                message: `[${DeclarationIndexMapper.name}] built index for workspace "${folder.name}"`,
+            });
         } catch (error) {
-            this.logger.error(`Error during build of index for workspace "${folder.name}"`, error);
+            this.logger.error(
+                '[%s] could not build index for workspace "%s", error: %s',
+                DeclarationIndexMapper.name,
+                folder.uri.fsPath,
+                error,
+            );
             this._onIndexingError.fire({ error, index: workspaceIndex });
         }
     }

@@ -36,11 +36,15 @@ export class VscodeExtensionConfig implements ExtensionConfig {
      * The actual log level.
      *
      * @readonly
-     * @type {string}
+     * @type {'error' | 'warn' | 'info' | 'debug'}
      * @memberof VscodeExtensionConfig
      */
-    public get verbosity(): string {
-        return this.workspaceSection.get<string>('verbosity', 'Warning');
+    public get verbosity(): 'error' | 'warn' | 'info' | 'debug' {
+        const verbosity = this.workspaceSection.get<'error' | 'warn' | 'info' | 'debug'>('verbosity', 'warn');
+        if (['error', 'warn', 'info', 'debug'].indexOf(verbosity) < 0) {
+            return 'warn';
+        }
+        return verbosity;
     }
 
     /**
