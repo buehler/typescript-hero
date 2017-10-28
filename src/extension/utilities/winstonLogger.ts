@@ -103,6 +103,7 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
         context.subscriptions.push(channel);
 
         const fileHandler = new transports.File({
+            level: ['info', 'debug'].indexOf(level) >= 0 ? level : 'info',
             exitOnError: false,
             filename: 'typescript-hero.log',
             dirname: context.extensionPath,
