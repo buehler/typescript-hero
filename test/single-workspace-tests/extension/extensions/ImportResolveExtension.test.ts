@@ -5,11 +5,11 @@ import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
 import { ConfigFactory } from '../../../../src/common/factories';
-import { LoggerFactory } from '../../../../src/common/utilities';
 import { ImportResolveExtension } from '../../../../src/extension/extensions/ImportResolveExtension';
 import { Container } from '../../../../src/extension/IoC';
 import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 chai.should();
 
@@ -29,7 +29,7 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
@@ -241,7 +241,7 @@ describe('JavaScript Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
@@ -340,7 +340,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
         const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
