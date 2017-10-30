@@ -10,6 +10,12 @@ notifications:
 os:
   - linux
 
+env:
+  - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/_workspace CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/single-workspace-tests
+
+# add as soon as multi root workspaces are available:
+#- CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/multi-root.code-workspace CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/multi-root-workspace-tests
+
 addons:
   apt:
     sources:
