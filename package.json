@@ -75,7 +75,7 @@
     "url": "https://github.com/buehler/typescript-hero/issues"
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
-  "scripts": {
+  "scripts": { 
     "vscode:prepublish": "yarn install --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
