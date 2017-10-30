@@ -9,6 +9,7 @@
         "dist",
         "resourceParser"
     ],
+    "files.eol": "\n",
     "typescriptHero.verbosity": "warn",
     "tslint.enable": false,
     "typescriptHero.codeOutline.enabled": true,
