@@ -1,6 +1,7 @@
 import { existsSync } from 'fs';
 import { join, normalize, parse, relative } from 'path';
 import { DeclarationInfo, ExternalModuleImport, Import, NamedImport, NamespaceImport } from 'typescript-parser';
+import { toPosix } from 'typescript-parser/utilities/PathHelpers';
 import { RelativePattern, Uri, workspace, WorkspaceFolder } from 'vscode';
 
 import { ExtensionConfig } from '../config';
@@ -56,10 +57,10 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string, r
     if (!library.startsWith('.') || !rootPath) {
         return library;
     }
-    return '/' + relative(
+    return '/' + toPosix(relative(
         rootPath,
         normalize(join(parse(actualFilePath).dir, library)),
-    ).replace(/[/]$/g, '');
+    )).replace(/[/]$/g, '');
 }
 
 /**
@@ -86,7 +87,7 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
     } else if (relativePath === '..') {
         relativePath += '/';
     }
-    return relativePath.replace(/\\/g, '/');
+    return toPosix(relativePath);
 }
 
 /**

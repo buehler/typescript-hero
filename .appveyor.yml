@@ -1,0 +1,18 @@
+version: "{build} - {branch}"
+skip_tags: true
+skip_branch_with_pr: true
+
+environment:
+  nodejs_version: "8"
+  CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/_workspace"
+  CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/single-workspace-tests"
+
+install:
+  - ps: Install-Product node $env:nodejs_version
+  - npm install -g yarn
+  - yarn install
+
+test_script:
+  - yarn test
+
+build: off
