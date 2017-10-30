@@ -79,7 +79,7 @@
     "vscode:prepublish": "yarn install --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
-    "postinstall": "test -f ./node_modules/vscode/bin/install && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
+    "postinstall": "node ./etc/test_install.js && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && yarn lint",
     "test": "yarn test:single-workspace",
