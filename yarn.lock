@@ -3252,8 +3252,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 typescript-parser@^2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.2.1.tgz#2b8927105788de63a12159031c62120ca70be9e0"
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.2.2.tgz#c8f0adeca61c2a8718c32bd00e628f8cc06b6bb4"
   dependencies:
     coveralls "^2.13.3"
     lodash "^4.17.4"
@@ -3553,8 +3553,8 @@ yargs@~3.10.0:
     window-size "0.1.0"
 
 yauzl@^2.2.1:
-  version "2.9.0"
-  resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-2.9.0.tgz#927aa84392eed053124496b6ea8fc1f52dae5b52"
+  version "2.9.1"
+  resolved "https://registry.yarnpkg.com/yauzl/-/yauzl-2.9.1.tgz#a81981ea70a57946133883f029c5821a89359a7f"
   dependencies:
     buffer-crc32 "~0.2.3"
     fd-slicer "~1.0.1"
