@@ -1,20 +1,22 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import * as sinon from 'sinon';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { ImportResolveExtension } from '../../../src/extension/extensions/ImportResolveExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ConfigFactory } from '../../../../src/common/factories';
+import { ImportResolveExtension } from '../../../../src/extension/extensions/ImportResolveExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('TypeScript Mode: ImportResolveExtension', () => {
 
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
 
     before(async () => {
@@ -27,11 +29,12 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const logger = Container.get<Logger>(iocSymbols.logger);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -53,7 +56,9 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
             ],
         );
 
-        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
+        extension = new ImportResolveExtension(ctx, logger, parser, fakeMapper);
     });
 
     describe('addImportToDocument', () => {
@@ -184,7 +189,7 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
         });
 
     });
-    
+
     describe('organizeImports with exports', () => {
 
         const file = join(rootPath, 'extension/extensions/importResolveExtension/organizeImportsWithExports.ts');
@@ -223,6 +228,7 @@ describe('TypeScript Mode: ImportResolveExtension', () => {
 
 describe('JavaScript Mode: ImportResolveExtension', () => {
 
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
 
     before(async () => {
@@ -235,11 +241,12 @@ describe('JavaScript Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const logger = Container.get<Logger>(iocSymbols.logger);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -257,7 +264,9 @@ describe('JavaScript Mode: ImportResolveExtension', () => {
             ],
         );
 
-        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
+        extension = new ImportResolveExtension(ctx, logger, parser, fakeMapper);
     });
 
     describe('addImportToDocument', () => {
@@ -318,6 +327,7 @@ describe('JavaScript Mode: ImportResolveExtension', () => {
 
 describe('Mixed Mode: ImportResolveExtension', () => {
 
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
 
     before(async () => {
@@ -330,11 +340,12 @@ describe('Mixed Mode: ImportResolveExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const logger = Container.get<Logger>(iocSymbols.logger);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -356,7 +367,9 @@ describe('Mixed Mode: ImportResolveExtension', () => {
             ],
         );
 
-        extension = new ImportResolveExtension(ctx, logger, config, parser, index, rootPath);
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
+        extension = new ImportResolveExtension(ctx, logger, parser, fakeMapper);
     });
 
     describe('addImportToDocument in .js file', () => {
@@ -399,7 +412,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
             await extension.addImportToDocument(items[0]);
             document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
         });
-        
+
         it('shoud write a named import correctly (TS)', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'AddImportSameDirectory',
@@ -411,7 +424,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
         });
 
     });
-    
+
     describe('addImportToDocument in .ts file', () => {
         const file = join(
             rootPath,
@@ -452,7 +465,7 @@ describe('Mixed Mode: ImportResolveExtension', () => {
             await extension.addImportToDocument(items[0]);
             document.getText().should.equal(`import { JSFoobar } from './jsfile';\n`);
         });
-        
+
         it('shoud write a named import correctly (TS)', async () => {
             const items = await extension.getDeclarationsForImport({
                 cursorSymbol: 'AddImportSameDirectory',

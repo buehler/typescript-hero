@@ -13,8 +13,7 @@ import {
     workspace,
 } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
-import { Logger, LoggerFactory } from '../../common/utilities';
+import { ConfigFactory } from '../../common/factories';
 import { iocSymbols } from '../IoCSymbols';
 import { BaseStructureTreeItem } from '../provider-items/document-structure/BaseStructureTreeItem';
 import { DeclarationStructureTreeItem } from '../provider-items/document-structure/DeclarationStructureTreeItem';
@@ -22,6 +21,7 @@ import { DisabledStructureTreeItem } from '../provider-items/document-structure/
 import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
 import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
 import { ResourceStructureTreeItem } from '../provider-items/document-structure/ResourceStructureTreeItem';
+import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
 /**
@@ -36,17 +36,15 @@ import { BaseExtension } from './BaseExtension';
 export class DocumentSymbolStructureExtension extends BaseExtension implements TreeDataProvider<BaseStructureTreeItem> {
     public readonly onDidChangeTreeData: Event<BaseStructureTreeItem | undefined>;
     private _onDidChangeTreeData: EventEmitter<BaseStructureTreeItem | undefined>;
-    private logger: Logger;
     private documentCache: File | undefined;
 
     constructor(
         @inject(iocSymbols.extensionContext) context: ExtensionContext,
-        @inject(iocSymbols.loggerFactory) loggerFactory: LoggerFactory,
-        @inject(iocSymbols.configuration) private config: ExtensionConfig,
+        @inject(iocSymbols.logger) private logger: Logger,
+        @inject(iocSymbols.configuration) private config: ConfigFactory,
         @inject(iocSymbols.typescriptParser) private parser: TypescriptParser,
     ) {
         super(context);
-        this.logger = loggerFactory('DocumentSymbolStructureExtension');
         this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
         this.onDidChangeTreeData = this._onDidChangeTreeData.event;
     }
@@ -68,7 +66,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
         this.context.subscriptions.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
         this.context.subscriptions.push(workspace.onDidSaveTextDocument(() => this.activeWindowChanged()));
 
-        this.logger.info('Initialized');
+        this.logger.info('[%s] initialized', DocumentSymbolStructureExtension.name);
     }
 
     /**
@@ -77,7 +75,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
      * @memberof DocumentSymbolStructureExtension
      */
     public dispose(): void {
-        this.logger.info('Disposed');
+        this.logger.info('[%s] disposed', DocumentSymbolStructureExtension.name);
     }
 
     public getTreeItem(element: BaseStructureTreeItem): BaseStructureTreeItem {
@@ -85,15 +83,17 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
     }
 
     public async getChildren(element?: BaseStructureTreeItem): Promise<ProviderResult<BaseStructureTreeItem[]>> {
-        if (!this.config.codeOutline.outlineEnabled) {
-            return [new DisabledStructureTreeItem()];
-        }
-
         if (!window.activeTextEditor) {
             return [];
         }
 
-        if (!this.config.resolver.resolverModeLanguages.some(
+        const config = this.config(window.activeTextEditor.document.uri);
+
+        if (!config.codeOutline.outlineEnabled) {
+            return [new DisabledStructureTreeItem()];
+        }
+
+        if (!config.resolver.resolverModeLanguages.some(
             lang => lang === window.activeTextEditor!.document.languageId,
         )) {
             return [new NotParseableStructureTreeItem()];
@@ -103,7 +103,11 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
             try {
                 this.documentCache = await this.parser.parseSource(window.activeTextEditor.document.getText());
             } catch (e) {
-                this.logger.error('Document could not be parsed.', e);
+                this.logger.error(
+                    '[%s] document could not be parsed, error: %s',
+                    DocumentSymbolStructureExtension.name,
+                    e,
+                );
                 return [];
             }
         }
@@ -131,6 +135,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
      */
     private async jumpToNode(node: Node | undefined): Promise<void> {
         if (!node) {
+            this.logger.warn('[%s] jumpToNode used without param', DocumentSymbolStructureExtension.name);
             window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
             return;
         }
@@ -153,7 +158,7 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
      * @memberof DocumentSymbolStructureExtension
      */
     private activeWindowChanged(): void {
-        this.logger.info('Active window changed or document was saved. Reparse file.');
+        this.logger.debug('[%s] activeWindowChanged, reparsing', DocumentSymbolStructureExtension.name);
         this.documentCache = undefined;
         this._onDidChangeTreeData.fire();
     }

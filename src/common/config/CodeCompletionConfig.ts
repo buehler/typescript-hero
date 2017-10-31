@@ -4,24 +4,25 @@ import { Uri } from 'vscode';
  * Configuration interface for the code outline feature.
  *
  * @export
- * @interface CodeOutlineConfig
+ * @interface CodeCompletionConfig
  */
-export interface CodeOutlineConfig {
+export interface CodeCompletionConfig {
     /**
      * The given resource URI (if any) for the actual configuration.
      * Is needed to determine the actual config values for multi root environments.
      *
      * @readonly
      * @type {Uri}
-     * @memberof CodeOutlineConfig
+     * @memberof CodeCompletionConfig
      */
     resource?: Uri;
 
     /**
-     * Defined if the code outline feature is enabled or not.
+     * Defines the used completion sort mode (i.e. if the completions should be sorted to the bottom of the list).
      *
-     * @type {boolean}
-     * @memberof CodeOutlineConfig
+     * @readonly
+     * @type {('default' | 'bottom')}
+     * @memberof CodeCompletionConfig
      */
-    outlineEnabled: boolean;
+    completionSortMode: 'default' | 'bottom';
 }

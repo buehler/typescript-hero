@@ -1,11 +1,12 @@
+import * as chai from 'chai';
+
 import {
     ImportGroupIdentifierInvalidError,
     ImportGroupKeyword,
     ImportGroupSettingParser,
     KeywordImportGroup,
     RegexImportGroup,
-} from '../../../src/extension/import-grouping';
-import * as chai from 'chai';
+} from '../../../../src/extension/import-grouping';
 
 chai.should();
 

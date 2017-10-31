@@ -1,24 +1,25 @@
 import * as chai from 'chai';
 import { join } from 'path';
+import * as sinon from 'sinon';
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { CodeCompletionExtension } from '../../../src/extension/extensions/CodeCompletionExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+import { ConfigFactory } from '../../../../src/common/factories';
+import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
+import { CodeCompletionExtension } from '../../../../src/extension/extensions/CodeCompletionExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 const should = chai.should();
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
-
 describe('CodeCompletionExtension', () => {
 
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     const token = new vscode.CancellationTokenSource().token;
     let document: vscode.TextDocument;
     let extension: CodeCompletionExtension;
-    let config: ExtensionConfig;
 
     before(async () => {
         const file = join(
@@ -29,11 +30,12 @@ describe('CodeCompletionExtension', () => {
         await vscode.window.showTextDocument(document);
 
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
-        config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -47,7 +49,9 @@ describe('CodeCompletionExtension', () => {
             ],
         );
 
-        extension = new CodeCompletionExtension(ctx, logger, parser, index as any, rootPath, config);
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
+        extension = new CodeCompletionExtension(ctx, logger, parser, fakeMapper, config);
     });
 
     it('shoud resolve to null if typing in a string', async () => {
@@ -85,12 +89,21 @@ describe('CodeCompletionExtension', () => {
     });
 
     it('should use custom sort order when config.completionSortMode is bottom', async () => {
-        Object.defineProperty(config, 'completionSortMode', { value: 'bottom', writable: true });
-        const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
-        should.exist(result![0].sortText);
-        result![0].sortText!.should.equal('9999-MyClass');
+        const orig = (extension as any).config;
+        const config = new VscodeExtensionConfig();
+        (config as any).codeCompletionConfig = {
+            completionSortMode: 'bottom',
+        };
 
-        Object.defineProperty(config, 'completionSortMode', { value: 'default' });
+        (extension as any).config = sinon.spy(() => config);
+
+        try {
+            const result = await extension.provideCompletionItems(document, new vscode.Position(6, 5), token);
+            should.exist(result![0].sortText);
+            result![0].sortText!.should.equal('9999-MyClass');
+        } finally {
+            (extension as any).config = orig;
+        }
     });
 
     it('shoud add an insert command text edit if import would be new', async () => {

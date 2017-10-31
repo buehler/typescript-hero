@@ -1,83 +1,20 @@
-import { injectable } from 'inversify';
 import { TypescriptGenerationOptions } from 'typescript-parser';
-import { workspace, WorkspaceConfiguration } from 'vscode';
+import { Uri, workspace, WorkspaceConfiguration } from 'vscode';
 
-import { ExtensionConfig, ResolverConfig } from '../common/config';
-import { CodeOutlineConfig } from '../common/config/CodeOutlineConfig';
-import { ResolverMode } from '../common/enums';
-import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from './import-grouping';
+import { ResolverConfig } from '../../common/config';
+import { ResolverMode } from '../../common/enums';
+import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from '../import-grouping';
 
-const sectionKey = 'typescriptHero';
-
-/**
- * Configuration class for TypeScript Hero
- * Contains all exposed config endpoints.
- *
- * @export
- * @class VscodeExtensionConfig
- */
-@injectable()
-export class VscodeExtensionConfig implements ExtensionConfig {
-    private resolverConfig: ResolverConfig = new VscodeResolverConfig();
-    private codeOutlineConfig: CodeOutlineConfig = new VscodeCodeOutlineConfig();
-
-    private get workspaceSection(): WorkspaceConfiguration {
-        return workspace.getConfiguration(sectionKey);
-    }
-
-    /**
-     * The actual log level.
-     *
-     * @readonly
-     * @type {string}
-     * @memberof VscodeExtensionConfig
-     */
-    public get verbosity(): string {
-        return this.workspaceSection.get<string>('verbosity') || 'Warning';
-    }
-
-    /**
-     * Configuration object for the resolver extension.
-     *
-     * @readonly
-     * @type {ResolverConfig}
-     * @memberof VscodeExtensionConfig
-     */
-    public get resolver(): ResolverConfig {
-        return this.resolverConfig;
-    }
-
-    /**
-     * Configuration object for the code outline extension.
-     *
-     * @readonly
-     * @type {CodeOutlineConfig}
-     * @memberof VscodeExtensionConfig
-     */
-    public get codeOutline(): CodeOutlineConfig {
-        return this.codeOutlineConfig;
-    }
-
-    /**
-     * Completion sort mode
-     *
-     * @readonly
-     * @type {'default'|'bottom'}
-     * @memberof VscodeExtensionConfig
-     */
-    public get completionSortMode(): 'default' | 'bottom' {
-        return this.workspaceSection.get<'default' | 'bottom'>('completionSortMode') || 'default';
-    }
-}
+const sectionKey = 'typescriptHero.resolver';
 
 /**
  * Configuration class for the resolver extension.
  *
  * @class VscodeResolverConfig
  */
-class VscodeResolverConfig implements ResolverConfig {
+export class VscodeResolverConfig implements ResolverConfig {
     private get workspaceSection(): WorkspaceConfiguration {
-        return workspace.getConfiguration(sectionKey);
+        return workspace.getConfiguration(sectionKey, this.resource);
     }
 
     /**
@@ -89,8 +26,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSpaceBeforeAndAfterImportBraces(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.insertSpaceBeforeAndAfterImportBraces');
-        return value !== undefined ? value : true;
+        return this.workspaceSection.get('insertSpaceBeforeAndAfterImportBraces', true);
     }
 
     /**
@@ -102,8 +38,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get insertSemicolons(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.insertSemicolons');
-        return value !== undefined ? value : true;
+        return this.workspaceSection.get('insertSemicolons', true);
     }
 
     /**
@@ -114,7 +49,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get stringQuoteStyle(): string {
-        return this.workspaceSection.get<string>('resolver.stringQuoteStyle') || `'`;
+        return this.workspaceSection.get('stringQuoteStyle', `'`);
     }
 
     /**
@@ -126,11 +61,14 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignorePatterns(): string[] {
-        return this.workspaceSection.get<string[]>('resolver.ignorePatterns') || [
-            'build',
-            'out',
-            'dist',
-        ];
+        return this.workspaceSection.get(
+            'ignorePatterns',
+            [
+                'build',
+                'out',
+                'dist',
+            ],
+        );
     }
 
     /**
@@ -141,7 +79,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get multiLineWrapThreshold(): number {
-        return this.workspaceSection.get<number>('resolver.multiLineWrapThreshold') || 125;
+        return this.workspaceSection.get('multiLineWrapThreshold', 125);
     }
 
     /**
@@ -158,8 +96,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * } from 'whatever';
      */
     public get multiLineTrailingComma(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.multiLineTrailingComma');
-        return value !== undefined ? value : true;
+        return this.workspaceSection.get('multiLineTrailingComma', true);
     }
 
     /**
@@ -170,8 +107,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportSorting(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.disableImportsSorting');
-        return value !== undefined ? value : false;
+        return this.workspaceSection.get('disableImportsSorting', false);
     }
 
     /**
@@ -182,8 +118,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof ResolverConfig
      */
     public get disableImportRemovalOnOrganize(): boolean {
-        const value = this.workspaceSection.get<boolean>('resolver.disableImportRemovalOnOrganize');
-        return value !== undefined ? value : false;
+        return this.workspaceSection.get('disableImportRemovalOnOrganize', false);
     }
 
     /**
@@ -194,7 +129,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get tabSize(): number {
-        return workspace.getConfiguration().get<number>('editor.tabSize') || 4;
+        return workspace.getConfiguration().get('editor.tabSize', 4);
     }
 
     /**
@@ -205,7 +140,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get ignoreImportsForOrganize(): string[] {
-        return this.workspaceSection.get<string[]>('resolver.ignoreImportsForOrganize') || [];
+        return this.workspaceSection.get('ignoreImportsForOrganize', []);
     }
 
     /**
@@ -215,7 +150,7 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get importGroups(): ImportGroup[] {
-        const groups = this.workspaceSection.get<ImportGroupSetting[]>('resolver.importGroups');
+        const groups = this.workspaceSection.get<ImportGroupSetting[]>('importGroups');
         let importGroups: ImportGroup[] = [];
 
         try {
@@ -253,14 +188,14 @@ class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
-     * Current mode of the resolver.
+     * Current mode of the
      *
      * @readonly
      * @type {ResolverMode}
      * @memberof VscodeResolverConfig
      */
     public get resolverMode(): ResolverMode {
-        const mode = this.workspaceSection.get<string>('resolver.resolverMode', 'TypeScript');
+        const mode = this.workspaceSection.get('resolverMode', 'TypeScript');
         return ResolverMode[mode] || ResolverMode.TypeScript;
     }
 
@@ -330,8 +265,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get organizeOnSave(): boolean {
-        const typescriptHeroValue = this.workspaceSection.get<boolean>('resolver.organizeOnSave', true);
-        const editorValue = workspace.getConfiguration().get('editor.formatOnSave', false);
+        const typescriptHeroValue = this.workspaceSection.get('organizeOnSave', false);
+        const editorValue = workspace.getConfiguration('editor', this.resource).get('formatOnSave', false);
         return typescriptHeroValue && editorValue;
     }
 
@@ -344,30 +279,8 @@ class VscodeResolverConfig implements ResolverConfig {
      * @memberof VscodeResolverConfig
      */
     public get promptForSpecifiers(): boolean {
-        return this.workspaceSection.get<boolean>('resolver.promptForSpecifiers', false);
-    }
-}
-
-/**
- * Configuration interface for the code outline feature.
- *
- * @class VscodeCodeOutlineConfig
- * @implements {CodeOutlineConfig}
- */
-class VscodeCodeOutlineConfig implements CodeOutlineConfig {
-    private get workspaceSection(): WorkspaceConfiguration {
-        return workspace.getConfiguration(sectionKey);
+        return this.workspaceSection.get('promptForSpecifiers', false);
     }
 
-    /**
-     * Defined if the code outline feature is enabled or not.
-     *
-     * @readonly
-     * @type {boolean}
-     * @memberof VscodeCodeOutlineConfig
-     */
-    public get outlineEnabled(): boolean {
-        const value = this.workspaceSection.get<boolean>('codeOutline.enabled');
-        return value !== undefined ? value : true;
-    }
+    constructor(public readonly resource?: Uri) { }
 }

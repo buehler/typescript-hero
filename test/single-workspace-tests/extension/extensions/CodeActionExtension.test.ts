@@ -1,20 +1,24 @@
 import * as chai from 'chai';
 import { join } from 'path';
 import * as sinon from 'sinon';
+import sinonChai = require('sinon-chai');
 import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { LoggerFactory } from '../../../src/common/utilities';
-import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../src/extension/code-actions/CodeAction';
+import { ConfigFactory } from '../../../../src/common/factories';
+import { AddImportCodeAction, CodeAction, ImplementPolymorphElements } from '../../../../src/extension/code-actions';
 import {
     MissingImplementationInClassCreator,
-} from '../../../src/extension/code-actions/MissingImplementationInClassCreator';
-import { MissingImportCreator } from '../../../src/extension/code-actions/MissingImportCreator';
-import { CodeActionExtension } from '../../../src/extension/extensions/CodeActionExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
+} from '../../../../src/extension/code-actions/MissingImplementationInClassCreator';
+import { MissingImportCreator } from '../../../../src/extension/code-actions/MissingImportCreator';
+import { CodeActionExtension } from '../../../../src/extension/extensions/CodeActionExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { DeclarationIndexMapper } from '../../../../src/extension/utilities/DeclarationIndexMapper';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
 chai.should();
+chai.use(sinonChai);
 
 class SpyCodeAction implements CodeAction {
     constructor(private spy: sinon.SinonSpy, private result: boolean) { }
@@ -25,18 +29,19 @@ class SpyCodeAction implements CodeAction {
     }
 }
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
-
 describe('CodeActionExtension', () => {
 
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     let extension: any;
 
     before(async () => {
         const ctx = Container.get<ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
+        const fakeMapper = new DeclarationIndexMapper(logger, ctx, parser, config);
 
-        const index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        const index = new DeclarationIndex(parser, rootPath);
         await index.buildIndex(
             [
                 join(
@@ -58,12 +63,14 @@ describe('CodeActionExtension', () => {
             ],
         );
 
+        fakeMapper.getIndexForFile = sinon.spy(() => index);
+
         const creators = [
-            new MissingImportCreator(index as any),
-            new MissingImplementationInClassCreator(parser, index as any, rootPath),
+            new MissingImportCreator(fakeMapper, logger),
+            new MissingImplementationInClassCreator(parser, fakeMapper, logger),
         ];
 
-        extension = new CodeActionExtension(ctx, logger, creators, index as any);
+        extension = new CodeActionExtension(ctx, logger, creators, fakeMapper);
     });
 
     describe('executeCodeAction', () => {
@@ -380,8 +387,8 @@ describe('CodeActionExtension', () => {
                 <any>{
                     diagnostics: [
                         {
-                            message:
-                            `class 'ImplementGenericInterface' incorrectly implements 'GenericInterface<string, number>'.`,
+                            message: `class 'ImplementGenericInterface' incorrectly ` +
+                            `implements 'GenericInterface<string, number>'.`,
                         },
                     ],
                 },
@@ -462,7 +469,7 @@ describe('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(2);
                 const action = cmds[0];
-                action.title.should.equal('Import "Class1" from "/server/indices".');
+                action.title.should.equal('Import "Class1" from "/server/indices/MyClass".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
             });
 
@@ -487,7 +494,7 @@ describe('CodeActionExtension', () => {
 
                 cmds.should.have.lengthOf(3);
                 let action = cmds[0];
-                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices".');
+                action.title.should.equal('Import "FancierLibraryClass" from "/server/indices/MyClass".');
                 action.arguments[0].should.be.an.instanceof(AddImportCodeAction);
 
                 action = cmds[1];

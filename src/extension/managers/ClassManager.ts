@@ -11,7 +11,6 @@ import {
 } from 'typescript-parser';
 import { Position, Range, TextDocument, TextEdit, workspace, WorkspaceEdit } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
 import {
     ClassNotFoundError,
     MethodDuplicated,
@@ -23,13 +22,14 @@ import { TypescriptCodeGeneratorFactory } from '../../common/factories';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
+import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
 type VisibleObject = { visibility?: DeclarationVisibility };
 
 /**
  * Sortfunction for changeable objects. Does sort the objects by visibility.
- * 
+ *
  * @param {Changeable<VisibleObject>} o1
  * @param {Changeable<VisibleObject>} o2
  * @returns {number}
@@ -54,7 +54,7 @@ function sortByVisibility(o1: Changeable<VisibleObject>, o2: Changeable<VisibleO
 /**
  * Manager for classes in files. Is able to modify a written class (add / remove methods and properties).
  * On commit, the new typescript is generated and inserted.
- * 
+ *
  * @export
  * @class ClassManager
  * @implements {ObjectManager}
@@ -68,8 +68,8 @@ export class ClassManager implements ObjectManager {
         return Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
     }
 
-    private static get config(): ExtensionConfig {
-        return Container.get<ExtensionConfig>(iocSymbols.configuration);
+    private static get logger(): Logger {
+        return Container.get(iocSymbols.logger);
     }
 
     private ctor: Changeable<ConstructorDeclaration>;
@@ -81,6 +81,11 @@ export class ClassManager implements ObjectManager {
         public readonly parsedDocument: File,
         private readonly managedClass: ClassDeclaration,
     ) {
+        ClassManager.logger.debug(
+            '[%s] create class manager',
+            ClassManager.name,
+            { file: document.fileName, class: managedClass.name },
+        );
         this.ctor = new Changeable(managedClass.ctor);
         this.properties = managedClass.properties.map(o => new Changeable(o));
         this.methods = managedClass.methods.map(o => new Changeable(o));
@@ -90,12 +95,12 @@ export class ClassManager implements ObjectManager {
      * Creates an instance of a ClassManager.
      * Does parse the document text first and returns a promise that
      * resolves to a ClassManager.
-     * 
+     *
      * @static
      * @param {TextDocument} document The document that should be managed
      * @param {string} className The name of the class that should be managed
      * @returns {Promise<ClassManager>}
-     * 
+     *
      * @memberof ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
@@ -112,10 +117,10 @@ export class ClassManager implements ObjectManager {
 
     /**
      * Checks if a property with the given name exists on the virtual class.
-     * 
+     *
      * @param {string} name
      * @returns {boolean}
-     * 
+     *
      * @memberof ClassManager
      */
     public hasProperty(name: string): boolean {
@@ -124,12 +129,12 @@ export class ClassManager implements ObjectManager {
 
     /**
      * Add a property to the virtual class. Creates a Changeable<T> object with the .isNew flag set to true.
-     * 
+     *
      * @param {(string | PropertyDeclaration)} nameOrDeclaration
      * @param {DeclarationVisibility} [visibility]
      * @param {string} [type]
      * @returns {this}
-     * 
+     *
      * @memberof ClassManager
      */
     public addProperty(
@@ -152,16 +157,21 @@ export class ClassManager implements ObjectManager {
         }
 
         this.properties.push(new Changeable(declaration, true));
+        ClassManager.logger.debug(
+            '[%s] add property to class',
+            ClassManager.name,
+            { property: declaration.name, class: this.managedClass.name },
+        );
 
         return this;
     }
 
     /**
      * Remove (aka set isDeleted) a property from the virtual class.
-     * 
+     *
      * @param {string} name
      * @returns {this}
-     * 
+     *
      * @memberof ClassManager
      */
     public removeProperty(name: string): this {
@@ -176,15 +186,20 @@ export class ClassManager implements ObjectManager {
         if (property.isNew) {
             this.properties.splice(this.properties.indexOf(property), 1);
         }
+        ClassManager.logger.debug(
+            '[%s] remove property from class',
+            ClassManager.name,
+            { property: name, class: this.managedClass.name },
+        );
         return this;
     }
 
     /**
      * Checks if a method with the given name does exist on the virtual class.
-     * 
+     *
      * @param {string} name
      * @returns {boolean}
-     * 
+     *
      * @memberof ClassManager
      */
     public hasMethod(name: string): boolean {
@@ -193,13 +208,13 @@ export class ClassManager implements ObjectManager {
 
     /**
      * Add a method to the virtual class.
-     * 
+     *
      * @param {(string | MethodDeclaration)} nameOrDeclaration
      * @param {DeclarationVisibility} [visibility]
      * @param {string} [type]
      * @param {ParameterDeclaration[]} [parameters]
      * @returns {this}
-     * 
+     *
      * @memberof ClassManager
      */
     public addMethod(
@@ -224,16 +239,21 @@ export class ClassManager implements ObjectManager {
         }
 
         this.methods.push(new Changeable(declaration, true));
+        ClassManager.logger.debug(
+            '[%s] add method to class',
+            ClassManager.name,
+            { property: declaration.name, class: this.managedClass.name },
+        );
 
         return this;
     }
 
     /**
      * Removes a method from the virtual class.
-     * 
+     *
      * @param {string} name
      * @returns {this}
-     * 
+     *
      * @memberof ClassManager
      */
     public removeMethod(name: string): this {
@@ -248,6 +268,11 @@ export class ClassManager implements ObjectManager {
         if (method.isNew) {
             this.methods.splice(this.methods.indexOf(method), 1);
         }
+        ClassManager.logger.debug(
+            '[%s] remove method from class',
+            ClassManager.name,
+            { property: name, class: this.managedClass.name },
+        );
         return this;
     }
 
@@ -257,9 +282,9 @@ export class ClassManager implements ObjectManager {
      * - Delete properties
      * - Update changed properties (still TODO)
      * - Insert new properties
-     * 
+     *
      * @returns {Promise<boolean>}
-     * 
+     *
      * @memberof ClassManager
      */
     public async commit(): Promise<boolean> {
@@ -270,17 +295,22 @@ export class ClassManager implements ObjectManager {
 
         const workspaceEdit = new WorkspaceEdit();
         workspaceEdit.set(this.document.uri, edits);
+        ClassManager.logger.debug(
+            '[%s] commit the class',
+            ClassManager.name,
+            { class: this.managedClass.name },
+        );
         return workspace.applyEdit(workspaceEdit);
     }
 
     /**
      * Determines if a propertydeclaration is injected by the constructor.
      * I.e. constructor(public foo: string)...
-     * 
+     *
      * @private
      * @param {PropertyDeclaration} property
      * @returns {boolean}
-     * 
+     *
      * @memberof ClassManager
      */
     private isInConstructor(property: PropertyDeclaration): boolean {
@@ -293,10 +323,10 @@ export class ClassManager implements ObjectManager {
 
     /**
      * Calculates TextEdits for properties.
-     * 
+     *
      * @private
      * @returns {TextEdit[]}
-     * 
+     *
      * @memberof ClassManager
      */
     private calculatePropertyEdits(): TextEdit[] {
@@ -338,10 +368,10 @@ export class ClassManager implements ObjectManager {
 
     /**
      * Calculates TextEdits for methods.
-     * 
+     *
      * @private
      * @returns {TextEdit[]}
-     * 
+     *
      * @memberof ClassManager
      */
     private calculateMethodEdits(): TextEdit[] {

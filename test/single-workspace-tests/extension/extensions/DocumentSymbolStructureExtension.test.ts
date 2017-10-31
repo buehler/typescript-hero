@@ -2,27 +2,29 @@ import { join } from 'path';
 import { TypescriptParser } from 'typescript-parser';
 import * as vscode from 'vscode';
 
-import { ExtensionConfig } from '../../../src/common/config';
-import { LoggerFactory } from '../../../src/common/utilities';
-import { DocumentSymbolStructureExtension } from '../../../src/extension/extensions/DocumentSymbolStructureExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { BaseStructureTreeItem } from '../../../src/extension/provider-items/document-structure/BaseStructureTreeItem';
+import { ConfigFactory } from '../../../../src/common/factories';
+import { DocumentSymbolStructureExtension } from '../../../../src/extension/extensions/DocumentSymbolStructureExtension';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { BaseStructureTreeItem } from '../../../../src/extension/provider-items/document-structure/BaseStructureTreeItem';
 import {
     DeclarationStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/DeclarationStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/DeclarationStructureTreeItem';
 import {
     DisabledStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/DisabledStructureTreeItem';
-import { ImportsStructureTreeItem } from '../../../src/extension/provider-items/document-structure/ImportsStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/DisabledStructureTreeItem';
+import {
+    ImportsStructureTreeItem,
+} from '../../../../src/extension/provider-items/document-structure/ImportsStructureTreeItem';
 import {
     NotParseableStructureTreeItem,
-} from '../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
+} from '../../../../src/extension/provider-items/document-structure/NotParseableStructureTreeItem';
+import { Logger } from '../../../../src/extension/utilities/winstonLogger';
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
 
 describe('DocumentSymbolStructureExtension', () => {
 
+    const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let extension: DocumentSymbolStructureExtension;
     const file = join(
         rootPath,
@@ -31,9 +33,9 @@ describe('DocumentSymbolStructureExtension', () => {
 
     before(async () => {
         const ctx = Container.get<vscode.ExtensionContext>(iocSymbols.extensionContext);
-        const logger = Container.get<LoggerFactory>(iocSymbols.loggerFactory);
+        const logger = Container.get<Logger>(iocSymbols.logger);
         const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-        const config = Container.get<ExtensionConfig>(iocSymbols.configuration);
+        const config = Container.get<ConfigFactory>(iocSymbols.configuration);
 
         extension = new DocumentSymbolStructureExtension(ctx, logger, config, parser);
     });
@@ -55,7 +57,6 @@ describe('DocumentSymbolStructureExtension', () => {
     });
 
     it('should return a "file not parsable" if it is no ts file', async () => {
-        const rootPath = Container.get<string>(iocSymbols.rootPath);
         const file = join(
             rootPath,
             'extension/extensions/documentSymbolStructureExtension/notParsable.txt',

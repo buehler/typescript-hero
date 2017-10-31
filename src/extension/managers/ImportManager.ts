@@ -17,6 +17,7 @@ import {
 import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import { ExtensionConfig } from '../../common/config';
+import { ConfigFactory } from '../../common/factories';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
@@ -29,6 +30,7 @@ import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { importSort, specifierSort } from '../utilities/utilityFunctions';
+import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
 function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): boolean {
@@ -55,22 +57,31 @@ export class ImportManager implements ObjectManager {
         return Container.get<TypescriptParser>(iocSymbols.typescriptParser);
     }
 
-    private static get config(): ExtensionConfig {
-        return Container.get<ExtensionConfig>(iocSymbols.configuration);
+    private static get config(): ConfigFactory {
+        return Container.get<ConfigFactory>(iocSymbols.configuration);
     }
 
     private static get generator(): TypescriptCodeGenerator {
         return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
     }
 
-    private static get rootPath(): string {
-        return Container.get<string>(iocSymbols.rootPath);
+    private static get logger(): Logger {
+        return Container.get(iocSymbols.logger);
     }
 
     private importGroups: ImportGroup[];
     private imports: Import[] = [];
     private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
     private organize: boolean;
+
+    private get config(): ExtensionConfig {
+        return ImportManager.config(this.document.uri);
+    }
+
+    private get rootPath(): string | undefined {
+        const rootFolder = workspace.getWorkspaceFolder(this.document.uri);
+        return rootFolder ? rootFolder.uri.fsPath : undefined;
+    }
 
     /**
      * Document resource for this controller. Contains the parsed document.
@@ -87,6 +98,11 @@ export class ImportManager implements ObjectManager {
         public readonly document: TextDocument,
         private _parsedDocument: File,
     ) {
+        ImportManager.logger.debug(
+            '[%s] create import manager',
+            ImportManager.name,
+            { file: document.fileName },
+        );
         this.reset();
     }
 
@@ -113,7 +129,7 @@ export class ImportManager implements ObjectManager {
      */
     public reset(): void {
         this.imports = this._parsedDocument.imports.map(o => o.clone());
-        this.importGroups = ImportManager.config.resolver.importGroups;
+        this.importGroups = this.config.resolver.importGroups;
         this.addImportsToGroups(this.imports);
     }
 
@@ -128,12 +144,17 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public addDeclarationImport(declarationInfo: DeclarationInfo): this {
+        ImportManager.logger.debug(
+            '[%s] add declaration as import',
+            ImportManager.name,
+            { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
+        );
         // If there is something already imported, it must be a NamedImport
         const alreadyImported: NamedImport = this.imports.find(
             o => declarationInfo.from === getAbsolutLibraryName(
                 o.libraryName,
                 this.document.fileName,
-                ImportManager.rootPath,
+                this.rootPath,
             ) && o instanceof NamedImport,
         ) as NamedImport;
 
@@ -149,7 +170,7 @@ export class ImportManager implements ObjectManager {
             let imp: Import = new NamedImport(getRelativeLibraryName(
                 declarationInfo.from,
                 this.document.fileName,
-                ImportManager.rootPath,
+                this.rootPath,
             ));
 
             if (declarationInfo.declaration instanceof ModuleDeclaration) {
@@ -179,11 +200,16 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public addMissingImports(index: DeclarationIndex): this {
+        ImportManager.logger.debug(
+            '[%s] add all missing imports',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             this.document.fileName,
             this.imports,
-            ImportManager.rootPath,
+            this.rootPath,
         );
 
         for (const usage of this._parsedDocument.nonLocalUsages) {
@@ -210,14 +236,19 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public organizeImports(): this {
+        ImportManager.logger.debug(
+            '[%s] organize the imports',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
         this.organize = true;
         let keep: Import[] = [];
 
-        if (ImportManager.config.resolver.disableImportRemovalOnOrganize) {
+        if (this.config.resolver.disableImportRemovalOnOrganize) {
             keep = this.imports;
         } else {
             for (const actImport of this.imports) {
-                if (ImportManager.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+                if (this.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
                     keep.push(actImport);
                     continue;
                 }
@@ -241,7 +272,7 @@ export class ImportManager implements ObjectManager {
             }
         }
 
-        if (!ImportManager.config.resolver.disableImportSorting) {
+        if (!this.config.resolver.disableImportSorting) {
             keep = [
                 ...keep.filter(o => o instanceof StringImport).sort(importSort),
                 ...keep.filter(o => !(o instanceof StringImport)).sort(importSort),
@@ -273,6 +304,12 @@ export class ImportManager implements ObjectManager {
         const workspaceEdit = new WorkspaceEdit();
 
         workspaceEdit.set(this.document.uri, edits);
+
+        ImportManager.logger.debug(
+            '[%s] commit the file',
+            ImportManager.name,
+            { file: this.document.fileName },
+        );
 
         const result = await workspace.applyEdit(workspaceEdit);
 
@@ -432,7 +469,7 @@ export class ImportManager implements ObjectManager {
                 const specifiers = getSpecifiers();
                 if (
                     specifiers.filter(o => o === imp.defaultAlias).length > 1 &&
-                    ImportManager.config.resolver.promptForSpecifiers
+                    this.config.resolver.promptForSpecifiers
                 ) {
                     imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultAlias);
                 }
@@ -442,7 +479,7 @@ export class ImportManager implements ObjectManager {
                 const specifiers = getSpecifiers();
                 if (
                     specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1 &&
-                    ImportManager.config.resolver.promptForSpecifiers
+                    this.config.resolver.promptForSpecifiers
                 ) {
                     spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
                 }

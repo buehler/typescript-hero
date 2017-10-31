@@ -1,0 +1,20 @@
+{
+    "folders": [
+        {
+            "path": "_workspace"
+        },
+        {
+            "path": "_workspace_2"
+        },
+        {
+            "path": "_workspace/server"
+        }
+    ],
+    "settings": {
+        "typescriptHero.verbosity": "Warnings",
+        "typescriptHero.codeOutline.enabled": true,
+        "typescriptHero.resolver.organizeOnSave": false,
+        "typescriptHero.resolver.promptForSpecifiers": true,
+        "editor.formatOnSave": true
+    }
+}

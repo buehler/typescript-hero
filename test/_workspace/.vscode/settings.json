@@ -9,10 +9,13 @@
         "dist",
         "resourceParser"
     ],
-    "typescriptHero.verbosity": "Warnings",
+    "files.eol": "\n",
+    "typescriptHero.verbosity": "warn",
     "tslint.enable": false,
     "typescriptHero.codeOutline.enabled": true,
     "typescriptHero.resolver.organizeOnSave": false,
     "typescriptHero.resolver.promptForSpecifiers": true,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "typescriptHero.codeCompletion.completionSortMode": "default",
+    "typescriptHero.resolver.disableImportRemovalOnOrganize": false
 }

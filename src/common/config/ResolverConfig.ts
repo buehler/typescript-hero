@@ -1,4 +1,5 @@
 import { TypescriptGenerationOptions } from 'typescript-parser';
+import { Uri } from 'vscode';
 
 import { ImportGroup } from '../../extension/import-grouping';
 import { ResolverMode } from '../enums';
@@ -9,6 +10,16 @@ import { ResolverMode } from '../enums';
  * @interface ResolverConfig
  */
 export interface ResolverConfig {
+    /**
+     * The given resource URI (if any) for the actual configuration.
+     * Is needed to determine the actual config values for multi root environments.
+     *
+     * @readonly
+     * @type {Uri}
+     * @memberof ResolverConfig
+     */
+    resource?: Uri;
+
     /**
      * Defines, if there should be a space between the brace and the import specifiers.
      * {Symbol} vs { Symbol }

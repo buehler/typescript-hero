@@ -10,19 +10,18 @@ import {
 } from 'typescript-parser';
 import { Position, Range, TextDocument, window, workspace } from 'vscode';
 
-import { findFiles } from '../../../src/extension/extensions/ImportResolveExtension';
-import { Container } from '../../../src/extension/IoC';
-import { iocSymbols } from '../../../src/extension/IoCSymbols';
-import { ClassManager } from '../../../src/extension/managers/ClassManager';
-import { VscodeExtensionConfig } from '../../../src/extension/VscodeExtensionConfig';
+import { findFiles } from '../../../../src/common/helpers';
+import { VscodeExtensionConfig } from '../../../../src/extension/config/VscodeExtensionConfig';
+import { Container } from '../../../../src/extension/IoC';
+import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { ClassManager } from '../../../../src/extension/managers/ClassManager';
 
 const should = chai.should();
 chai.use(sinonChai);
 
-const rootPath = Container.get<string>(iocSymbols.rootPath);
-
 describe('ClassManager', () => {
 
+    const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     const file = join(rootPath, 'extension/managers/ClassManagerFile.ts');
     let document: TextDocument;
     let documentText: string;
@@ -30,10 +29,10 @@ describe('ClassManager', () => {
     let files: string[];
 
     before(async () => {
-        const config = new VscodeExtensionConfig();
-        files = await findFiles(config, rootPath);
+        const config = new VscodeExtensionConfig(workspace.workspaceFolders![0].uri);
+        files = await findFiles(config, workspace.workspaceFolders![0]);
 
-        index = Container.get<DeclarationIndex>(iocSymbols.declarationIndex);
+        index = new DeclarationIndex(Container.get(iocSymbols.typescriptParser), rootPath);
         await index.buildIndex(files);
 
         document = await workspace.openTextDocument(file);

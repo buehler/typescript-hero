@@ -2,8 +2,8 @@ import 'reflect-metadata';
 
 import { ExtensionContext, Memento } from 'vscode';
 
-import { Container } from '../src/extension/IoC';
-import { iocSymbols } from '../src/extension/IoCSymbols';
+import { Container } from '../../src/extension/IoC';
+import { iocSymbols } from '../../src/extension/IoCSymbols';
 
 // tslint:disable
 
@@ -18,7 +18,6 @@ import { iocSymbols } from '../src/extension/IoCSymbols';
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-
 
 class ContextMock implements ExtensionContext {
     subscriptions: { dispose(): any }[] = [];
