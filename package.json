@@ -94,7 +94,7 @@
     "inversify-inject-decorators": "^3.0.1",
     "reflect-metadata": "^0.1.10",
     "tslib": "^1.8.0",
-    "typescript": "~2.5.3",
+    "typescript": "~2.6.1",
     "typescript-parser": "^2.2.1",
     "winston": "^3.0.0-rc1"
   },
