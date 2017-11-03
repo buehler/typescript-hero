@@ -113,28 +113,37 @@ export function importSortByFirstSpecifier(i1: Import, i2: Import, order: 'asc' 
     const strB = getImportFirstSpecifier(i2);
 
     return localeStringSort(strA, strB, order);
+}
 
-    function getImportFirstSpecifier(imp: Import): string {
-        if (imp instanceof NamespaceImport || imp instanceof ExternalModuleImport) {
-            return imp.alias;
-        }
+/**
+ * Computes the first specifier/alias of an import, falling back ot its
+ * module path (for StringImports, basically). Does not re-sort specifiers
+ * internally: assumes they were sorted AOT (which happens in
+ * `ImportManager#organizeImports`, indeed).
+ *
+ * @param {Import} imp
+ * @returns {String}
+ */
+function getImportFirstSpecifier(imp: Import): string {
+    if (imp instanceof NamespaceImport || imp instanceof ExternalModuleImport) {
+        return imp.alias;
+    }
 
-        if (imp instanceof StringImport) {
-            return basename(imp.libraryName);
-        }
-
-        if (imp instanceof NamedImport) {
-            const namedSpecifiers = (imp as NamedImport).specifiers
-                .map(s => s.alias || s.specifier)
-                .filter(Boolean);
-            const marker = namedSpecifiers[0] || imp.defaultAlias;
-            if (marker) {
-                return marker;
-            }
-        }
-
+    if (imp instanceof StringImport) {
         return basename(imp.libraryName);
     }
+
+    if (imp instanceof NamedImport) {
+        const namedSpecifiers = (imp as NamedImport).specifiers
+            .map(s => s.alias || s.specifier)
+            .filter(Boolean);
+        const marker = namedSpecifiers[0] || imp.defaultAlias;
+        if (marker) {
+            return marker;
+        }
+    }
+
+    return basename(imp.libraryName);
 }
 
 /**

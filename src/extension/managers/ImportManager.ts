@@ -33,7 +33,7 @@ import {
     importGroupSortForPrecedence,
     importSort,
     importSortByFirstSpecifier,
-    specifierSort
+    specifierSort,
 } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
