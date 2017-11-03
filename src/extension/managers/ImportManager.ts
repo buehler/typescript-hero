@@ -29,7 +29,7 @@ import { importRange } from '../helpers';
 import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { importSort, specifierSort } from '../utilities/utilityFunctions';
+import { importGroupSortForPrecedence, importSort, specifierSort } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
@@ -409,8 +409,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private addImportsToGroups(imports: Import[]): void {
+        const importGroupsWithPrecedence = importGroupSortForPrecedence(this.importGroups)
         for (const tsImport of imports) {
-            for (const group of this.importGroups) {
+            for (const group of importGroupsWithPrecedence) {
                 if (group.processImport(tsImport)) {
                     break;
                 }

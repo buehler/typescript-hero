@@ -1,3 +1,4 @@
+import { ImportGroup, RegexImportGroup } from '../import-grouping';
 import {
     ClassDeclaration,
     ConstructorDeclaration,
@@ -39,6 +40,24 @@ export function stringSort(strA: string, strB: string, order: 'asc' | 'desc' = '
         result *= -1;
     }
     return result;
+}
+
+/**
+ * Orders import groups by matching precedence (regex first).  This is used internally by
+ * `ImportManager` when assigning imports to groups, so regex groups can appear later than
+ * keyword groups yet capture relevant imports nonetheless.
+ *
+ * @export
+ * @param {ImportGroup[]} importGroups The original import groups (as per extension configuration)
+ * @returns {ImportGroup[]} The same list, with Regex import groups appearing first.
+ */
+export function importGroupSortForPrecedence(importGroups: ImportGroup[]): ImportGroup[] {
+    const regexGroups: ImportGroup[] = []
+    const otherGroups: ImportGroup[] = []
+    for (const ig of importGroups) {
+        (ig instanceof RegexImportGroup ? regexGroups : otherGroups).push(ig)
+    }
+    return regexGroups.concat(otherGroups)
 }
 
 /**
