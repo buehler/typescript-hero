@@ -1,14 +1,4 @@
 {
-    "typescriptHero.resolver.ignorePatterns": [
-        "typescript",
-        "tslint",
-        "node_modules/typings",
-        "node_modules/typings-core",
-        "build",
-        "out",
-        "dist",
-        "resourceParser"
-    ],
     "typescriptHero.resolver.importGroups": [
         "Plains",
         "Modules",
