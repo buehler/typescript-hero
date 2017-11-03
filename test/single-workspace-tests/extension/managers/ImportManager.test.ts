@@ -257,11 +257,13 @@ describe('ImportManager', () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
 
             ctrl.addDeclarationImport(declaration!);
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(2);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(2);
         });
 
         it('should add an import to an existing import group', async () => {
@@ -269,11 +271,13 @@ describe('ImportManager', () => {
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
             const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
 
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
         });
 
     });
