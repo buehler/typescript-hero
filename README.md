@@ -82,6 +82,7 @@ The following settings do have the prefix `codeCompletion`. So an example settin
 `typescriptHero.codeCompletion.completionSortOrder`.
 
 | Setting             | Description                                                                   |
+| ------------------- | ------------------------------------------------------------------------------|
 | completionSortOrder | The order of import completions in suggestion list, `bottom` pushes them down |
 
 ### Import resolver
@@ -103,6 +104,7 @@ The following settings do have the prefix `resolver`. So an example setting coul
 | ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
 | resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
 | organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document               |
+| organizeSortsByFirstSpecifier         | When organizing runs, sort by first specifier/alias (if any) instead of module path  |
 | promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers            |
 
 ### Code outline view
@@ -126,6 +128,8 @@ TypeScript Hero can manage your imports. It is capable of:
 - Remove unused imports and sort the remaining ones by alphabet
 - Do organize the imports when a document is saved
   - Note that this feature is only enabled if the vscode setting `editor.formatOnSave` is enabled as well!
+  - Organizing used module paths by default, sorted lexicographically.  An option lets you use first
+    import specifier/alias instead, in natural-language order.
 
 #### Import groups
 
