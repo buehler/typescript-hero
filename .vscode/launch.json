@@ -47,6 +47,9 @@
                 "--extensionDevelopmentPath=${workspaceRoot}",
                 "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
             ],
+            "env": {
+                "CI": "true"
+            },
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
@@ -63,6 +66,9 @@
                 "--extensionDevelopmentPath=${workspaceRoot}",
                 "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests/"
             ],
+            "env": {
+                "CI": "true"
+            },
             "stopOnEntry": false,
             "sourceMaps": true,
             "outFiles": [
