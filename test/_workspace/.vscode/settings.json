@@ -25,5 +25,6 @@
     "typescriptHero.resolver.promptForSpecifiers": true,
     "editor.formatOnSave": true,
     "typescriptHero.codeCompletion.completionSortMode": "default",
-    "typescriptHero.resolver.disableImportRemovalOnOrganize": false
+    "typescriptHero.resolver.disableImportRemovalOnOrganize": false,
+    "typescriptHero.resolver.organizeSortsByFirstSpecifier": false
 }

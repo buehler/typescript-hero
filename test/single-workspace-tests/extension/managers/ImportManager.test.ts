@@ -575,6 +575,49 @@ describe('ImportManager', () => {
             names.should.deep.equal(['../plain.ts', 'react', 'some-regular-module', 'cool-library', 'cooler-library/items', '../../server/indices'])
         });
 
+        describe('resolver.organizeSortsByFirstSpecifier: true', () => {
+            before(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', true);
+            });
+
+            after(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', false);
+            });
+
+            it('should sort imports by first specifier/alias', async () => {
+                const demoSource = `
+                import { Foobar, Genero } from 'someLib';
+                import { AnotherFoobar } from 'someOtherLib';
+                import ModuleFoobar from 'myLib';
+                import { AnotherModuleFoo as MuchFurtherSorted } from 'anotherLib';
+
+                console.log(AnotherFoobar, Foobar, Genero, ModuleFoobar, MuchFurtherSorted)
+                `.replace(/\n[ \t]+/g, '\n').trim();
+
+                await window.activeTextEditor!.edit((builder) => {
+                    builder.delete(new Range(
+                        new Position(0, 0),
+                        document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+                    ));
+                    builder.insert(new Position(0, 0), demoSource);
+                });
+
+                const ctrl = await ImportManager.create(document);
+
+                (ctrl as any).imports[0].libraryName.should.equal('someLib');
+
+                ctrl.organizeImports();
+
+                (ctrl as any).imports.map((i) => i.libraryName).should.deep.equal([
+                    'someOtherLib', // { AnotherFoobar }
+                    'someLib',      // { Foobar, Genero }
+                    'myLib',        // ModuleFoobar
+                    'anotherLib',   // { AnotherModuleFoo as MuchFurtherSorted }
+                ]);
+            })
+        })
     });
 
     describe('commit()', () => {
