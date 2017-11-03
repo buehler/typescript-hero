@@ -409,7 +409,7 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private addImportsToGroups(imports: Import[]): void {
-        const importGroupsWithPrecedence = importGroupSortForPrecedence(this.importGroups)
+        const importGroupsWithPrecedence = importGroupSortForPrecedence(this.importGroups);
         for (const tsImport of imports) {
             for (const group of importGroupsWithPrecedence) {
                 if (group.processImport(tsImport)) {
