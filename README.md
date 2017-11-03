@@ -82,7 +82,7 @@ The following settings do have the prefix `codeCompletion`. So an example settin
 `typescriptHero.codeCompletion.completionSortOrder`.
 
 | Setting             | Description                                                                   |
-| ------------------- | ------------------------------------------------------------------------------|
+| ------------------- | ----------------------------------------------------------------------------- |
 | completionSortOrder | The order of import completions in suggestion list, `bottom` pushes them down |
 
 ### Import resolver
