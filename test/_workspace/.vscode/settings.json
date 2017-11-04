@@ -9,6 +9,7 @@
         "dist",
         "resourceParser"
     ],
+    "editor.tabSize": 4,
     "files.eol": "\n",
     "typescriptHero.verbosity": "warn",
     "tslint.enable": false,

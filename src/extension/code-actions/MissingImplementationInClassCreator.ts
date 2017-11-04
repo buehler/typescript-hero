@@ -9,6 +9,10 @@ import { Logger } from '../utilities/winstonLogger';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
+const REGEX_GENERICS = /^(.*)<(.*)>$/;
+const REGEX_INCORRECT_IMPL = /class (['"])(.*)\1 incorrectly implements.*(['"])(.*)\3\./i;
+const REGEX_NON_ABSTRACT_IMPL = /non-abstract class (['"])(.*)\1.*implement inherited.*from class (['"])(.*)\3\./i;
+
 /**
  * Action creator that handles missing implementations in a class.
  *
@@ -35,8 +39,8 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
      * @memberof MissingImplementationInClassCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
-        return /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.test(diagnostic.message) ||
-            /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.test(diagnostic.message);
+        return REGEX_INCORRECT_IMPL.test(diagnostic.message) ||
+            REGEX_NON_ABSTRACT_IMPL.test(diagnostic.message);
     }
 
     /**
@@ -50,8 +54,8 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
      * @memberof MissingImplementationInClassCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
-        const match = /class ['"](.*)['"] incorrectly implements.*['"](.*)['"]\./ig.exec(diagnostic.message) ||
-            /non-abstract class ['"](.*)['"].*implement inherited.*from class ['"](.*)['"]\./ig.exec(diagnostic.message);
+        const match = REGEX_INCORRECT_IMPL.exec(diagnostic.message) ||
+            REGEX_NON_ABSTRACT_IMPL.exec(diagnostic.message);
 
         const index = this.indices.getIndexForFile(document.uri);
         const rootFolder = workspace.getWorkspaceFolder(document.uri);
@@ -64,10 +68,10 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             return commands;
         }
 
-        let specifier = match[2];
+        let specifier = match[4];
         let types: string[] | undefined;
         let typeParams: { [type: string]: string } | undefined;
-        const genericMatch = /^(.*)[<](.*)[>]$/.exec(specifier);
+        const genericMatch = REGEX_GENERICS.exec(specifier);
 
         if (genericMatch) {
             specifier = genericMatch[1];
@@ -115,7 +119,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
 
         commands.push(this.createCommand(
             `Implement missing elements from "${genericMatch && types ? `${specifier}<${types.join(', ')}>` : specifier}".`,
-            new ImplementPolymorphElements(document, match[1], declaration, typeParams),
+            new ImplementPolymorphElements(document, match[2], declaration, typeParams),
         ));
 
         this.logger.debug(
