@@ -9,6 +9,14 @@
         "dist",
         "resourceParser"
     ],
+    "typescriptHero.resolver.importGroups": [
+        "Plains",
+        "Modules",
+        "/cool-library/",
+        "/cooler-library/",
+        "Workspace"
+    ],
+    "editor.tabSize": 4,
     "files.eol": "\n",
     "typescriptHero.verbosity": "warn",
     "tslint.enable": false,

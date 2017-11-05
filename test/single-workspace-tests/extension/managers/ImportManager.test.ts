@@ -257,11 +257,13 @@ describe('ImportManager', () => {
             const ctrl = await ImportManager.create(document);
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
 
             ctrl.addDeclarationImport(declaration!);
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(2);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(2);
         });
 
         it('should add an import to an existing import group', async () => {
@@ -269,11 +271,13 @@ describe('ImportManager', () => {
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
             const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
 
             ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
         });
 
     });
@@ -348,11 +352,13 @@ describe('ImportManager', () => {
             const declaration = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
             ctrl.addDeclarationImport(declaration!);
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(2);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(2);
 
             ctrl.organizeImports();
 
-            (ctrl as any).importGroups[2].imports.should.have.lengthOf(1);
+            // Import group 4 in single-workspace test settings is "Workspace"
+            (ctrl as any).importGroups[4].imports.should.have.lengthOf(1);
         });
 
         it('should remove an unused specifier from an import', async () => {
@@ -541,6 +547,32 @@ describe('ImportManager', () => {
             (ctrl as any).imports.should.have.lengthOf(1);
             ctrl.organizeImports();
             (ctrl as any).imports.should.have.lengthOf(1);
+        });
+
+        it('should honor regex groups even if they appear later than keyword groups', async () => {
+            await window.activeTextEditor!.edit((builder) => {
+                builder.insert(
+                    new Position(0, 0),
+                    `
+                    import mainFx from 'some-regular-module'
+                    import { CoolerStuff, CoolerTitle } from 'cooler-library/items'
+                    import CoolLib from 'cool-library'
+                    import React, { Component } from 'react'
+
+                    import '../plain.ts'
+                    `.replace(/\n[ \t]+/g, '\n')
+                );
+                // Ensure imports are not stripped because they’re unused
+                builder.insert(
+                    new Position(12, 0),
+                    'console.log(mainFx, CoolerStuff, CoolerTitle, CoolLib, React, Component)\n'
+                )
+            });
+            const ctrl = await ImportManager.create(document);
+
+            await ctrl.organizeImports().commit();
+            const names = (ctrl as any).imports.map((l) => l.libraryName)
+            names.should.deep.equal(['../plain.ts', 'react', 'some-regular-module', 'cool-library', 'cooler-library/items', '../../server/indices'])
         });
 
     });
