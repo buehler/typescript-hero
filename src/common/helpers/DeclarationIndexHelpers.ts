@@ -60,7 +60,7 @@ export function getAbsolutLibraryName(library: string, actualFilePath: string, r
     return '/' + toPosix(relative(
         rootPath,
         normalize(join(parse(actualFilePath).dir, library)),
-    )).replace(/[/]$/g, '');
+    )).replace(/\/$/, '');
 }
 
 /**
@@ -160,7 +160,7 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
         o.filter(
             f => f.fsPath
                 .replace(rootPath || '', '')
-                .split(/\\|\//)
+                .split(/[\\/]/)
                 .every(p => excludePatterns.indexOf(p) < 0)) :
         o,
     );

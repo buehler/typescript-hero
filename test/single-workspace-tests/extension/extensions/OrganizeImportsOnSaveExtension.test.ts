@@ -53,7 +53,8 @@ describe('OrganizeImportsOnSaveExtension', () => {
         });
     });
 
-    it('should remove an unused import on save', async () => {
+    it('should remove an unused import on save', async function () {
+        this.timeout(4000);
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
         ctrl.addDeclarationImport(declaration!);
@@ -68,7 +69,8 @@ describe('OrganizeImportsOnSaveExtension', () => {
         document.lineAt(0).text.should.equals('');
     });
 
-    it('should not remove a used import on save', async () => {
+    it('should not remove a used import on save', async function () {
+        this.timeout(4000);
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
