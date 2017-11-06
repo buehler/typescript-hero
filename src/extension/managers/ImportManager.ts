@@ -29,7 +29,12 @@ import { importRange } from '../helpers';
 import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { importSort, specifierSort } from '../utilities/utilityFunctions';
+import {
+    importGroupSortForPrecedence,
+    importSort,
+    importSortByFirstSpecifier,
+    specifierSort,
+} from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
@@ -273,9 +278,13 @@ export class ImportManager implements ObjectManager {
         }
 
         if (!this.config.resolver.disableImportSorting) {
+            const sorter = this.config.resolver.organizeSortsByFirstSpecifier
+                ? importSortByFirstSpecifier
+                : importSort;
+
             keep = [
-                ...keep.filter(o => o instanceof StringImport).sort(importSort),
-                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort),
+                ...keep.filter(o => o instanceof StringImport).sort(sorter),
+                ...keep.filter(o => !(o instanceof StringImport)).sort(sorter),
             ];
         }
 
@@ -409,8 +418,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private addImportsToGroups(imports: Import[]): void {
+        const importGroupsWithPrecedence = importGroupSortForPrecedence(this.importGroups);
         for (const tsImport of imports) {
-            for (const group of this.importGroups) {
+            for (const group of importGroupsWithPrecedence) {
                 if (group.processImport(tsImport)) {
                     break;
                 }

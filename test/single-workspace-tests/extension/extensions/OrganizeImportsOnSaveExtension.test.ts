@@ -14,6 +14,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
 
     const rootPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     let document: vscode.TextDocument;
+    let documentText: string;
     let index: DeclarationIndex;
 
     before(async () => {
@@ -22,6 +23,7 @@ describe('OrganizeImportsOnSaveExtension', () => {
             'extension/extensions/organizeImportsOnSaveExtension/organizeFile.ts',
         );
         document = await vscode.workspace.openTextDocument(file);
+        documentText = document.getText()
 
         await vscode.window.showTextDocument(document);
 
@@ -42,6 +44,14 @@ describe('OrganizeImportsOnSaveExtension', () => {
     after(async () => {
         const config = vscode.workspace.getConfiguration('typescriptHero');
         await config.update('resolver.organizeOnSave', false);
+        await vscode.window.activeTextEditor!.edit((builder) => {
+            builder.delete(new vscode.Range(
+                new vscode.Position(0, 0),
+                document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
+            ));
+            builder.insert(new vscode.Position(0, 0), documentText);
+        });
+        await document.save()
     });
 
     afterEach(async () => {
@@ -53,7 +63,8 @@ describe('OrganizeImportsOnSaveExtension', () => {
         });
     });
 
-    it('should remove an unused import on save', async () => {
+    it('should remove an unused import on save', async function () {
+        this.timeout(4000);
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
         ctrl.addDeclarationImport(declaration!);
@@ -68,7 +79,8 @@ describe('OrganizeImportsOnSaveExtension', () => {
         document.lineAt(0).text.should.equals('');
     });
 
-    it('should not remove a used import on save', async () => {
+    it('should not remove a used import on save', async function () {
+        this.timeout(4000);
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class1');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class2');

@@ -21,6 +21,8 @@ import { getItemKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
+const REGEX_COMMENT = /^\s*(?:\/\/|\/\*\*|\*\/|\*)/;
+
 /**
  * Extension that provides code completion for typescript files. Uses the calculated index to provide information.
  *
@@ -113,9 +115,9 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
             token.isCancellationRequested ||
             !index.indexReady ||
             (lineText.substring(0, position.character).match(/["'`]/g) || []).length % 2 === 1 ||
-            lineText.match(/^\s*(\/\/|\/\*\*|\*\/|\*)/g) ||
+            REGEX_COMMENT.test(lineText) ||
             lineText.startsWith('import ') ||
-            lineText.substring(0, position.character).match(new RegExp(`(\w*[.])+${searchWord}`, 'g'))) {
+            new RegExp(`(?:\w*\.)+${searchWord}`).test(lineText.substring(0, position.character))) {
             this.logger.debug(
                 '[%s] did not match criteria to provide intellisense',
                 CodeCompletionExtension.name,

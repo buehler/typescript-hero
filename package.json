@@ -94,7 +94,7 @@
     "inversify-inject-decorators": "^3.0.1",
     "reflect-metadata": "^0.1.10",
     "tslib": "^1.8.0",
-    "typescript": "~2.5.3",
+    "typescript": "~2.6.1",
     "typescript-parser": "^2.2.1",
     "winston": "^3.0.0-rc1"
   },
@@ -257,6 +257,12 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if the imports should be organized on save.",
+          "scope": "resource"
+        },
+        "typescriptHero.resolver.organizeSortsByFirstSpecifier": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defines if the imports are organized by first specifier/alias instead of module path.",
           "scope": "resource"
         },
         "typescriptHero.resolver.ignoreImportsForOrganize": {
