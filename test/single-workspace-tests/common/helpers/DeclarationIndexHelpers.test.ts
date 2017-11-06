@@ -1,6 +1,5 @@
-import { renameSync } from 'fs';
-import { ExtensionConfig } from '../../../../src/common/config';
 import * as chai from 'chai';
+import { renameSync } from 'fs';
 import { join } from 'path';
 import {
     ClassDeclaration,
@@ -14,6 +13,7 @@ import {
 } from 'typescript-parser';
 import { workspace } from 'vscode';
 
+import { ExtensionConfig } from '../../../../src/common/config';
 import {
     findFiles,
     getAbsolutLibraryName,
