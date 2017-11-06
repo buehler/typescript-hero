@@ -64,9 +64,9 @@ export class VscodeResolverConfig implements ResolverConfig {
         return this.workspaceSection.get(
             'ignorePatterns',
             [
-                'build',
-                'out',
-                'dist',
+                'build/**/*',
+                'out/**/*',
+                'dist/**/*',
             ],
         );
     }
