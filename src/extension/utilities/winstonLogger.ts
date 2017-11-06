@@ -66,7 +66,7 @@ class HandleUncatchedException extends Transport {
         });
 
         const result = await window.showErrorMessage(
-            'There was an uncought exception, do you want to see the logfile?',
+            'There was an uncaught exception, do you want to see the logfile?',
             { modal: true },
             'Yes, show me.',
         );
