@@ -271,6 +271,19 @@ export class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
+     * Defines if typescript hero import organization (sorting) uses first
+     * available specifier/alias, when available, instead of library names
+     * (module paths).
+     *
+     * @readonly
+     * @type {boolean}
+     * @memberof VscodeResolverConfig
+     */
+    public get organizeSortsByFirstSpecifier(): boolean {
+        return this.workspaceSection.get('organizeSortsByFirstSpecifier', false);
+    }
+
+    /**
      * Defines if typescript hero should ask the user for default specifiers or duplicate specifier aliases.
      * If true, tsh does ask the user.
      *

@@ -167,6 +167,15 @@ export interface ResolverConfig {
     resolverModeLanguages: string[];
 
     /**
+     * Sorts imports by first specifier / alias / default alias (when available),
+     * instead of by library names (module paths).
+     *
+     * @type {boolean}
+     * @memberof ResolverConfig
+     */
+    organizeSortsByFirstSpecifier: boolean;
+
+    /**
      * Defines if typescript hero tries to organize your imports of a
      * file as soon as the file would be saved.
      *
