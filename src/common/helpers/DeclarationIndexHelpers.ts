@@ -1,6 +1,13 @@
 import { existsSync } from 'fs';
 import { join, normalize, parse, relative } from 'path';
-import { DeclarationInfo, ExternalModuleImport, Import, NamedImport, NamespaceImport } from 'typescript-parser';
+import {
+    DeclarationInfo,
+    DefaultDeclaration,
+    ExternalModuleImport,
+    Import,
+    NamedImport,
+    NamespaceImport,
+} from 'typescript-parser';
 import { toPosix } from 'typescript-parser/utilities/PathHelpers';
 import { RelativePattern, Uri, workspace, WorkspaceFolder } from 'vscode';
 
@@ -30,10 +37,14 @@ export function getDeclarationsFilteredByImports(
 
         if (tsImport instanceof NamedImport) {
             declarations = declarations.filter(
-                o => o.from !== importedLib ||
-                    !tsImport.specifiers.some(s => s.specifier === o.declaration.name),
-                // || tsImport.defaultAlias !== o.declaration.name,
+                d => d.from !== importedLib ||
+                    !tsImport.specifiers.some(s => s.specifier === d.declaration.name),
             );
+            if (tsImport.defaultAlias) {
+                declarations = declarations.filter(
+                    d => !(tsImport.defaultAlias && d.declaration instanceof DefaultDeclaration && d.from === importedLib),
+                );
+            }
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         }
