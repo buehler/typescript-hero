@@ -203,6 +203,7 @@ describe('DeclarationIndexHelpers', () => {
         it('should find all relevant file in the workspace (*.ts)', async () => {
             config.resolver.resolverModeFileGlobs = config.resolver.resolverModeFileGlobs.filter(o => o.indexOf('ts') >= 0);
             const result = await findFiles(config, workfolder);
+            console.log(result);
             result.length.should.equal(49);
             (result.every(file => file.endsWith('.ts') || file.endsWith('.tsx'))).should.be.true;
             result.should.contain(join(rootPath, 'typings/globals/body-parser/index.d.ts'));
@@ -216,6 +217,7 @@ describe('DeclarationIndexHelpers', () => {
         it('should find all relevant file in the workspace (*.js)', async () => {
             config.resolver.resolverModeFileGlobs = config.resolver.resolverModeFileGlobs.filter(o => o.indexOf('js') >= 0);
             const result = await findFiles(config, workfolder);
+            console.log(result);
             result.length.should.equal(9);
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/addImportToDocument.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsfile.js'));
@@ -229,6 +231,7 @@ describe('DeclarationIndexHelpers', () => {
 
         it('should find all relevant file in the workspace (*.ts & *.js)', async () => {
             const result = await findFiles(config, workfolder);
+            console.log(result);
             result.length.should.equal(52);
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/addImportToDocument.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsfile.js'));
@@ -253,6 +256,7 @@ describe('DeclarationIndexHelpers', () => {
         it('should contain build files when configured otherwise', async () => {
             config.resolver.ignorePatterns = [];
             const result = await findFiles(config, workfolder);
+            console.log(result);
             result.should.contain(join(rootPath, 'build/app.js'));
             result.should.contain(join(rootPath, 'build/app.d.ts'));
             result.should.contain(join(rootPath, 'out/out.js'));
