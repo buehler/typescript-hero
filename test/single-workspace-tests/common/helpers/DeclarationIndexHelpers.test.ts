@@ -253,7 +253,6 @@ describe.only('DeclarationIndexHelpers', () => {
         it('should contain build files when configured otherwise', async () => {
             config.resolver.ignorePatterns = [];
             const result = await findFiles(config, workfolder);
-            console.log(result);
             result.should.contain(join(rootPath, 'build/app.js'));
             result.should.contain(join(rootPath, 'build/app.d.ts'));
             result.should.contain(join(rootPath, 'out/out.js'));
