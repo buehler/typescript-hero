@@ -25,7 +25,7 @@ import { iocSymbols } from '../../../../src/extension/IoCSymbols';
 
 const should = chai.should();
 
-describe.only('DeclarationIndexHelpers', () => {
+describe('DeclarationIndexHelpers', () => {
 
     const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     const documentPath = join(rootPath, 'foobar.ts');
