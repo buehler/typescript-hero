@@ -115,10 +115,11 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
  */
 export async function findFiles(config: ExtensionConfig, workspaceFolder: WorkspaceFolder): Promise<string[]> {
     const workspaceExcludes = [
-        ...config.resolver.ignorePatterns,
+        ...config.resolver.workspaceIgnorePatterns,
         'node_modules/**/*',
         'typings/**/*',
     ];
+    const moduleExcludes = config.resolver.moduleIgnorePatterns;
     const searches: PromiseLike<Uri[]>[] = [
         workspace.findFiles(
             new RelativePattern(workspaceFolder, `{${config.resolver.resolverModeFileGlobs.join(',')}}`),
@@ -129,7 +130,7 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
     // TODO: check the package json and index javascript file in node_modules (?)
 
     let globs: string[] = ['typings/**/*.d.ts'];
-    let ignores: string[] = config.resolver.ignorePatterns;
+    let ignores: string[] = [];
     const rootPath = workspaceFolder.uri.fsPath;
     const hasPackageJson = existsSync(join(rootPath, 'package.json'));
 
@@ -141,7 +142,14 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
                     Object.keys(packageJson[folder]).map(o => `node_modules/${o}/**/*.d.ts`),
                 );
                 ignores = ignores.concat(
-                    Object.keys(packageJson[folder]).map(o => `node_modules/${o}/node_modules/**/*`),
+                    Object.keys(packageJson[folder]).reduce(
+                        (all, pkg) => {
+                            return all.concat(
+                                moduleExcludes.map(exclude => `node_modules/${pkg}/${exclude}`),
+                            );
+                        },
+                        [] as string[],
+                    ),
                 );
             }
         }
