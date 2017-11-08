@@ -215,9 +215,9 @@
           },
           "uniqueItems": true,
           "default": [
-            "**/build/**/*",
-            "**/out/**/*",
-            "**/dist/**/*"
+            "build/**/*",
+            "out/**/*",
+            "dist/**/*"
           ],
           "description": "Defines partial pathes (globs) that are ignored during indexing (e.g. 'node_modules/**/*' would exclude all modules).",
           "scope": "resource"

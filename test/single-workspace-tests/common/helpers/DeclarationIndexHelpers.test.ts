@@ -186,9 +186,9 @@ describe('DeclarationIndexHelpers', () => {
             config = {
                 resolver: {
                     ignorePatterns: [
-                        'build/**/*',
-                        'dist/**/*',
-                        'out/**/*',
+                        '**/build/**/*',
+                        '**/dist/**/*',
+                        '**/out/**/*',
                     ],
                     resolverModeFileGlobs: [
                         '**/*.ts',
