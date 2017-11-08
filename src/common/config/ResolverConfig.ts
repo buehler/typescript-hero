@@ -50,14 +50,26 @@ export interface ResolverConfig {
     stringQuoteStyle: string;
 
     /**
-     * Array of string that are excluded from indexing (e.g. build, out, node_modules).
-     * If those parts are found after the workspace path is striped away, the file is ignored.
+     * Array of string that are excluded from indexing of the workspace (e.g. build, out, dist).
+     * This patterns are ignored during indexing of the files found in the workspace.
+     * To exclude other files that are found in the node_modules, use moduleIgnorePatterns.
      *
      * @readonly
      * @type {string[]}
      * @memberof ResolverConfig
      */
-    ignorePatterns: string[];
+    workspaceIgnorePatterns: string[];
+
+    /**
+     * Array of string that are excluded from indexing of the modules (e.g. further node_modules).
+     * This patterns are ignored during indexing of the files found in the workspace.
+     * To exclude other files that are found in the node_modules, use moduleIgnorePatterns.
+     *
+     * @readonly
+     * @type {string[]}
+     * @memberof ResolverConfig
+     */
+    moduleIgnorePatterns: string[];
 
     /**
      * A length number after which the import is transformed into a multiline import.
