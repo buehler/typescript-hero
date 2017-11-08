@@ -1,6 +1,13 @@
 import { existsSync } from 'fs';
 import { join, normalize, parse, relative } from 'path';
-import { DeclarationInfo, ExternalModuleImport, Import, NamedImport, NamespaceImport } from 'typescript-parser';
+import {
+    DeclarationInfo,
+    DefaultDeclaration,
+    ExternalModuleImport,
+    Import,
+    NamedImport,
+    NamespaceImport,
+} from 'typescript-parser';
 import { toPosix } from 'typescript-parser/utilities/PathHelpers';
 import { RelativePattern, Uri, workspace, WorkspaceFolder } from 'vscode';
 
@@ -30,10 +37,14 @@ export function getDeclarationsFilteredByImports(
 
         if (tsImport instanceof NamedImport) {
             declarations = declarations.filter(
-                o => o.from !== importedLib ||
-                    !tsImport.specifiers.some(s => s.specifier === o.declaration.name),
-                // || tsImport.defaultAlias !== o.declaration.name,
+                d => d.from !== importedLib ||
+                    !tsImport.specifiers.some(s => s.specifier === d.declaration.name),
             );
+            if (tsImport.defaultAlias) {
+                declarations = declarations.filter(
+                    d => !(tsImport.defaultAlias && d.declaration instanceof DefaultDeclaration && d.from === importedLib),
+                );
+            }
         } else if (tsImport instanceof NamespaceImport || tsImport instanceof ExternalModuleImport) {
             declarations = declarations.filter(o => o.from !== tsImport.libraryName);
         }
@@ -94,50 +105,56 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
  * This function searches for files in a specific workspace folder. The files are relative to the given
  * workspace folder and the searched type is determined by the configuration of the extension (TS, JS or Both mode).
  *
+ * If a node_modules folder is present, but NO package.json, the node_modules are ignored completely.
+ * (For performance and memory reasons)
+ *
  * @export
  * @param {ExtensionConfig} config
  * @param {WorkspaceFolder} workspaceFolder
  * @returns {Promise<string[]>}
  */
 export async function findFiles(config: ExtensionConfig, workspaceFolder: WorkspaceFolder): Promise<string[]> {
+    const workspaceExcludes = [
+        ...config.resolver.workspaceIgnorePatterns,
+        'node_modules/**/*',
+        'typings/**/*',
+    ];
+    const moduleExcludes = config.resolver.moduleIgnorePatterns;
     const searches: PromiseLike<Uri[]>[] = [
         workspace.findFiles(
             new RelativePattern(workspaceFolder, `{${config.resolver.resolverModeFileGlobs.join(',')}}`),
-            new RelativePattern(workspaceFolder, '{**/node_modules/**,**/typings/**}'),
+            new RelativePattern(workspaceFolder, `{${workspaceExcludes.join(',')}}`),
         ),
     ];
 
     // TODO: check the package json and index javascript file in node_modules (?)
 
-    let globs: string[] = [];
-    let ignores = ['**/typings/**'];
-    const excludePatterns = config.resolver.ignorePatterns;
+    let globs: string[] = ['typings/**/*.d.ts'];
+    let ignores: string[] = [];
     const rootPath = workspaceFolder.uri.fsPath;
+    const hasPackageJson = existsSync(join(rootPath, 'package.json'));
 
-    if (rootPath && existsSync(join(rootPath, 'package.json'))) {
+    if (rootPath && hasPackageJson) {
         const packageJson = require(join(rootPath, 'package.json'));
-        if (packageJson['dependencies']) {
-            globs = globs.concat(
-                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
-            );
-            ignores = ignores.concat(
-                Object.keys(packageJson['dependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/node_modules/**`),
-            );
-        }
-        if (packageJson['devDependencies']) {
-            globs = globs.concat(
-                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/**/*.d.ts`),
-            );
-            ignores = ignores.concat(
-                Object.keys(packageJson['devDependencies']).filter(o => excludePatterns.indexOf(o) < 0)
-                    .map(o => `**/node_modules/${o}/node_modules/**`),
-            );
+        for (const folder of ['dependencies', 'devDependencies']) {
+            if (packageJson[folder]) {
+                globs = globs.concat(
+                    Object.keys(packageJson[folder]).map(o => `node_modules/${o}/**/*.d.ts`),
+                );
+                ignores = ignores.concat(
+                    Object.keys(packageJson[folder]).reduce(
+                        (all, pkg) => {
+                            return all.concat(
+                                moduleExcludes.map(exclude => `node_modules/${pkg}/${exclude}`),
+                            );
+                        },
+                        [] as string[],
+                    ),
+                );
+            }
         }
     } else {
-        globs.push('**/node_modules/**/*.d.ts');
+        ignores.push('node_modules/**/*');
     }
 
     searches.push(
@@ -147,22 +164,8 @@ export async function findFiles(config: ExtensionConfig, workspaceFolder: Worksp
         ),
     );
 
-    searches.push(
-        workspace.findFiles(
-            new RelativePattern(workspaceFolder, '**/typings/**/*.d.ts'),
-            new RelativePattern(workspaceFolder, '**/node_modules/**'),
-        ),
-    );
-
-    let uris = await Promise.all(searches);
-
-    uris = uris.map((o, idx) => idx === 0 ?
-        o.filter(
-            f => f.fsPath
-                .replace(rootPath || '', '')
-                .split(/[\\/]/)
-                .every(p => excludePatterns.indexOf(p) < 0)) :
-        o,
-    );
-    return uris.reduce((all, cur) => all.concat(cur), []).map(o => o.fsPath);
+    const uris = await Promise.all(searches);
+    return uris
+        .reduce((all, cur) => all.concat(cur), [])
+        .map(o => o.fsPath);
 }

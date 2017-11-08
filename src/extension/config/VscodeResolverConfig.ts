@@ -53,20 +53,39 @@ export class VscodeResolverConfig implements ResolverConfig {
     }
 
     /**
-     * Array of string that are excluded from indexing (e.g. build, out, node_modules).
-     * If those parts are found after the workspace path is striped away, the file is ignored.
+     * Array of string that are excluded from indexing of the workspace (e.g. build, out, dist).
+     * This patterns are ignored during indexing of the files found in the workspace.
+     * To exclude other files that are found in the node_modules, use moduleIgnorePatterns.
      *
      * @readonly
      * @type {string[]}
      * @memberof VscodeResolverConfig
      */
-    public get ignorePatterns(): string[] {
+    public get workspaceIgnorePatterns(): string[] {
         return this.workspaceSection.get(
-            'ignorePatterns',
+            'workspaceIgnorePatterns',
             [
-                'build',
-                'out',
-                'dist',
+                '**/build/**/*',
+                '**/out/**/*',
+                '**/dist/**/*',
+            ],
+        );
+    }
+
+    /**
+     * Array of string that are excluded from indexing of the modules (e.g. further node_modules).
+     * This patterns are ignored during indexing of the files found in the workspace.
+     * To exclude other files that are found in the node_modules, use moduleIgnorePatterns.
+     *
+     * @readonly
+     * @type {string[]}
+     * @memberof VscodeResolverConfig
+     */
+    public get moduleIgnorePatterns(): string[] {
+        return this.workspaceSection.get(
+            'moduleIgnorePatterns',
+            [
+                '**/node_modules/**/*',
             ],
         );
     }

@@ -26,6 +26,12 @@ interface WorkspaceIndex {
 // TODO move did change configuration to all indices
 // TODO: update index on change of configs
 
+/**
+ * Mapping class that manages the different indices for the workspaces.
+ *
+ * @export
+ * @class DeclarationIndexMapper
+ */
 @injectable()
 export class DeclarationIndexMapper {
     public readonly onStartIndexing: Event<WorkspaceIndex>;
@@ -57,6 +63,11 @@ export class DeclarationIndexMapper {
         this.context.subscriptions.push(this._onStartIndexing);
     }
 
+    /**
+     * Init method that runs after the DI construction of the object.
+     *
+     * @memberof DeclarationIndexMapper
+     */
     @postConstruct()
     public initialize(): void {
         this.context.subscriptions.push(workspace.onDidChangeWorkspaceFolders(e => this.workspaceChanged(e)));
@@ -72,6 +83,11 @@ export class DeclarationIndexMapper {
         this.logger.info('[%s] initialized', DeclarationIndexMapper.name);
     }
 
+    /**
+     * Method to rebuild all indices in the system.
+     *
+     * @memberof DeclarationIndexMapper
+     */
     public rebuildAll(): void {
         this.logger.info(
             '[%s] rebuilding all indices',
@@ -87,6 +103,13 @@ export class DeclarationIndexMapper {
         }
     }
 
+    /**
+     * Returns the index (or undefined) for a given file URI.
+     *
+     * @param {Uri} fileUri
+     * @returns {(DeclarationIndex | undefined)}
+     * @memberof DeclarationIndexMapper
+     */
     public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
         const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
         if (!workspaceFolder || !this.indizes[workspaceFolder.uri.fsPath]) {
@@ -101,6 +124,13 @@ export class DeclarationIndexMapper {
         return this.indizes[workspaceFolder.uri.fsPath].index;
     }
 
+    /**
+     * Eventhandler that is called when the workspaces changed (i.e. some where added or removed).
+     *
+     * @private
+     * @param {WorkspaceFoldersChangeEvent} event
+     * @memberof DeclarationIndexMapper
+     */
     private workspaceChanged(event: WorkspaceFoldersChangeEvent): void {
         this.logger.info(
             '[%s] workspaces changed, adjusting indices',
@@ -135,6 +165,14 @@ export class DeclarationIndexMapper {
         }
     }
 
+    /**
+     * Helper method to initialize an index.
+     *
+     * @private
+     * @param {WorkspaceFolder} folder
+     * @returns {Promise<void>}
+     * @memberof DeclarationIndexMapper
+     */
     private async initializeIndex(folder: WorkspaceFolder): Promise<void> {
         const profiler = this.logger.startTimer();
         this.logger.debug(
