@@ -185,10 +185,13 @@ describe('DeclarationIndexHelpers', () => {
         beforeEach(() => {
             config = {
                 resolver: {
-                    ignorePatterns: [
+                    workspaceIgnorePatterns: [
                         '**/build/**/*',
                         '**/dist/**/*',
                         '**/out/**/*',
+                    ],
+                    moduleIgnorePatterns: [
+                        '**/node_modules/**/*',
                     ],
                     resolverModeFileGlobs: [
                         '**/*.ts',
@@ -203,8 +206,7 @@ describe('DeclarationIndexHelpers', () => {
         it('should find all relevant file in the workspace (*.ts)', async () => {
             config.resolver.resolverModeFileGlobs = config.resolver.resolverModeFileGlobs.filter(o => o.indexOf('ts') >= 0);
             const result = await findFiles(config, workfolder);
-            console.log(result);
-            result.length.should.equal(50);
+            result.length.should.equal(51);
             (result.every(file => file.endsWith('.ts') || file.endsWith('.tsx'))).should.be.true;
             result.should.contain(join(rootPath, 'typings/globals/body-parser/index.d.ts'));
             result.should.contain(join(rootPath, 'foobar.ts'));
@@ -212,13 +214,13 @@ describe('DeclarationIndexHelpers', () => {
             result.should.contain(join(rootPath, 'extension/extensions/codeActionExtension/empty.ts'));
             result.should.contain(join(rootPath, 'node_modules/@types/node/index.d.ts'));
             result.should.contain(join(rootPath, 'node_modules/fancy-library/index.d.ts'));
+            result.should.contain(join(rootPath, 'node_modules/some-lib/dist/SomeDeclaration.d.ts'));
         });
 
         it('should find all relevant file in the workspace (*.js)', async () => {
             config.resolver.resolverModeFileGlobs = config.resolver.resolverModeFileGlobs.filter(o => o.indexOf('js') >= 0);
             const result = await findFiles(config, workfolder);
-            console.log(result);
-            result.length.should.equal(9);
+            result.length.should.equal(10);
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/addImportToDocument.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsfile.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsxfile.jsx'));
@@ -226,13 +228,13 @@ describe('DeclarationIndexHelpers', () => {
             result.should.not.contain(join(rootPath, 'extension/extensions/codeActionExtension/empty.ts'));
             result.should.contain(join(rootPath, 'node_modules/@types/node/index.d.ts'));
             result.should.contain(join(rootPath, 'node_modules/fancy-library/index.d.ts'));
+            result.should.contain(join(rootPath, 'node_modules/some-lib/dist/SomeDeclaration.d.ts'));
             result.should.contain(join(rootPath, 'typings/globals/body-parser/index.d.ts'));
         });
 
         it('should find all relevant file in the workspace (*.ts & *.js)', async () => {
             const result = await findFiles(config, workfolder);
-            console.log(result);
-            result.length.should.equal(53);
+            result.length.should.equal(54);
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/addImportToDocument.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsfile.js'));
             result.should.contain(join(rootPath, 'extension/extensions/importResolveExtension/jsxfile.jsx'));
@@ -254,13 +256,20 @@ describe('DeclarationIndexHelpers', () => {
         });
 
         it('should contain build files when configured otherwise', async () => {
-            config.resolver.ignorePatterns = [];
+            config.resolver.workspaceIgnorePatterns = [];
             const result = await findFiles(config, workfolder);
-            console.log(result);
             result.should.contain(join(rootPath, 'build/app.js'));
             result.should.contain(join(rootPath, 'build/app.d.ts'));
             result.should.contain(join(rootPath, 'out/out.js'));
             result.should.contain(join(rootPath, 'out/out.d.ts'));
+        });
+
+        it('should not contain certain files of the modules when configured as such', async () => {
+            config.resolver.moduleIgnorePatterns = [
+                '**/dist/**/*',
+            ];
+            const result = await findFiles(config, workfolder);
+            result.should.not.contain(join(rootPath, 'node_modules/some-lib/dist/SomeDeclaration.d.ts'));
         });
 
         describe('without package.json', () => {
