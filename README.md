@@ -90,22 +90,23 @@ The following settings do have the prefix `codeCompletion`. So an example settin
 The following settings do have the prefix `resolver`. So an example setting could be
 `typescriptHero.resolver.stringQuoteStyle`.
 
-| Setting                               | Description                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------------ |
-| stringQuoteStyle                      | The string delimiter to use for the imports (`'` or `"`)                             |
-| ignorePatterns                        | If any of these strings is part of a file path, the file is ignored                  |
-| insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`) |
-| insertSemicolons                      | If the extension should add a semicolon to the end of a statement                    |
-| multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                     |
-| multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line |
-| disableImportSorting                  | Disable sorting during organize imports action                                       |
-| disableImportRemovalOnOrganize        | Disable removal unsed imports during organize imports action                         |
-| importGroups                          | The groups that are used for sorting the imports (description below)                 |
-| ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                   |
-| resolverMode                          | Which files should be considered to index for TypeScript Hero                        |
-| organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document               |
-| organizeSortsByFirstSpecifier         | When organizing runs, sort by first specifier/alias (if any) instead of module path  |
-| promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers            |
+| Setting                               | Description                                                                                   |
+| ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| stringQuoteStyle                      | The string delimiter to use for the imports (`'` or `"`)                                      |
+| workspaceIgnorePatterns               | If any of these strings is part of a file path, the file is ignored during workspace indexing |
+| moduleIgnorePatterns                  | If any of these strings is part of a file path, the file is ignored during module indexing    |
+| insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`)          |
+| insertSemicolons                      | If the extension should add a semicolon to the end of a statement                             |
+| multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                              |
+| multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line          |
+| disableImportSorting                  | Disable sorting during organize imports action                                                |
+| disableImportRemovalOnOrganize        | Disable removal unsed imports during organize imports action                                  |
+| importGroups                          | The groups that are used for sorting the imports (description below)                          |
+| ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                            |
+| resolverMode                          | Which files should be considered to index for TypeScript Hero                                 |
+| organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document                        |
+| organizeSortsByFirstSpecifier         | When organizing runs, sort by first specifier/alias (if any) instead of module path           |
+| promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers                     |
 
 ### Code outline view
 
