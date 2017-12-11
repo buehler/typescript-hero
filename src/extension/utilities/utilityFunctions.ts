@@ -1,5 +1,5 @@
-import { ImportGroup, RegexImportGroup } from '../import-grouping';
-import { basename } from 'path';
+import { basename, parse } from 'path';
+import { ScriptKind } from 'typescript';
 import {
     ClassDeclaration,
     ConstructorDeclaration,
@@ -24,6 +24,8 @@ import {
     VariableDeclaration,
 } from 'typescript-parser';
 import { CompletionItemKind } from 'vscode';
+
+import { ImportGroup, RegexImportGroup } from '../import-grouping';
 
 /**
  * String-Sort function.
@@ -199,5 +201,31 @@ export function getItemKind(declaration: Declaration): CompletionItemKind {
             return CompletionItemKind.Method;
         default:
             return CompletionItemKind.Reference;
+    }
+}
+
+/**
+ * Calculates the scriptkind for the typescript parser based on filepath.
+ *
+ * @export
+ * @param {string} filePath
+ * @returns {ScriptKind}
+ */
+export function getScriptKind(filePath: string | undefined): ScriptKind {
+    if (!filePath) {
+        return ScriptKind.TS;
+    }
+    const parsed = parse(filePath);
+    switch (parsed.ext) {
+        case '.ts':
+            return ScriptKind.TS;
+        case '.tsx':
+            return ScriptKind.TSX;
+        case '.js':
+            return ScriptKind.JS;
+        case '.jsx':
+            return ScriptKind.JSX;
+        default:
+            return ScriptKind.Unknown;
     }
 }

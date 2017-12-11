@@ -22,6 +22,7 @@ import { TypescriptCodeGeneratorFactory } from '../../common/factories';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import { Changeable } from '../proxy-objects/Changeable';
+import { getScriptKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
@@ -104,7 +105,7 @@ export class ClassManager implements ObjectManager {
      * @memberof ClassManager
      */
     public static async create(document: TextDocument, className: string): Promise<ClassManager> {
-        const source = await ClassManager.parser.parseSource(document.getText());
+        const source = await ClassManager.parser.parseSource(document.getText(), getScriptKind(document.fileName));
         const managedClass = source.declarations.find(
             o => o.name === className && o instanceof ClassDeclaration,
         ) as ClassDeclaration;

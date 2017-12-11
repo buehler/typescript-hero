@@ -30,6 +30,7 @@ import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
 import {
+    getScriptKind,
     importGroupSortForPrecedence,
     importSort,
     importSortByFirstSpecifier,
@@ -123,7 +124,7 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public static async create(document: TextDocument): Promise<ImportManager> {
-        const source = await ImportManager.parser.parseSource(document.getText());
+        const source = await ImportManager.parser.parseSource(document.getText(), getScriptKind(document.fileName));
         return new ImportManager(document, source);
     }
 
@@ -324,7 +325,10 @@ export class ImportManager implements ObjectManager {
 
         if (result) {
             delete this.organize;
-            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            this._parsedDocument = await ImportManager.parser.parseSource(
+                this.document.getText(),
+                getScriptKind(this.document.fileName),
+            );
             this.imports = this._parsedDocument.imports.map(o => o.clone());
             for (const group of this.importGroups) {
                 group.reset();

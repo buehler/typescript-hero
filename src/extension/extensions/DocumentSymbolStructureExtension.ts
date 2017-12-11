@@ -21,6 +21,7 @@ import { DisabledStructureTreeItem } from '../provider-items/document-structure/
 import { ImportsStructureTreeItem } from '../provider-items/document-structure/ImportsStructureTreeItem';
 import { NotParseableStructureTreeItem } from '../provider-items/document-structure/NotParseableStructureTreeItem';
 import { ResourceStructureTreeItem } from '../provider-items/document-structure/ResourceStructureTreeItem';
+import { getScriptKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
@@ -101,7 +102,10 @@ export class DocumentSymbolStructureExtension extends BaseExtension implements T
 
         if (!this.documentCache) {
             try {
-                this.documentCache = await this.parser.parseSource(window.activeTextEditor.document.getText());
+                this.documentCache = await this.parser.parseSource(
+                    window.activeTextEditor.document.getText(),
+                    getScriptKind(window.activeTextEditor.document.fileName),
+                );
             } catch (e) {
                 this.logger.error(
                     '[%s] document could not be parsed, error: %s',

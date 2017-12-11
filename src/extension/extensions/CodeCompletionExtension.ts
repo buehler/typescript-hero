@@ -17,7 +17,7 @@ import { getDeclarationsFilteredByImports } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers/ImportManager';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
-import { getItemKind } from '../utilities/utilityFunctions';
+import { getItemKind, getScriptKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
@@ -133,7 +133,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
         );
         const profiler = this.logger.startTimer();
 
-        const parsed = await this.parser.parseSource(document.getText());
+        const parsed = await this.parser.parseSource(document.getText(), getScriptKind(document.fileName));
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
             document.fileName,
