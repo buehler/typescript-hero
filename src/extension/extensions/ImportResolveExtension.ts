@@ -7,6 +7,7 @@ import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import { iocSymbols } from '../IoCSymbols';
 import { ImportManager } from '../managers';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
+import { getScriptKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { BaseExtension } from './BaseExtension';
 
@@ -349,7 +350,7 @@ export class ImportResolveExtension extends BaseExtension {
             { cursorSymbol, file: documentPath },
         );
 
-        const parsedSource = await this.parser.parseSource(documentSource);
+        const parsedSource = await this.parser.parseSource(documentSource, getScriptKind(documentPath));
         const activeDocumentDeclarations = parsedSource.declarations.map(o => o.name);
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,
@@ -394,7 +395,7 @@ export class ImportResolveExtension extends BaseExtension {
             { file: documentPath },
         );
 
-        const parsedDocument = await this.parser.parseSource(documentSource);
+        const parsedDocument = await this.parser.parseSource(documentSource, getScriptKind(documentPath));
         const missingDeclarations: (DeclarationInfo)[] = [];
         const declarations = getDeclarationsFilteredByImports(
             index.declarationInfos,

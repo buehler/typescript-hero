@@ -5,6 +5,7 @@ import { Command, Diagnostic, TextDocument, workspace } from 'vscode';
 import { getAbsolutLibraryName } from '../../common/helpers';
 import { iocSymbols } from '../IoCSymbols';
 import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
+import { getScriptKind } from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ImplementPolymorphElements, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
@@ -78,7 +79,7 @@ export class MissingImplementationInClassCreator extends CodeActionCreator {
             types = genericMatch[2].split(',').map(t => t.trim());
         }
 
-        const parsedDocument = await this.parser.parseSource(document.getText());
+        const parsedDocument = await this.parser.parseSource(document.getText(), getScriptKind(document.fileName));
         const alreadyImported = parsedDocument.imports.find(
             o => o instanceof NamedImport && o.specifiers.some(s => s.specifier === specifier),
         );
