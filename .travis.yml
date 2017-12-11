@@ -60,7 +60,7 @@ jobs:
       script:
         - yarn build
         - yarn global add vsce
-        - yarn install --no-lockfile semantic-release@^8.2.0 semantic-release-visualstudio-marketplace-version
+        - yarn add --no-lockfile semantic-release@^8.2.0 semantic-release-visualstudio-marketplace-version
         - semantic-release pre
         - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
       after_script:
