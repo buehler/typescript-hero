@@ -211,7 +211,10 @@ export function getItemKind(declaration: Declaration): CompletionItemKind {
  * @param {string} filePath
  * @returns {ScriptKind}
  */
-export function getScriptKind(filePath: string): ScriptKind {
+export function getScriptKind(filePath: string | undefined): ScriptKind {
+    if (!filePath) {
+        return ScriptKind.TS;
+    }
     const parsed = parse(filePath);
     switch (parsed.ext) {
         case '.ts':
