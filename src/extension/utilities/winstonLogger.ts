@@ -1,5 +1,4 @@
-import { join } from 'path';
-import { ExtensionContext, OutputChannel, window, workspace } from 'vscode';
+import { ExtensionContext, OutputChannel, window } from 'vscode';
 
 const { createLogger, exceptions, format, transports } = require('winston');
 const transport = require('winston-transport');
@@ -55,30 +54,30 @@ class ConsoleLogTransport extends Transport {
     }
 }
 
-class HandleUncatchedException extends Transport {
-    constructor(private path: string) {
-        super();
-    }
+// class HandleUncatchedException extends Transport {
+//     constructor(private path: string) {
+//         super();
+//     }
 
-    public async log(info: any, callback: any): Promise<void> {
-        setImmediate(() => {
-            this.emit('logged', info);
-        });
+//     public async log(info: any, callback: any): Promise<void> {
+//         setImmediate(() => {
+//             this.emit('logged', info);
+//         });
 
-        const result = await window.showErrorMessage(
-            'There was an uncought exception, do you want to see the logfile?',
-            { modal: true },
-            'Yes, show me.',
-        );
+//         const result = await window.showErrorMessage(
+//             'There was an uncaught exception, do you want to see the logfile?',
+//             { modal: true },
+//             'Yes, show me.',
+//         );
 
-        if (result) {
-            const doc = await workspace.openTextDocument(join(this.path, 'typescript-hero.log'));
-            await window.showTextDocument(doc);
-        }
+//         if (result) {
+//             const doc = await workspace.openTextDocument(join(this.path, 'typescript-hero.log'));
+//             await window.showTextDocument(doc);
+//         }
 
-        callback();
-    }
-}
+//         callback();
+//     }
+// }
 
 export interface Logger {
     error: (message: string, ...data: any[]) => void;
@@ -117,8 +116,8 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
         loggerTransports.push(outputHandler);
 
         exceptions.handle(fileHandler);
-        exceptions.handle(outputHandler);
-        exceptions.handle(new HandleUncatchedException(context.extensionPath));
+        // exceptions.handle(outputHandler);
+        // exceptions.handle(new HandleUncatchedException(context.extensionPath));
     }
 
     const logger = createLogger({

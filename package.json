@@ -56,46 +56,40 @@
   },
   "homepage": "https://buehler.github.io/typescript-hero/",
   "scripts": {
-    "vscode:prepublish": "yarn install --production",
     "predevelop": "del-cli ./out",
     "develop": "tsc",
     "postinstall": "node ./etc/test_install.js && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
     "lint": "tslint -c tslint.json --project ./config/tsconfig.build.json",
     "pretest": "del-cli ./out && tsc -p ./config/tsconfig.test.json && yarn lint",
     "test": "node ./node_modules/vscode/bin/test",
-    "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json",
-    "package": "yarn build && del-cli './*.vsix' && vsce package",
-    "semantic-release-pre": "semantic-release pre",
-    "semantic-release": "yarn semantic-release-pre && vsce package && vsce publish -p $VSCE_TOKEN && yarn install && semantic-release post"
+    "build": "del-cli ./out && tsc -p ./config/tsconfig.build.json"
   },
   "devDependencies": {
-    "@types/chai": "^4.0.4",
+    "@types/chai": "^4.0.8",
     "@types/mocha": "^2.2.44",
-    "@types/node": "^8.0.47",
+    "@types/node": "^8.0.57",
     "@types/reflect-metadata": "0.0.5",
-    "@types/sinon": "^2.3.7",
+    "@types/sinon": "^4.1.0",
     "@types/sinon-chai": "^2.7.29",
     "chai": "^4.1.2",
     "cross-env": "^5.1.1",
     "del-cli": "^1.1.0",
     "filewalker": "^0.1.3",
     "mocha-testdata": "^1.2.0",
-    "semantic-release": "^8.2.0",
-    "semantic-release-visualstudio-marketplace-version": "^1.0.0",
-    "sinon": "^4.0.2",
+    "sinon": "^4.1.3",
     "sinon-chai": "^2.14.0",
     "tslint": "^5.8.0",
-    "tslint-config-airbnb": "^5.3.0",
-    "tsutils": "^2.12.1",
-    "vscode": "^1.1.6"
+    "tslint-config-airbnb": "^5.4.2",
+    "tsutils": "^2.13.0",
+    "vscode": "^1.1.10"
   },
   "dependencies": {
-    "inversify": "^4.3.0",
-    "inversify-inject-decorators": "^3.0.1",
+    "inversify": "^4.6.0",
+    "inversify-inject-decorators": "^3.0.2",
     "reflect-metadata": "^0.1.10",
-    "tslib": "^1.8.0",
-    "typescript": "~2.5.3",
-    "typescript-parser": "^2.2.1",
+    "tslib": "^1.8.1",
+    "typescript": "~2.6.2",
+    "typescript-parser": "^2.2.2",
     "winston": "^3.0.0-rc1"
   },
   "activationEvents": [
@@ -214,18 +208,30 @@
           "description": "Defines if single or double quotes should be used.",
           "scope": "resource"
         },
-        "typescriptHero.resolver.ignorePatterns": {
+        "typescriptHero.resolver.workspaceIgnorePatterns": {
           "type": "array",
           "items": {
             "type": "string"
           },
           "uniqueItems": true,
           "default": [
-            "build",
-            "out",
-            "dist"
+            "**/build/**/*",
+            "**/out/**/*",
+            "**/dist/**/*"
           ],
-          "description": "Defines partial pathes that are ignored during indexing (e.g. 'node_modules' would exclude all modules).",
+          "description": "Defines partial pathes (globs) that are ignored during indexing of the **workspace** (e.g. 'node_modules/**/*' would exclude all modules).",
+          "scope": "resource"
+        },
+        "typescriptHero.resolver.moduleIgnorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "**/node_modules/**/*"
+          ],
+          "description": "Defines partial pathes (globs) that are ignored during indexing of the **node_modules**. This patterns are attached to the node_module/<name> of each found module.",
           "scope": "resource"
         },
         "typescriptHero.resolver.multiLineWrapThreshold": {
@@ -257,6 +263,12 @@
           "type": "boolean",
           "default": false,
           "description": "Defines if the imports should be organized on save.",
+          "scope": "resource"
+        },
+        "typescriptHero.resolver.organizeSortsByFirstSpecifier": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defines if the imports are organized by first specifier/alias instead of module path.",
           "scope": "resource"
         },
         "typescriptHero.resolver.ignoreImportsForOrganize": {

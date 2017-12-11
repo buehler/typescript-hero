@@ -7,6 +7,8 @@ import { DeclarationIndexMapper } from '../utilities/DeclarationIndexMapper';
 import { AddImportCodeAction, AddMissingImportsCodeAction, NoopCodeAction } from './CodeAction';
 import { CodeActionCreator } from './CodeActionCreator';
 
+const REGEX_CANNOT_FIND_IMPORT = /cannot find name (['"])(.*)\1/i;
+
 /**
  * Action creator that handles missing imports in files.
  *
@@ -32,7 +34,7 @@ export class MissingImportCreator extends CodeActionCreator {
      * @memberof MissingImportCreator
      */
     public canHandleDiagnostic(diagnostic: Diagnostic): boolean {
-        return /cannot find name ['"](.*)['"]/ig.test(diagnostic.message);
+        return REGEX_CANNOT_FIND_IMPORT.test(diagnostic.message);
     }
 
     /**
@@ -46,7 +48,7 @@ export class MissingImportCreator extends CodeActionCreator {
      * @memberof MissingImportCreator
      */
     public async handleDiagnostic(document: TextDocument, commands: Command[], diagnostic: Diagnostic): Promise<Command[]> {
-        const match = /cannot find name ['"](.*)['"]/ig.exec(diagnostic.message);
+        const match = REGEX_CANNOT_FIND_IMPORT.exec(diagnostic.message);
         const index = this.indices.getIndexForFile(document.uri);
 
         if (!match || !index) {
@@ -57,7 +59,7 @@ export class MissingImportCreator extends CodeActionCreator {
             return commands;
         }
 
-        const infos = index.declarationInfos.filter(o => o.declaration.name === match[1]);
+        const infos = index.declarationInfos.filter(o => o.declaration.name === match[2]);
         if (infos.length > 0) {
             for (const info of infos) {
                 commands.push(this.createCommand(
@@ -87,13 +89,13 @@ export class MissingImportCreator extends CodeActionCreator {
             }
         } else {
             commands.push(this.createCommand(
-                `Cannot find "${match[1]}" in the index.`,
+                `Cannot find "${match[2]}" in the index.`,
                 new NoopCodeAction(),
             ));
             this.logger.debug(
                 '[%s] class not found in index',
                 MissingImportCreator.name,
-                { specifier: match[1] },
+                { specifier: match[2] },
             );
         }
 

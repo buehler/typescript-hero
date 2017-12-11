@@ -29,7 +29,13 @@ import { importRange } from '../helpers';
 import { ImportGroup } from '../import-grouping';
 import { Container } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { importSort, specifierSort } from '../utilities/utilityFunctions';
+import {
+    getScriptKind,
+    importGroupSortForPrecedence,
+    importSort,
+    importSortByFirstSpecifier,
+    specifierSort,
+} from '../utilities/utilityFunctions';
 import { Logger } from '../utilities/winstonLogger';
 import { ObjectManager } from './ObjectManager';
 
@@ -118,7 +124,7 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     public static async create(document: TextDocument): Promise<ImportManager> {
-        const source = await ImportManager.parser.parseSource(document.getText());
+        const source = await ImportManager.parser.parseSource(document.getText(), getScriptKind(document.fileName));
         return new ImportManager(document, source);
     }
 
@@ -273,9 +279,13 @@ export class ImportManager implements ObjectManager {
         }
 
         if (!this.config.resolver.disableImportSorting) {
+            const sorter = this.config.resolver.organizeSortsByFirstSpecifier
+                ? importSortByFirstSpecifier
+                : importSort;
+
             keep = [
-                ...keep.filter(o => o instanceof StringImport).sort(importSort),
-                ...keep.filter(o => !(o instanceof StringImport)).sort(importSort),
+                ...keep.filter(o => o instanceof StringImport).sort(sorter),
+                ...keep.filter(o => !(o instanceof StringImport)).sort(sorter),
             ];
         }
 
@@ -315,7 +325,10 @@ export class ImportManager implements ObjectManager {
 
         if (result) {
             delete this.organize;
-            this._parsedDocument = await ImportManager.parser.parseSource(this.document.getText());
+            this._parsedDocument = await ImportManager.parser.parseSource(
+                this.document.getText(),
+                getScriptKind(this.document.fileName),
+            );
             this.imports = this._parsedDocument.imports.map(o => o.clone());
             for (const group of this.importGroups) {
                 group.reset();
@@ -409,8 +422,9 @@ export class ImportManager implements ObjectManager {
      * @memberof ImportManager
      */
     private addImportsToGroups(imports: Import[]): void {
+        const importGroupsWithPrecedence = importGroupSortForPrecedence(this.importGroups);
         for (const tsImport of imports) {
-            for (const group of this.importGroups) {
+            for (const group of importGroupsWithPrecedence) {
                 if (group.processImport(tsImport)) {
                     break;
                 }
