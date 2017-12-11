@@ -40,7 +40,8 @@ export class ImportStructureTreeItem extends BaseStructureTreeItem {
         const imp = this.tsImport;
         if (imp instanceof ExternalModuleImport) {
             return [new ImportSpecifierStructureTreeItem(imp.alias, imp, this.context)];
-        } else if (imp instanceof NamedImport) {
+        }
+        if (imp instanceof NamedImport) {
             const specifiers = imp.specifiers.map(
                 s => new ImportSpecifierStructureTreeItem(
                     `${s.specifier}${s.alias ? ` as ${s.alias}` : ''}`,
@@ -53,7 +54,8 @@ export class ImportStructureTreeItem extends BaseStructureTreeItem {
             }
 
             return specifiers;
-        } else if (imp instanceof NamespaceImport) {
+        }
+        if (imp instanceof NamespaceImport) {
             return [new ImportSpecifierStructureTreeItem(imp.alias, imp, this.context)];
         }
         return [];
