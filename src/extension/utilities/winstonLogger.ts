@@ -117,8 +117,8 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
         loggerTransports.push(outputHandler);
 
         exceptions.handle(fileHandler);
-        exceptions.handle(outputHandler);
-        exceptions.handle(new HandleUncatchedException(context.extensionPath));
+        // exceptions.handle(outputHandler);
+        // exceptions.handle(new HandleUncatchedException(context.extensionPath));
     }
 
     const logger = createLogger({
