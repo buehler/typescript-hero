@@ -31,7 +31,7 @@ container
 container
     .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
     .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
-        return (resource?: Uri) => {
+        return (resource: Uri | null) => {
             const configFactory = context.container.get<ConfigFactory>(iocSymbols.configuration);
             return new TypescriptCodeGenerator(configFactory(resource).resolver.generationOptions);
         };
@@ -53,7 +53,7 @@ container
     .bind<Logger>(iocSymbols.logger)
     .toDynamicValue((context: interfaces.Context) => {
         const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
-        const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
+        const config = context.container.get<ConfigFactory>(iocSymbols.configuration)(null);
         return winstonLogger(config.verbosity, extContext);
     })
     .inSingletonScope();

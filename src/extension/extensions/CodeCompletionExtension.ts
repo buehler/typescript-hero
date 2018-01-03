@@ -49,7 +49,7 @@ export class CodeCompletionExtension extends BaseExtension implements Completion
      * @memberof CodeCompletionExtension
      */
     public initialize(): void {
-        for (const lang of this.config().possibleLanguages) {
+        for (const lang of this.config(null).possibleLanguages) {
             this.context.subscriptions.push(languages.registerCompletionItemProvider(lang, this));
         }
 

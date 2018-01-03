@@ -8,4 +8,4 @@ import { ExtensionConfig } from '../config';
  */
 export type TypescriptCodeGeneratorFactory = () => TypescriptCodeGenerator;
 
-export type ConfigFactory = (resource?: Uri) => ExtensionConfig;
+export type ConfigFactory = (resource: Uri | null) => ExtensionConfig;
