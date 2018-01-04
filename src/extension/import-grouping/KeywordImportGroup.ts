@@ -3,7 +3,7 @@ import { Import, StringImport } from 'typescript-parser';
 import { ConfigFactory } from '../../common/factories/index';
 import { IocDecorators } from '../IoC';
 import { iocSymbols } from '../IoCSymbols';
-import { importSort } from '../utilities/utilityFunctions';
+import { importSort, importSortByFirstSpecifier } from '../utilities/utilityFunctions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupKeyword } from './ImportGroupKeyword';
 import { ImportGroupOrder } from './ImportGroupOrder';
@@ -22,7 +22,9 @@ export class KeywordImportGroup implements ImportGroup {
     private config: ConfigFactory;
 
     public get sortedImports(): Import[] {
-        return this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
+        const config = this.config(null);
+        const sorter = config.resolver.organizeSortsByFirstSpecifier ? importSortByFirstSpecifier : importSort;
+        return this.imports.sort((i1, i2) => sorter(i1, i2, this.order));
     }
 
     constructor(public readonly keyword: ImportGroupKeyword, public readonly order: ImportGroupOrder = 'asc') { }
