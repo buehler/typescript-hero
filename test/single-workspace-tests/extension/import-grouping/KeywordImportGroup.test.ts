@@ -15,6 +15,7 @@ describe('KeywordImportGroup', () => {
 
     const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     let file: File;
+    let specifiersFile: File;
     let importGroup: KeywordImportGroup;
     let generator: TypescriptCodeGenerator;
 
@@ -25,6 +26,13 @@ describe('KeywordImportGroup', () => {
             join(
                 rootPath,
                 'extension/import-grouping/imports.ts',
+            ),
+            rootPath,
+        );
+        specifiersFile = await parser.parseFile(
+            join(
+                rootPath,
+                'extension/import-grouping/first-specifier-imports.ts',
             ),
             rootPath,
         );
@@ -52,29 +60,72 @@ describe('KeywordImportGroup', () => {
             file.imports.map(i => importGroup.processImport(i)).should.deep.equal([false, false, false, false, true, true]);
         });
 
-        it('should generate the correct typescript (asc)', () => {
-            for (const imp of file.imports) {
-                if (importGroup.processImport(imp)) {
-                    continue;
+        describe('when sorting by module paths', () => {
+            it('should generate the correct typescript (asc)', () => {
+                for (const imp of file.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
                 }
-            }
-            generator.generate(importGroup as any).should.equal(
-                `import { AnotherModuleFoo } from 'anotherLib';\n` +
-                `import { ModuleFoobar } from 'myLib';\n`,
-            );
+                generator.generate(importGroup as any).should.equal(
+                    `import { AnotherModuleFoo } from 'anotherLib';\n` +
+                    `import { ModuleFoobar } from 'myLib';\n`,
+                );
+            });
+
+            it('should generate the correct typescript (desc)', () => {
+                (importGroup as any).order = 'desc';
+                for (const imp of file.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
+                }
+                generator.generate(importGroup as any).should.equal(
+                    `import { ModuleFoobar } from 'myLib';\n` +
+                    `import { AnotherModuleFoo } from 'anotherLib';\n`,
+                );
+            });
         });
 
-        it('should generate the correct typescript (desc)', () => {
-            (importGroup as any).order = 'desc';
-            for (const imp of file.imports) {
-                if (importGroup.processImport(imp)) {
-                    continue;
+        describe('when sorting by first specifiers', () => {
+            before(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', true);
+            });
+
+            after(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', false);
+            });
+
+            it('should generate the correct typescript (asc)', () => {
+                for (const imp of specifiersFile.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
                 }
-            }
-            generator.generate(importGroup as any).should.equal(
-                `import { ModuleFoobar } from 'myLib';\n` +
-                `import { AnotherModuleFoo } from 'anotherLib';\n`,
-            );
+                generator.generate(importGroup as any).should.equal(
+                    "import { AnotherFoobar } from 'someOtherLib';\n" +
+                    "import { Foobar, Genero } from 'someLib';\n" +
+                    "import ModuleFoobar from 'myLib';\n" +
+                    "import { AnotherModuleFoo as MuchFurtherSorted } from 'anotherLib';\n"
+                );
+            });
+
+            it('should generate the correct typescript (desc)', () => {
+                (importGroup as any).order = 'desc';
+                for (const imp of specifiersFile.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
+                }
+                generator.generate(importGroup as any).should.equal(
+                    "import { AnotherModuleFoo as MuchFurtherSorted } from 'anotherLib';\n" +
+                    "import ModuleFoobar from 'myLib';\n" +
+                    "import { Foobar, Genero } from 'someLib';\n" +
+                    "import { AnotherFoobar } from 'someOtherLib';\n"
+                );
+            });
         });
 
     });
@@ -125,7 +176,6 @@ describe('KeywordImportGroup', () => {
                 `import './workspaceSideEffectLib';\n`,
             );
         });
-
     });
 
     describe(`keyword "Workspace"`, () => {
@@ -150,29 +200,72 @@ describe('KeywordImportGroup', () => {
             file.imports.map(i => importGroup.processImport(i)).should.deep.equal([false, false, true, true, false, false]);
         });
 
-        it('should generate the correct typescript (asc)', () => {
-            for (const imp of file.imports) {
-                if (importGroup.processImport(imp)) {
-                    continue;
+        describe('when sorting by module paths', () => {
+            it('should generate the correct typescript (asc)', () => {
+                for (const imp of file.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
                 }
-            }
-            generator.generate(importGroup as any).should.equal(
-                `import { AnotherFoobar } from './anotherFile';\n` +
-                `import { Foobar } from './myFile';\n`,
-            );
+                generator.generate(importGroup as any).should.equal(
+                    `import { AnotherFoobar } from './anotherFile';\n` +
+                    `import { Foobar } from './myFile';\n`,
+                );
+            });
+
+            it('should generate the correct typescript (desc)', () => {
+                (importGroup as any).order = 'desc';
+                for (const imp of file.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
+                }
+                generator.generate(importGroup as any).should.equal(
+                    `import { Foobar } from './myFile';\n` +
+                    `import { AnotherFoobar } from './anotherFile';\n`,
+                );
+            });
         });
 
-        it('should generate the correct typescript (desc)', () => {
-            (importGroup as any).order = 'desc';
-            for (const imp of file.imports) {
-                if (importGroup.processImport(imp)) {
-                    continue;
+        describe('when sorting by first specifiers', () => {
+            before(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', true);
+            });
+
+            after(async () => {
+                const config = workspace.getConfiguration('typescriptHero');
+                await config.update('resolver.organizeSortsByFirstSpecifier', false);
+            });
+
+            it('should generate the correct typescript (asc)', () => {
+                for (const imp of specifiersFile.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
                 }
-            }
-            generator.generate(importGroup as any).should.equal(
-                `import { Foobar } from './myFile';\n` +
-                `import { AnotherFoobar } from './anotherFile';\n`,
-            );
+                generator.generate(importGroup as any).should.equal(
+                    "import { AnotherFoobarWS } from './someOtherWS';\n" +
+                    "import { FoobarWS, GeneroWS } from './someWS';\n" +
+                    "import ModuleFoobarWS from './myWS';\n" +
+                    "import { AnotherModuleFoo as MuchFurtherSortedWS } from './anotherWS';\n"
+                );
+            });
+
+            it('should generate the correct typescript (desc)', () => {
+                (importGroup as any).order = 'desc';
+                for (const imp of specifiersFile.imports) {
+                    if (importGroup.processImport(imp)) {
+                        continue;
+                    }
+                }
+                generator.generate(importGroup as any).should.equal(
+                    "import { AnotherModuleFoo as MuchFurtherSortedWS } from './anotherWS';\n" +
+                    "import ModuleFoobarWS from './myWS';\n" +
+                    "import { FoobarWS, GeneroWS } from './someWS';\n" +
+                    "import { AnotherFoobarWS } from './someOtherWS';\n"
+                );
+            });
         });
 
     });

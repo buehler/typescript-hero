@@ -1,12 +1,15 @@
 import { Import, StringImport } from 'typescript-parser';
 
-import { importSort } from '../utilities/utilityFunctions';
+import { ConfigFactory } from '../../common/factories';
+import { IocDecorators } from '../IoC';
+import { iocSymbols } from '../IoCSymbols';
+import { importSort, importSortByFirstSpecifier } from '../utilities/utilityFunctions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupOrder } from './ImportGroupOrder';
 
 /**
  * Importgroup that processes all imports that match a certain regex (the lib name).
- * 
+ *
  * @export
  * @class RegexImportGroup
  * @implements {ImportGroup}
@@ -14,8 +17,13 @@ import { ImportGroupOrder } from './ImportGroupOrder';
 export class RegexImportGroup implements ImportGroup {
     public readonly imports: Import[] = [];
 
+    @IocDecorators.lazyInject(iocSymbols.configuration)
+    private config: ConfigFactory;
+
     public get sortedImports(): Import[] {
-        const sorted = this.imports.sort((i1, i2) => importSort(i1, i2, this.order));
+        const config = this.config(null);
+        const sorter = config.resolver.organizeSortsByFirstSpecifier ? importSortByFirstSpecifier : importSort;
+        const sorted = this.imports.sort((i1, i2) => sorter(i1, i2, this.order));
         return [
             ...sorted.filter(i => i instanceof StringImport),
             ...sorted.filter(i => !(i instanceof StringImport)),
@@ -26,8 +34,8 @@ export class RegexImportGroup implements ImportGroup {
      * Creates an instance of RegexImportGroup.
      *
      * @param {string} regex The regex that is matched against the imports library name.
-     * @param {ImportGroupOrder} [order='asc'] 
-     * 
+     * @param {ImportGroupOrder} [order='asc']
+     *
      * @memberof RegexImportGroup
      */
     constructor(public readonly regex: string, public readonly order: ImportGroupOrder = 'asc') { }
