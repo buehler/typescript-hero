@@ -18,7 +18,7 @@
     "Other",
     "Languages"
   ],
-  "main": "./out/src/extension/extension",
+  "main": "./out/extension",
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "license": "MIT",
   "contributors": [],
@@ -62,7 +62,7 @@
     "develop": "npm run clean && tsc -p .",
     "lint": "tslint -c ./tslint.json -p ./config/tsconfig.build.json",
     "test": "npm run lint && npm run clean && jest -c ./jest.json",
-    "test:watch": "npm run clean && jest -c ./jest.json --watch",
+    "test:watch": "npm run clean && jest -c ./jest.json --watch --no-coverage",
     "test:vscode": "echo 'beside unit test with jest, there could be integration test with node ./node_modules/vscode/bin/test'"
   },
   "devDependencies": {
