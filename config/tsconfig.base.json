@@ -21,7 +21,7 @@
         "../test/**/*"
     ],
     "exclude": [
-        "../test/_workspace",
-        "../test/_workspace_2"
+        "../test/_old",
+        "../src/_old"
     ]
 }
