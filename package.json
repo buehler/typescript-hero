@@ -83,7 +83,6 @@
     "sinon-chai": "^2.14.0",
     "ts-jest": "^22.0.1",
     "tslint": "^5.8.0",
-    "tslint-config-airbnb": "^5.4.2",
     "tsutils": "^2.16.0",
     "vscode": "^1.1.10"
   },
