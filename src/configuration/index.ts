@@ -22,4 +22,13 @@ export default class Configuration {
       workspace.onDidChangeConfiguration(() => this._configurationChanged.next()),
     );
   }
+
+  public parseableLanguages(): string[] {
+    return [
+      'typescript',
+      'typescriptreact',
+      'javascript',
+      'javascriptreact',
+    ];
+  }
 }

@@ -7,7 +7,7 @@ import BaseStructureTreeItem from './base-structure-tree-item';
  * @class NotParseableStructureTreeItem
  * @extends {BaseStructureTreeItem}
  */
-export class NotParseableStructureTreeItem extends BaseStructureTreeItem {
+export default class NotParseableStructureTreeItem extends BaseStructureTreeItem {
   constructor() {
     super('File not parseable.');
   }

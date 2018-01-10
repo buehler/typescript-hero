@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { Container, interfaces } from 'inversify';
+import { TypescriptParser } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import Activatable from './activatable';
@@ -30,5 +31,8 @@ ioc
     return winstonLogger('debug', extContext);
   })
   .inSingletonScope();
+
+// Typescript parsing
+ioc.bind<TypescriptParser>(iocSymbols.parser).toConstantValue(new TypescriptParser());
 
 export default ioc;

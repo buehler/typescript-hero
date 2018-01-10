@@ -3,4 +3,5 @@ export default {
   configuration: Symbol('configuration'),
   extensionContext: Symbol('extensionContext'),
   logger: Symbol('logger'),
+  parser: Symbol('parser'),
 };
