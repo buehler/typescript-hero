@@ -1,27 +1,28 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es6",
-        "outDir": "../out",
-        "lib": [
-            "es6",
-            "es2017"
-        ],
-        "rootDir": "..",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": true,
-        "strictNullChecks": true,
-        "importHelpers": true,
-        "removeComments": true
-    },
-    "include": [
-        "../src/**/*",
-        "../test/**/*"
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "outDir": "../out",
+    "moduleResolution": "node",
+    "lib": [
+      "es6",
+      "es2017"
     ],
-    "exclude": [
-        "../test/_old",
-        "../src/_old"
-    ]
+    "rootDir": "../src",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictNullChecks": true,
+    "importHelpers": true,
+    "removeComments": true
+  },
+  "include": [
+    "../src/**/*"
+  ],
+  "exclude": [
+    "../src/_old",
+    "../node_modules",
+    "../out"
+  ]
 }
