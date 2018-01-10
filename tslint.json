@@ -1,3 +1,6 @@
 {
-  "extends": "@smartive/tslint-config"
+  "extends": "@smartive/tslint-config",
+  "rules": {
+    "import-name": false
+  }
 }
