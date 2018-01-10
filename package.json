@@ -155,7 +155,7 @@
     "views": {
       "explorer": [
         {
-          "id": "documentCodeOutline",
+          "id": "codeOutline",
           "name": "Code outline",
           "when": "config.typescriptHero.codeOutline.enabled != false"
         }
