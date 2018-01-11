@@ -1,12 +1,15 @@
 import { inject, injectable } from 'inversify';
 import { Subscription } from 'rxjs';
-import { File, TypescriptParser } from 'typescript-parser';
+import { File, Node, TypescriptParser } from 'typescript-parser';
 import {
+  commands,
   Disposable,
   Event,
   EventEmitter,
   ExtensionContext,
   ProviderResult,
+  Selection,
+  TextEditorRevealType,
   TreeDataProvider,
   window,
   workspace,
@@ -44,7 +47,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
   ) { }
 
   public setup(): void {
-    this.logger.debug('Setting up DocumentOutline.');
+    this.logger.debug('Setting up CodeOutline.');
     this.subscription = this.config.configurationChanged.subscribe(() => {
       if (this.config.codeOutline.isEnabled() && !this.disposables) {
         this.start();
@@ -52,14 +55,18 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
         this.stop();
       }
     });
+    this.context.subscriptions.push(commands.registerCommand(
+      'typescriptHero.codeOutline.gotoNode',
+      (node: Node | undefined) => this.jumpToNode(node),
+    ));
   }
 
   public start(): void {
     if (!this.config.codeOutline.isEnabled()) {
-      this.logger.info(`Not starting DocumentOutline. It's disabled by config.`);
+      this.logger.info(`Not starting CodeOutline. It's disabled by config.`);
       return;
     }
-    this.logger.info('Starting up DocumentOutline.');
+    this.logger.info('Starting up CodeOutline.');
     this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
     this.disposables.push(window.registerTreeDataProvider('codeOutline', this));
     this.context.subscriptions.push(this._onDidChangeTreeData);
@@ -69,10 +76,10 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public stop(): void {
     if (this.config.codeOutline.isEnabled()) {
-      this.logger.info(`Not stopping DocumentOutline. It's enabled by config.`);
+      this.logger.info(`Not stopping CodeOutline. It's enabled by config.`);
       return;
     }
-    this.logger.info('Stopping DocumentOutline.');
+    this.logger.info('Stopping CodeOutline.');
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
@@ -80,7 +87,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing DocumentOutline.');
+    this.logger.debug('Disposing CodeOutline.');
     if (this.subscription) {
       this.subscription.unsubscribe();
       delete this.subscription;
@@ -118,7 +125,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
         );
       } catch (e) {
         this.logger.error(
-          `[DocumentOutline] document could not be parsed, error: ${e}`,
+          `[CodeOutline] document could not be parsed, error: ${e}`,
         );
         return [];
       }
@@ -144,8 +151,34 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
      * @memberof DocumentSymbolStructureExtension
      */
   private activeWindowChanged(): void {
-    this.logger.debug('[DocumentOutline] activeWindowChanged, reparsing');
+    this.logger.debug('[CodeOutline] activeWindowChanged, reparsing');
     this.documentCache = undefined;
     this._onDidChangeTreeData.fire();
+  }
+
+  /**
+   * Takes a node (or undefined) and jumps to the nodes location. If undefined is passed, a warning message is displayed.
+   *
+   * @private
+   * @param {(Node | undefined)} node
+   * @returns {Promise<void>}
+   *
+   * @memberof DocumentSymbolStructureExtension
+   */
+  private async jumpToNode(node: Node | undefined): Promise<void> {
+    if (!node) {
+      this.logger.warn('[CodeOutline] jumpToNode used without param');
+      window.showWarningMessage('This command is for internal use only. It cannot be used from Cmd+P');
+      return;
+    }
+
+    if (!window.activeTextEditor || node.start === undefined) {
+      return;
+    }
+
+    const newPosition = window.activeTextEditor.document.positionAt(node.start);
+    window.activeTextEditor.selection = new Selection(newPosition, newPosition);
+    window.activeTextEditor.revealRange(window.activeTextEditor.selection, TextEditorRevealType.InCenter);
+    await window.showTextDocument(window.activeTextEditor.document);
   }
 }

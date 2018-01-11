@@ -37,7 +37,7 @@ export default abstract class BaseStructureTreeItem extends TreeItem {
     return {
       arguments: args,
       title: 'Jump to node',
-      command: 'typescriptHero.documentCodeOutline.gotoNode',
+      command: 'typescriptHero.codeOutline.gotoNode',
     };
   }
 }

@@ -27,8 +27,8 @@ ioc
   .bind<Logger>(iocSymbols.logger)
   .toDynamicValue((context: interfaces.Context) => {
     const extContext = context.container.get<ExtensionContext>(iocSymbols.extensionContext);
-    // const config = context.container.get<ConfigFactory>(iocSymbols.configuration)();
-    return winstonLogger('debug', extContext);
+    const config = context.container.get<Configuration>(iocSymbols.configuration);
+    return winstonLogger(config.verbosity(), extContext);
   })
   .inSingletonScope();
 

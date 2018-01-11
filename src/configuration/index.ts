@@ -5,6 +5,8 @@ import { ExtensionContext, workspace } from 'vscode';
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
 
+const sectionKey = 'typescriptHero';
+
 @injectable()
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
@@ -30,5 +32,13 @@ export default class Configuration {
       'javascript',
       'javascriptreact',
     ];
+  }
+
+  public verbosity(): 'error' | 'warn' | 'info' | 'debug' {
+    const verbosity = workspace.getConfiguration(sectionKey).get<'error' | 'warn' | 'info' | 'debug'>('verbosity', 'warn');
+    if (['error', 'warn', 'info', 'debug'].indexOf(verbosity) < 0) {
+      return 'warn';
+    }
+    return verbosity;
   }
 }
