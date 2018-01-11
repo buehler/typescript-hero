@@ -13,7 +13,7 @@ import BaseStructureTreeItem from './base-structure-tree-item';
 export class ImportSpecifierStructureTreeItem extends BaseStructureTreeItem {
   constructor(name: string, tsImport: Import, context: ExtensionContext) {
     super(name);
-    this.iconPath = context.asAbsolutePath('./src/extension/assets/icons/declarations/default.svg');
+    this.iconPath = context.asAbsolutePath('./src/assets/icons/declarations/default.svg');
     this.command = this.createJumpToCommand([tsImport]);
   }
 }
@@ -28,7 +28,7 @@ export class ImportSpecifierStructureTreeItem extends BaseStructureTreeItem {
 export class ImportStructureTreeItem extends BaseStructureTreeItem {
   constructor(private tsImport: Import, private context: ExtensionContext) {
     super(tsImport.libraryName);
-    this.iconPath = context.asAbsolutePath('./src/extension/assets/icons/declarations/import.svg');
+    this.iconPath = context.asAbsolutePath('./src/assets/icons/declarations/import.svg');
     this.command = this.createJumpToCommand([tsImport]);
 
     if (!(tsImport instanceof StringImport)) {
@@ -74,7 +74,7 @@ export class ImportsStructureTreeItem extends BaseStructureTreeItem {
   constructor(private resource: Resource, private context: ExtensionContext) {
     super('Imports');
     this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-    this.iconPath = context.asAbsolutePath('./src/extension/assets/icons/declarations/module.svg');
+    this.iconPath = context.asAbsolutePath('./src/assets/icons/declarations/module.svg');
   }
 
   public getChildren(): BaseStructureTreeItem[] {

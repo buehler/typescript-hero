@@ -16,7 +16,7 @@ export default class ResourceStructureTreeItem extends BaseStructureTreeItem {
   constructor(public resource: Resource, private context: ExtensionContext) {
     super(resource.identifier);
     this.collapsibleState = TreeItemCollapsibleState.Collapsed;
-    this.iconPath = this.context.asAbsolutePath('./src/extension/assets/icons/declarations/module.svg');
+    this.iconPath = this.context.asAbsolutePath('./src/assets/icons/declarations/module.svg');
   }
 
   public getChildren(): BaseStructureTreeItem[] {

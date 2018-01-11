@@ -15,7 +15,7 @@ import { CompletionItemKind, ExtensionContext, TreeItemCollapsibleState } from '
 import { getItemKind } from '../utilities/utilityFunctions';
 import BaseStructureTreeItem from './base-structure-tree-item';
 
-const fileTemplate = stringTemplate`./src/extension/assets/icons/declarations/${0}.svg`;
+const fileTemplate = stringTemplate`./src/assets/icons/declarations/${0}.svg`;
 
 /**
  * Function to calculate the displayed name of the declaration structure item.

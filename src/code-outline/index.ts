@@ -56,10 +56,10 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public start(): void {
     if (!this.config.codeOutline.isEnabled()) {
-      this.logger.debug(`Not starting DocumentOutline. It's disabled by config.`);
+      this.logger.info(`Not starting DocumentOutline. It's disabled by config.`);
       return;
     }
-    this.logger.debug('Starting up DocumentOutline.');
+    this.logger.info('Starting up DocumentOutline.');
     this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
     this.disposables.push(window.registerTreeDataProvider('codeOutline', this));
     this.context.subscriptions.push(this._onDidChangeTreeData);
@@ -69,10 +69,10 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public stop(): void {
     if (this.config.codeOutline.isEnabled()) {
-      this.logger.debug(`Not stopping DocumentOutline. It's enabled by config.`);
+      this.logger.info(`Not stopping DocumentOutline. It's enabled by config.`);
       return;
     }
-    this.logger.debug('Stopping DocumentOutline.');
+    this.logger.info('Stopping DocumentOutline.');
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
