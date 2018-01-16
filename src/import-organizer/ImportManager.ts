@@ -1,30 +1,22 @@
 import { inject } from 'inversify';
 import {
-    DeclarationIndex,
-    DeclarationInfo,
-    DefaultDeclaration,
     ExternalModuleImport,
     File,
     Import,
-    isAliasedImport,
-    ModuleDeclaration,
     NamedImport,
     NamespaceImport,
     StringImport,
     SymbolSpecifier,
+    TypescriptCodeGenerator,
     TypescriptParser,
 } from 'typescript-parser';
-import { InputBoxOptions, Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import { Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
-import { ResolveQuickPickItem } from '../../common/quick-pick-items';
 import Configuration from '../configuration/index';
-import iocSymbols from '../ioc-symbols';
+import iocSymbols, { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
 import { Logger } from '../utilities/Logger';
 import {
-    getAbsolutLibraryName,
-    getDeclarationsFilteredByImports,
     getImportInsertPosition,
-    getRelativeLibraryName,
     getScriptKind,
     importGroupSortForPrecedence,
     importSort,
@@ -80,14 +72,20 @@ export default class ImportManager {
   @inject(iocSymbols.logger)
   private readonly logger: Logger;
 
+  @inject(iocSymbols.generatorFactory)
+  private readonly generatorFactory: TypescriptCodeGeneratorFactory;
+
   private importGroups: ImportGroup[];
   private imports: Import[] = [];
-  private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
   private organize: boolean;
 
   private get rootPath(): string | undefined {
     const rootFolder = workspace.getWorkspaceFolder(this.document.uri);
     return rootFolder ? rootFolder.uri.fsPath : undefined;
+  }
+
+  private get generator(): TypescriptCodeGenerator {
+    return this.generatorFactory();
   }
 
   /**
@@ -124,98 +122,6 @@ export default class ImportManager {
   }
 
   /**
-   * Adds an import for a declaration to the documents imports.
-   * This index is merged and commited during the commit() function.
-   * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
-   *
-   * @param {DeclarationInfo} declarationInfo The import that should be added to the document
-   * @returns {ImportManager}
-   *
-   * @memberof ImportManager
-   */
-  public addDeclarationImport(declarationInfo: DeclarationInfo): this {
-    ImportManager.logger.debug(
-      '[%s] add declaration as import',
-      ImportManager.name,
-      { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
-    );
-    // If there is something already imported, it must be a NamedImport
-    const alreadyImported: NamedImport = this.imports.find(
-      o => declarationInfo.from === getAbsolutLibraryName(
-        o.libraryName,
-        this.document.fileName,
-        this.rootPath,
-      ) && o instanceof NamedImport,
-    ) as NamedImport;
-
-    if (alreadyImported) {
-      // If we found an import for this declaration, it's named import (with a possible default declaration)
-      if (declarationInfo.declaration instanceof DefaultDeclaration) {
-        delete alreadyImported.defaultAlias;
-        alreadyImported.defaultAlias = declarationInfo.declaration.name;
-      } else if (!alreadyImported.specifiers.some(o => o.specifier === declarationInfo.declaration.name)) {
-        alreadyImported.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
-      }
-    } else {
-      let imp: Import = new NamedImport(getRelativeLibraryName(
-        declarationInfo.from,
-        this.document.fileName,
-        this.rootPath,
-      ));
-
-      if (declarationInfo.declaration instanceof ModuleDeclaration) {
-        imp = new NamespaceImport(
-          declarationInfo.from,
-          declarationInfo.declaration.name,
-        );
-      } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
-        (imp as NamedImport).defaultAlias = declarationInfo.declaration.name;
-      } else {
-        (imp as NamedImport).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
-      }
-      this.imports.push(imp);
-      this.addImportsToGroups([imp]);
-    }
-
-    return this;
-  }
-
-  /**
-   * Adds all missing imports to the actual document. If multiple declarations are found for one missing
-   * specifier, the user is asked when the commit() function is executed.
-   *
-   * @param {DeclarationIndex} index
-   * @returns {this}
-   *
-   * @memberof ImportManager
-   */
-  public addMissingImports(index: DeclarationIndex): this {
-    ImportManager.logger.debug(
-      '[%s] add all missing imports',
-      ImportManager.name,
-      { file: this.document.fileName },
-    );
-    const declarations = getDeclarationsFilteredByImports(
-      index.declarationInfos,
-      this.document.fileName,
-      this.imports,
-      this.rootPath,
-    );
-
-    for (const usage of this._parsedDocument.nonLocalUsages) {
-      const foundDeclarations = declarations.filter(o => o.declaration.name === usage);
-      if (foundDeclarations.length <= 0) {
-        continue;
-      } else if (foundDeclarations.length === 1) {
-        this.addDeclarationImport(foundDeclarations[0]);
-      } else {
-        this.userImportDecisions[usage] = foundDeclarations;
-      }
-    }
-    return this;
-  }
-
-  /**
    * Organizes the imports of the document. Orders all imports and removes unused imports.
    * Order:
    * 1. string-only imports (e.g. import 'reflect-metadata')
@@ -226,19 +132,18 @@ export default class ImportManager {
    * @memberof ImportManager
    */
   public organizeImports(): this {
-    ImportManager.logger.debug(
-      '[%s] organize the imports',
-      ImportManager.name,
+    this.logger.debug(
+      '[ImportManager] organize the imports',
       { file: this.document.fileName },
     );
     this.organize = true;
     let keep: Import[] = [];
 
-    if (this.config.resolver.disableImportRemovalOnOrganize) {
+    if (this.config.imports.disableImportRemovalOnOrganize(this.document.uri)) {
       keep = this.imports;
     } else {
       for (const actImport of this.imports) {
-        if (this.config.resolver.ignoreImportsForOrganize.indexOf(actImport.libraryName) >= 0) {
+        if (this.config.imports.ignoredFromRemoval(this.document.uri).indexOf(actImport.libraryName) >= 0) {
           keep.push(actImport);
           continue;
         }
@@ -262,8 +167,8 @@ export default class ImportManager {
       }
     }
 
-    if (!this.config.resolver.disableImportSorting) {
-      const sorter = this.config.resolver.organizeSortsByFirstSpecifier
+    if (!this.config.imports.disableImportRemovalOnOrganize(this.document.uri)) {
+      const sorter = this.config.imports.organizeSortsByFirstSpecifier(this.document.uri)
         ? importSortByFirstSpecifier
         : importSort;
 
@@ -292,16 +197,13 @@ export default class ImportManager {
    * @memberof ImportManager
    */
   public async commit(): Promise<boolean> {
-    await this.resolveImportSpecifiers();
-
     const edits: TextEdit[] = this.calculateTextEdits();
     const workspaceEdit = new WorkspaceEdit();
 
     workspaceEdit.set(this.document.uri, edits);
 
-    ImportManager.logger.debug(
-      '[%s] commit the file',
-      ImportManager.name,
+    this.logger.debug(
+      '[ImportManager] commit the file',
       { file: this.document.fileName },
     );
 
@@ -309,7 +211,7 @@ export default class ImportManager {
 
     if (result) {
       delete this.organize;
-      this._parsedDocument = await ImportManager.parser.parseSource(
+      this._parsedDocument = await this.parser.parseSource(
         this.document.getText(),
         getScriptKind(this.document.fileName),
       );
@@ -347,7 +249,7 @@ export default class ImportManager {
         }
       }
       const imports = this.importGroups
-        .map(group => ImportManager.generator.generate(group as any))
+        .map(group => this.generator.generate(group as any))
         .filter(Boolean)
         .join('\n');
       if (!!imports) {
@@ -380,7 +282,7 @@ export default class ImportManager {
             getImportInsertPosition(
               window.activeTextEditor,
             ),
-            ImportManager.generator.generate(imp) + '\n',
+            this.generator.generate(imp) + '\n',
           ));
         } else {
           edits.push(TextEdit.replace(
@@ -388,7 +290,7 @@ export default class ImportManager {
               this.document.positionAt(imp.start!),
               this.document.positionAt(imp.end!),
             ),
-            ImportManager.generator.generate(imp),
+            this.generator.generate(imp),
           ));
         }
       }
@@ -414,123 +316,5 @@ export default class ImportManager {
         }
       }
     }
-  }
-
-  /**
-   * Solves conflicts in named specifiers and does ask the user for aliases. Also resolves namings for default
-   * imports. As long as the user has a duplicate, he will be asked again.
-   *
-   * @private
-   * @returns {Promise<void>}
-   *
-   * @memberof ImportManager
-   */
-  private async resolveImportSpecifiers(): Promise<void> {
-    const getSpecifiers = () => this.imports
-      .reduce(
-      (all, cur) => {
-        let specifiers = all;
-        if (cur instanceof NamedImport) {
-          specifiers = specifiers.concat(cur.specifiers.map(o => o.alias || o.specifier));
-          if (cur.defaultAlias) {
-            specifiers.push(cur.defaultAlias);
-          }
-        }
-        if (isAliasedImport(cur)) {
-          specifiers.push(cur.alias);
-        }
-        return specifiers;
-      },
-      [] as string[],
-    );
-
-    for (const decision of Object.keys(
-      this.userImportDecisions,
-    ).filter(o => this.userImportDecisions[o].length > 0)) {
-      const declarations: ResolveQuickPickItem[] = this.userImportDecisions[decision].map(
-        o => new ResolveQuickPickItem(o),
-      );
-
-      const result = await window.showQuickPick(declarations, {
-        placeHolder: `Multiple declarations for "${decision}" found.`,
-      });
-
-      if (result) {
-        this.addDeclarationImport(result.declarationInfo);
-      }
-    }
-
-    const named = this.imports.filter(o => o instanceof NamedImport) as NamedImport[];
-
-    for (const imp of named) {
-      if (imp.defaultAlias) {
-        const specifiers = getSpecifiers();
-        if (
-          specifiers.filter(o => o === imp.defaultAlias).length > 1 &&
-          this.config.resolver.promptForSpecifiers
-        ) {
-          imp.defaultAlias = await this.getDefaultIdentifier(imp.defaultAlias);
-        }
-      }
-
-      for (const spec of imp.specifiers) {
-        const specifiers = getSpecifiers();
-        if (
-          specifiers.filter(o => o === (spec.alias || spec.specifier)).length > 1 &&
-          this.config.resolver.promptForSpecifiers
-        ) {
-          spec.alias = await this.getSpecifierAlias(spec.alias || spec.specifier);
-        }
-      }
-    }
-  }
-
-  /**
-   * Does resolve a duplicate specifier issue.
-   *
-   * @private
-   * @returns {Promise<string | undefined>}
-   *
-   * @memberof ImportManager
-   */
-  private async getSpecifierAlias(specifierName: string): Promise<string | undefined> {
-    const result = await this.vscodeInputBox({
-      placeHolder: `Alias for specifier "${specifierName}"`,
-      prompt: `Please enter an alias for the specifier "${specifierName}"...`,
-      validateInput: s => !!s ? '' : 'Please enter a variable name',
-    });
-    return !!result ? result : undefined;
-  }
-
-  /**
-   * Calls the vscode input box to ask for an indentifier for a default export.
-   *
-   * @private
-   * @param {string} declarationName
-   * @returns {Promise<string | undefined>}
-   *
-   * @memberof ImportManager
-   */
-  private async getDefaultIdentifier(declarationName: string): Promise<string | undefined> {
-    const result = await this.vscodeInputBox({
-      placeHolder: 'Default export name',
-      prompt: 'Please enter an alias name for the default export...',
-      validateInput: s => !!s ? '' : 'Please enter a variable name',
-      value: declarationName,
-    });
-    return !!result ? result.replace(/[,.-_]/g, '') : undefined;
-  }
-
-  /**
-   * Ultimately asks the user for an input.
-   *
-   * @private
-   * @param {InputBoxOptions} options
-   * @returns {Promise<string | undefined>}
-   *
-   * @memberof ImportManager
-   */
-  private async vscodeInputBox(options: InputBoxOptions): Promise<string | undefined> {
-    return await window.showInputBox(options);
   }
 }

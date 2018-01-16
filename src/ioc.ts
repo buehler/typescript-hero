@@ -1,16 +1,17 @@
 import 'reflect-metadata';
 
 import { Container, interfaces } from 'inversify';
-import { TypescriptParser } from 'typescript-parser';
-import { ExtensionContext } from 'vscode';
+import { TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
+import { ExtensionContext, TextDocument, Uri } from 'vscode';
 
 import Activatable from './activatable';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
 import ImportManager from './import-organizer/ImportManager';
-import iocSymbols from './ioc-symbols';
+import iocSymbols, { ImportManagerProvider } from './ioc-symbols';
 import TypescriptHero from './typescript-hero';
 import winstonLogger, { Logger } from './utilities/Logger';
+import { getScriptKind } from './utilities/utilityFunctions';
 
 const ioc = new Container();
 
@@ -34,9 +35,23 @@ ioc
   .inSingletonScope();
 
 // Managers
-ioc.bind<interfaces.Newable<ImportManager>>(iocSymbols.importManager).toConstructor(ImportManager);
+ioc.bind<ImportManagerProvider>(iocSymbols.importManager).toProvider<ImportManager>(
+  context => async (document: TextDocument) => {
+    const parser = context.container.get<TypescriptParser>(iocSymbols.parser);
+    const source = await parser.parseSource(document.getText(), getScriptKind(document.fileName));
+    return new ImportManager(document, source);
+  },
+);
 
-// Typescript parsing
+// Typescript
 ioc.bind<TypescriptParser>(iocSymbols.parser).toConstantValue(new TypescriptParser());
+ioc
+  .bind<interfaces.Factory<TypescriptCodeGenerator>>(iocSymbols.generatorFactory)
+  .toFactory<TypescriptCodeGenerator>((context: interfaces.Context) => {
+    return (resource: Uri) => {
+      const config = context.container.get<Configuration>(iocSymbols.configuration);
+      return new TypescriptCodeGenerator(config.typescriptGeneratorOptions(resource));
+    };
+  });
 
 export default ioc;

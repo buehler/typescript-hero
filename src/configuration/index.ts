@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { Observable, Subject } from 'rxjs';
-import { ExtensionContext, workspace } from 'vscode';
+import { TypescriptGenerationOptions } from 'typescript-parser';
+import { ExtensionContext, Uri, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
@@ -42,5 +43,16 @@ export default class Configuration {
       return 'warn';
     }
     return verbosity;
+  }
+
+  public typescriptGeneratorOptions(resource: Uri): TypescriptGenerationOptions {
+    return {
+      eol: this.imports.insertSemicolons(resource) ? ';' : '',
+      multiLineTrailingComma: this.imports.multiLineTrailingComma(resource),
+      multiLineWrapThreshold: this.imports.multiLineWrapThreshold(resource),
+      spaceBraces: this.imports.insertSpaceBeforeAndAfterImportBraces(resource),
+      stringQuoteStyle: this.imports.stringQuoteStyle(resource),
+      tabSize: 4, // TODO get actual document tab size
+    };
   }
 }

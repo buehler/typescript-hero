@@ -1,6 +1,8 @@
 import { inject, injectable, multiInject } from 'inversify';
+import { GENERATORS, TypescriptCodeGenerator } from 'typescript-parser';
 
 import Activatable from './activatable';
+import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './import-organizer/import-grouping';
 import iocSymbols from './ioc-symbols';
 import { Logger } from './utilities/Logger';
 
@@ -8,11 +10,13 @@ import { Logger } from './utilities/Logger';
 export default class TypescriptHero implements Activatable {
   constructor(
     @inject(iocSymbols.logger) private logger: Logger,
+    @inject(iocSymbols.generatorFactory) private generator: TypescriptCodeGenerator,
     @multiInject(iocSymbols.activatables) private activatables: Activatable[],
   ) { }
 
   public setup(): void {
     this.logger.debug('Setting up extension and activatables.');
+    this.extendCodeGenerator();
     for (const activatable of this.activatables) {
       activatable.setup();
     }
@@ -37,5 +41,22 @@ export default class TypescriptHero implements Activatable {
     for (const activatable of this.activatables) {
       activatable.dispose();
     }
+  }
+
+  private extendCodeGenerator(): void {
+    const gen = this.generator;
+    function simpleGenerator(generatable: any): string {
+      const group = generatable as KeywordImportGroup;
+      if (!group.imports.length) {
+        return '';
+      }
+      return group.sortedImports
+        .map(imp => gen.generate(imp))
+        .join('\n') + '\n';
+    }
+
+    GENERATORS[KeywordImportGroup.name] = simpleGenerator;
+    GENERATORS[RegexImportGroup.name] = simpleGenerator;
+    GENERATORS[RemainImportGroup.name] = simpleGenerator;
   }
 }
