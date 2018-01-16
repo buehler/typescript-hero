@@ -4,12 +4,14 @@ import { ExtensionContext, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
+import ImportsConfig from './imports-config';
 
 const sectionKey = 'typescriptHero';
 
 @injectable()
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
+  public readonly imports: ImportsConfig = new ImportsConfig();
 
   private readonly _configurationChanged: Subject<void> = new Subject();
 

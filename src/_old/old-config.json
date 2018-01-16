@@ -9,27 +9,6 @@
       "description": "Defines the sortmode of the code completion in intellisense (bottom means sorted to bottom).",
       "scope": "resource"
     },
-    "typescriptHero.resolver.insertSpaceBeforeAndAfterImportBraces": {
-      "type": "boolean",
-      "default": true,
-      "description": "Defines if there should be a space inside the curly braces of an import statement.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.insertSemicolons": {
-      "type": "boolean",
-      "default": true,
-      "description": "Defines if there should be a semicolon at the end of a statement.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.stringQuoteStyle": {
-      "enum": [
-        "'",
-        "\""
-      ],
-      "default": "'",
-      "description": "Defines if single or double quotes should be used.",
-      "scope": "resource"
-    },
     "typescriptHero.resolver.workspaceIgnorePatterns": {
       "type": "array",
       "items": {
@@ -56,20 +35,6 @@
       "description": "Defines partial pathes (globs) that are ignored during indexing of the **node_modules**. This patterns are attached to the node_module/<name> of each found module.",
       "scope": "resource"
     },
-    "typescriptHero.resolver.multiLineWrapThreshold": {
-      "type": "number",
-      "minimum": 1,
-      "multipleOf": 1,
-      "default": 125,
-      "description": "Defines the threshold when an import should be wrapped into a multiline import.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.multiLineTrailingComma": {
-      "type": "boolean",
-      "default": true,
-      "description": "Defined if multi line imports contain the last trailing comma.",
-      "scope": "resource"
-    },
     "typescriptHero.resolver.disableImportsSorting": {
       "type": "boolean",
       "default": false,
@@ -81,98 +46,10 @@
       "default": false,
       "description": "Defines, if removal unsed imports is obligatory during organize imports"
     },
-    "typescriptHero.resolver.organizeOnSave": {
-      "type": "boolean",
-      "default": false,
-      "description": "Defines if the imports should be organized on save.",
-      "scope": "resource"
-    },
     "typescriptHero.resolver.organizeSortsByFirstSpecifier": {
       "type": "boolean",
       "default": false,
       "description": "Defines if the imports are organized by first specifier/alias instead of module path.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.ignoreImportsForOrganize": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "uniqueItems": true,
-      "default": [
-        "react"
-      ],
-      "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.importGroups": {
-      "type": "array",
-      "items": {
-        "anyOf": [
-          {
-            "enum": [
-              "Modules",
-              "Plains",
-              "Workspace",
-              "Remaining"
-            ]
-          },
-          {
-            "type": "string",
-            "pattern": "\\/[A-Za-z-_0-9]+\\/"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "identifier": {
-                "enum": [
-                  "Modules",
-                  "Plains",
-                  "Workspace",
-                  "Remaining"
-                ]
-              },
-              "order": {
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "identifier",
-              "order"
-            ]
-          },
-          {
-            "type": "object",
-            "properties": {
-              "identifier": {
-                "type": "string",
-                "pattern": "\\/[A-Za-z-_0-9]+\\/"
-              },
-              "order": {
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              }
-            },
-            "additionalProperties": false,
-            "required": [
-              "identifier",
-              "order"
-            ]
-          }
-        ]
-      },
-      "default": [
-        "Plains",
-        "Modules",
-        "Workspace"
-      ],
-      "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions.",
       "scope": "resource"
     },
     "typescriptHero.resolver.resolverMode": {

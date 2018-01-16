@@ -19,7 +19,7 @@ export default class ImportOrganizer implements Activatable {
   public setup(): void {
     this.logger.debug('Setting up ImportOrganizer.');
     this.context.subscriptions.push(
-      commands.registerTextEditorCommand('typescriptHero.importOrganizer.organize', () => this.organizeImports()),
+      commands.registerTextEditorCommand('typescriptHero.imports.organize', () => this.organizeImports()),
     );
   }
 

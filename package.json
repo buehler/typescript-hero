@@ -98,7 +98,7 @@
   "contributes": {
     "commands": [
       {
-        "command": "typescriptHero.importOrganizer.organize",
+        "command": "typescriptHero.imports.organize",
         "title": "TS Hero: Organize imports (sort and remove unused)"
       },
       {
@@ -141,6 +141,129 @@
           "default": true,
           "description": "Defines if the code outline feature (and window) are enabled or not.",
           "scope": "window"
+        },
+        "typescriptHero.imports.insertSpaceBeforeAndAfterImportBraces": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if there should be a space inside the curly braces of an import statement.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.insertSemicolons": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defines if there should be a semicolon at the end of a statement.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.stringQuoteStyle": {
+          "enum": [
+            "'",
+            "\""
+          ],
+          "default": "'",
+          "description": "Defines if single or double quotes should be used.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.multiLineWrapThreshold": {
+          "type": "number",
+          "minimum": 1,
+          "multipleOf": 1,
+          "default": 125,
+          "description": "Defines the threshold when an import should be wrapped into a multiline import.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.multiLineTrailingComma": {
+          "type": "boolean",
+          "default": true,
+          "description": "Defined if multi line imports contain the last trailing comma.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.organizeOnSave": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defines if the imports should be organized on save.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.ignoredFromRemoval": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "react"
+          ],
+          "description": "Defines imports (libraries, so the 'from' part), which are not removed during 'organize imports'.",
+          "scope": "resource"
+        },
+        "typescriptHero.imports.grouping": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "enum": [
+                  "Modules",
+                  "Plains",
+                  "Workspace",
+                  "Remaining"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "\\/[A-Za-z-_0-9]+\\/"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "enum": [
+                      "Modules",
+                      "Plains",
+                      "Workspace",
+                      "Remaining"
+                    ]
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "identifier": {
+                    "type": "string",
+                    "pattern": "\\/[A-Za-z-_0-9]+\\/"
+                  },
+                  "order": {
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "identifier",
+                  "order"
+                ]
+              }
+            ]
+          },
+          "default": [
+            "Plains",
+            "Modules",
+            "Workspace"
+          ],
+          "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions.",
+          "scope": "resource"
         }
       }
     }
