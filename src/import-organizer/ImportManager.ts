@@ -1,3 +1,4 @@
+import { inject } from 'inversify';
 import {
     DeclarationIndex,
     DeclarationInfo,
@@ -11,32 +12,26 @@ import {
     NamespaceImport,
     StringImport,
     SymbolSpecifier,
-    TypescriptCodeGenerator,
     TypescriptParser,
 } from 'typescript-parser';
-import { InputBoxOptions, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
+import { InputBoxOptions, Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
-import { ExtensionConfig } from '../../common/config';
-import { ConfigFactory } from '../../common/factories';
+import { ResolveQuickPickItem } from '../../common/quick-pick-items';
+import Configuration from '../configuration/index';
+import iocSymbols from '../ioc-symbols';
+import { Logger } from '../utilities/Logger';
 import {
     getAbsolutLibraryName,
     getDeclarationsFilteredByImports,
     getImportInsertPosition,
     getRelativeLibraryName,
-} from '../../common/helpers';
-import { ResolveQuickPickItem } from '../../common/quick-pick-items';
-import { importRange } from '../helpers';
-import { ImportGroup } from '../import-grouping';
-import { Container } from '../IoC';
-import { iocSymbols } from '../IoCSymbols';
-import {
     getScriptKind,
     importGroupSortForPrecedence,
     importSort,
     importSortByFirstSpecifier,
     specifierSort,
 } from '../utilities/utilityFunctions';
-import { Logger } from '../utilities/winstonLogger';
+import { ImportGroup } from './import-grouping';
 
 function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): boolean {
   for (const spec of specs1) {
@@ -51,37 +46,44 @@ function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): b
 }
 
 /**
+ * Function that calculates the range object for an import.
+ *
+ * @export
+ * @param {TextDocument} document
+ * @param {number} [start]
+ * @param {number} [end]
+ * @returns {Range}
+ */
+export function importRange(document: TextDocument, start?: number, end?: number): Range {
+  return start !== undefined && end !== undefined ?
+    new Range(
+      document.lineAt(document.positionAt(start).line).rangeIncludingLineBreak.start,
+      document.lineAt(document.positionAt(end).line).rangeIncludingLineBreak.end,
+    ) :
+    new Range(new Position(0, 0), new Position(0, 0));
+}
+
+/**
  * Management class for the imports of a document. Can add and remove imports to the document
  * and commit the virtual document to the TextEditor.
  *
  * @export
  * @class ImportManager
  */
-export class ImportManager {
-  private static get parser(): TypescriptParser {
-    return Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-  }
+export default class ImportManager {
+  @inject(iocSymbols.parser)
+  private readonly parser: TypescriptParser;
 
-  private static get config(): ConfigFactory {
-    return Container.get<ConfigFactory>(iocSymbols.configuration);
-  }
+  @inject(iocSymbols.configuration)
+  private readonly config: Configuration;
 
-  private static get generator(): TypescriptCodeGenerator {
-    return Container.get<() => TypescriptCodeGenerator>(iocSymbols.generatorFactory)();
-  }
-
-  private static get logger(): Logger {
-    return Container.get(iocSymbols.logger);
-  }
+  @inject(iocSymbols.logger)
+  private readonly logger: Logger;
 
   private importGroups: ImportGroup[];
   private imports: Import[] = [];
   private userImportDecisions: { [usage: string]: DeclarationInfo[] }[] = [];
   private organize: boolean;
-
-  private get config(): ExtensionConfig {
-    return ImportManager.config(this.document.uri);
-  }
 
   private get rootPath(): string | undefined {
     const rootFolder = workspace.getWorkspaceFolder(this.document.uri);
@@ -99,32 +101,15 @@ export class ImportManager {
     return this._parsedDocument;
   }
 
-  private constructor(
+  public constructor(
     public readonly document: TextDocument,
     private _parsedDocument: File,
   ) {
-    ImportManager.logger.debug(
-      '[%s] create import manager',
-      ImportManager.name,
+    this.logger.debug(
+      `[ImportManager] create import manager`,
       { file: document.fileName },
     );
     this.reset();
-  }
-
-  /**
-   * Creates an instance of an ImportManager.
-   * Does parse the document text first and returns a promise that
-   * resolves to an ImportManager.
-   *
-   * @static
-   * @param {TextDocument} document The document that should be managed
-   * @returns {Promise<ImportManager>}
-   *
-   * @memberof ImportManager
-   */
-  public static async create(document: TextDocument): Promise<ImportManager> {
-    const source = await ImportManager.parser.parseSource(document.getText(), getScriptKind(document.fileName));
-    return new ImportManager(document, source);
   }
 
   /**
@@ -134,7 +119,7 @@ export class ImportManager {
    */
   public reset(): void {
     this.imports = this._parsedDocument.imports.map(o => o.clone());
-    this.importGroups = this.config.resolver.importGroups;
+    this.importGroups = this.config.imports.grouping(this.document.uri);
     this.addImportsToGroups(this.imports);
   }
 

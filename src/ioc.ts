@@ -7,6 +7,7 @@ import { ExtensionContext } from 'vscode';
 import Activatable from './activatable';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
+import ImportManager from './import-organizer/ImportManager';
 import iocSymbols from './ioc-symbols';
 import TypescriptHero from './typescript-hero';
 import winstonLogger, { Logger } from './utilities/Logger';
@@ -31,6 +32,9 @@ ioc
     return winstonLogger(config.verbosity(), extContext);
   })
   .inSingletonScope();
+
+// Managers
+ioc.bind<interfaces.Newable<ImportManager>>(iocSymbols.importManager).toConstructor(ImportManager);
 
 // Typescript parsing
 ioc.bind<TypescriptParser>(iocSymbols.parser).toConstantValue(new TypescriptParser());

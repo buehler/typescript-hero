@@ -21,60 +21,60 @@ const REGEX_REGEX_GROUP = /^\/.+\/$/;
  * @class ImportGroupSettingParser
  */
 export class ImportGroupSettingParser {
-    /**
-     * Default value for the import groups.
-     * Contains the following:
-     *  - Plain imports
-     *  - Module imports
-     *  - Workspace imports
-     *
-     * @readonly
-     * @static
-     * @type {ImportGroup[]}
-     * @memberof ImportGroupSettingParser
-     */
-    public static get default(): ImportGroup[] {
-        return [
-            new KeywordImportGroup(ImportGroupKeyword.Plains),
-            new KeywordImportGroup(ImportGroupKeyword.Modules),
-            new KeywordImportGroup(ImportGroupKeyword.Workspace),
-            new RemainImportGroup(),
-        ];
+  /**
+   * Default value for the import groups.
+   * Contains the following:
+   *  - Plain imports
+   *  - Module imports
+   *  - Workspace imports
+   *
+   * @readonly
+   * @static
+   * @type {ImportGroup[]}
+   * @memberof ImportGroupSettingParser
+   */
+  public static get default(): ImportGroup[] {
+    return [
+      new KeywordImportGroup(ImportGroupKeyword.Plains),
+      new KeywordImportGroup(ImportGroupKeyword.Modules),
+      new KeywordImportGroup(ImportGroupKeyword.Workspace),
+      new RemainImportGroup(),
+    ];
+  }
+
+  /**
+   * Function that takes a string or object ({@link ImportGroupSetting}) and parses an import group out of it.
+   *
+   * @static
+   * @param {ImportGroupSetting} setting
+   * @returns {ImportGroup}
+   * @throws {ImportGroupIdentifierInvalidError} When the identifier is invalid (neither keyword nor valid regex)
+   *
+   * @memberof ImportGroupSettingParser
+   */
+  public static parseSetting(setting: ImportGroupSetting): ImportGroup {
+    let identifier: string;
+    let order: ImportGroupOrder = 'asc';
+
+    if (typeof setting === 'string') {
+      identifier = setting;
+    } else {
+      identifier = setting.identifier;
+      order = setting.order;
     }
 
-    /**
-     * Function that takes a string or object ({@link ImportGroupSetting}) and parses an import group out of it.
-     *
-     * @static
-     * @param {ImportGroupSetting} setting
-     * @returns {ImportGroup}
-     * @throws {ImportGroupIdentifierInvalidError} When the identifier is invalid (neither keyword nor valid regex)
-     *
-     * @memberof ImportGroupSettingParser
-     */
-    public static parseSetting(setting: ImportGroupSetting): ImportGroup {
-        let identifier: string;
-        let order: ImportGroupOrder = 'asc';
-
-        if (typeof setting === 'string') {
-            identifier = setting;
-        } else {
-            identifier = setting.identifier;
-            order = setting.order;
-        }
-
-        if (REGEX_REGEX_GROUP.test(identifier)) {
-            return new RegexImportGroup(identifier, order);
-        }
-
-        if (ImportGroupKeyword[identifier] === ImportGroupKeyword.Remaining) {
-            return new RemainImportGroup(order);
-        }
-
-        if (ImportGroupKeyword[identifier] !== undefined) {
-            return new KeywordImportGroup(ImportGroupKeyword[identifier], order);
-        }
-
-        throw new ImportGroupIdentifierInvalidError(identifier);
+    if (REGEX_REGEX_GROUP.test(identifier)) {
+      return new RegexImportGroup(identifier, order);
     }
+
+    if (ImportGroupKeyword[identifier] === ImportGroupKeyword.Remaining) {
+      return new RemainImportGroup(order);
+    }
+
+    if (ImportGroupKeyword[identifier] !== undefined) {
+      return new KeywordImportGroup(ImportGroupKeyword[identifier], order);
+    }
+
+    throw new ImportGroupIdentifierInvalidError(identifier);
+  }
 }
