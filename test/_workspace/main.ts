@@ -5,5 +5,5 @@ import TypescriptHero from './typescript-hero';
 import winstonLogger, { Logger } from './utilities/Logger';
 
 function foo() {
-
+  console.log(winstonLogger, Logger, iocSymbols);
 }

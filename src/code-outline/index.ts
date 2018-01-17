@@ -2,17 +2,17 @@ import { inject, injectable } from 'inversify';
 import { Subscription } from 'rxjs';
 import { File, Node, TypescriptParser } from 'typescript-parser';
 import {
-  commands,
-  Disposable,
-  Event,
-  EventEmitter,
-  ExtensionContext,
-  ProviderResult,
-  Selection,
-  TextEditorRevealType,
-  TreeDataProvider,
-  window,
-  workspace,
+    commands,
+    Disposable,
+    Event,
+    EventEmitter,
+    ExtensionContext,
+    ProviderResult,
+    Selection,
+    TextEditorRevealType,
+    TreeDataProvider,
+    window,
+    workspace,
 } from 'vscode';
 
 import Activatable from '../activatable';
@@ -69,9 +69,9 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
     this.logger.info('Starting up CodeOutline.');
     this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
     this.disposables.push(window.registerTreeDataProvider('codeOutline', this));
-    this.context.subscriptions.push(this._onDidChangeTreeData);
-    this.context.subscriptions.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
-    this.context.subscriptions.push(workspace.onDidSaveTextDocument(() => this.activeWindowChanged()));
+    this.disposables.push(this._onDidChangeTreeData);
+    this.disposables.push(window.onDidChangeActiveTextEditor(() => this.activeWindowChanged()));
+    this.disposables.push(workspace.onDidSaveTextDocument(() => this.activeWindowChanged()));
   }
 
   public stop(): void {

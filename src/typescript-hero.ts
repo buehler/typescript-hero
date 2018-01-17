@@ -3,14 +3,13 @@ import { Generatable, GENERATORS, TypescriptCodeGenerator, TypescriptGenerationO
 
 import Activatable from './activatable';
 import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './import-organizer/import-grouping';
-import iocSymbols, { TypescriptCodeGeneratorFactory } from './ioc-symbols';
+import iocSymbols from './ioc-symbols';
 import { Logger } from './utilities/Logger';
 
 @injectable()
 export default class TypescriptHero implements Activatable {
   constructor(
     @inject(iocSymbols.logger) private logger: Logger,
-    @inject(iocSymbols.generatorFactory) private generator: TypescriptCodeGeneratorFactory,
     @multiInject(iocSymbols.activatables) private activatables: Activatable[],
   ) { }
 
