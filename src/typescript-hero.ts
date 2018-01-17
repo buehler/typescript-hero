@@ -4,7 +4,7 @@ import { Generatable, GENERATORS, TypescriptCodeGenerator, TypescriptGenerationO
 import Activatable from './activatable';
 import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './import-organizer/import-grouping';
 import iocSymbols from './ioc-symbols';
-import { Logger } from './utilities/Logger';
+import { Logger } from './utilities/logger';
 
 @injectable()
 export default class TypescriptHero implements Activatable {

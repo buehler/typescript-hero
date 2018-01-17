@@ -54,26 +54,6 @@ class ConsoleLogTransport extends transport {
   }
 }
 
-// class HandleUncatchedException extends Transport {
-//     constructor(private path: string) {
-//         super();
-//     }
-//     public async log(info: any, callback: any): Promise<void> {
-//         setImmediate(() => {
-//             this.emit('logged', info);
-//         });
-//         const result = await window.showErrorMessage(
-//             'There was an uncaught exception, do you want to see the logfile?',
-//             { modal: true },
-//             'Yes, show me.',
-//         );
-//         if (result) {
-//             const doc = await workspace.openTextDocument(join(this.path, 'typescript-hero.log'));
-//             await window.showTextDocument(doc);
-//         }
-//         callback();
-//     }
-// }
 export interface Logger {
   error: (message: string, ...data: any[]) => void;
   warn: (message: string, ...data: any[]) => void;

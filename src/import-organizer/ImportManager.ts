@@ -13,7 +13,7 @@ import { Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEd
 
 import Configuration from '../configuration/index';
 import { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
-import { Logger } from '../utilities/Logger';
+import { Logger } from '../utilities/logger';
 import {
     getImportInsertPosition,
     getScriptKind,

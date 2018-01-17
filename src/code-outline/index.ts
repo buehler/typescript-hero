@@ -18,7 +18,7 @@ import {
 import Activatable from '../activatable';
 import Configuration from '../configuration';
 import iocSymbols from '../ioc-symbols';
-import { Logger } from '../utilities/Logger';
+import { Logger } from '../utilities/logger';
 import { getScriptKind } from '../utilities/utilityFunctions';
 import BaseStructureTreeItem from './base-structure-tree-item';
 import DeclarationStructureTreeItem from './declaration-structure-tree-item';

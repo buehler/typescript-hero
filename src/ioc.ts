@@ -11,7 +11,7 @@ import ImportOrganizer from './import-organizer';
 import ImportManager from './import-organizer/ImportManager';
 import iocSymbols, { ImportManagerProvider, TypescriptCodeGeneratorFactory } from './ioc-symbols';
 import TypescriptHero from './typescript-hero';
-import winstonLogger, { Logger } from './utilities/Logger';
+import winstonLogger, { Logger } from './utilities/logger';
 import { getScriptKind } from './utilities/utilityFunctions';
 
 const ioc = new Container();

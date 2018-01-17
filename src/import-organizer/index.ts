@@ -4,7 +4,7 @@ import { commands, ExtensionContext, window, workspace } from 'vscode';
 import Activatable from '../activatable';
 import Configuration from '../configuration';
 import iocSymbols, { ImportManagerProvider } from '../ioc-symbols';
-import { Logger } from '../utilities/Logger';
+import { Logger } from '../utilities/logger';
 
 @injectable()
 export default class ImportOrganizer implements Activatable {
