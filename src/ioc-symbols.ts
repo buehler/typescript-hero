@@ -1,7 +1,7 @@
 import { TypescriptCodeGenerator } from 'typescript-parser';
 import { TextDocument, Uri } from 'vscode';
 
-import ImportManager from './import-organizer/ImportManager';
+import ImportManager from './import-organizer/import-manager';
 
 export default {
   activatables: Symbol('activatables'),

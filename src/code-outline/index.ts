@@ -19,7 +19,7 @@ import Activatable from '../activatable';
 import Configuration from '../configuration';
 import iocSymbols from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
-import { getScriptKind } from '../utilities/utilityFunctions';
+import { getScriptKind } from '../utilities/utility-functions';
 import BaseStructureTreeItem from './base-structure-tree-item';
 import DeclarationStructureTreeItem from './declaration-structure-tree-item';
 import DisabledStructureTreeItem from './disabled-structure-tree-item';

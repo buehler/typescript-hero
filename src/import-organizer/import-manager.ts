@@ -21,7 +21,7 @@ import {
     importSort,
     importSortByFirstSpecifier,
     specifierSort,
-} from '../utilities/utilityFunctions';
+} from '../utilities/utility-functions';
 import { ImportGroup } from './import-grouping';
 
 function sameSpecifiers(specs1: SymbolSpecifier[], specs2: SymbolSpecifier[]): boolean {

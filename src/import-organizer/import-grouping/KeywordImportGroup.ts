@@ -1,6 +1,6 @@
 import { Import, StringImport } from 'typescript-parser';
 
-import { importSort } from '../../utilities/utilityFunctions';
+import { importSort } from '../../utilities/utility-functions';
 import { ImportGroup } from './ImportGroup';
 import { ImportGroupKeyword } from './ImportGroupKeyword';
 import { ImportGroupOrder } from './ImportGroupOrder';

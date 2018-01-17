@@ -8,11 +8,11 @@ import Activatable from './activatable';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
 import ImportOrganizer from './import-organizer';
-import ImportManager from './import-organizer/ImportManager';
+import ImportManager from './import-organizer/import-manager';
 import iocSymbols, { ImportManagerProvider, TypescriptCodeGeneratorFactory } from './ioc-symbols';
 import TypescriptHero from './typescript-hero';
 import winstonLogger, { Logger } from './utilities/logger';
-import { getScriptKind } from './utilities/utilityFunctions';
+import { getScriptKind } from './utilities/utility-functions';
 
 const ioc = new Container();
 

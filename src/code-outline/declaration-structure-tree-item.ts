@@ -12,7 +12,7 @@ import {
 import { stringTemplate } from 'typescript-parser/utilities/StringTemplate';
 import { CompletionItemKind, ExtensionContext, TreeItemCollapsibleState } from 'vscode';
 
-import { getItemKind } from '../utilities/utilityFunctions';
+import { getItemKind } from '../utilities/utility-functions';
 import BaseStructureTreeItem from './base-structure-tree-item';
 
 const fileTemplate = stringTemplate`./src/assets/icons/declarations/${0}.svg`;
