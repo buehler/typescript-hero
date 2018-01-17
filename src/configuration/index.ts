@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { Observable, Subject } from 'rxjs';
 import { TypescriptGenerationOptions } from 'typescript-parser';
-import { ExtensionContext, Uri, workspace } from 'vscode';
+import { ExtensionContext, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
@@ -52,7 +52,9 @@ export default class Configuration {
       multiLineWrapThreshold: this.imports.multiLineWrapThreshold(resource),
       spaceBraces: this.imports.insertSpaceBeforeAndAfterImportBraces(resource),
       stringQuoteStyle: this.imports.stringQuoteStyle(resource),
-      tabSize: 4, // TODO get actual document tab size
+      tabSize: window.activeTextEditor && window.activeTextEditor.options.tabSize ?
+        (window.activeTextEditor.options.tabSize as any) * 1 :
+        workspace.getConfiguration('editor', resource).get('tabSize', 4),
     };
   }
 }

@@ -108,7 +108,7 @@
     ],
     "keybindings": [
       {
-        "command": "typescriptHero.importOrganizer.organize",
+        "command": "typescriptHero.imports.organize",
         "key": "ctrl+alt+o",
         "when": "editorTextFocus"
       }

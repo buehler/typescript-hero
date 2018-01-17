@@ -1,4 +1,3 @@
-import { inject } from 'inversify';
 import {
     ExternalModuleImport,
     File,
@@ -13,7 +12,7 @@ import {
 import { Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
 import Configuration from '../configuration/index';
-import iocSymbols, { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
+import { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
 import { Logger } from '../utilities/Logger';
 import {
     getImportInsertPosition,
@@ -63,18 +62,6 @@ export function importRange(document: TextDocument, start?: number, end?: number
  * @class ImportManager
  */
 export default class ImportManager {
-  @inject(iocSymbols.parser)
-  private readonly parser: TypescriptParser;
-
-  @inject(iocSymbols.configuration)
-  private readonly config: Configuration;
-
-  @inject(iocSymbols.logger)
-  private readonly logger: Logger;
-
-  @inject(iocSymbols.generatorFactory)
-  private readonly generatorFactory: TypescriptCodeGeneratorFactory;
-
   private importGroups: ImportGroup[];
   private imports: Import[] = [];
   private organize: boolean;
@@ -85,7 +72,7 @@ export default class ImportManager {
   }
 
   private get generator(): TypescriptCodeGenerator {
-    return this.generatorFactory();
+    return this.generatorFactory(this.document.uri);
   }
 
   /**
@@ -102,6 +89,10 @@ export default class ImportManager {
   public constructor(
     public readonly document: TextDocument,
     private _parsedDocument: File,
+    private readonly parser: TypescriptParser,
+    private readonly config: Configuration,
+    private readonly logger: Logger,
+    private readonly generatorFactory: TypescriptCodeGeneratorFactory,
   ) {
     this.logger.debug(
       `[ImportManager] create import manager`,

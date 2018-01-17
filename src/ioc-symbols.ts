@@ -1,5 +1,5 @@
 import { TypescriptCodeGenerator } from 'typescript-parser';
-import { TextDocument } from 'vscode';
+import { TextDocument, Uri } from 'vscode';
 
 import ImportManager from './import-organizer/ImportManager';
 
@@ -14,4 +14,4 @@ export default {
 };
 
 export type ImportManagerProvider = (document: TextDocument) => Promise<ImportManager>;
-export type TypescriptCodeGeneratorFactory = () => TypescriptCodeGenerator;
+export type TypescriptCodeGeneratorFactory = (resource: Uri) => TypescriptCodeGenerator;
