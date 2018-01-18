@@ -1,5 +1,5 @@
 language: node_js
-node_js: '8'
+node_js: '9'
 
 stages:
   - name: test
@@ -44,31 +44,18 @@ jobs:
       before_script:
         - greenkeeper-lockfile-update
       script:
-        - exit 0
         - yarn test --silent
       after_script:
-        - exit 0
         - greenkeeper-lockfile-upload
     - stage: deploy
-      env:
-        - BUILD_LEADER_ID=2
       install:
-        - rvm get stable
-        - rvm install 2.4
-        - gem install github_changelog_generator
         - yarn install
-      script:
+      before_script:
         - yarn build
-        - yarn global add vsce
-        - yarn add --no-lockfile semantic-release@^8.2.0 semantic-release-visualstudio-marketplace-version
-        - semantic-release pre
-        - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
-      after_script:
-        - yarn install --production
-      after_success:
-        - vsce package
-        - vsce publish -p $VSCE_TOKEN
-        - semantic-release post
+      script:
+        - semantic-release
+
+#- github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
 
 # add as soon as multi root workspaces are available:
 #- CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/multi-root.code-workspace CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/multi-root-workspace-tests
