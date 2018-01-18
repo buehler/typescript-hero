@@ -44,10 +44,8 @@ jobs:
       before_script:
         - greenkeeper-lockfile-update
       script:
-        - exit 0
         - yarn test --silent
       after_script:
-        - exit 0
         - greenkeeper-lockfile-upload
     - stage: deploy
       env:
