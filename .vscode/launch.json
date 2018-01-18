@@ -1,80 +1,80 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch Extension",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "${workspaceRoot}/test/_workspace",
-                "--extensionDevelopmentPath=${workspaceRoot}"
-            ],
-            "env": {
-                "EXT_DEBUG": "true"
-            },
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceRoot}/out/src/**/*.js"
-            ]
-        },
-        {
-            "name": "Launch Extension Multi-Root",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "${workspaceRoot}/test/multi-root.code-workspace",
-                "--extensionDevelopmentPath=${workspaceRoot}"
-            ],
-            "env": {
-                "EXT_DEBUG": "true"
-            },
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceRoot}/out/src/**/*.js"
-            ]
-        },
-        {
-            "name": "Launch Tests (single Workspace)",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "${workspaceRoot}/test/_workspace",
-                "--extensionDevelopmentPath=${workspaceRoot}",
-                "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
-            ],
-            "env": {
-                "CI": "true"
-            },
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceRoot}/out/test/single-workspace-tests/**/*.js"
-            ]
-        },
-        {
-            "name": "Launch Tests (multi-root Workspace)",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "${workspaceRoot}/test/multi-root.code-workspace",
-                "--extensionDevelopmentPath=${workspaceRoot}",
-                "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests/"
-            ],
-            "env": {
-                "CI": "true"
-            },
-            "stopOnEntry": false,
-            "sourceMaps": true,
-            "outFiles": [
-                "${workspaceRoot}/out/test/**/*.js"
-            ]
-        }
-    ],
-    "compounds": []
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/test/_workspace",
+        "--extensionDevelopmentPath=${workspaceRoot}"
+      ],
+      "env": {
+        "EXT_DEBUG": "true"
+      },
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/out/src/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Extension Multi-Root",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/test/multi-root.code-workspace",
+        "--extensionDevelopmentPath=${workspaceRoot}"
+      ],
+      "env": {
+        "EXT_DEBUG": "true"
+      },
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/out/src/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Tests (single Workspace)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/test/_workspace",
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
+      ],
+      "env": {
+        "CI": "true"
+      },
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/out/test/single-workspace-tests/**/*.js"
+      ]
+    },
+    {
+      "name": "Launch Tests (multi-root Workspace)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceRoot}/test/multi-root.code-workspace",
+        "--extensionDevelopmentPath=${workspaceRoot}",
+        "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests/"
+      ],
+      "env": {
+        "CI": "true"
+      },
+      "stopOnEntry": false,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/out/test/**/*.js"
+      ]
+    }
+  ],
+  "compounds": []
 }

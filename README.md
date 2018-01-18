@@ -1,12 +1,7 @@
 # TypeScript Hero
 
 TypeScript Hero is a vscode extension that makes your life easier.
-When you are coding a lot of `TypeScript` you may want vscode to automatically
-include your imports.
-
-If you search for this feature: here's the solution (and many more). Typescript hero will be extended
-in the future and there are many features in the pipeline that will enhance the way you
-work with typescript.
+When you are coding a lot of `TypeScript` you may want vscode to organize your imports.
 
 [![Travis build](https://img.shields.io/travis/buehler/typescript-hero.svg)](https://travis-ci.org/buehler/typescript-hero)
 [![AppVeyor status](https://ci.appveyor.com/api/projects/status/p1vbbyh69j4s0rbh?svg=true)](https://ci.appveyor.com/project/buehler/typescript-hero)
@@ -26,29 +21,16 @@ If you'd like to buy me a beer :-)
 
 Here is a brief list, of what TypeScript Hero is capable of (more at the end):
 
-- Add imports of your project or libraries to your current file
-- Add an import for the current name under the cursor
-- Add all missing imports of a file with one command
-- Intellisense that suggests symbols and automatically adds the needed imports
-- "Light bulb feature" that fixes code you wrote
 - Sort and organize your imports (sort and remove unused)
 - Code outline view of your open TS / TSX document
-- All the cool stuff for JavaScript as well! (experimental stage though, better description below.)
-  - Add imports from javascript files
-  - Code outline for JS / JSX files
-  - Intellisense for JS / JSX files
 
 ## Commands
 
 All commands are preceeded by `typescriptHero`.
 
-| Command                      | Extension part  | Description                                               |
-| ---------------------------- | --------------- | --------------------------------------------------------- |
-| resolve.addImport            | import resolver | Shows a pick list with all recognized, importable symbols |
-| resolve.addImportUnderCursor | import resolver | Imports the symbol under the cursor                       |
-| resolve.addMissingImports    | import resolver | Imports all missing symbols for the actual document       |
-| resolve.organizeImports      | import resolver | Removes unused imports and orders all imports             |
-| resolve.rebuildCache         | import resolver | Rebuilds the whole symbol cache (or index)                |
+| Command                      | Extension part   | Description                                               |
+| ---------------------------- | ---------------- | --------------------------------------------------------- |
+| imports.organize             | import organizer | Removes unused imports and orders all imports             |
 
 ## Keybindings
 
@@ -56,10 +38,7 @@ The following commands are bound by default when the extension is installed.
 
 | Command                      | Keybinding         |
 | ---------------------------- | ------------------ |
-| resolve.addImport            | `ctrl+shift+i`     |
-| resolve.addImportUnderCursor | `ctrl+alt+i`       |
-| resolve.addMissingImports    | `ctrl+alt+shift+i` |
-| resolve.organizeImports      | `ctrl+alt+o`       |
+| imports.organize             | `ctrl+alt+o`       |
 
 ## Settings
 
@@ -76,37 +55,25 @@ These settings do not have a prefix.
 | ---------- | --------------------------------------------------------------------------------------- |
 | verbosity  | The log level that the extension writes its messages to the output channel and the file |
 
-### Code completion
+### Import Organizer
 
-The following settings do have the prefix `codeCompletion`. So an example setting could be
-`typescriptHero.codeCompletion.completionSortOrder`.
-
-| Setting             | Description                                                                   |
-| ------------------- | ----------------------------------------------------------------------------- |
-| completionSortOrder | The order of import completions in suggestion list, `bottom` pushes them down |
-
-### Import resolver
-
-The following settings do have the prefix `resolver`. So an example setting could be
-`typescriptHero.resolver.stringQuoteStyle`.
+The following settings do have the prefix `imports`. So an example setting could be
+`typescriptHero.imports.stringQuoteStyle`.
 
 | Setting                               | Description                                                                                   |
 | ------------------------------------- | --------------------------------------------------------------------------------------------- |
-| stringQuoteStyle                      | The string delimiter to use for the imports (`'` or `"`)                                      |
-| workspaceIgnorePatterns               | If any of these strings is part of a file path, the file is ignored during workspace indexing |
-| moduleIgnorePatterns                  | If any of these strings is part of a file path, the file is ignored during module indexing    |
-| insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`)          |
-| insertSemicolons                      | If the extension should add a semicolon to the end of a statement                             |
-| multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                              |
-| multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line          |
 | disableImportSorting                  | Disable sorting during organize imports action                                                |
 | disableImportRemovalOnOrganize        | Disable removal unsed imports during organize imports action                                  |
+| insertSpaceBeforeAndAfterImportBraces | If the extension should place spaces into import braces (`{Symbol}` vs `{ Symbol }`)          |
+| insertSemicolons                      | If the extension should add a semicolon to the end of a statement                             |
 | importGroups                          | The groups that are used for sorting the imports (description below)                          |
-| ignoreImportsForOrganize              | Imports that are never removed during organize import (e.g. react)                            |
-| resolverMode                          | Which files should be considered to index for TypeScript Hero                                 |
+| ignoredFromRemoval                    | Imports that are never removed during organize import (e.g. react)                            |
+| multiLineWrapThreshold                | The threshold, when imports are converted into multiline imports                              |
+| multiLineTrailingComma                | When multiline imports are created, `true` inserts a trailing comma to the last line          |
 | organizeOnSave                        | Enable or disable the `organizeImports` action on a save of a document                        |
 | organizeSortsByFirstSpecifier         | When organizing runs, sort by first specifier/alias (if any) instead of module path           |
-| promptForSpecifiers                   | If the extension should ask the user for aliases and duplicate specifiers                     |
+| removeTrailingIndex                   | Remove trailing `/index` from imports, since that is javascript default to look there         |
+| stringQuoteStyle                      | The string delimiter to use for the imports (`'` or `"`)                                      |
 
 ### Code outline view
 
@@ -123,13 +90,9 @@ The following settings do have the prefix `codeOutline`. So an example setting c
 
 TypeScript Hero can manage your imports. It is capable of:
 
-- Import something you select from a list of all possible indexed symbols
-- Import something that is beneath your current cursor position (and ask you if it's not sure which one)
-- Import all missing identifiers of the current file
 - Remove unused imports and sort the remaining ones by alphabet
 - Do organize the imports when a document is saved
-  - Note that this feature is only enabled if the vscode setting `editor.formatOnSave` is enabled as well!
-  - Organizing used module paths by default, sorted lexicographically.  An option lets you use first
+  - Organizing used module paths by default, sorted lexicographically. An option lets you use first
     import specifier/alias instead, in natural-language order.
 
 #### Import groups
@@ -217,21 +180,6 @@ import 'reflect-metadata';
 import {Server} from './server';
 ```
 
-### Intellisense
-
-Intellisense is a common IDE feature. TypeScript Hero provides you with symbols as you type your code
-and does add the import to the top of the file, if you don't have already imported the symbol.
-
-### Code fixing
-
-The "light-bulb" feature of VSCode can provide some code-fix actions to take when you make mistakes.
-TypeScript Hero offers the following fix actions:
-
-- Detect a missing import and automatically add the import to the file
-- Detect a missing import and offer to add all missing imports to the file
-- Detect missing methods / properties of an interface that you implemented and implement them for you (implement interface refactoring)
-- Detect missing abstract methods of an extended abstract class and implement them for you (implement abstract class refactoring)
-
 ### Code outline view
 
 This view is below your file explorer. It displays a code outline of your actually opened typescript or typescript-react
@@ -240,16 +188,6 @@ see what's in them. If you click on an element, the editor will jump to the loca
 
 By now, only typescript / typescript-react is supported. Maybe this will wander in it's own extension to support
 more languages than those two.
-
-### ES6 / JavaScript support
-
-As of now, this is kind of an experimental stage. TypeScript Hero can be set into an `ES6` or `Both` mode, instead
-of only `TypeScript`. With one of either modes, it will scan for javascript files in the workspace.
-
-Right now, only files in the workspace are considered "worth", because of the immense amount of javascript files
-in the `node_modules`. So if you set TSH to `ES6` it will scan all typescript declarations in the `node_modules`, and
-your javascript files in the workspace. If you set it to `Both`, it will scan all typescript files and the javascript
-files in the workspace (as well as the declarations).
 
 ## Known Issues
 
