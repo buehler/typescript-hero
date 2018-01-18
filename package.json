@@ -22,9 +22,6 @@
   "author": "Christoph Bühler <christoph.buehler@bluewin.ch>",
   "license": "MIT",
   "contributors": [],
-  "release": {
-    "getLastRelease": "semantic-release-visualstudio-marketplace-version"
-  },
   "badges": [
     {
       "url": "https://img.shields.io/travis/buehler/typescript-hero.svg",
@@ -63,7 +60,25 @@
     "lint": "tslint -c ./tslint.json -p ./config/tsconfig.build.json",
     "test": "npm run lint && npm run clean && jest -c ./jest.json",
     "test:watch": "npm run clean && jest -c ./jest.json --watch --no-coverage",
-    "test:vscode": "echo 'beside unit test with jest, there could be integration test with node ./node_modules/vscode/bin/test'"
+    "test:vscode": "echo 'beside unit test with jest, there could be integration test with node ./node_modules/vscode/bin/test'",
+    "semantic-release": "semantic-release"
+  },
+  "release": {
+    "verifyConditions": [
+      "semantic-release-vsce",
+      "@semantic-release/github"
+    ],
+    "getLastRelease": "semantic-release-vsce",
+    "publish": [
+      {
+        "path": "semantic-release-vsce",
+        "packageVsix": "your-extension.vsix"
+      },
+      {
+        "path": "@semantic-release/github",
+        "assets": "your-extension.vsix"
+      }
+    ]
   },
   "devDependencies": {
     "@smartive/tslint-config": "^2.0.0",
@@ -74,6 +89,8 @@
     "del-cli": "^1.1.0",
     "filewalker": "^0.1.3",
     "jest": "^22.1.2",
+    "semantic-release": "^12.2.2",
+    "semantic-release-vsce": "^1.0.2",
     "ts-jest": "^22.0.1",
     "tslint": "^5.9.1",
     "tsutils": "^2.19.1",

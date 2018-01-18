@@ -48,24 +48,18 @@ jobs:
       after_script:
         - greenkeeper-lockfile-upload
     - stage: deploy
-      env:
-        - BUILD_LEADER_ID=2
       install:
         - rvm get stable
         - rvm install 2.4
         - gem install github_changelog_generator
-        - yarn global add vsce semantic-release@^8.2.0 semantic-release-visualstudio-marketplace-version
+        - yarn global add vsce semantic-release@^12.2.0 semantic-release-vsce@^1.0.0
         - yarn install
-      script:
+      before_script:
         - yarn build
-        - semantic-release pre
-        - github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
-      after_script:
         - yarn install --production
-      after_success:
-        - vsce package
-        - vsce publish -p $VSCE_TOKEN
-        - semantic-release post
+      script:
+        - semantic-release
+        #- github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
 
 # add as soon as multi root workspaces are available:
 #- CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/multi-root.code-workspace CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/multi-root-workspace-tests
