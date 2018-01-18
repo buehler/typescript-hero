@@ -195,6 +195,12 @@
           "description": "Defines if the imports are organized by first specifier/alias instead of module path.",
           "scope": "resource"
         },
+        "typescriptHero.resolver.disableImportsSorting": {
+          "type": "boolean",
+          "default": false,
+          "description": "Defines if sorting is disable during organize imports.",
+          "scope": "resource"
+        },
         "typescriptHero.imports.disableImportRemovalOnOrganize": {
           "type": "boolean",
           "default": false,

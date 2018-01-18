@@ -158,7 +158,7 @@ export default class ImportManager {
       }
     }
 
-    if (!this.config.imports.disableImportRemovalOnOrganize(this.document.uri)) {
+    if (!this.config.imports.disableImportsSorting(this.document.uri)) {
       const sorter = this.config.imports.organizeSortsByFirstSpecifier(this.document.uri)
         ? importSortByFirstSpecifier
         : importSort;
@@ -167,6 +167,12 @@ export default class ImportManager {
         ...keep.filter(o => o instanceof StringImport).sort(sorter),
         ...keep.filter(o => !(o instanceof StringImport)).sort(sorter),
       ];
+    }
+
+    if (this.config.imports.removeTrailingIndex(this.document.uri)) {
+      for (const imp of keep.filter(lib => lib.libraryName.endsWith('/index'))) {
+        imp.libraryName = imp.libraryName.replace(/\/index$/, '');
+      }
     }
 
     for (const group of this.importGroups) {

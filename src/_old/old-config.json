@@ -35,23 +35,6 @@
       "description": "Defines partial pathes (globs) that are ignored during indexing of the **node_modules**. This patterns are attached to the node_module/<name> of each found module.",
       "scope": "resource"
     },
-    "typescriptHero.resolver.disableImportsSorting": {
-      "type": "boolean",
-      "default": false,
-      "description": "Defines if sorting is disable during organize imports.",
-      "scope": "resource"
-    },
-    "typescriptHero.resolver.disableImportRemovalOnOrganize": {
-      "type": "boolean",
-      "default": false,
-      "description": "Defines, if removal unsed imports is obligatory during organize imports"
-    },
-    "typescriptHero.resolver.organizeSortsByFirstSpecifier": {
-      "type": "boolean",
-      "default": false,
-      "description": "Defines if the imports are organized by first specifier/alias instead of module path.",
-      "scope": "resource"
-    },
     "typescriptHero.resolver.resolverMode": {
       "enum": [
         "TypeScript",

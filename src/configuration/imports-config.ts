@@ -38,6 +38,10 @@ export default class ImportsConfig {
     return workspace.getConfiguration(sectionKey, resource).get('disableImportRemovalOnOrganize', false);
   }
 
+  public disableImportsSorting(resource: Uri): boolean {
+    return workspace.getConfiguration(sectionKey, resource).get('disableImportsSorting', false);
+  }
+
   public organizeOnSave(resource: Uri): boolean {
     return workspace.getConfiguration(sectionKey, resource).get('organizeOnSave', false);
   }
