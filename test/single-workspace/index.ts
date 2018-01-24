@@ -12,8 +12,8 @@
 // a possible error to the callback or null if none.
 import { ExtensionContext, Memento } from 'vscode';
 
-import ioc from '../src/ioc';
-import iocSymbols from '../src/ioc-symbols';
+import ioc from '../../src/ioc';
+import iocSymbols from '../../src/ioc-symbols';
 
 class ContextMock implements ExtensionContext {
   subscriptions: { dispose(): any }[] = [];
