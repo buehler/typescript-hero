@@ -18,8 +18,8 @@ jobs:
       os: linux
       sudo: required
       env:
-        - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/_workspace
-        - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/single-workspace-tests
+        - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/etc/workspace_1
+        - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/single-workspace
       addons:
         apt:
           sources:

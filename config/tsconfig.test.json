@@ -7,6 +7,6 @@
   "exclude": [
     "../src/_old",
     "../test/_old",
-    "../test/_workspace"
+    "../test/etc"
   ]
 }

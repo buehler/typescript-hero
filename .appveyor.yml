@@ -4,8 +4,8 @@ skip_branch_with_pr: true
 
 environment:
   nodejs_version: "9"
-  CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/_workspace"
-  CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/single-workspace-tests"
+  CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/workspace_1"
+  CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/single-workspace"
 
 install:
   - ps: Install-Product node $env:nodejs_version
