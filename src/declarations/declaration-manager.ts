@@ -57,6 +57,7 @@ export default class DeclarationManager implements Disposable {
     if (state === WorkspaceDeclarationsState.Syncing) {
       this.activeWorkspaces++;
       this.statusBarItem.text = ResolverState.syncing;
+      return;
     }
     if (this.activeWorkspaces <= 0) {
       this.statusBarItem.text = ResolverState.ok;
