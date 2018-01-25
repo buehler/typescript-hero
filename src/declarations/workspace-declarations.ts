@@ -1,5 +1,7 @@
-import { DeclarationIndex, TypescriptParser } from 'typescript-parser';
-import { Disposable, Event, EventEmitter, WorkspaceFolder } from 'vscode';
+import { exists } from 'fs-extra';
+import { join } from 'path';
+import { DeclarationIndex, FileChanges, TypescriptParser } from 'typescript-parser';
+import { Disposable, Event, EventEmitter, RelativePattern, Uri, workspace, WorkspaceFolder } from 'vscode';
 
 import Configuration from '../configuration';
 import ioc from '../ioc';
@@ -15,6 +17,8 @@ export const enum WorkspaceDeclarationsState {
 export default class WorkspaceDeclarations implements Disposable {
   private readonly _workspaceStateChanged: EventEmitter<WorkspaceDeclarationsState> = new EventEmitter();
   private readonly disposables: Disposable[] = [];
+  private watcherEvents: FileChanges | undefined;
+  private timeout: NodeJS.Timer | undefined;
   private _index: DeclarationIndex;
 
   public get workspaceStateChanged(): Event<WorkspaceDeclarationsState> {
@@ -50,44 +54,126 @@ export default class WorkspaceDeclarations implements Disposable {
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
+    this._index.reset();
   }
 
-  private initialize(): void {
+  private async initialize(): Promise<void> {
     const profiler = this.logger.startTimer();
-    this._index = new DeclarationIndex(this.parser, this.folder.uri.fsPath);
+    this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Syncing);
 
+    this._index = new DeclarationIndex(this.parser, this.folder.uri.fsPath);
+    const files = await this.findFiles();
+    const watcher = workspace.createFileSystemWatcher(
+      new RelativePattern(
+        this.folder,
+        '{**/*.ts,**/*.tsx,**/package.json,**/typings.json}',
+      ),
+    );
+
+    watcher.onDidChange(uri => this.fileWatcherEvent('created', uri));
+    watcher.onDidChange(uri => this.fileWatcherEvent('updated', uri));
+    watcher.onDidDelete(uri => this.fileWatcherEvent('deleted', uri));
+
+    this.disposables.push(watcher);
+
+    try {
+      await this._index.buildIndex(files);
+      this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Idle);
+
+      profiler.done({
+        message: 'Built index for workspace',
+        workspace: this.folder.uri.fsPath,
+      });
+    } catch (error) {
+      this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Error);
+      this.logger.error(
+        'Error during indexing of workspacefiles',
+        { error: error.toString(), workspace: this.folder.uri.fsPath },
+      );
+    }
+  }
+
+  private fileWatcherEvent(event: string, uri: Uri): void {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    if (!this.watcherEvents) {
+      this.watcherEvents = {
+        created: [],
+        updated: [],
+        deleted: [],
+      };
+    }
+    this.watcherEvents[event].push(uri.fsPath);
+
+    this.timeout = setTimeout(
+      async () => {
+        if (this.watcherEvents) {
+          const profiler = this.logger.startTimer();
+          this.logger.debug(
+            'Rebuilding index for workspace',
+            { workspace: this.folder.uri.fsPath },
+          );
+          this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Syncing);
+          try {
+            await this._index.reindexForChanges(this.watcherEvents);
+            profiler.done({
+              message: 'Rebuilt index for workspace',
+              workspace: this.folder.uri.fsPath,
+            });
+            this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Idle);
+          } catch (e) {
+            this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Error);
+            this.logger.error('Error during reindex of workspacefiles', { workspace: this.folder.uri.fsPath });
+          } finally {
+            this.watcherEvents = undefined;
+          }
+        }
+      },
+      500,
+    );
   }
 
   /**
- * This function searches for files in a specific workspace folder. The files are relative to the given
- * workspace folder.
- *
- * If a node_modules folder is present, but NO package.json, the node_modules are ignored completely.
- * (For performance and memory reasons)
- *
- * @returns {Promise<string[]>}
- */
+   * This function searches for files in a specific workspace folder. The files are relative to the given
+   * workspace folder.
+   *
+   * If a node_modules folder is present, but NO package.json, the node_modules are ignored completely.
+   * (For performance and memory reasons)
+   *
+   * @returns {Promise<string[]>}
+   */
   private async findFiles(): Promise<string[]> {
     const workspaceExcludes = [
-      ...config.resolver.workspaceIgnorePatterns,
+      ...this.config.index.workspaceIgnorePatterns(this.folder.uri),
       'node_modules/**/*',
       'typings/**/*',
     ];
-    const moduleExcludes = config.resolver.moduleIgnorePatterns;
+    const moduleExcludes = this.config.index.moduleIgnorePatterns(this.folder.uri);
+    this.logger.debug('Calculated excludes for workspace.', {
+      workspaceExcludes,
+      moduleExcludes,
+      workspace: this.folder.uri.fsPath,
+    });
+
     const searches: PromiseLike<Uri[]>[] = [
       workspace.findFiles(
-        new RelativePattern(workspaceFolder, `{${config.resolver.resolverModeFileGlobs.join(',')}}`),
-        new RelativePattern(workspaceFolder, `{${workspaceExcludes.join(',')}}`),
+        new RelativePattern(this.folder, '{**/*.ts,**/*.tsx}'),
+        new RelativePattern(this.folder, `{${workspaceExcludes.join(',')}}`),
       ),
     ];
 
-    // TODO: check the package json and index javascript file in node_modules (?)
-    let globs: string[] = ['typings/**/*.d.ts'];
-    let ignores: string[] = [];
-    const rootPath = workspaceFolder.uri.fsPath;
-    const hasPackageJson = existsSync(join(rootPath, 'package.json'));
+    const rootPath = this.folder.uri.fsPath;
+    const hasPackageJson = await exists(join(rootPath, 'package.json'));
 
     if (rootPath && hasPackageJson) {
+      this.logger.debug('Found package.json, calculate searchable node modules.', {
+        workspace: this.folder.uri.fsPath,
+        packageJson: join(rootPath, 'package.json'),
+      });
+      let globs: string[] = [];
+      let ignores: string[] = [];
+
       const packageJson = require(join(rootPath, 'package.json'));
       for (const folder of ['dependencies', 'devDependencies']) {
         if (packageJson[folder]) {
@@ -106,16 +192,20 @@ export default class WorkspaceDeclarations implements Disposable {
           );
         }
       }
-    } else {
-      ignores.push('node_modules/**/*');
-    }
 
-    searches.push(
-      workspace.findFiles(
-        new RelativePattern(workspaceFolder, `{${globs.join(',')}}`),
-        new RelativePattern(workspaceFolder, `{${ignores.join(',')}}`),
-      ),
-    );
+      this.logger.debug('Calculated node module search.', {
+        globs,
+        ignores,
+        workspace: this.folder.uri.fsPath,
+      });
+
+      searches.push(
+        workspace.findFiles(
+          new RelativePattern(this.folder, `{${globs.join(',')}}`),
+          new RelativePattern(this.folder, `{${ignores.join(',')}}`),
+        ),
+      );
+    }
 
     const uris = await Promise.all(searches);
     return uris

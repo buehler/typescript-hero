@@ -1,26 +1,26 @@
 import {
-    ExternalModuleImport,
-    File,
-    Import,
-    NamedImport,
-    NamespaceImport,
-    StringImport,
-    SymbolSpecifier,
-    TypescriptCodeGenerator,
-    TypescriptParser,
+  ExternalModuleImport,
+  File,
+  Import,
+  NamedImport,
+  NamespaceImport,
+  StringImport,
+  SymbolSpecifier,
+  TypescriptCodeGenerator,
+  TypescriptParser,
 } from 'typescript-parser';
 import { Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
-import Configuration from '../configuration/index';
+import Configuration from '../configuration';
 import { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
 import {
-    getImportInsertPosition,
-    getScriptKind,
-    importGroupSortForPrecedence,
-    importSort,
-    importSortByFirstSpecifier,
-    specifierSort,
+  getImportInsertPosition,
+  getScriptKind,
+  importGroupSortForPrecedence,
+  importSort,
+  importSortByFirstSpecifier,
+  specifierSort,
 } from '../utilities/utility-functions';
 import { ImportGroup } from './import-grouping';
 
@@ -95,7 +95,7 @@ export default class ImportManager {
     private readonly generatorFactory: TypescriptCodeGeneratorFactory,
   ) {
     this.logger.debug(
-      `[ImportManager] create import manager`,
+      `Create import manager`,
       { file: document.fileName },
     );
     this.reset();
@@ -124,7 +124,7 @@ export default class ImportManager {
    */
   public organizeImports(): this {
     this.logger.debug(
-      '[ImportManager] organize the imports',
+      'Organize the imports',
       { file: this.document.fileName },
     );
     this.organize = true;
@@ -200,7 +200,7 @@ export default class ImportManager {
     workspaceEdit.set(this.document.uri, edits);
 
     this.logger.debug(
-      '[ImportManager] commit the file',
+      'Commit the file',
       { file: this.document.fileName },
     );
 

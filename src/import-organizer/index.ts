@@ -24,20 +24,20 @@ export default class ImportOrganizer implements Activatable {
       workspace.onWillSaveTextDocument((event) => {
         if (!this.config.imports.organizeOnSave(event.document.uri)) {
           this.logger.debug(
-            '[ImportOrganizer] organizeOnSave is deactivated through config',
+            'OrganizeOnSave is deactivated through config',
           );
           return;
         }
         if (this.config.parseableLanguages().indexOf(event.document.languageId) < 0) {
           this.logger.debug(
-            '[ImportOrganizer] organizeOnSave not possible for given language',
+            'OrganizeOnSave not possible for given language',
             { language: event.document.languageId },
           );
           return;
         }
 
         this.logger.info(
-          '[ImportOrganizer] organizeOnSave for file',
+          'OrganizeOnSave for file',
           { file: event.document.fileName },
         );
         event.waitUntil(
@@ -65,14 +65,14 @@ export default class ImportOrganizer implements Activatable {
     }
     try {
       this.logger.debug(
-        '[ImportOrganizer] organize the imports in the document',
+        'Organize the imports in the document',
         { file: window.activeTextEditor.document.fileName },
       );
       const ctrl = await this.importManagerProvider(window.activeTextEditor.document);
       await ctrl.organizeImports().commit();
     } catch (e) {
       this.logger.error(
-        '[ImportOrganizer] imports could not be organized, error: %s',
+        'Imports could not be organized, error: %s',
         e,
         { file: window.activeTextEditor.document.fileName },
       );
