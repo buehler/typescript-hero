@@ -85,7 +85,7 @@ export default class DeclarationManager implements Disposable {
       this.activeWorkspaces--;
     }
     if (this.activeWorkspaces <= 0) {
-      this.logger.debug('All workspace are done syncing.');
+      this.logger.debug('All workspaces are done syncing.');
       this.statusBarItem.text = ResolverState.ok;
     }
   }

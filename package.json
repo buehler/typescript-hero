@@ -117,6 +117,10 @@
         "title": "TS Hero: Add an import to current file"
       },
       {
+        "command": "typescriptHero.index.addImportUnderCursor",
+        "title": "TS Hero: Adds the current symbol under the cursor as an import to current file"
+      },
+      {
         "command": "typescriptHero.imports.organize",
         "title": "TS Hero: Organize imports (sort and remove unused)"
       },
@@ -129,6 +133,11 @@
       {
         "command": "typescriptHero.index.addImport",
         "key": "ctrl+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "typescriptHero.index.addImportUnderCursor",
+        "key": "ctrl+alt+i",
         "when": "editorTextFocus"
       },
       {

@@ -12,10 +12,6 @@
   },
   "commands": [
     {
-      "command": "typescriptHero.resolve.addImportUnderCursor",
-      "title": "TS Hero: Adds the current symbol under the cursor as an import to current file"
-    },
-    {
       "command": "typescriptHero.resolve.addMissingImports",
       "title": "TS Hero: Adds all missing imports for the open document"
     },
@@ -41,11 +37,6 @@
     }
   ],
   "keybindings": [
-    {
-      "command": "typescriptHero.resolve.addImportUnderCursor",
-      "key": "ctrl+alt+i",
-      "when": "editorTextFocus"
-    },
     {
       "command": "typescriptHero.resolve.addMissingImports",
       "key": "ctrl+alt+shift+i",
