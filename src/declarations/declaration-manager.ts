@@ -37,6 +37,7 @@ export default class DeclarationManager implements Disposable {
     for (const folder of (workspace.workspaceFolders || []).filter(workspace => workspace.uri.scheme === 'file')) {
       this.workspaces[folder.uri.fsPath] = new WorkspaceDeclarations(folder);
       this.workspaces[folder.uri.fsPath].workspaceStateChanged(state => this.workspaceChanged(state));
+      this.workspaceChanged(WorkspaceDeclarationsState.Syncing);
     }
   }
 
@@ -69,18 +70,22 @@ export default class DeclarationManager implements Disposable {
       return;
     }
     if (state === WorkspaceDeclarationsState.Error) {
+      this.logger.error('A workspace did encounter an error.');
       this.statusBarItem.text = ResolverState.error;
       return;
     }
     if (state === WorkspaceDeclarationsState.Syncing) {
+      this.logger.debug('A workspace is syncing it\'s files.');
       this.activeWorkspaces++;
       this.statusBarItem.text = ResolverState.syncing;
       return;
     }
     if (state === WorkspaceDeclarationsState.Idle) {
+      this.logger.debug('A workspace is done syncing it\'s files.');
       this.activeWorkspaces--;
     }
     if (this.activeWorkspaces <= 0) {
+      this.logger.debug('All workspace are done syncing.');
       this.statusBarItem.text = ResolverState.ok;
     }
   }
