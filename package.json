@@ -303,6 +303,32 @@
           ],
           "description": "Defines the groups of the imports ordering. Multiple groups possible, see readme for instructions.",
           "scope": "resource"
+        },
+        "typescriptHero.index.workspaceIgnorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "**/build/**/*",
+            "**/out/**/*",
+            "**/dist/**/*"
+          ],
+          "description": "Defines partial pathes (globs) that are ignored during indexing of the **workspace** (e.g. 'node_modules/**/*' would exclude all modules).",
+          "scope": "resource"
+        },
+        "typescriptHero.index.moduleIgnorePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [
+            "**/node_modules/**/*"
+          ],
+          "description": "Defines partial pathes (globs) that are ignored during indexing of the **node_modules**. This patterns are attached to the node_module/<name> of each found module.",
+          "scope": "resource"
         }
       }
     }

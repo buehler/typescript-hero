@@ -5,6 +5,7 @@ import { Event, EventEmitter, ExtensionContext, Uri, window, workspace } from 'v
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
 import ImportsConfig from './imports-config';
+import IndexConfig from './index-config';
 
 const sectionKey = 'typescriptHero';
 
@@ -12,6 +13,7 @@ const sectionKey = 'typescriptHero';
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
   public readonly imports: ImportsConfig = new ImportsConfig();
+  public readonly index: IndexConfig = new IndexConfig();
 
   private readonly _configurationChanged: EventEmitter<void> = new EventEmitter();
 
