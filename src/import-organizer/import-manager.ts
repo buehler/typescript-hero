@@ -1,7 +1,10 @@
 import {
+  DeclarationInfo,
+  DefaultDeclaration,
   ExternalModuleImport,
   File,
   Import,
+  ModuleDeclaration,
   NamedImport,
   NamespaceImport,
   StringImport,
@@ -15,7 +18,9 @@ import Configuration from '../configuration';
 import { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
 import {
+  getAbsolutLibraryName,
   getImportInsertPosition,
+  getRelativeLibraryName,
   getScriptKind,
   importGroupSortForPrecedence,
   importSort,
@@ -180,6 +185,62 @@ export default class ImportManager {
     }
     this.imports = keep;
     this.addImportsToGroups(this.imports);
+
+    return this;
+  }
+
+  /**
+   * Adds an import for a declaration to the documents imports.
+   * This index is merged and commited during the commit() function.
+   * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
+   *
+   * @param {DeclarationInfo} declarationInfo The import that should be added to the document
+   * @returns {ImportManager}
+   *
+   * @memberof ImportManager
+   */
+  public addDeclarationImport(declarationInfo: DeclarationInfo): this {
+    this.logger.debug(
+      'Add declaration as import',
+      { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
+    );
+    // If there is something already imported, it must be a NamedImport
+    const alreadyImported: NamedImport = this.imports.find(
+      o => declarationInfo.from === getAbsolutLibraryName(
+        o.libraryName,
+        this.document.fileName,
+        this.rootPath,
+      ) && o instanceof NamedImport,
+    ) as NamedImport;
+
+    if (alreadyImported) {
+      // If we found an import for this declaration, it's named import (with a possible default declaration)
+      if (declarationInfo.declaration instanceof DefaultDeclaration) {
+        delete alreadyImported.defaultAlias;
+        alreadyImported.defaultAlias = declarationInfo.declaration.name;
+      } else if (!alreadyImported.specifiers.some(o => o.specifier === declarationInfo.declaration.name)) {
+        alreadyImported.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
+      }
+    } else {
+      let imp: Import = new NamedImport(getRelativeLibraryName(
+        declarationInfo.from,
+        this.document.fileName,
+        this.rootPath,
+      ));
+
+      if (declarationInfo.declaration instanceof ModuleDeclaration) {
+        imp = new NamespaceImport(
+          declarationInfo.from,
+          declarationInfo.declaration.name,
+        );
+      } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
+        (imp as NamedImport).defaultAlias = declarationInfo.declaration.name;
+      } else {
+        (imp as NamedImport).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
+      }
+      this.imports.push(imp);
+      this.addImportsToGroups([imp]);
+    }
 
     return this;
   }

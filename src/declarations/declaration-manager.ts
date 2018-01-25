@@ -1,5 +1,6 @@
 import { inject, injectable, postConstruct } from 'inversify';
-import { Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, window, workspace } from 'vscode';
+import { DeclarationIndex } from 'typescript-parser';
+import { Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
@@ -39,6 +40,23 @@ export default class DeclarationManager implements Disposable {
     }
   }
 
+  /**
+   * Returns the index (or undefined) for a given file URI.
+   *
+   * @param {Uri} fileUri
+   * @returns {(DeclarationIndex | undefined)}
+   * @memberof DeclarationIndexMapper
+   */
+  public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
+    const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
+    if (!workspaceFolder || !this.workspaces[workspaceFolder.uri.fsPath]) {
+      this.logger.debug('Did not find index for file', { file: fileUri.fsPath });
+      return;
+    }
+
+    return this.workspaces[workspaceFolder.uri.fsPath].index;
+  }
+
   public dispose(): void {
     this.logger.debug('Disposing DeclarationManager.');
     for (const folder of Object.values(this.workspaces)) {
@@ -59,10 +77,11 @@ export default class DeclarationManager implements Disposable {
       this.statusBarItem.text = ResolverState.syncing;
       return;
     }
+    if (state === WorkspaceDeclarationsState.Idle) {
+      this.activeWorkspaces--;
+    }
     if (this.activeWorkspaces <= 0) {
       this.statusBarItem.text = ResolverState.ok;
-      return;
     }
-    this.activeWorkspaces--;
   }
 }

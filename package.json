@@ -113,6 +113,10 @@
   "contributes": {
     "commands": [
       {
+        "command": "typescriptHero.index.addImport",
+        "title": "TS Hero: Add an import to current file"
+      },
+      {
         "command": "typescriptHero.imports.organize",
         "title": "TS Hero: Organize imports (sort and remove unused)"
       },
@@ -122,6 +126,11 @@
       }
     ],
     "keybindings": [
+      {
+        "command": "typescriptHero.index.addImport",
+        "key": "ctrl+shift+i",
+        "when": "editorTextFocus"
+      },
       {
         "command": "typescriptHero.imports.organize",
         "key": "ctrl+alt+o",
