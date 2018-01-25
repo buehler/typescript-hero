@@ -13,7 +13,7 @@ export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
   public readonly imports: ImportsConfig = new ImportsConfig();
 
-  private readonly _configurationChanged: EventEmitter<void>;
+  private readonly _configurationChanged: EventEmitter<void> = new EventEmitter();
 
   public get configurationChanged(): Event<void> {
     return this._configurationChanged.event;

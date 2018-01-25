@@ -2,6 +2,7 @@ import { inject, injectable, multiInject } from 'inversify';
 import { Generatable, GENERATORS, TypescriptCodeGenerator, TypescriptGenerationOptions } from 'typescript-parser';
 
 import Activatable from './activatable';
+import DeclarationManager from './declarations/declaration-manager';
 import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './import-organizer/import-grouping';
 import iocSymbols from './ioc-symbols';
 import { Logger } from './utilities/logger';
@@ -11,11 +12,13 @@ export default class TypescriptHero implements Activatable {
   constructor(
     @inject(iocSymbols.logger) private logger: Logger,
     @multiInject(iocSymbols.activatables) private activatables: Activatable[],
+    @inject(iocSymbols.declarationManager) private mgmr: DeclarationManager,
   ) { }
 
   public setup(): void {
     this.logger.debug('Setting up extension and activatables.');
     this.extendCodeGenerator();
+    console.log(this.mgmr);
     for (const activatable of this.activatables) {
       activatable.setup();
     }
