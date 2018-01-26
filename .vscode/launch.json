@@ -7,7 +7,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/test/_workspace",
+        "${workspaceRoot}/test/etc/workspace_1",
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "env": {
@@ -25,7 +25,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/test/multi-root.code-workspace",
+        "${workspaceRoot}/test/etc/multi-root.code-workspace",
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "env": {

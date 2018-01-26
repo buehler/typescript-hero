@@ -1,26 +1,31 @@
 import {
-    ExternalModuleImport,
-    File,
-    Import,
-    NamedImport,
-    NamespaceImport,
-    StringImport,
-    SymbolSpecifier,
-    TypescriptCodeGenerator,
-    TypescriptParser,
+  DeclarationInfo,
+  DefaultDeclaration,
+  ExternalModuleImport,
+  File,
+  Import,
+  ModuleDeclaration,
+  NamedImport,
+  NamespaceImport,
+  StringImport,
+  SymbolSpecifier,
+  TypescriptCodeGenerator,
+  TypescriptParser,
 } from 'typescript-parser';
 import { Position, Range, TextDocument, TextEdit, window, workspace, WorkspaceEdit } from 'vscode';
 
-import Configuration from '../configuration/index';
+import Configuration from '../configuration';
 import { TypescriptCodeGeneratorFactory } from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
 import {
-    getImportInsertPosition,
-    getScriptKind,
-    importGroupSortForPrecedence,
-    importSort,
-    importSortByFirstSpecifier,
-    specifierSort,
+  getAbsolutLibraryName,
+  getImportInsertPosition,
+  getRelativeLibraryName,
+  getScriptKind,
+  importGroupSortForPrecedence,
+  importSort,
+  importSortByFirstSpecifier,
+  specifierSort,
 } from '../utilities/utility-functions';
 import { ImportGroup } from './import-grouping';
 
@@ -95,7 +100,7 @@ export default class ImportManager {
     private readonly generatorFactory: TypescriptCodeGeneratorFactory,
   ) {
     this.logger.debug(
-      `[ImportManager] create import manager`,
+      `Create import manager`,
       { file: document.fileName },
     );
     this.reset();
@@ -124,7 +129,7 @@ export default class ImportManager {
    */
   public organizeImports(): this {
     this.logger.debug(
-      '[ImportManager] organize the imports',
+      'Organize the imports',
       { file: this.document.fileName },
     );
     this.organize = true;
@@ -185,6 +190,62 @@ export default class ImportManager {
   }
 
   /**
+   * Adds an import for a declaration to the documents imports.
+   * This index is merged and commited during the commit() function.
+   * If it's a default import or there is a duplicate identifier, the controller will ask for the name on commit().
+   *
+   * @param {DeclarationInfo} declarationInfo The import that should be added to the document
+   * @returns {ImportManager}
+   *
+   * @memberof ImportManager
+   */
+  public addDeclarationImport(declarationInfo: DeclarationInfo): this {
+    this.logger.debug(
+      'Add declaration as import',
+      { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
+    );
+    // If there is something already imported, it must be a NamedImport
+    const alreadyImported: NamedImport = this.imports.find(
+      o => declarationInfo.from === getAbsolutLibraryName(
+        o.libraryName,
+        this.document.fileName,
+        this.rootPath,
+      ) && o instanceof NamedImport,
+    ) as NamedImport;
+
+    if (alreadyImported) {
+      // If we found an import for this declaration, it's named import (with a possible default declaration)
+      if (declarationInfo.declaration instanceof DefaultDeclaration) {
+        delete alreadyImported.defaultAlias;
+        alreadyImported.defaultAlias = declarationInfo.declaration.name;
+      } else if (!alreadyImported.specifiers.some(o => o.specifier === declarationInfo.declaration.name)) {
+        alreadyImported.specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
+      }
+    } else {
+      let imp: Import = new NamedImport(getRelativeLibraryName(
+        declarationInfo.from,
+        this.document.fileName,
+        this.rootPath,
+      ));
+
+      if (declarationInfo.declaration instanceof ModuleDeclaration) {
+        imp = new NamespaceImport(
+          declarationInfo.from,
+          declarationInfo.declaration.name,
+        );
+      } else if (declarationInfo.declaration instanceof DefaultDeclaration) {
+        (imp as NamedImport).defaultAlias = declarationInfo.declaration.name;
+      } else {
+        (imp as NamedImport).specifiers.push(new SymbolSpecifier(declarationInfo.declaration.name));
+      }
+      this.imports.push(imp);
+      this.addImportsToGroups([imp]);
+    }
+
+    return this;
+  }
+
+  /**
    * Does commit the currently virtual document to the TextEditor.
    * Returns a promise that resolves to a boolean if all changes
    * could be applied.
@@ -200,7 +261,7 @@ export default class ImportManager {
     workspaceEdit.set(this.document.uri, edits);
 
     this.logger.debug(
-      '[ImportManager] commit the file',
+      'Commit the file',
       { file: this.document.fileName },
     );
 

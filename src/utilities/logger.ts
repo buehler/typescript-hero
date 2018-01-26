@@ -60,7 +60,7 @@ export interface Logger {
   info: (message: string, ...data: any[]) => void;
   debug: (message: string, ...data: any[]) => void;
   profile: (name: string) => void;
-  startTimer(): { done: (info: { message: string }) => void; };
+  startTimer(): { done: (info: { message: string, [key: string]: any }) => void; };
 }
 
 const loggerTransports = [
