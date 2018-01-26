@@ -1,11 +1,11 @@
 import { inject, injectable } from 'inversify';
-import { Observable, Subject } from 'rxjs';
 import { TypescriptGenerationOptions } from 'typescript-parser';
-import { ExtensionContext, Uri, window, workspace } from 'vscode';
+import { Event, EventEmitter, ExtensionContext, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import DocumentOutlineConfig from './document-outline-config';
 import ImportsConfig from './imports-config';
+import IndexConfig from './index-config';
 
 const sectionKey = 'typescriptHero';
 
@@ -13,19 +13,21 @@ const sectionKey = 'typescriptHero';
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
   public readonly imports: ImportsConfig = new ImportsConfig();
+  public readonly index: IndexConfig = new IndexConfig();
 
-  private readonly _configurationChanged: Subject<void> = new Subject();
+  private readonly _configurationChanged: EventEmitter<void> = new EventEmitter();
 
-  public get configurationChanged(): Observable<void> {
-    return this._configurationChanged;
+  public get configurationChanged(): Event<void> {
+    return this._configurationChanged.event;
   }
 
   constructor(
     @inject(iocSymbols.extensionContext) context: ExtensionContext,
   ) {
     context.subscriptions.push(
-      workspace.onDidChangeConfiguration(() => this._configurationChanged.next()),
+      workspace.onDidChangeConfiguration(() => this._configurationChanged.fire()),
     );
+    context.subscriptions.push(this._configurationChanged);
   }
 
   public parseableLanguages(): string[] {

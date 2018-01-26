@@ -1,18 +1,17 @@
 import { inject, injectable } from 'inversify';
-import { Subscription } from 'rxjs';
 import { File, Node, TypescriptParser } from 'typescript-parser';
 import {
-    commands,
-    Disposable,
-    Event,
-    EventEmitter,
-    ExtensionContext,
-    ProviderResult,
-    Selection,
-    TextEditorRevealType,
-    TreeDataProvider,
-    window,
-    workspace,
+  commands,
+  Disposable,
+  Event,
+  EventEmitter,
+  ExtensionContext,
+  ProviderResult,
+  Selection,
+  TextEditorRevealType,
+  TreeDataProvider,
+  window,
+  workspace,
 } from 'vscode';
 
 import Activatable from '../activatable';
@@ -31,7 +30,6 @@ import ResourceStructureTreeItem from './resource-structure-tree-item';
 export default class CodeOutline implements Activatable, TreeDataProvider<BaseStructureTreeItem> {
   private _onDidChangeTreeData: EventEmitter<BaseStructureTreeItem | undefined>;
 
-  private subscription: Subscription;
   private disposables: Disposable[] = [];
   private documentCache?: File;
 
@@ -48,13 +46,13 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public setup(): void {
     this.logger.debug('Setting up CodeOutline.');
-    this.subscription = this.config.configurationChanged.subscribe(() => {
+    this.context.subscriptions.push(this.config.configurationChanged(() => {
       if (this.config.codeOutline.isEnabled() && !this.disposables) {
         this.start();
       } else if (!this.config.codeOutline.isEnabled() && this.disposables) {
         this.stop();
       }
-    });
+    }));
     this.context.subscriptions.push(commands.registerCommand(
       'typescriptHero.codeOutline.gotoNode',
       (node: Node | undefined) => this.jumpToNode(node),
@@ -88,10 +86,6 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public dispose(): void {
     this.logger.debug('Disposing CodeOutline.');
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-      delete this.subscription;
-    }
     for (const disposable of this.disposables) {
       disposable.dispose();
     }

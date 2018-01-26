@@ -6,10 +6,9 @@
     "moduleResolution": "node",
     "lib": [
       "es6",
-      "es2017",
-      "dom"
+      "es2017"
     ],
-    "rootDir": "../src",
+    "rootDir": "../",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "noUnusedLocals": true,
@@ -22,8 +21,6 @@
     "../src/**/*"
   ],
   "exclude": [
-    "../src/_old",
-    "../node_modules",
-    "../out"
+    "../src/_old"
   ]
 }
