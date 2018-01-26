@@ -97,6 +97,7 @@
     "vscode": "^1.1.10"
   },
   "dependencies": {
+    "fs-extra": "^5.0.0",
     "inversify": "^4.9.0",
     "reflect-metadata": "^0.1.12",
     "tslib": "^1.8.1",

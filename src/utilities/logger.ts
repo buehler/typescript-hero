@@ -75,6 +75,7 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
   if (!process.env.CI && !process.env.EXT_DEBUG) {
     const channel = window.createOutputChannel('TypeScript Hero');
     context.subscriptions.push(channel);
+    channel.show();
 
     const fileHandler = new transports.File({
       level: ['info', 'debug'].indexOf(level) >= 0 ? level : 'info',
