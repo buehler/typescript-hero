@@ -1,6 +1,16 @@
 import { inject, injectable, postConstruct } from 'inversify';
 import { DeclarationIndex } from 'typescript-parser';
-import { Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, Uri, window, workspace } from 'vscode';
+import {
+  Disposable,
+  ExtensionContext,
+  StatusBarAlignment,
+  StatusBarItem,
+  Uri,
+  window,
+  workspace,
+  WorkspaceFolder,
+  WorkspaceFoldersChangeEvent,
+} from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
 import { Logger } from '../utilities/logger';
@@ -32,12 +42,10 @@ export default class DeclarationManager implements Disposable {
 
     this.context.subscriptions.push(this);
     this.context.subscriptions.push(this.statusBarItem);
-    this.context.subscriptions.push(workspace.onDidChangeWorkspaceFolders(e => this.workspaceChanged(e)));
+    this.context.subscriptions.push(workspace.onDidChangeWorkspaceFolders(e => this.workspaceFoldersChanged(e)));
 
     for (const folder of (workspace.workspaceFolders || []).filter(workspace => workspace.uri.scheme === 'file')) {
-      this.workspaces[folder.uri.fsPath] = new WorkspaceDeclarations(folder);
-      this.workspaces[folder.uri.fsPath].workspaceStateChanged(state => this.workspaceChanged(state));
-      this.workspaceChanged(WorkspaceDeclarationsState.Syncing);
+      this.createWorkspace(folder);
     }
   }
 
@@ -65,7 +73,40 @@ export default class DeclarationManager implements Disposable {
     }
   }
 
-  private workspaceChanged(state: WorkspaceDeclarationsState): void {
+  /**
+   * Eventhandler that is called when the workspaces changed (i.e. some where added or removed).
+   *
+   * @private
+   * @param {WorkspaceFoldersChangeEvent} event
+   * @memberof DeclarationIndexMapper
+   */
+  private workspaceFoldersChanged(event: WorkspaceFoldersChangeEvent): void {
+    const added = event.added.filter(e => e.uri.scheme === 'file');
+    const removed = event.removed.filter(e => e.uri.scheme === 'file');
+
+    this.logger.info(
+      'Workspaces changed, adjusting indices',
+      { added: added.map(e => e.uri.fsPath), removed: removed.map(e => e.uri.fsPath) },
+    );
+
+    for (const add of event.added) {
+      if (this.workspaces[add.uri.fsPath]) {
+        this.logger.warn(
+          'Workspace index already exists, skipping',
+          { workspace: add.uri.fsPath },
+        );
+        continue;
+      }
+      this.createWorkspace(add);
+    }
+
+    for (const remove of event.removed) {
+      this.workspaces[remove.uri.fsPath].dispose();
+      delete this.workspaces[remove.uri.fsPath];
+    }
+  }
+
+  private workspaceStateChanged(state: WorkspaceDeclarationsState): void {
     if (this.statusBarItem.text === ResolverState.error) {
       return;
     }
@@ -88,5 +129,11 @@ export default class DeclarationManager implements Disposable {
       this.logger.debug('All workspaces are done syncing.');
       this.statusBarItem.text = ResolverState.ok;
     }
+  }
+
+  private createWorkspace(folder: WorkspaceFolder): void {
+    this.workspaces[folder.uri.fsPath] = new WorkspaceDeclarations(folder);
+    this.workspaces[folder.uri.fsPath].workspaceStateChanged(state => this.workspaceStateChanged(state));
+    this.workspaceStateChanged(WorkspaceDeclarationsState.Syncing);
   }
 }
