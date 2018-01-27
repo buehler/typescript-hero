@@ -7,6 +7,7 @@ import { ExtensionContext, TextDocument, Uri } from 'vscode';
 import Activatable from './activatable';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
+import DeclarationManager from './declarations/declaration-manager';
 import ImportOrganizer from './import-organizer';
 import ImportManager from './import-organizer/import-manager';
 import iocSymbols, { ImportManagerProvider, TypescriptCodeGeneratorFactory } from './ioc-symbols';
@@ -47,6 +48,7 @@ ioc.bind<ImportManagerProvider>(iocSymbols.importManager).toProvider<ImportManag
     return new ImportManager(document, source, parser, config, logger, generatorFactory);
   },
 );
+ioc.bind<DeclarationManager>(iocSymbols.declarationManager).to(DeclarationManager).inSingletonScope();
 
 // Typescript
 ioc.bind<TypescriptParser>(iocSymbols.parser).toConstantValue(new TypescriptParser());

@@ -60,7 +60,7 @@ export interface Logger {
   info: (message: string, ...data: any[]) => void;
   debug: (message: string, ...data: any[]) => void;
   profile: (name: string) => void;
-  startTimer(): { done: (info: { message: string }) => void; };
+  startTimer(): { done: (info: { message: string, [key: string]: any }) => void; };
 }
 
 const loggerTransports = [
@@ -75,6 +75,7 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
   if (!process.env.CI && !process.env.EXT_DEBUG) {
     const channel = window.createOutputChannel('TypeScript Hero');
     context.subscriptions.push(channel);
+    channel.show();
 
     const fileHandler = new transports.File({
       level: ['info', 'debug'].indexOf(level) >= 0 ? level : 'info',

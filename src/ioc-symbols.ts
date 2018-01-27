@@ -6,6 +6,7 @@ import ImportManager from './import-organizer/import-manager';
 export default {
   activatables: Symbol('activatables'),
   configuration: Symbol('configuration'),
+  declarationManager: Symbol('declarationManager'),
   extensionContext: Symbol('extensionContext'),
   generatorFactory: Symbol('generatorFactory'),
   importManager: Symbol('importManager'),
