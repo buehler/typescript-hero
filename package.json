@@ -56,7 +56,7 @@
     "postinstall": "node ./etc/test_install.js && node ./node_modules/vscode/bin/install || echo 'vscode/bin/install not found'",
     "clean": "del-cli ./out ./coverage",
     "build": "npm run clean && tsc -p ./config/tsconfig.build.json",
-    "develop": "npm run clean && tsc -p .",
+    "develop": "npm run clean && tsc --sourceMap -p .",
     "lint": "tslint -c ./tslint.json -p ./config/tsconfig.build.json",
     "test": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test.json && node ./node_modules/vscode/bin/test",
     "semantic-release": "semantic-release"
