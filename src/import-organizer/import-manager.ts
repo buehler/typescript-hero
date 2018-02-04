@@ -162,8 +162,8 @@ export default class ImportManager {
               }
               (<NamedImport>libraryAlreadyImported).specifiers = [
                 ...(<NamedImport>libraryAlreadyImported).specifiers,
-                ...actImport.specifiers
-              ]
+                ...actImport.specifiers,
+              ];
             } else {
               keep.push(actImport);
             }
