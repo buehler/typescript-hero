@@ -153,9 +153,20 @@ export default class ImportManager {
             .filter(o => this._parsedDocument.nonLocalUsages.indexOf(o.alias || o.specifier) > -1)
             .sort(specifierSort);
           const defaultSpec = actImport.defaultAlias;
+          const libraryAlreadyImported = keep.find(d => d.libraryName === actImport.libraryName);
           if (actImport.specifiers.length ||
             (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
-            keep.push(actImport);
+            if (libraryAlreadyImported) {
+              if (actImport.defaultAlias) {
+                (<NamedImport>libraryAlreadyImported).defaultAlias = actImport.defaultAlias;
+              }
+              (<NamedImport>libraryAlreadyImported).specifiers = [
+                ...(<NamedImport>libraryAlreadyImported).specifiers,
+                ...actImport.specifiers
+              ]
+            } else {
+              keep.push(actImport);
+            }
           }
         } else if (actImport instanceof StringImport) {
           keep.push(actImport);
