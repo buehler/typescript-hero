@@ -10,7 +10,7 @@ environment:
     - CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/workspace_1"
       SINGLE: True
     - CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/multi-root.code-workspace"
-      MULTI: True
+      SINGLE: False
 
 install:
   - ps: Install-Product node $env:nodejs_version
@@ -18,7 +18,6 @@ install:
   - yarn install
 
 test_script:
-  - IF %SINGLE% == True "yarn test:single-workspace"
-  - IF %MULTI% == True "yarn test:multi-workspace"
+  - IF %SINGLE% == True yarn test:single-workspace ELSE yarn test:multi-workspace
 
 build: off
