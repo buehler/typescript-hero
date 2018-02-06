@@ -20,6 +20,6 @@ install:
 test_script:
   - yarn %YARN_CMD%
   - npm install -g coveralls@^2.11.9
-  - ps: get-content ./coverage/lcov.info | coveralls
+  - ps: get-content ./.vscode-test/coverage/lcov.info | coveralls
 
 build: off
