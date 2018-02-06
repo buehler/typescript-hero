@@ -1,10 +1,10 @@
 import { Uri, workspace } from 'vscode';
 
 import {
-    ImportGroup,
-    ImportGroupSetting,
-    ImportGroupSettingParser,
-    RemainImportGroup,
+  ImportGroup,
+  ImportGroupSetting,
+  ImportGroupSettingParser,
+  RemainImportGroup,
 } from '../import-organizer/import-grouping';
 
 const sectionKey = 'typescriptHero.imports';
@@ -55,7 +55,7 @@ export default class ImportsConfig {
   }
 
   public grouping(resource: Uri): ImportGroup[] {
-    const groups = workspace.getConfiguration(sectionKey, resource).get<ImportGroupSetting[]>('importGroups');
+    const groups = workspace.getConfiguration(sectionKey, resource).get<ImportGroupSetting[]>('grouping');
     let importGroups: ImportGroup[] = [];
 
     try {
