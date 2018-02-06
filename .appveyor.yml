@@ -18,7 +18,7 @@ install:
   - yarn install
 
 test_script:
-  - IF %SINGLE% == True yarn test:single-workspace
-  - IF %MULTI% == True yarn test:multi-workspace
+  - IF %SINGLE% == True "yarn test:single-workspace"
+  - IF %MULTI% == True "yarn test:multi-workspace"
 
 build: off
