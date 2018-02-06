@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import * as snapshot from 'snap-shot-it';
 import { File, Namespace, StringImport, VariableDeclaration } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
@@ -21,7 +22,7 @@ describe('ResourceStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  it('should return correct children', () => {
+  it.skip('should return correct children', () => {
     const resource = new File('./path', '/root', 0, 100);
     resource.imports.push(new StringImport('str-imp'));
     resource.declarations.push(new VariableDeclaration('var', false, false, undefined));
@@ -29,7 +30,7 @@ describe('ResourceStructureTreeItem', () => {
 
     const item = new ResourceStructureTreeItem(resource, context);
 
-    // snapshotitem.getChildren());
+    snapshot(item.getChildren());
   });
 
 });
