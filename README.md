@@ -5,6 +5,7 @@ When you are coding a lot of `TypeScript` you may want vscode to organize your i
 
 [![Travis build](https://img.shields.io/travis/buehler/typescript-hero.svg)](https://travis-ci.org/buehler/typescript-hero)
 [![AppVeyor status](https://ci.appveyor.com/api/projects/status/p1vbbyh69j4s0rbh?svg=true)](https://ci.appveyor.com/project/buehler/typescript-hero)
+[![Coverage status](https://img.shields.io/coveralls/buehler/typescript-hero.svg?maxAge=3600)](https://coveralls.io/github/buehler/typescript-hero)
 [![Marketplace](https://vsmarketplacebadge.apphb.com/version-short/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
 [![Installs](https://vsmarketplacebadge.apphb.com/installs/rbbit.typescript-hero.svg)](https://marketplace.visualstudio.com/items?itemName=rbbit.typescript-hero)
 [![GitHub issues](https://img.shields.io/github/issues/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/issues)
