@@ -24,7 +24,7 @@ class ContextMock implements ExtensionContext {
     return join(process.cwd(), path);
   }
 }
-
+console.log('yay');
 ioc.bind<ExtensionContext>(iocSymbols.extensionContext).toConstantValue(new ContextMock());
 
 const testRunner = require('vscode/lib/testrunner');

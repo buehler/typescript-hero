@@ -43,9 +43,9 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/test/_workspace",
+        "${workspaceRoot}/test/etc/workspace_1",
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
+        "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
         "CI": "true"
@@ -53,7 +53,7 @@
       "stopOnEntry": false,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/out/test/single-workspace-tests/**/*.js"
+        "${workspaceRoot}/out/test/tests/**/*.js"
       ]
     },
     {

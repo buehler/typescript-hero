@@ -7,6 +7,7 @@
   "exclude": [
     "../src/_old",
     "../test/_old",
-    "../test/etc"
+    "../test/etc",
+    "../test/**/*.multi.test.ts"
   ]
 }

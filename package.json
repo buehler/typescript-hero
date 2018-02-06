@@ -58,7 +58,8 @@
     "build": "npm run clean && tsc -p ./config/tsconfig.build.json",
     "develop": "npm run clean && tsc -p .",
     "lint": "tslint -c ./tslint.json -p ./config/tsconfig.build.json",
-    "test": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test.json && node ./node_modules/vscode/bin/test",
+    "test:single-workspace": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test-single-workspace.json && node ./node_modules/vscode/bin/test",
+    "test:multi-workspace": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test-multi-workspace.json && node ./node_modules/vscode/bin/test",
     "semantic-release": "semantic-release"
   },
   "release": {

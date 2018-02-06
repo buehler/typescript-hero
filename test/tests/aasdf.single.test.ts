@@ -2,7 +2,7 @@ import * as chai from 'chai';
 
 const expect = chai.expect;
 
-describe('Demo test', () => {
+describe('Demo test (single root)', () => {
   it('should be tested', () => {
     expect(true).to.equal(true);
   });
