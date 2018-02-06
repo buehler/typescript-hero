@@ -19,7 +19,7 @@ jobs:
       sudo: required
       env:
         - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/etc/workspace_1
-        - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/single-workspace
+        - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/tests
       addons:
         apt:
           sources:
@@ -44,7 +44,40 @@ jobs:
       before_script:
         - greenkeeper-lockfile-update
       script:
-        - yarn test --silent
+        - yarn test:single-workspace
+      after_script:
+        - greenkeeper-lockfile-upload
+    - stage: test
+      os: linux
+      sudo: required
+      env:
+        - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/etc/multi-root.code-workspace
+        - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/tests
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-4.9
+            - g++-4.9
+            - gcc-4.9-multilib
+            - g++-4.9-multilib
+            - zip
+            - libgtk2.0-0
+            - libx11-dev
+            - libxkbfile-dev
+            - libsecret-1-dev
+      before_install:
+        - export CXX="g++-4.9" CC="gcc-4.9" DISPLAY=:99.0
+        - sh -e /etc/init.d/xvfb start
+        - sleep 3
+        - yarn global add greenkeeper-lockfile@1
+      install:
+        - yarn install
+      before_script:
+        - greenkeeper-lockfile-update
+      script:
+        - yarn test:multi-workspace
       after_script:
         - greenkeeper-lockfile-upload
     - stage: deploy
@@ -54,20 +87,3 @@ jobs:
         - yarn build
       script:
         - semantic-release
-
-#- github_changelog_generator --no-verbose -u buehler -p typescript-hero --enhancement-labels "enhancement,feature" --include-labels "bug,enhancement,feature" --future-release $(node -p "require('./package.json').version")
-
-# add as soon as multi root workspaces are available:
-#- CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/multi-root.code-workspace CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/multi-root-workspace-tests
-
-# OSX Build. which takes a billon years to complete.
-# - stage: test
-#   os: osx
-#   sudo: false
-#   env:
-#     - CODE_TESTS_WORKSPACE=$TRAVIS_BUILD_DIR/test/_workspace
-#     - CODE_TESTS_PATH=$TRAVIS_BUILD_DIR/out/test/single-workspace-tests
-#   install:
-#     - yarn install
-#   script:
-#     - yarn test --silent
