@@ -23,7 +23,7 @@ describe('ImportsStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  it.skip('should return the children for the imports', () => {
+  it('should return the children for the imports', () => {
     const resource = new File('./path', '/root', 0, 100);
     resource.imports.push(new NamedImport('lib', 0, 1));
     const item = new ImportsStructureTreeItem(resource, context);
@@ -47,7 +47,7 @@ describe('ImportStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  it.skip('should return the correct children for the imports', () => {
+  it('should return the correct children for the imports', () => {
     const testFn = (imp) => {
       const item = new ImportStructureTreeItem(imp, context);
       return item.getChildren();

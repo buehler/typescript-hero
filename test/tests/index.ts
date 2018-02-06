@@ -8,9 +8,10 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import { ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
+import { copyFileSync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
 import * as glob from 'glob';
 import { hook, Instrumenter, Reporter } from 'istanbul';
+import { platform } from 'os';
 import { join } from 'path';
 import { ExtensionContext, Memento } from 'vscode';
 
@@ -29,6 +30,13 @@ class ContextMock implements ExtensionContext {
     return path;
   }
 }
+
+// Prepare for windows (sigh) tests.
+// HACK
+if (platform() === 'win32') {
+  copyFileSync(join(process.cwd(), '..', '__snapshots__'), process.cwd());
+}
+// END HACK
 
 const testRunner = require('vscode/lib/testrunner');
 

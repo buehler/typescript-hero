@@ -22,7 +22,7 @@ describe('ResourceStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  it.skip('should return correct children', () => {
+  it('should return correct children', () => {
     const resource = new File('./path', '/root', 0, 100);
     resource.imports.push(new StringImport('str-imp'));
     resource.declarations.push(new VariableDeclaration('var', false, false, undefined));
