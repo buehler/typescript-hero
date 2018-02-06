@@ -1,6 +1,12 @@
 import { expect } from 'chai';
 import * as snapshot from 'snap-shot-it';
-import { ClassDeclaration } from 'typescript-parser';
+import {
+  ClassDeclaration,
+  GetterDeclaration,
+  MethodDeclaration,
+  PropertyDeclaration,
+  VariableDeclaration,
+} from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import DeclarationStructureTreeItem from '../../../src/code-outline/declaration-structure-tree-item';
@@ -27,6 +33,37 @@ describe('DeclarationStructureTreeItem', () => {
     const item = new DeclarationStructureTreeItem(declaration, context);
 
     snapshot(item.iconPath);
+  });
+
+  it('should return the correct accessor children', () => {
+    const declaration = new ClassDeclaration('class', true, 0, 100);
+    declaration.accessors.push(new GetterDeclaration('getter', undefined, undefined, false));
+    const item = new DeclarationStructureTreeItem(declaration, context);
+
+    snapshot(item.getChildren());
+  });
+
+  it('should return the correct property children', () => {
+    const declaration = new ClassDeclaration('class', true, 0, 100);
+    declaration.properties.push(new PropertyDeclaration('property', undefined, undefined));
+    const item = new DeclarationStructureTreeItem(declaration, context);
+
+    snapshot(item.getChildren());
+  });
+
+  it('should return the correct method children', () => {
+    const declaration = new ClassDeclaration('class', true, 0, 100);
+    declaration.methods.push(new MethodDeclaration('method', false, undefined, undefined));
+    const item = new DeclarationStructureTreeItem(declaration, context);
+
+    snapshot(item.getChildren());
+  });
+
+  it('should not return children on simple declarations', () => {
+    const declaration = new VariableDeclaration('variable', false, true, undefined);
+    const item = new DeclarationStructureTreeItem(declaration, context);
+
+    snapshot(item.getChildren());
   });
 
 });
