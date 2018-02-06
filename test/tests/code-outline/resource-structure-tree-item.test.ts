@@ -1,5 +1,4 @@
 import { expect } from 'chai';
-import * as snapshot from 'snap-shot-it';
 import { File, Namespace, StringImport, VariableDeclaration } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
@@ -30,7 +29,7 @@ describe('ResourceStructureTreeItem', () => {
 
     const item = new ResourceStructureTreeItem(resource, context);
 
-    snapshot(item.getChildren());
+    // snapshotitem.getChildren());
   });
 
 });
