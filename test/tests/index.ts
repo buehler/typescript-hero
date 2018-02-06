@@ -8,7 +8,7 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import { copyFileSync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
+import { copySync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
 import * as glob from 'glob';
 import { hook, Instrumenter, Reporter } from 'istanbul';
 import { platform } from 'os';
@@ -34,7 +34,7 @@ class ContextMock implements ExtensionContext {
 // Prepare for windows (sigh) tests.
 // HACK
 if (platform() === 'win32') {
-  copyFileSync(join(process.cwd(), '..', '__snapshots__'), process.cwd());
+  copySync(join(process.cwd(), '..', '__snapshots__'), process.cwd());
 }
 // END HACK
 
