@@ -48,6 +48,7 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
+        "COVERAGE": "true",
         "SNAPSHOT_UPDATE": "1"
       },
       "stopOnEntry": false,
@@ -67,6 +68,7 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
+        "COVERAGE": "true",
         "SNAPSHOT_UPDATE": "1"
       },
       "stopOnEntry": false,

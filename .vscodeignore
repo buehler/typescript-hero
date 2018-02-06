@@ -12,6 +12,7 @@ src/**
 !src/extension/assets/**
 tsconfig.json
 tslint.json
+coverage/**
 
 __snapshots__/**
 
