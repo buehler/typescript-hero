@@ -12,6 +12,7 @@ When you are coding a lot of `TypeScript` you may want vscode to organize your i
 [![Semantic release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 [![Greenkeeper](https://badges.greenkeeper.io/buehler/typescript-hero.svg)](https://greenkeeper.io/)
 [![License](https://img.shields.io/github/license/buehler/typescript-hero.svg)](https://github.com/buehler/typescript-hero/blob/master/LICENSE)
+[![Gitter](https://img.shields.io/gitter/room/vscode-typescript-hero/Lobby.svg)](https://gitter.im/vscode-typescript-hero/Lobby)
 
 If you'd like to buy me a beer :-)
 
