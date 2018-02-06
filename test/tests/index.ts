@@ -8,7 +8,6 @@
 // host can call to run the tests. The test runner is expected to use console.log
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
-import { join } from 'path';
 import { ExtensionContext, Memento } from 'vscode';
 
 import ioc from '../../src/ioc';
@@ -21,7 +20,7 @@ class ContextMock implements ExtensionContext {
   extensionPath: string = '';
   storagePath: string = '';
   asAbsolutePath(path: string): string {
-    return join(process.cwd(), path);
+    return path;
   }
 }
 

@@ -48,7 +48,7 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
-        "CI": "true"
+        "SNAPSHOT_UPDATE": "1"
       },
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -67,7 +67,7 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
-        "CI": "true"
+        "SNAPSHOT_UPDATE": "1"
       },
       "stopOnEntry": false,
       "sourceMaps": true,

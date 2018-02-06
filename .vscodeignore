@@ -13,5 +13,7 @@ src/**
 tsconfig.json
 tslint.json
 
+__snapshots__/**
+
 *.vsix
 out/test/**
