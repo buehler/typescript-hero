@@ -2,6 +2,9 @@ version: "{branch} - {build}"
 skip_tags: true
 skip_branch_with_pr: true
 
+matrix:
+  fast_finish: true
+
 environment:
   nodejs_version: "9"
   CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/tests"
