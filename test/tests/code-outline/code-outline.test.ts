@@ -1,32 +1,42 @@
-// import { expect } from 'chai';
-// import { ClassDeclaration, TypescriptParser } from 'typescript-parser';
-// import { ExtensionContext } from 'vscode';
+import { join } from 'path';
+import { TypescriptParser } from 'typescript-parser';
+import { commands, ExtensionContext, workspace } from 'vscode';
 
-// import DeclarationStructureTreeItem from '../../../src/code-outline/declaration-structure-tree-item';
-// import Configuration from '../../../src/configuration';
-// import ioc from '../../../src/ioc';
-// import iocSymbols from '../../../src/ioc-symbols';
-// import { Logger } from '../../../src/utilities/logger';
+import CodeOutline from '../../../src/code-outline';
+import Configuration from '../../../src/configuration';
+import ioc from '../../../src/ioc';
+import iocSymbols from '../../../src/ioc-symbols';
+import { Logger } from '../../../src/utilities/logger';
+import { expect } from '../setup';
 
-// describe('CodeOutline', () => {
+describe('CodeOutline', () => {
 
-//   let context: ExtensionContext;
-//   let logger: Logger;
-//   let config: Configuration;
-//   let parser: TypescriptParser;
+  let context: ExtensionContext;
+  let logger: Logger;
+  let config: Configuration;
+  let parser: TypescriptParser;
+  let extension: CodeOutline;
 
-//   beforeEach(() => {
-//     context = ioc.get<ExtensionContext>(iocSymbols.extensionContext);
-//     logger = ioc.get<Logger>(iocSymbols.logger);
-//     config = ioc.get<Configuration>(iocSymbols.configuration);
-//     parser = ioc.get<TypescriptParser>(iocSymbols.parser);
-//   });
+  before(() => {
+    context = ioc.get<ExtensionContext>(iocSymbols.extensionContext);
+    logger = ioc.get<Logger>(iocSymbols.logger);
+    config = ioc.get<Configuration>(iocSymbols.configuration);
+    parser = ioc.get<TypescriptParser>(iocSymbols.parser);
 
-//   it('should create a tree item', () => {
-//     const declaration = new ClassDeclaration('class', true, 0, 100);
-//     const item = new DeclarationStructureTreeItem(declaration, context);
+    extension = new CodeOutline(context, logger, config, parser);
+  });
 
-//     expect(item).to.exist;
-//   });
+  const rootPath = workspace.workspaceFolders![0].uri.fsPath;
+  const files = {
+    empty: join(rootPath, 'code-outline', 'empty.ts'),
+    nonParseable: join(rootPath, 'code-outline', 'not-parseable.txt'),
+    code: join(rootPath, 'code-outline', 'code.ts'),
+  };
 
-// });
+  it('should return an empty array if no document is open', async () => {
+    await commands.executeCommand('workbench.action.closeAllEditors');
+    console.log(files);
+    expect(extension.getChildren()).to.matchSnapshot();
+  });
+
+});
