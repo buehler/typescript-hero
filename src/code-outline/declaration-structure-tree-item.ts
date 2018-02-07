@@ -105,7 +105,6 @@ export default class DeclarationStructureTreeItem extends BaseStructureTreeItem 
   }
 
   public getChildren(): BaseStructureTreeItem[] {
-    console.log('DIIINI muETER');
     if (
       this.declaration instanceof ClassDeclaration ||
       this.declaration instanceof InterfaceDeclaration
