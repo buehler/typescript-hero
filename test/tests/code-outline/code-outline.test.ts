@@ -14,7 +14,8 @@ describe('CodeOutline', () => {
   const files = {
     empty: join(rootPath, 'code-outline', 'empty.ts'),
     nonParseable: join(rootPath, 'code-outline', 'not-parseable.txt'),
-    code: join(rootPath, 'code-outline', 'code.ts'),
+    codeTs: join(rootPath, 'code-outline', 'code.ts'),
+    codeJs: join(rootPath, 'code-outline', 'code.js'),
   };
 
   let extension: CodeOutline;
@@ -38,6 +39,49 @@ describe('CodeOutline', () => {
   it('should return an empty array if no document is open', async () => {
     await commands.executeCommand('workbench.action.closeAllEditors');
     expect(await extension.getChildren()).to.matchSnapshot();
+  });
+
+  it('should return disabled structure item when it is disabled', async () => {
+    const document = await workspace.openTextDocument(files.codeTs);
+    await window.showTextDocument(document);
+    const config = workspace.getConfiguration('typescriptHero');
+    const value = config.get('codeOutline.enabled', true);
+
+    try {
+      await config.update('codeOutline.enabled', false);
+      expect(
+        (await extension.getChildren() || []).map(c => ({ label: c.label, ctor: c.constructor.name })),
+      ).to.matchSnapshot();
+    } finally {
+      await config.update('codeOutline.enabled', value);
+    }
+  });
+
+  it('should return not parseable on non ts / js file', async () => {
+    const document = await workspace.openTextDocument(files.nonParseable);
+    await window.showTextDocument(document);
+
+    expect(
+      (await extension.getChildren() || []).map(c => ({ label: c.label, ctor: c.constructor.name })),
+    ).to.matchSnapshot();
+  });
+
+  it('should return a code structure for a valid ts file', async () => {
+    const document = await workspace.openTextDocument(files.codeTs);
+    await window.showTextDocument(document);
+    (extension as any).documentCache = undefined;
+    expect(
+      (await extension.getChildren() || []).map(c => ({ label: c.label, ctor: c.constructor.name })),
+    ).to.matchSnapshot();
+  });
+
+  it('should return a code structure for a valid js file', async () => {
+    const document = await workspace.openTextDocument(files.codeJs);
+    await window.showTextDocument(document);
+    (extension as any).documentCache = undefined;
+    expect(
+      (await extension.getChildren() || []).map(c => ({ label: c.label, ctor: c.constructor.name })),
+    ).to.matchSnapshot();
   });
 
 });
