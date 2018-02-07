@@ -13,7 +13,9 @@ declare global {
 
 use(chaiJestSnapshot);
 
-before(() => chaiJestSnapshot.resetSnapshotRegistry());
+before(() => {
+  chaiJestSnapshot.resetSnapshotRegistry();
+});
 
 beforeEach(function (): void {
   const fileFromTestRoot = ((this.currentTest as any).file.replace(/.*out[\\/]/, '')).replace(/\.js$/, '.ts');

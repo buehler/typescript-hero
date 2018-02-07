@@ -48,6 +48,8 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
+        "EXT_DEBUG": "true",
+        "LOCAL_TEST": "true",
         "COVERAGE": "true",
         "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },
@@ -68,6 +70,8 @@
         "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
+        "EXT_DEBUG": "true",
+        "LOCAL_TEST": "true",
         "COVERAGE": "true",
         "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },

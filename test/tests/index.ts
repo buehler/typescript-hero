@@ -12,7 +12,7 @@ import { ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
 import * as glob from 'glob';
 import { hook, Instrumenter, Reporter } from 'istanbul';
 import { platform } from 'os';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { ExtensionContext, Memento } from 'vscode';
 
 const remapIstanbul = require('remap-istanbul');
@@ -27,7 +27,7 @@ class ContextMock implements ExtensionContext {
   extensionPath: string = '';
   storagePath: string = '';
   asAbsolutePath(path: string): string {
-    return path;
+    return relative(global['rootPath'], path);
   }
 }
 
@@ -44,10 +44,16 @@ const testRunner = require('vscode/lib/testrunner');
 
 // You can directly control Mocha options by uncommenting the following lines
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options for more info
-testRunner.configure({
+const options: any = {
   ui: 'bdd',
   useColors: true,
-});
+};
+
+if (process.env.EXT_DEBUG) {
+  options.timeout = 2 * 60 * 60 * 1000;
+}
+
+testRunner.configure(options);
 
 const originalRun = testRunner.run;
 
