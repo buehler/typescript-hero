@@ -7,6 +7,9 @@ stages:
   - name: deploy
     if: branch = master AND type != pull_request
 
+matrix:
+  fast_finish: true
+
 notifications:
   email: false
 
