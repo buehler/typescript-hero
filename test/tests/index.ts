@@ -47,6 +47,7 @@ const testRunner = require('vscode/lib/testrunner');
 const options: any = {
   ui: 'bdd',
   useColors: true,
+  timeout: 5000,
 };
 
 if (process.env.EXT_DEBUG) {
