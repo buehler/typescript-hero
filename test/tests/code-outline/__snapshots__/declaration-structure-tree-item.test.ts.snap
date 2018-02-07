@@ -1,0 +1,115 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DeclarationStructureTreeItem should not return children on simple declarations 1`] = `Array []`;
+
+exports[`DeclarationStructureTreeItem should return the correct accessor children 1`] = `
+Array [
+  DeclarationStructureTreeItem {
+    "collapsibleState": 0,
+    "command": Object {
+      "arguments": Array [
+        GetterDeclaration {
+          "end": undefined,
+          "isAbstract": false,
+          "name": "getter",
+          "start": undefined,
+          "type": undefined,
+          "visibility": undefined,
+        },
+      ],
+      "command": "typescriptHero.codeOutline.gotoNode",
+      "title": "Jump to node",
+    },
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "declaration": GetterDeclaration {
+      "end": undefined,
+      "isAbstract": false,
+      "name": "getter",
+      "start": undefined,
+      "type": undefined,
+      "visibility": undefined,
+    },
+    "label": "get() getter",
+  },
+]
+`;
+
+exports[`DeclarationStructureTreeItem should return the correct icon path 1`] = `"./src/assets/icons/declarations/class.svg"`;
+
+exports[`DeclarationStructureTreeItem should return the correct method children 1`] = `
+Array [
+  DeclarationStructureTreeItem {
+    "collapsibleState": 0,
+    "command": Object {
+      "arguments": Array [
+        MethodDeclaration {
+          "end": undefined,
+          "isAbstract": false,
+          "name": "method",
+          "parameters": Array [],
+          "start": undefined,
+          "type": undefined,
+          "variables": Array [],
+          "visibility": undefined,
+        },
+      ],
+      "command": "typescriptHero.codeOutline.gotoNode",
+      "title": "Jump to node",
+    },
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "declaration": MethodDeclaration {
+      "end": undefined,
+      "isAbstract": false,
+      "name": "method",
+      "parameters": Array [],
+      "start": undefined,
+      "type": undefined,
+      "variables": Array [],
+      "visibility": undefined,
+    },
+    "label": "method()",
+  },
+]
+`;
+
+exports[`DeclarationStructureTreeItem should return the correct property children 1`] = `
+Array [
+  DeclarationStructureTreeItem {
+    "collapsibleState": 0,
+    "command": Object {
+      "arguments": Array [
+        PropertyDeclaration {
+          "end": undefined,
+          "name": "property",
+          "start": undefined,
+          "type": undefined,
+          "visibility": undefined,
+        },
+      ],
+      "command": "typescriptHero.codeOutline.gotoNode",
+      "title": "Jump to node",
+    },
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "declaration": PropertyDeclaration {
+      "end": undefined,
+      "name": "property",
+      "start": undefined,
+      "type": undefined,
+      "visibility": undefined,
+    },
+    "label": "property",
+  },
+]
+`;

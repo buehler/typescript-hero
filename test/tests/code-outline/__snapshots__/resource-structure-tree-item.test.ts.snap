@@ -1,0 +1,104 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ResourceStructureTreeItem should return correct children 1`] = `
+Array [
+  ImportsStructureTreeItem {
+    "collapsibleState": 1,
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "iconPath": "./src/assets/icons/declarations/module.svg",
+    "label": "Imports",
+    "resource": File {
+      "declarations": Array [
+        VariableDeclaration {
+          "end": undefined,
+          "isConst": false,
+          "isExported": false,
+          "name": "var",
+          "start": undefined,
+          "type": undefined,
+        },
+      ],
+      "end": 100,
+      "exports": Array [],
+      "filePath": "./path",
+      "imports": Array [
+        StringImport {
+          "end": undefined,
+          "libraryName": "str-imp",
+          "start": undefined,
+        },
+      ],
+      "resources": Array [
+        Namespace {
+          "declarations": Array [],
+          "end": 20,
+          "exports": Array [],
+          "imports": Array [],
+          "name": "namespace",
+          "resources": Array [],
+          "start": 10,
+          "usages": Array [],
+        },
+      ],
+      "rootPath": "/root",
+      "start": 0,
+      "usages": Array [],
+    },
+  },
+  ResourceStructureTreeItem {
+    "collapsibleState": 1,
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "iconPath": "./src/assets/icons/declarations/module.svg",
+    "label": "namespace",
+    "resource": Namespace {
+      "declarations": Array [],
+      "end": 20,
+      "exports": Array [],
+      "imports": Array [],
+      "name": "namespace",
+      "resources": Array [],
+      "start": 10,
+      "usages": Array [],
+    },
+  },
+  DeclarationStructureTreeItem {
+    "collapsibleState": 0,
+    "command": Object {
+      "arguments": Array [
+        VariableDeclaration {
+          "end": undefined,
+          "isConst": false,
+          "isExported": false,
+          "name": "var",
+          "start": undefined,
+          "type": undefined,
+        },
+      ],
+      "command": "typescriptHero.codeOutline.gotoNode",
+      "title": "Jump to node",
+    },
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "declaration": VariableDeclaration {
+      "end": undefined,
+      "isConst": false,
+      "isExported": false,
+      "name": "var",
+      "start": undefined,
+      "type": undefined,
+    },
+    "label": "var",
+  },
+]
+`;

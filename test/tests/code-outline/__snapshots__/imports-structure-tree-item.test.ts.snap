@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ImportsStructureTreeItem should return the children for the imports 1`] = `
+Array [
+  ImportStructureTreeItem {
+    "collapsibleState": 1,
+    "command": Object {
+      "arguments": Array [
+        NamedImport {
+          "end": 1,
+          "libraryName": "lib",
+          "specifiers": Array [],
+          "start": 0,
+        },
+      ],
+      "command": "typescriptHero.codeOutline.gotoNode",
+      "title": "Jump to node",
+    },
+    "context": ContextMock {
+      "extensionPath": "",
+      "storagePath": "",
+      "subscriptions": Array [],
+    },
+    "iconPath": "./src/assets/icons/declarations/import.svg",
+    "label": "lib",
+    "tsImport": NamedImport {
+      "end": 1,
+      "libraryName": "lib",
+      "specifiers": Array [],
+      "start": 0,
+    },
+  },
+]
+`;
