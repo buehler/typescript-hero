@@ -31,11 +31,13 @@ class ContextMock implements ExtensionContext {
   }
 }
 
-// Prepare for windows (sigh) tests.
+// Prepare for snapshot (sigh) tests.
 // HACK
 if (platform() === 'win32') {
   console.log('LOOOL', process.cwd(), join(process.cwd(), '..', '__snapshots__'));
   copySync(join(process.cwd(), '..', '__snapshots__'), process.cwd());
+} else {
+  global['rootPath'] = process.cwd();
 }
 // END HACK
 
