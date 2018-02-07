@@ -1,11 +1,18 @@
-import { expect } from 'chai';
-import * as snapshot from 'snap-shot-it';
 import { File, Namespace, StringImport, VariableDeclaration } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import ResourceStructureTreeItem from '../../../src/code-outline/resource-structure-tree-item';
 import ioc from '../../../src/ioc';
 import iocSymbols from '../../../src/ioc-symbols';
+import { expect } from '../setup';
+
+declare global {
+  namespace Chai {
+    interface Assertion {
+      matchSnapshot(): Assertion;
+    }
+  }
+}
 
 describe('ResourceStructureTreeItem', () => {
 
@@ -30,7 +37,7 @@ describe('ResourceStructureTreeItem', () => {
 
     const item = new ResourceStructureTreeItem(resource, context);
 
-    snapshot(item.getChildren());
+    expect(item.getChildren()).to.matchSnapshot();
   });
 
 });

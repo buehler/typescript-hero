@@ -49,7 +49,7 @@
       ],
       "env": {
         "COVERAGE": "true",
-        "SNAPSHOT_UPDATE": "1"
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },
       "stopOnEntry": false,
       "sourceMaps": true,
@@ -69,7 +69,7 @@
       ],
       "env": {
         "COVERAGE": "true",
-        "SNAPSHOT_UPDATE": "1"
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },
       "stopOnEntry": false,
       "sourceMaps": true,
