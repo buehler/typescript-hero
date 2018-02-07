@@ -88,7 +88,7 @@ describe('DeclarationStructureTreeItem', () => {
     it(`should return the correct icon path for itemKind "${test.name}"`, () => {
       const item = new DeclarationStructureTreeItem(test.declaration, context);
 
-      const path = relative(global['rootPath'], item.iconPath || '');
+      const path = relative(global['rootPath'], item.iconPath || '').replace(/[\\/]/g, '/');
       expect(path).to.matchSnapshot();
     });
   }
