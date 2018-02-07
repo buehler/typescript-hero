@@ -1,5 +1,5 @@
 import { expect as chaiExpect, use } from 'chai';
-import { join, parse, sep } from 'path';
+import { join, parse } from 'path';
 
 const chaiJestSnapshot = require('chai-jest-snapshot');
 
@@ -16,7 +16,7 @@ use(chaiJestSnapshot);
 before(() => chaiJestSnapshot.resetSnapshotRegistry());
 
 beforeEach(function (): void {
-  const fileFromTestRoot = ((this.currentTest as any).file.replace(new RegExp(`.*out${sep}`), '')).replace(/[.]js$/, '.ts');
+  const fileFromTestRoot = ((this.currentTest as any).file.replace(/.*out[\/|\\]/, '')).replace(/[.]js$/, '.ts');
   const tsFile = parse(join(global['rootPath'], fileFromTestRoot));
   const snapPath = join(tsFile.dir, '__snapshots__', tsFile.base);
   console.log('snap path before all', snapPath);
