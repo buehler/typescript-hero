@@ -48,8 +48,8 @@ jobs:
       after_script:
         - greenkeeper-lockfile-upload
       after_success:
-        - npm install coveralls@^2.11.9
-        - cat ./coverage/lcov.info | coveralls
+        - npm i -g codecov
+        - codecov
     - stage: test
       os: linux
       sudo: required
@@ -84,8 +84,8 @@ jobs:
       after_script:
         - greenkeeper-lockfile-upload
       after_success:
-        - npm install coveralls@^2.11.9
-        - cat ./coverage/lcov.info | coveralls
+        - npm i -g codecov
+        - codecov
     - stage: deploy
       install:
         - yarn install
