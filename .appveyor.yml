@@ -1,11 +1,19 @@
-version: "{build} - {branch}"
+version: "{branch} - {build}"
 skip_tags: true
 skip_branch_with_pr: true
 
+matrix:
+  fast_finish: true
+
 environment:
   nodejs_version: "9"
-  CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/workspace_1"
-  CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/single-workspace"
+  CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/tests"
+
+  matrix:
+    - CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/workspace_1"
+      YARN_CMD: "test:single-workspace"
+    - CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/multi-root.code-workspace"
+      YARN_CMD: "test:multi-workspace"
 
 install:
   - ps: Install-Product node $env:nodejs_version
@@ -13,6 +21,8 @@ install:
   - yarn install
 
 test_script:
-  - yarn test
+  - yarn %YARN_CMD%
+  - npm install -g codecov
+  - codecov
 
 build: off

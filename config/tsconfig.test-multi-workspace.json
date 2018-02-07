@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "sourceMap": true
+  },
+  "include": [
+    "../src/**/*",
+    "../test/**/*"
+  ],
+  "exclude": [
+    "../src/_old",
+    "../test/_old",
+    "../test/etc",
+    "../test/**/*.single.test.ts"
+  ]
+}

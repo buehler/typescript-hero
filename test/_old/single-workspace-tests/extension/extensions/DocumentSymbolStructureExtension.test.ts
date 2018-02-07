@@ -49,7 +49,7 @@ describe('DocumentSymbolStructureExtension', () => {
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
     });
 
-    it.skip('should return an empty array if no active window is set', async () => {
+    it('should return an empty array if no active window is set', async () => {
         await vscode.commands.executeCommand('workbench.action.closeAllEditors');
 
         const elements = await extension.getChildren() as BaseStructureTreeItem[];
