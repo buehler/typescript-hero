@@ -97,7 +97,6 @@
     "semantic-release-vsce": "^2.0.0",
     "sinon": "^4.2.2",
     "sinon-chai": "^2.14.0",
-    "snap-shot-it": "^4.0.1",
     "tslint": "^5.9.1",
     "tsutils": "^2.21.0",
     "vscode": "^1.1.10"

@@ -5,7 +5,6 @@ skip_branch_with_pr: true
 environment:
   nodejs_version: "9"
   CODE_TESTS_PATH: "$(APPVEYOR_BUILD_FOLDER)/out/test/tests"
-  DEBUG: "snap-shot*"
 
   matrix:
     - CODE_TESTS_WORKSPACE: "$(APPVEYOR_BUILD_FOLDER)/test/etc/workspace_1"
