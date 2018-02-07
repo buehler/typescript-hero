@@ -1,8 +1,13 @@
 import {
   ClassDeclaration,
+  EnumDeclaration,
+  FunctionDeclaration,
   GetterDeclaration,
+  InterfaceDeclaration,
   MethodDeclaration,
+  ModuleDeclaration,
   PropertyDeclaration,
+  TypeAliasDeclaration,
   VariableDeclaration,
 } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
@@ -35,12 +40,56 @@ describe('DeclarationStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  it('should return the correct icon path', () => {
-    const declaration = new ClassDeclaration('class', true, 0, 100);
-    const item = new DeclarationStructureTreeItem(declaration, context);
+  const iconPossibilities = [
+    {
+      name: 'class',
+      declaration: new ClassDeclaration('class', true, 0, 100),
+    },
+    {
+      name: 'interface',
+      declaration: new InterfaceDeclaration('interface', true, 0, 100),
+    },
+    {
+      name: 'enum',
+      declaration: new EnumDeclaration('enum', true, 0, 100),
+    },
+    {
+      name: 'function',
+      declaration: new FunctionDeclaration('function', true, 'void', 0, 100),
+    },
+    {
+      name: 'method',
+      declaration: new MethodDeclaration('method', false, undefined, 'void', 0, 100),
+    },
+    {
+      name: 'module',
+      declaration: new ModuleDeclaration('module', 0, 100),
+    },
+    {
+      name: 'property',
+      declaration: new PropertyDeclaration('property', undefined, 'void', 0, 100),
+    },
+    {
+      name: 'variable',
+      declaration: new VariableDeclaration('variable', false, true, 'string', 0, 100),
+    },
+    {
+      name: 'const',
+      declaration: new VariableDeclaration('const', true, true, 'string', 0, 100),
+    },
+    {
+      name: 'default',
+      declaration: new TypeAliasDeclaration('typealias', true, 0, 100),
+    },
+  ];
 
-    expect(item.iconPath).to.matchSnapshot();
-  });
+  for (const test of iconPossibilities) {
+    it(`should return the correct icon path for itemKind "${test.name}"`, () => {
+      const item = new DeclarationStructureTreeItem(test.declaration, context);
+
+      expect(item.iconPath).to.matchSnapshot();
+    });
+  }
 
   it('should return the correct accessor children', () => {
     const declaration = new ClassDeclaration('class', true, 0, 100);

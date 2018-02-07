@@ -34,6 +34,11 @@
       "description": "AppVeyor build"
     },
     {
+      "url": "https://codecov.io/gh/buehler/typescript-hero/branch/master/graph/badge.svg",
+      "href": "https://codecov.io/gh/buehler/typescript-hero",
+      "description": "Code coverage"
+    },
+    {
       "url": "https://img.shields.io/github/issues/buehler/typescript-hero.svg",
       "href": "https://github.com/buehler/typescript-hero/issues",
       "description": "GitHub issues"

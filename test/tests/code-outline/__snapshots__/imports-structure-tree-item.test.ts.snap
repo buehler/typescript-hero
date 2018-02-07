@@ -1,5 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ImportStructureTreeItem should return the correct children for the "ExternalModuleImport" import 1`] = `[Function]`;
+
+exports[`ImportStructureTreeItem should return the correct children for the "NamedImport" import 1`] = `[Function]`;
+
+exports[`ImportStructureTreeItem should return the correct children for the "NamedImport" import 2`] = `[Function]`;
+
+exports[`ImportStructureTreeItem should return the correct children for the "NamespaceImport" import 1`] = `[Function]`;
+
+exports[`ImportStructureTreeItem should return the correct children for the "StringImport" import 1`] = `[Function]`;
+
 exports[`ImportsStructureTreeItem should return the children for the imports 1`] = `
 Array [
   ImportStructureTreeItem {

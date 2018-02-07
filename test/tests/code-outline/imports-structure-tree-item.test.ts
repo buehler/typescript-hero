@@ -1,4 +1,4 @@
-import { File, NamedImport } from 'typescript-parser';
+import { ExternalModuleImport, File, NamedImport, NamespaceImport, StringImport, SymbolSpecifier } from 'typescript-parser';
 import { ExtensionContext } from 'vscode';
 
 import { ImportsStructureTreeItem, ImportStructureTreeItem } from '../../../src/code-outline/imports-structure-tree-item';
@@ -54,21 +54,23 @@ describe('ImportStructureTreeItem', () => {
     expect(item).to.exist;
   });
 
-  // it('should return the correct children for the imports', () => {
-  //   const testFn = (imp) => {
-  //     const item = new ImportStructureTreeItem(imp, context);
-  //     return item.getChildren();
-  //   };
+  const specImport = new NamedImport('named-spec-imp', 0, 1);
+  specImport.defaultAlias = 'default';
+  specImport.specifiers.push(new SymbolSpecifier('spec'));
+  const imports = [
+    new NamedImport('named-imp', 0, 1),
+    new StringImport('str-imp'),
+    new ExternalModuleImport('ext-imp', 'extImp', 0, 1),
+    new NamespaceImport('namespace-imp', 'namespace', 0, 1),
+    specImport,
+  ];
 
-  //   const namedImp = new NamedImport('named-imp', 0, 1);
-  //   const stringImp = new StringImport('str-imp');
-  //   const extImp = new ExternalModuleImport('ext-imp', 'extImp', 0, 1);
-  //   const namespaceImp = new NamespaceImport('namespace-imp', 'namespace', 0, 1);
-  //   const specImp = new NamedImport('named-spec-imp', 0, 1);
-  //   specImp.defaultAlias = 'default';
-  //   specImp.specifiers.push(new SymbolSpecifier('spec'));
+  for (const test of imports) {
+    it(`should return the correct children for the "${test.constructor.name}" import`, () => {
+      const item = new ImportStructureTreeItem(test, context);
 
-  //   expect(testFn, namedImp, stringImp, extImp, namespaceImp, specImp).to.matchSnapshot();
-  // });
+      expect(item.getChildren).to.matchSnapshot();
+    });
+  }
 
 });
