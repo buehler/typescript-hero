@@ -1,3 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`CodeOutline should return an empty array if no document is open 1`] = `Array []`;

@@ -35,7 +35,7 @@ describe('ImportsStructureTreeItem', () => {
     resource.imports.push(new NamedImport('lib', 0, 1));
     const item = new ImportsStructureTreeItem(resource, context);
 
-    expect(item.getChildren()).to.matchSnapshot();
+    expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
   });
 
 });
@@ -69,7 +69,7 @@ describe('ImportStructureTreeItem', () => {
     it(`should return the correct children for the "${test.constructor.name}" import`, () => {
       const item = new ImportStructureTreeItem(test, context);
 
-      expect(item.getChildren).to.matchSnapshot();
+      expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
     });
   }
 

@@ -98,7 +98,7 @@ describe('DeclarationStructureTreeItem', () => {
     declaration.accessors.push(new GetterDeclaration('getter', undefined, undefined, false));
     const item = new DeclarationStructureTreeItem(declaration, context);
 
-    expect(item.getChildren()).to.matchSnapshot();
+    expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
   });
 
   it('should return the correct property children', () => {
@@ -106,7 +106,7 @@ describe('DeclarationStructureTreeItem', () => {
     declaration.properties.push(new PropertyDeclaration('property', undefined, undefined));
     const item = new DeclarationStructureTreeItem(declaration, context);
 
-    expect(item.getChildren()).to.matchSnapshot();
+    expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
   });
 
   it('should return the correct method children', () => {
@@ -114,7 +114,7 @@ describe('DeclarationStructureTreeItem', () => {
     declaration.methods.push(new MethodDeclaration('method', false, undefined, undefined));
     const item = new DeclarationStructureTreeItem(declaration, context);
 
-    expect(item.getChildren()).to.matchSnapshot();
+    expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
   });
 
   it('should not return children on simple declarations', () => {

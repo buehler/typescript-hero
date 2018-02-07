@@ -37,7 +37,7 @@ describe('ResourceStructureTreeItem', () => {
 
     const item = new ResourceStructureTreeItem(resource, context);
 
-    expect(item.getChildren()).to.matchSnapshot();
+    expect(item.getChildren().map(c => ({ label: c.label, ctor: c.constructor.name }))).to.matchSnapshot();
   });
 
 });

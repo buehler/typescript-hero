@@ -55,7 +55,9 @@
       },
       "stopOnEntry": false,
       "sourceMaps": true,
+      "smartStep": true,
       "outFiles": [
+        "${workspaceRoot}/out/src/**/*.js",
         "${workspaceRoot}/out/test/tests/**/*.js"
       ]
     },
@@ -77,7 +79,9 @@
       },
       "stopOnEntry": false,
       "sourceMaps": true,
+      "smartStep": true,
       "outFiles": [
+        "${workspaceRoot}/out/src/**/*.js",
         "${workspaceRoot}/out/test/tests/**/*.js"
       ]
     }
