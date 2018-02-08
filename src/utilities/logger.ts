@@ -75,7 +75,6 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
   if (!process.env.CI && !process.env.EXT_DEBUG && !process.env.LOCAL_TEST) {
     const channel = window.createOutputChannel('TypeScript Hero');
     context.subscriptions.push(channel);
-    channel.show();
 
     const fileHandler = new transports.File({
       level: ['info', 'debug'].indexOf(level) >= 0 ? level : 'info',
@@ -92,8 +91,6 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
     loggerTransports.push(outputHandler);
 
     exceptions.handle(fileHandler);
-    // exceptions.handle(outputHandler);
-    // exceptions.handle(new HandleUncatchedException(context.extensionPath));
   }
 
   const logger = createLogger({
