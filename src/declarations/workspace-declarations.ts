@@ -91,7 +91,7 @@ export default class WorkspaceDeclarations implements Disposable {
       this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Idle);
 
       profiler.done({
-        message: 'Built index for workspace.',
+        message: '[WorkspaceDeclarations] Built index for workspace.',
         workspace: this.folder.uri.fsPath,
       });
     } catch (error) {
