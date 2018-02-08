@@ -35,7 +35,7 @@ export default class DeclarationManager implements Disposable {
 
   @postConstruct()
   public setup(): void {
-    this.logger.debug('Setting up DeclarationManager.');
+    this.logger.debug('[DeclarationManager] Setting up DeclarationManager.');
     this.statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left, 4);
     this.statusBarItem.text = ResolverState.ok;
     this.statusBarItem.show();
@@ -59,7 +59,7 @@ export default class DeclarationManager implements Disposable {
   public getIndexForFile(fileUri: Uri): DeclarationIndex | undefined {
     const workspaceFolder = workspace.getWorkspaceFolder(fileUri);
     if (!workspaceFolder || !this.workspaces[workspaceFolder.uri.fsPath]) {
-      this.logger.debug('Did not find index for file', { file: fileUri.fsPath });
+      this.logger.debug('[DeclarationManager] Did not find index for file', { file: fileUri.fsPath });
       return;
     }
 
@@ -67,7 +67,7 @@ export default class DeclarationManager implements Disposable {
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing DeclarationManager.');
+    this.logger.debug('[DeclarationManager] Disposing DeclarationManager.');
     for (const folder of Object.values(this.workspaces)) {
       folder.dispose();
     }
@@ -85,14 +85,14 @@ export default class DeclarationManager implements Disposable {
     const removed = event.removed.filter(e => e.uri.scheme === 'file');
 
     this.logger.info(
-      'Workspaces changed, adjusting indices',
+      '[DeclarationManager] Workspaces changed, adjusting indices',
       { added: added.map(e => e.uri.fsPath), removed: removed.map(e => e.uri.fsPath) },
     );
 
     for (const add of event.added) {
       if (this.workspaces[add.uri.fsPath]) {
         this.logger.warn(
-          'Workspace index already exists, skipping',
+          '[DeclarationManager] Workspace index already exists, skipping',
           { workspace: add.uri.fsPath },
         );
         continue;
@@ -111,22 +111,22 @@ export default class DeclarationManager implements Disposable {
       return;
     }
     if (state === WorkspaceDeclarationsState.Error) {
-      this.logger.error('A workspace did encounter an error.');
+      this.logger.error('[DeclarationManager] A workspace did encounter an error.');
       this.statusBarItem.text = ResolverState.error;
       return;
     }
     if (state === WorkspaceDeclarationsState.Syncing) {
-      this.logger.debug('A workspace is syncing it\'s files.');
+      this.logger.debug('[DeclarationManager] A workspace is syncing it\'s files.');
       this.activeWorkspaces++;
       this.statusBarItem.text = ResolverState.syncing;
       return;
     }
     if (state === WorkspaceDeclarationsState.Idle) {
-      this.logger.debug('A workspace is done syncing it\'s files.');
+      this.logger.debug('[DeclarationManager] A workspace is done syncing it\'s files.');
       this.activeWorkspaces--;
     }
     if (this.activeWorkspaces <= 0) {
-      this.logger.debug('All workspaces are done syncing.');
+      this.logger.debug('[DeclarationManager] All workspaces are done syncing.');
       this.statusBarItem.text = ResolverState.ok;
     }
   }

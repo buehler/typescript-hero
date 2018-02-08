@@ -44,13 +44,19 @@ export default class WorkspaceDeclarations implements Disposable {
   constructor(
     private readonly folder: WorkspaceFolder,
   ) {
-    this.logger.debug('Creating workspace declarations index.', { workspace: this.folder.uri.fsPath });
+    this.logger.debug(
+      '[WorkspaceDeclarations] Creating workspace declarations index.',
+      { workspace: this.folder.uri.fsPath },
+    );
     this.disposables.push(this._workspaceStateChanged);
     this.initialize();
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing workspace declarations index.', { workspace: this.folder.uri.fsPath });
+    this.logger.debug(
+      '[WorkspaceDeclarations] Disposing workspace declarations index.',
+      { workspace: this.folder.uri.fsPath },
+    );
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
@@ -63,6 +69,10 @@ export default class WorkspaceDeclarations implements Disposable {
 
     this._index = new DeclarationIndex(this.parser, this.folder.uri.fsPath);
     const files = await this.findFiles();
+    this.logger.info(
+      `[WorkspaceDeclarations] Found ${files.length} files in workspace.`,
+      { workspace: this.folder.uri.fsPath },
+    );
     const watcher = workspace.createFileSystemWatcher(
       new RelativePattern(
         this.folder,
@@ -81,13 +91,13 @@ export default class WorkspaceDeclarations implements Disposable {
       this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Idle);
 
       profiler.done({
-        message: 'Built index for workspace',
+        message: '[WorkspaceDeclarations] Built index for workspace.',
         workspace: this.folder.uri.fsPath,
       });
     } catch (error) {
       this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Error);
       this.logger.error(
-        'Error during indexing of workspacefiles',
+        '[WorkspaceDeclarations] Error during indexing of workspacefiles.',
         { error: error.toString(), workspace: this.folder.uri.fsPath },
       );
     }
@@ -150,7 +160,7 @@ export default class WorkspaceDeclarations implements Disposable {
       'typings/**/*',
     ];
     const moduleExcludes = this.config.index.moduleIgnorePatterns(this.folder.uri);
-    this.logger.debug('Calculated excludes for workspace.', {
+    this.logger.debug('[WorkspaceDeclarations] Calculated excludes for workspace.', {
       workspaceExcludes,
       moduleExcludes,
       workspace: this.folder.uri.fsPath,
@@ -167,7 +177,7 @@ export default class WorkspaceDeclarations implements Disposable {
     const hasPackageJson = await exists(join(rootPath, 'package.json'));
 
     if (rootPath && hasPackageJson) {
-      this.logger.debug('Found package.json, calculate searchable node modules.', {
+      this.logger.debug('[WorkspaceDeclarations] Found package.json, calculate searchable node modules.', {
         workspace: this.folder.uri.fsPath,
         packageJson: join(rootPath, 'package.json'),
       });
@@ -193,7 +203,7 @@ export default class WorkspaceDeclarations implements Disposable {
         }
       }
 
-      this.logger.debug('Calculated node module search.', {
+      this.logger.debug('[WorkspaceDeclarations] Calculated node module search.', {
         globs,
         ignores,
         workspace: this.folder.uri.fsPath,

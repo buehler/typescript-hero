@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "workspace_1"
+    },
+    {
+      "path": "workspace_2"
+    },
+    {
+      "path": "workspace_3"
+    }
+  ],
+  "settings": {
+    "typescriptHero.codeOutline.enabled": true
+  }
+}

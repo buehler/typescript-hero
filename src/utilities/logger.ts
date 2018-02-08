@@ -65,17 +65,16 @@ export interface Logger {
 
 const loggerTransports = [
   new ConsoleLogTransport({
-    level: !!process.env.CI ? 'error' : 'debug',
+    level: !!process.env.CI || !!process.env.LOCAL_TEST ? 'error' : 'debug',
   }),
 ];
 
 export default function winstonLogger(verbosity: keyof typeof levels, context: ExtensionContext): Logger {
   const level = !!process.env.CI ? 'error' : verbosity;
 
-  if (!process.env.CI && !process.env.EXT_DEBUG) {
+  if (!process.env.CI && !process.env.EXT_DEBUG && !process.env.LOCAL_TEST) {
     const channel = window.createOutputChannel('TypeScript Hero');
     context.subscriptions.push(channel);
-    channel.show();
 
     const fileHandler = new transports.File({
       level: ['info', 'debug'].indexOf(level) >= 0 ? level : 'info',
@@ -92,8 +91,6 @@ export default function winstonLogger(verbosity: keyof typeof levels, context: E
     loggerTransports.push(outputHandler);
 
     exceptions.handle(fileHandler);
-    // exceptions.handle(outputHandler);
-    // exceptions.handle(new HandleUncatchedException(context.extensionPath));
   }
 
   const logger = createLogger({

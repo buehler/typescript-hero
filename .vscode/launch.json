@@ -43,17 +43,22 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/test/_workspace",
+        "${workspaceRoot}/test/etc/workspace_1",
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/out/test/single-workspace-tests/"
+        "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
-        "CI": "true"
+        "EXT_DEBUG": "true",
+        "LOCAL_TEST": "true",
+        "COVERAGE": "true",
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },
       "stopOnEntry": false,
       "sourceMaps": true,
+      "smartStep": true,
       "outFiles": [
-        "${workspaceRoot}/out/test/single-workspace-tests/**/*.js"
+        "${workspaceRoot}/out/src/**/*.js",
+        "${workspaceRoot}/out/test/tests/**/*.js"
       ]
     },
     {
@@ -62,17 +67,22 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "${workspaceRoot}/test/multi-root.code-workspace",
+        "${workspaceRoot}/test/etc/multi-root.code-workspace",
         "--extensionDevelopmentPath=${workspaceRoot}",
-        "--extensionTestsPath=${workspaceRoot}/out/test/multi-root-workspace-tests/"
+        "--extensionTestsPath=${workspaceRoot}/out/test/tests/"
       ],
       "env": {
-        "CI": "true"
+        "EXT_DEBUG": "true",
+        "LOCAL_TEST": "true",
+        "COVERAGE": "true",
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
       },
       "stopOnEntry": false,
       "sourceMaps": true,
+      "smartStep": true,
       "outFiles": [
-        "${workspaceRoot}/out/test/**/*.js"
+        "${workspaceRoot}/out/src/**/*.js",
+        "${workspaceRoot}/out/test/tests/**/*.js"
       ]
     }
   ],
