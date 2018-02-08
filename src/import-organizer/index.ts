@@ -24,7 +24,7 @@ export default class ImportOrganizer implements Activatable {
   ) { }
 
   public setup(): void {
-    this.logger.debug('Setting up ImportOrganizer.');
+    this.logger.debug('[ImportOrganizer] Setting up ImportOrganizer.');
     this.context.subscriptions.push(
       commands.registerTextEditorCommand('typescriptHero.imports.organize', () => this.organizeImports()),
     );
@@ -41,20 +41,20 @@ export default class ImportOrganizer implements Activatable {
       workspace.onWillSaveTextDocument((event) => {
         if (!this.config.imports.organizeOnSave(event.document.uri)) {
           this.logger.debug(
-            'OrganizeOnSave is deactivated through config',
+            '[ImportOrganizer] OrganizeOnSave is deactivated through config',
           );
           return;
         }
         if (this.config.parseableLanguages().indexOf(event.document.languageId) < 0) {
           this.logger.debug(
-            'OrganizeOnSave not possible for given language',
+            '[ImportOrganizer] OrganizeOnSave not possible for given language',
             { language: event.document.languageId },
           );
           return;
         }
 
         this.logger.info(
-          'OrganizeOnSave for file',
+          '[ImportOrganizer] OrganizeOnSave for file',
           { file: event.document.fileName },
         );
         event.waitUntil(
@@ -65,15 +65,15 @@ export default class ImportOrganizer implements Activatable {
   }
 
   public start(): void {
-    this.logger.info('Starting up ImportOrganizer.');
+    this.logger.info('[ImportOrganizer] Starting up ImportOrganizer.');
   }
 
   public stop(): void {
-    this.logger.info('Stopping ImportOrganizer.');
+    this.logger.info('[ImportOrganizer] Stopping ImportOrganizer.');
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing ImportOrganizer.');
+    this.logger.debug('[ImportOrganizer] Disposing ImportOrganizer.');
   }
 
   /**
@@ -90,14 +90,14 @@ export default class ImportOrganizer implements Activatable {
     }
     try {
       this.logger.debug(
-        'Organize the imports in the document',
+        '[ImportOrganizer] Organize the imports in the document',
         { file: window.activeTextEditor.document.fileName },
       );
       const ctrl = await this.importManagerProvider(window.activeTextEditor.document);
       await ctrl.organizeImports().commit();
     } catch (e) {
       this.logger.error(
-        'Imports could not be organized, error: %s',
+        '[ImportOrganizer] Imports could not be organized, error: %s',
         e,
         { file: window.activeTextEditor.document.fileName },
       );
@@ -129,14 +129,14 @@ export default class ImportOrganizer implements Activatable {
       );
       if (selectedItem) {
         this.logger.info(
-          'Add import to document',
+          '[ImportOrganizer] Add import to document',
           { specifier: selectedItem.declarationInfo.declaration.name, library: selectedItem.declarationInfo.from },
         );
         this.addImportToDocument(selectedItem.declarationInfo);
       }
     } catch (e) {
       this.logger.error(
-        'Import could not be added to document',
+        '[ImportOrganizer] Import could not be added to document',
         { file: window.activeTextEditor.document.fileName, error: e.toString() },
       );
       window.showErrorMessage('The import cannot be completed, there was an error during the process.');
@@ -163,7 +163,7 @@ export default class ImportOrganizer implements Activatable {
     }
     try {
       const selectedSymbol = this.getSymbolUnderCursor();
-      this.logger.debug('Add import for symbol under cursor', { selectedSymbol });
+      this.logger.debug('[ImportOrganizer] Add import for symbol under cursor', { selectedSymbol });
       if (!!!selectedSymbol) {
         return;
       }
@@ -175,7 +175,7 @@ export default class ImportOrganizer implements Activatable {
 
       if (resolveItems.length < 1) {
         this.logger.info(
-          'The symbol was not found or is already imported',
+          '[ImportOrganizer] The symbol was not found or is already imported',
           { selectedSymbol },
         );
         window.showInformationMessage(
@@ -183,7 +183,7 @@ export default class ImportOrganizer implements Activatable {
         );
       } else if (resolveItems.length === 1 && resolveItems[0].declaration.name === selectedSymbol) {
         this.logger.info(
-          'Add import to document',
+          '[ImportOrganizer] Add import to document',
           {
             specifier: resolveItems[0].declaration.name,
             library: resolveItems[0].from,
@@ -196,7 +196,7 @@ export default class ImportOrganizer implements Activatable {
         );
         if (selectedItem) {
           this.logger.info(
-            'Add import to document',
+            '[ImportOrganizer] Add import to document',
             {
               specifier: selectedItem.declarationInfo.declaration.name,
               library: selectedItem.declarationInfo.from,
@@ -207,7 +207,7 @@ export default class ImportOrganizer implements Activatable {
       }
     } catch (e) {
       this.logger.error(
-        'Import could not be added to document.',
+        '[ImportOrganizer] Import could not be added to document.',
         { file: window.activeTextEditor.document.fileName, error: e.toString() },
       );
       window.showErrorMessage('The import cannot be completed, there was an error during the process.');
@@ -239,7 +239,7 @@ export default class ImportOrganizer implements Activatable {
     }
 
     this.logger.debug(
-      'Calculate possible imports for document',
+      '[ImportOrganizer] Calculate possible imports for document',
       { cursorSymbol, file: documentPath },
     );
 
@@ -303,7 +303,7 @@ export default class ImportOrganizer implements Activatable {
    */
   private showCacheWarning(): void {
     this.logger.warn(
-      'index was not ready or not index for this file found',
+      '[ImportOrganizer] Index was not ready or not index for this file found',
     );
     window.showWarningMessage('Please wait a few seconds longer until the symbol cache has been build.');
   }
