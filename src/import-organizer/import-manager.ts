@@ -100,7 +100,7 @@ export default class ImportManager {
     private readonly generatorFactory: TypescriptCodeGeneratorFactory,
   ) {
     this.logger.debug(
-      `Create import manager`,
+      `[ImportManager] Create import manager`,
       { file: document.fileName },
     );
     this.reset();
@@ -129,7 +129,7 @@ export default class ImportManager {
    */
   public organizeImports(): this {
     this.logger.debug(
-      'Organize the imports',
+      '[ImportManager] Organize the imports',
       { file: this.document.fileName },
     );
     this.organize = true;
@@ -212,7 +212,7 @@ export default class ImportManager {
    */
   public addDeclarationImport(declarationInfo: DeclarationInfo): this {
     this.logger.debug(
-      'Add declaration as import',
+      '[ImportManager] Add declaration as import',
       { file: this.document.fileName, specifier: declarationInfo.declaration.name, library: declarationInfo.from },
     );
     // If there is something already imported, it must be a NamedImport
@@ -272,7 +272,7 @@ export default class ImportManager {
     workspaceEdit.set(this.document.uri, edits);
 
     this.logger.debug(
-      'Commit the file',
+      '[ImportManager] Commit the file',
       { file: this.document.fileName },
     );
 

@@ -14,7 +14,7 @@ export default class TypescriptHero implements Activatable {
   ) { }
 
   public setup(): void {
-    this.logger.debug('Setting up extension and activatables.');
+    this.logger.debug('[TypescriptHero] Setting up extension and activatables.');
     this.extendCodeGenerator();
     for (const activatable of this.activatables) {
       activatable.setup();
@@ -22,21 +22,21 @@ export default class TypescriptHero implements Activatable {
   }
 
   public start(): void {
-    this.logger.debug('Starting up extension and activatables.');
+    this.logger.debug('[TypescriptHero] Starting up extension and activatables.');
     for (const activatable of this.activatables) {
       activatable.start();
     }
   }
 
   public stop(): void {
-    this.logger.debug('Stopping extension and activatables.');
+    this.logger.debug('[TypescriptHero] Stopping extension and activatables.');
     for (const activatable of this.activatables) {
       activatable.stop();
     }
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing extension and activatables.');
+    this.logger.debug('[TypescriptHero] Disposing extension and activatables.');
     for (const activatable of this.activatables) {
       activatable.dispose();
     }

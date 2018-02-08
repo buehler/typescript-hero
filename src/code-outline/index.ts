@@ -45,7 +45,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
   ) { }
 
   public setup(): void {
-    this.logger.debug('Setting up CodeOutline.');
+    this.logger.debug('[CodeOutline] Setting up CodeOutline.');
     this.context.subscriptions.push(this.config.configurationChanged(() => {
       if (this.config.codeOutline.isEnabled() && !this.disposables) {
         this.start();
@@ -61,10 +61,10 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public start(): void {
     if (!this.config.codeOutline.isEnabled()) {
-      this.logger.info(`Not starting CodeOutline. It's disabled by config.`);
+      this.logger.info(`[CodeOutline] Not starting CodeOutline. It's disabled by config.`);
       return;
     }
-    this.logger.info('Starting up CodeOutline.');
+    this.logger.info('[CodeOutline] Starting up CodeOutline.');
     this._onDidChangeTreeData = new EventEmitter<BaseStructureTreeItem | undefined>();
     this.disposables.push(window.registerTreeDataProvider('codeOutline', this));
     this.disposables.push(this._onDidChangeTreeData);
@@ -74,10 +74,10 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
 
   public stop(): void {
     if (this.config.codeOutline.isEnabled()) {
-      this.logger.info(`Not stopping CodeOutline. It's enabled by config.`);
+      this.logger.info(`[CodeOutline] Not stopping CodeOutline. It's enabled by config.`);
       return;
     }
-    this.logger.info('Stopping CodeOutline.');
+    this.logger.info('[CodeOutline] Stopping CodeOutline.');
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
@@ -85,7 +85,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
   }
 
   public dispose(): void {
-    this.logger.debug('Disposing CodeOutline.');
+    this.logger.debug('[CodeOutline] Disposing CodeOutline.');
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
@@ -119,7 +119,7 @@ export default class CodeOutline implements Activatable, TreeDataProvider<BaseSt
         );
       } catch (e) {
         this.logger.error(
-          `[CodeOutline] document could not be parsed, error: ${e}`,
+          `[CodeOutline] Document could not be parsed, error: ${e}`,
         );
         return [];
       }
