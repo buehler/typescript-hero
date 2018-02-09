@@ -779,14 +779,14 @@ Array [
 
 exports[`WorkspaceDeclarations should return the correct files 1`] = `
 Array [
-  "declarations-for-barrel-1.ts",
-  "multi-declarations.ts",
   "barrel.ts",
-  "default-export.ts",
-  "declarations-for-index.ts",
-  "default-multi-export.ts",
-  "index.ts",
-  "default-unnamed-export.ts",
+  "declarations-for-barrel-1.ts",
   "declarations-for-barrel-2.ts",
+  "declarations-for-index.ts",
+  "default-export.ts",
+  "default-multi-export.ts",
+  "default-unnamed-export.ts",
+  "index.ts",
+  "multi-declarations.ts",
 ]
 `;
