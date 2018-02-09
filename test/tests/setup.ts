@@ -1,5 +1,6 @@
 import { expect as chaiExpect, use } from 'chai';
 import { join, parse } from 'path';
+import sinonChai = require('sinon-chai');
 
 const chaiJestSnapshot = require('chai-jest-snapshot');
 
@@ -12,6 +13,7 @@ declare global {
 }
 
 use(chaiJestSnapshot);
+use(sinonChai);
 
 before(() => {
   chaiJestSnapshot.resetSnapshotRegistry();
@@ -26,3 +28,7 @@ beforeEach(function (): void {
 });
 
 export const expect = chaiExpect;
+
+export function wait(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(() => resolve(), ms));
+}
