@@ -134,6 +134,6 @@ export default class DeclarationManager implements Disposable {
   private createWorkspace(folder: WorkspaceFolder): void {
     this.workspaces[folder.uri.fsPath] = new WorkspaceDeclarations(folder);
     this.workspaces[folder.uri.fsPath].workspaceStateChanged(state => this.workspaceStateChanged(state));
-    this.workspaceStateChanged(WorkspaceDeclarationsState.Syncing);
+    this.workspaces[folder.uri.fsPath].initialize();
   }
 }

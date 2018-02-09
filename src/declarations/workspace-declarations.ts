@@ -49,7 +49,6 @@ export default class WorkspaceDeclarations implements Disposable {
       { workspace: this.folder.uri.fsPath },
     );
     this.disposables.push(this._workspaceStateChanged);
-    this.initialize();
   }
 
   public dispose(): void {
@@ -60,10 +59,12 @@ export default class WorkspaceDeclarations implements Disposable {
     for (const disposable of this.disposables) {
       disposable.dispose();
     }
-    this._index.reset();
+    if (this._index) {
+      this._index.reset();
+    }
   }
 
-  private async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     const profiler = this.logger.startTimer();
     this._workspaceStateChanged.fire(WorkspaceDeclarationsState.Syncing);
 
