@@ -3,6 +3,7 @@ import * as sinon from 'sinon';
 import { DefaultDeclaration, File } from 'typescript-parser';
 import { workspace } from 'vscode';
 
+import Configuration from '../../../src/configuration';
 import WorkspaceDeclarations, { WorkspaceDeclarationsState } from '../../../src/declarations/workspace-declarations';
 import { expect, wait } from '../setup';
 
@@ -139,8 +140,44 @@ describe('WorkspaceDeclarations', () => {
     ).to.equal(true);
   });
 
-  it('should correctly ignore workspace files that are ignored by config');
+  it('should correctly ignore workspace files that are ignored by config', async () => {
+    await workspaceDeclarations.initialize();
 
-  it('should correctly add workspace files that are not ignored by config anymore');
+    const declarations = workspaceDeclarations.index.declarationInfos
+      .filter(d => d.from.startsWith('/declarations'))
+      .map(d => d.from);
+    expect(
+      declarations.every(from => from.indexOf('build') === -1),
+    ).to.equal(true);
+  });
+
+  it('should correctly add workspace files that are not ignored by config anymore', async () => {
+    Object.defineProperty(
+      workspaceDeclarations,
+      'config',
+      {
+        get(): Configuration {
+          return {
+            index: {
+              moduleIgnorePatterns(): string[] {
+                return [];
+              },
+              workspaceIgnorePatterns(): string[] {
+                return [];
+              },
+            },
+          } as any as Configuration;
+        },
+      },
+    );
+    await workspaceDeclarations.initialize();
+
+    const declarations = workspaceDeclarations.index.declarationInfos
+      .filter(d => d.from.startsWith('/declarations'))
+      .map(d => d.from);
+    expect(
+      declarations.some(from => from.indexOf('build-file') >= 0),
+    ).to.equal(true);
+  });
 
 });
