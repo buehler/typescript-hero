@@ -32,7 +32,7 @@ describe('WorkspaceDeclarations', () => {
       .filter(file => file.indexOf(`workspace_1${sep}declarations`) >= 0)
       .map(file => parse(file).base)
       .sort();
-    console.log(declarationFiles);
+
     expect(declarationFiles).to.matchSnapshot();
   });
 
