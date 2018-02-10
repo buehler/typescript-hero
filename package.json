@@ -62,6 +62,8 @@
     "clean": "del-cli ./out ./coverage",
     "build": "npm run clean && tsc -p ./config/tsconfig.build.json",
     "develop": "npm run clean && tsc -p .",
+    "develop:test-single": "npm run clean && tsc -p ./config/tsconfig.test-single-workspace.json --watch",
+    "develop:test-multi": "npm run clean && tsc -p ./config/tsconfig.test-multi-workspace.json --watch",
     "lint": "tslint -c ./tslint.json -p ./config/tsconfig.build.json",
     "test:single-workspace": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test-single-workspace.json && node ./node_modules/vscode/bin/test",
     "test:multi-workspace": "npm run lint && npm run clean && tsc -p ./config/tsconfig.test-multi-workspace.json && node ./node_modules/vscode/bin/test",
