@@ -234,6 +234,18 @@
           "description": "Defines if the imports should be organized on save.",
           "scope": "resource"
         },
+        "typescriptHero.imports.excludeFromSave": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "polyfill\\.ts"
+          ],
+          "uniqueItems": true,
+          "description": "Defines files to be ignored when organizeOnSave is enabled.",
+          "scope": "resource"
+        },
         "typescriptHero.imports.organizeSortsByFirstSpecifier": {
           "type": "boolean",
           "default": false,

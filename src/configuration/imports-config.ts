@@ -46,6 +46,10 @@ export default class ImportsConfig {
     return workspace.getConfiguration(sectionKey, resource).get('organizeOnSave', false);
   }
 
+  public excludeFromSave(resource: Uri): string[] {
+    return workspace.getConfiguration(sectionKey, resource).get('excludeFromSave', ['polyfill\.ts']);
+  }
+
   public organizeSortsByFirstSpecifier(resource: Uri): boolean {
     return workspace.getConfiguration(sectionKey, resource).get('organizeSortsByFirstSpecifier', false);
   }
