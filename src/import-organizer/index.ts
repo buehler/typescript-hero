@@ -56,7 +56,6 @@ export default class ImportOrganizer implements Activatable {
           .some(regexString => new RegExp(regexString).test(event.document.fileName))) {
           this.logger.debug(
             '[ImportOrganizer] OrganizeOnSave is skipped through excludeFromSave for this file',
-            { language: event.document.languageId },
           );
           return;
         }
