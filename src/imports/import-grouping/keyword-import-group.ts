@@ -1,9 +1,9 @@
 import { Import, StringImport } from 'typescript-parser';
 
 import { importSort } from '../../utilities/utility-functions';
-import { ImportGroup } from './ImportGroup';
-import { ImportGroupKeyword } from './ImportGroupKeyword';
-import { ImportGroupOrder } from './ImportGroupOrder';
+import { ImportGroup } from './import-group';
+import { ImportGroupKeyword } from './import-group-keyword';
+import { ImportGroupOrder } from './import-group-order';
 
 /**
  * Importgroup for keywords. Uses "Modules", "Plains", "Workspace" as a keyword and processes the corresponding imports.

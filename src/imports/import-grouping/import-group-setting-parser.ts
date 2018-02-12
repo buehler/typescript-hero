@@ -1,10 +1,10 @@
-import { ImportGroup } from './ImportGroup';
-import { ImportGroupIdentifierInvalidError } from './ImportGroupIdentifierInvalidError';
-import { ImportGroupKeyword } from './ImportGroupKeyword';
-import { ImportGroupOrder } from './ImportGroupOrder';
-import { KeywordImportGroup } from './KeywordImportGroup';
-import { RegexImportGroup } from './RegexImportGroup';
-import { RemainImportGroup } from './RemainImportGroup';
+import { ImportGroup } from './import-group';
+import { ImportGroupIdentifierInvalidError } from './import-group-identifier-invalid-error';
+import { ImportGroupKeyword } from './import-group-keyword';
+import { ImportGroupOrder } from './import-group-order';
+import { KeywordImportGroup } from './keyword-import-group';
+import { RegexImportGroup } from './regex-import-group';
+import { RemainImportGroup } from './remain-import-group';
 
 /**
  * Inserted setting that is contained in the settings.json of .vscode.

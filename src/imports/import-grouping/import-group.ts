@@ -1,6 +1,6 @@
 import { Import } from 'typescript-parser';
 
-import { ImportGroupOrder } from './ImportGroupOrder';
+import { ImportGroupOrder } from './import-group-order';
 
 /**
  * Interface for an import group. A group contains a list of imports that are grouped and sorted

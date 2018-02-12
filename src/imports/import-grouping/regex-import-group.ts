@@ -1,8 +1,8 @@
 import { Import, StringImport } from 'typescript-parser';
 
 import { importSort } from '../../utilities/utility-functions';
-import { ImportGroup } from './ImportGroup';
-import { ImportGroupOrder } from './ImportGroupOrder';
+import { ImportGroup } from './import-group';
+import { ImportGroupOrder } from './import-group-order';
 
 /**
  * Importgroup that processes all imports that match a certain regex (the lib name).
