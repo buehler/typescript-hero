@@ -8,8 +8,8 @@ import Activatable from './activatable';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
 import DeclarationManager from './declarations/declaration-manager';
-import ImportOrganizer from './import-organizer';
-import ImportManager from './import-organizer/import-manager';
+import { ImportAppender, ImportOrganizer } from './imports';
+import ImportManager from './imports/import-manager';
 import iocSymbols, { ImportManagerProvider, TypescriptCodeGeneratorFactory } from './ioc-symbols';
 import TypescriptHero from './typescript-hero';
 import winstonLogger, { Logger } from './utilities/logger';
@@ -23,6 +23,7 @@ ioc.bind(TypescriptHero).to(TypescriptHero).inSingletonScope();
 // Activatables
 ioc.bind<Activatable>(iocSymbols.activatables).to(CodeOutline).inSingletonScope();
 ioc.bind<Activatable>(iocSymbols.activatables).to(ImportOrganizer).inSingletonScope();
+ioc.bind<Activatable>(iocSymbols.activatables).to(ImportAppender).inSingletonScope();
 
 // Configuration
 ioc.bind<Configuration>(iocSymbols.configuration).to(Configuration).inSingletonScope();
