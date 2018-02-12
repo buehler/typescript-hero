@@ -82,3 +82,308 @@ Array [
   },
 ]
 `;
+
+exports[`ImportManager Typescript addDeclarationImport() should add a default import to the import index. 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "defaultAlias": "DefaultMultiExport",
+    "end": undefined,
+    "libraryName": "../declarations/default-multi-export",
+    "specifiers": Array [],
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add a module import to the import index 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamespaceImport {
+    "alias": "module",
+    "end": undefined,
+    "libraryName": "my-module",
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add a normal import to a group 1`] = `
+KeywordImportGroup {
+  "imports": Array [
+    NamedImport {
+      "defaultAlias": undefined,
+      "end": 46,
+      "libraryName": "../../server/indices",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "Class1",
+        },
+      ],
+      "start": 0,
+    },
+  ],
+  "keyword": 2,
+  "order": "asc",
+}
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add a normal import to a group 2`] = `
+KeywordImportGroup {
+  "imports": Array [
+    NamedImport {
+      "defaultAlias": undefined,
+      "end": 46,
+      "libraryName": "../../server/indices",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "Class1",
+        },
+      ],
+      "start": 0,
+    },
+    NamedImport {
+      "end": undefined,
+      "libraryName": "../declarations/multi-declarations",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "Class",
+        },
+      ],
+      "start": undefined,
+    },
+  ],
+  "keyword": 2,
+  "order": "asc",
+}
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add a normal import to the document 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../declarations/multi-declarations",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class",
+      },
+    ],
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add an import to an existing import group 1`] = `
+KeywordImportGroup {
+  "imports": Array [
+    NamedImport {
+      "defaultAlias": undefined,
+      "end": 46,
+      "libraryName": "../../server/indices",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "Class1",
+        },
+      ],
+      "start": 0,
+    },
+  ],
+  "keyword": 2,
+  "order": "asc",
+}
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add an import to an existing import group 2`] = `
+KeywordImportGroup {
+  "imports": Array [
+    NamedImport {
+      "defaultAlias": undefined,
+      "end": 46,
+      "libraryName": "../../server/indices",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "Class1",
+        },
+      ],
+      "start": 0,
+    },
+    NamedImport {
+      "end": undefined,
+      "libraryName": "../declarations/barrel",
+      "specifiers": Array [
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "ClassForBarrel1",
+        },
+        SymbolSpecifier {
+          "alias": undefined,
+          "specifier": "ClassForBarrel2",
+        },
+      ],
+      "start": undefined,
+    },
+  ],
+  "keyword": 2,
+  "order": "asc",
+}
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add an import to an existing import index item 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../declarations/barrel",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "ClassForBarrel1",
+      },
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "ClassForBarrel2",
+      },
+    ],
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should add multiple imports to the import index 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../declarations/barrel",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "ClassForBarrel1",
+      },
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "ClassForBarrel2",
+      },
+    ],
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should not add the same specifier twice 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../declarations/multi-declarations",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class",
+      },
+    ],
+    "start": undefined,
+  },
+]
+`;
+
+exports[`ImportManager Typescript addDeclarationImport() should not add the same specifier twice 2`] = `
+Array [
+  NamedImport {
+    "defaultAlias": undefined,
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../declarations/multi-declarations",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class",
+      },
+    ],
+    "start": undefined,
+  },
+]
+`;
