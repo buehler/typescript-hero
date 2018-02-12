@@ -6,7 +6,7 @@ import {
 } from '../../../../src/imports/import-grouping';
 import { expect } from '../../setup';
 
-describe.only('ImportGroupSettingParser', () => {
+describe('ImportGroupSettingParser', () => {
 
   it('should parse a simple keyword', () => {
     const result = ImportGroupSettingParser.parseSetting('Workspace') as KeywordImportGroup;
