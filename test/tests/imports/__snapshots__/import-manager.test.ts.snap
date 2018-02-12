@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ImportManager Typescript Constructor (via provider) should add an import proxy for a default import 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": "myDefaultExportedFunction",
+    "end": 84,
+    "libraryName": "../defaultExport/lateDefaultExportedElement",
+    "specifiers": Array [],
+    "start": 0,
+  },
+]
+`;
+
+exports[`ImportManager Typescript Constructor (via provider) should add an import proxy for a named import 1`] = `
+Array [
+  NamedImport {
+    "end": 46,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 0,
+  },
+]
+`;
+
+exports[`ImportManager Typescript Constructor (via provider) should add multiple import proxies 1`] = `
+Array [
+  NamedImport {
+    "defaultAlias": "myDefaultExportedFunction",
+    "end": 84,
+    "libraryName": "../defaultExport/lateDefaultExportedElement",
+    "specifiers": Array [],
+    "start": 0,
+  },
+  NamedImport {
+    "end": 131,
+    "libraryName": "../../server/indices",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "Class1",
+      },
+    ],
+    "start": 85,
+  },
+]
+`;
+
+exports[`ImportManager Typescript Constructor (via provider) should not add a proxy for a namespace import 1`] = `
+Array [
+  NamespaceImport {
+    "alias": "bodyParser",
+    "end": 42,
+    "libraryName": "body-parser",
+    "start": 0,
+  },
+]
+`;
+
+exports[`ImportManager Typescript Constructor (via provider) should not add a proxy for a string import 1`] = `
+Array [
+  StringImport {
+    "end": 21,
+    "libraryName": "body-parser",
+    "start": 0,
+  },
+]
+`;
+
+exports[`ImportManager Typescript Constructor (via provider) should not add a proxy for an external import 1`] = `
+Array [
+  ExternalModuleImport {
+    "alias": "bodyParser",
+    "end": 43,
+    "libraryName": "body-parser",
+    "start": 0,
+  },
+]
+`;
