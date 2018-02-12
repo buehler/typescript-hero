@@ -1,73 +1,75 @@
-// import * as chai from 'chai';
-// import { join } from 'path';
-// import { File, TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
-// import { workspace } from 'vscode';
+import { join } from 'path';
+import {
+  File,
+  Generatable,
+  GENERATORS,
+  TypescriptCodeGenerator,
+  TypescriptGenerationOptions,
+  TypescriptParser,
+} from 'typescript-parser';
+import { Uri, workspace } from 'vscode';
 
-// import { TypescriptCodeGeneratorFactory } from '../../../../src/common/factories';
-// import { RemainImportGroup } from '../../../../src/extension/import-grouping';
-// import { Container } from '../../../../src/extension/IoC';
-// import { iocSymbols } from '../../../../src/extension/IoCSymbols';
+import { RemainImportGroup } from '../../../../src/imports/import-grouping';
+import ioc from '../../../../src/ioc';
+import iocSymbols, { TypescriptCodeGeneratorFactory } from '../../../../src/ioc-symbols';
+import { expect } from '../../setup';
 
-// chai.should();
+describe('RemainImportGroup', () => {
 
-// describe('RemainImportGroup', () => {
+  const rootPath = workspace.workspaceFolders![0].uri.fsPath;
+  const fsFile = Uri.file(
+    join(rootPath, 'imports', 'import-grouping', 'imports.ts'),
+  );
+  let file: File;
+  let importGroup: RemainImportGroup;
+  let generator: TypescriptCodeGenerator;
 
-//   const rootPath = workspace.workspaceFolders![0].uri.fsPath;
-//   let file: File;
-//   let importGroup: RemainImportGroup;
-//   let generator: TypescriptCodeGenerator;
+  before(() => {
+    if (!GENERATORS[RemainImportGroup.name]) {
+      GENERATORS[RemainImportGroup.name] = (generatable: Generatable, options: TypescriptGenerationOptions): string => {
+        const gen = new TypescriptCodeGenerator(options);
+        const group = generatable as RemainImportGroup;
+        if (!group.imports.length) {
+          return '';
+        }
+        return group.sortedImports
+          .map(imp => gen.generate(imp))
+          .join('\n') + '\n';
+      };
+    }
+  });
 
-//   before(async () => {
-//     const parser = Container.get<TypescriptParser>(iocSymbols.typescriptParser);
-//     generator = Container.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)();
-//     file = await parser.parseFile(
-//       join(
-//         rootPath,
-//         'extension/import-grouping/imports.ts',
-//       ),
-//       rootPath,
-//     );
-//   });
+  before(async () => {
+    const parser = ioc.get<TypescriptParser>(iocSymbols.parser);
+    generator = ioc.get<TypescriptCodeGeneratorFactory>(iocSymbols.generatorFactory)(fsFile);
+    file = await parser.parseFile(fsFile.fsPath, rootPath);
+  });
 
-//   beforeEach(() => {
-//     importGroup = new RemainImportGroup();
-//   });
+  beforeEach(() => {
+    importGroup = new RemainImportGroup();
+  });
 
-//   it('should process all imports', () => {
-//     file.imports.map(i => importGroup.processImport(i)).should.deep.equal([true, true, true, true, true, true]);
-//   });
+  it('should process all imports', () => {
+    expect(file.imports.map(i => importGroup.processImport(i))).to.matchSnapshot();
+  });
 
-//   it('should generate the correct typescript (asc)', () => {
-//     for (const imp of file.imports) {
-//       if (importGroup.processImport(imp)) {
-//         continue;
-//       }
-//     }
-//     generator.generate(importGroup as any).should.equal(
-//       `import './workspaceSideEffectLib';\n` +
-//       `import 'sideEffectLib';\n` +
-//       `import { AnotherFoobar } from './anotherFile';\n` +
-//       `import { Foobar } from './myFile';\n` +
-//       `import { AnotherModuleFoo } from 'anotherLib';\n` +
-//       `import { ModuleFoobar } from 'myLib';\n`,
-//     );
-//   });
+  it('should generate the correct typescript (asc)', () => {
+    for (const imp of file.imports) {
+      if (importGroup.processImport(imp)) {
+        continue;
+      }
+    }
+    expect(generator.generate(importGroup as any)).to.matchSnapshot();
+  });
 
-//   it('should generate the correct typescript (desc)', () => {
-//     (importGroup as any).order = 'desc';
-//     for (const imp of file.imports) {
-//       if (importGroup.processImport(imp)) {
-//         continue;
-//       }
-//     }
-//     generator.generate(importGroup as any).should.equal(
-//       `import 'sideEffectLib';\n` +
-//       `import './workspaceSideEffectLib';\n` +
-//       `import { ModuleFoobar } from 'myLib';\n` +
-//       `import { AnotherModuleFoo } from 'anotherLib';\n` +
-//       `import { Foobar } from './myFile';\n` +
-//       `import { AnotherFoobar } from './anotherFile';\n`,
-//     );
-//   });
+  it('should generate the correct typescript (desc)', () => {
+    (importGroup as any).order = 'desc';
+    for (const imp of file.imports) {
+      if (importGroup.processImport(imp)) {
+        continue;
+      }
+    }
+    expect(generator.generate(importGroup as any)).to.matchSnapshot();
+  });
 
-// });
+});
