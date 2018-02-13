@@ -98,9 +98,9 @@ Array [
     "start": 0,
   },
   NamedImport {
-    "defaultAlias": "DefaultMultiExport",
+    "defaultAlias": "defaultdeclaration",
     "end": undefined,
-    "libraryName": "../declarations/default-multi-export",
+    "libraryName": "../lib",
     "specifiers": Array [],
     "start": undefined,
   },
@@ -168,11 +168,11 @@ KeywordImportGroup {
     },
     NamedImport {
       "end": undefined,
-      "libraryName": "../declarations/multi-declarations",
+      "libraryName": "../lib",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
-          "specifier": "Class",
+          "specifier": "class",
         },
       ],
       "start": undefined,
@@ -199,11 +199,11 @@ Array [
   },
   NamedImport {
     "end": undefined,
-    "libraryName": "../declarations/multi-declarations",
+    "libraryName": "../lib",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "Class",
+        "specifier": "classdeclaration",
       },
     ],
     "start": undefined,
@@ -249,15 +249,22 @@ KeywordImportGroup {
     },
     NamedImport {
       "end": undefined,
-      "libraryName": "../declarations/barrel",
+      "libraryName": "../lib1",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
-          "specifier": "ClassForBarrel1",
+          "specifier": "class",
         },
+      ],
+      "start": undefined,
+    },
+    NamedImport {
+      "end": undefined,
+      "libraryName": "../lib1",
+      "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
-          "specifier": "ClassForBarrel2",
+          "specifier": "class2",
         },
       ],
       "start": undefined,
@@ -284,15 +291,22 @@ Array [
   },
   NamedImport {
     "end": undefined,
-    "libraryName": "../declarations/barrel",
+    "libraryName": "../lib1",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "ClassForBarrel1",
+        "specifier": "class1",
       },
+    ],
+    "start": undefined,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../lib1",
+    "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "ClassForBarrel2",
+        "specifier": "class2",
       },
     ],
     "start": undefined,
@@ -316,15 +330,22 @@ Array [
   },
   NamedImport {
     "end": undefined,
-    "libraryName": "../declarations/barrel",
+    "libraryName": "../lib1",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "ClassForBarrel1",
+        "specifier": "class1",
       },
+    ],
+    "start": undefined,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../lib2",
+    "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "ClassForBarrel2",
+        "specifier": "class2",
       },
     ],
     "start": undefined,
@@ -348,11 +369,11 @@ Array [
   },
   NamedImport {
     "end": undefined,
-    "libraryName": "../declarations/multi-declarations",
+    "libraryName": "../lib",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "Class",
+        "specifier": "class",
       },
     ],
     "start": undefined,
@@ -376,14 +397,27 @@ Array [
   },
   NamedImport {
     "end": undefined,
-    "libraryName": "../declarations/multi-declarations",
+    "libraryName": "../lib",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
-        "specifier": "Class",
+        "specifier": "class",
+      },
+    ],
+    "start": undefined,
+  },
+  NamedImport {
+    "end": undefined,
+    "libraryName": "../lib",
+    "specifiers": Array [
+      SymbolSpecifier {
+        "alias": undefined,
+        "specifier": "class",
       },
     ],
     "start": undefined,
   },
 ]
 `;
+
+exports[`ImportManager Typescript commit() should add a single new import to the document top 1`] = `"import { importedclass } from '../imp';"`;

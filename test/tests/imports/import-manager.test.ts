@@ -1,8 +1,7 @@
 import { join } from 'path';
-import { DeclarationIndex, File, ModuleDeclaration } from 'typescript-parser';
+import { ClassDeclaration, DeclarationIndex, DefaultDeclaration, File, ModuleDeclaration } from 'typescript-parser';
 import { Position, Range, TextDocument, Uri, window, workspace } from 'vscode';
 
-import WorkspaceDeclarations from '../../../src/declarations/workspace-declarations';
 import ImportManager from '../../../src/imports/import-manager';
 import ioc from '../../../src/ioc';
 import iocSymbols, { ImportManagerProvider } from '../../../src/ioc-symbols';
@@ -14,14 +13,11 @@ describe.only('ImportManager', () => {
 
     const rootPath = workspace.workspaceFolders![0].uri.fsPath;
     const file = Uri.file(join(rootPath, 'imports', 'import-manager-file.ts'));
-    const workspaceDeclarations = new WorkspaceDeclarations(workspace.workspaceFolders![0]);
     const provider: ImportManagerProvider = ioc.get<ImportManagerProvider>(iocSymbols.importManager);
     let document: TextDocument;
     let documentText: string;
 
     before(async () => {
-      await workspaceDeclarations.initialize();
-
       document = await workspace.openTextDocument(file);
       await window.showTextDocument(document);
 
@@ -148,8 +144,8 @@ describe.only('ImportManager', () => {
 
       it('should add a normal import to the document', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos.find(o => o.declaration.name === 'Class');
-        ctrl.addDeclarationImport(declaration!);
+        const declaration = new ClassDeclaration('classdeclaration', true);
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
       });
@@ -164,70 +160,74 @@ describe.only('ImportManager', () => {
 
       it('should add a default import to the import index.', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos.find(
-          o => o.declaration.name === 'DefaultMultiExport',
-        );
-        ctrl.addDeclarationImport(declaration!);
+
+        const declaration = new DefaultDeclaration('defaultdeclaration', new File('path', rootPath, 0, 1));
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
       });
 
       it('should add multiple imports to the import index', async () => {
         const ctrl = await provider(document);
-        const declarations = workspaceDeclarations.index.declarationInfos.filter(
-          o => o.declaration.name.startsWith('ClassForBarrel'),
-        );
-        ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
+        const declarations = [
+          new ClassDeclaration('class1', true),
+          new ClassDeclaration('class2', true),
+        ];
+        ctrl
+          .addDeclarationImport({ declaration: declarations[0], from: '../lib1' })
+          .addDeclarationImport({ declaration: declarations[1], from: '../lib2' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
       });
 
       it('should add an import to an existing import index item', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos
-          .find(o => o.declaration.name === 'ClassForBarrel1');
-        const declaration2 = workspaceDeclarations.index.declarationInfos
-          .find(o => o.declaration.name === 'ClassForBarrel2');
+        const declarations = [
+          new ClassDeclaration('class1', true),
+          new ClassDeclaration('class2', true),
+        ];
 
-        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+        ctrl
+          .addDeclarationImport({ declaration: declarations[0], from: '../lib1' })
+          .addDeclarationImport({ declaration: declarations[1], from: '../lib1' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
       });
 
       it('should not add the same specifier twice', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos.find(o => o.declaration.name === 'Class');
+        const declaration = new ClassDeclaration('class', true);
 
-        ctrl.addDeclarationImport(declaration!);
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
 
-        ctrl.addDeclarationImport(declaration!);
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
 
         expect((ctrl as any).imports).to.matchSnapshot();
       });
 
       it('should add a normal import to a group', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos.find(o => o.declaration.name === 'Class');
+        const declaration = new ClassDeclaration('class', true);
 
         expect((ctrl as any).importGroups[2]).to.matchSnapshot();
 
-        ctrl.addDeclarationImport(declaration!);
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
 
         expect((ctrl as any).importGroups[2]).to.matchSnapshot();
       });
 
       it('should add an import to an existing import group', async () => {
         const ctrl = await provider(document);
-        const declaration = workspaceDeclarations.index.declarationInfos
-          .find(o => o.declaration.name === 'ClassForBarrel1');
-        const declaration2 = workspaceDeclarations.index.declarationInfos
-          .find(o => o.declaration.name === 'ClassForBarrel2');
+        const declaration = new ClassDeclaration('class', true);
+        const declaration2 = new ClassDeclaration('class2', true);
 
         expect((ctrl as any).importGroups[2]).to.matchSnapshot();
 
-        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
+        ctrl
+          .addDeclarationImport({ declaration, from: '../lib1' })
+          .addDeclarationImport({ declaration: declaration2, from: '../lib1' });
 
         expect((ctrl as any).importGroups[2]).to.matchSnapshot();
       });
@@ -246,10 +246,10 @@ describe.only('ImportManager', () => {
 
     });
 
-    describe.skip('commit()', () => {
+    describe.only('commit()', () => {
 
       it('should not touch anything if nothing changed', async () => {
-        const ctrl = await ImportManager.create(document);
+        const ctrl = await provider(document);
 
         await window.activeTextEditor!.edit((builder) => {
           builder.replace(
@@ -258,24 +258,21 @@ describe.only('ImportManager', () => {
           );
         });
 
-        (await ctrl.commit()).should.be.true;
-
-        document.lineAt(0).text.should.equals(`import {Class1} from '../resourceIndex';`);
+        expect(await ctrl.commit()).to.be.true;
+        expect(document.lineAt(0).text).to.equal(`import {Class1} from '../resourceIndex';`);
       });
 
       it('should add a single new import to the document top', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
-        ctrl.addDeclarationImport(declaration!);
-        (await ctrl.commit()).should.be.true;
+        const ctrl = await provider(document);
+        const declaration = new ClassDeclaration('importedclass', true);
+        ctrl.addDeclarationImport({ declaration, from: '../imp' });
+        await ctrl.commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
-        );
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
       it('should add two new imports to the document top', async () => {
-        const ctrl = await ImportManager.create(document);
+        const ctrl = await provider(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
 
@@ -290,7 +287,7 @@ describe.only('ImportManager', () => {
         );
       });
 
-      it('should add three new imports to the document top', async () => {
+      it.skip('should add three new imports to the document top', async () => {
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
@@ -313,7 +310,7 @@ describe.only('ImportManager', () => {
         );
       });
 
-      it('should add a single new module import to the document top', async () => {
+      it.skip('should add a single new module import to the document top', async () => {
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.from === 'body-parser');
         ctrl.addDeclarationImport(declaration!);
@@ -322,7 +319,7 @@ describe.only('ImportManager', () => {
         document.lineAt(0).text.should.equals(`import * as bodyParser from 'body-parser';`);
       });
 
-      it('should add a single default import to the document top', async () => {
+      it.skip('should add a single default import to the document top', async () => {
         try {
           const ctrl = await ImportManager.create(document);
           const declaration = index.declarationInfos.find(
@@ -339,7 +336,7 @@ describe.only('ImportManager', () => {
         }
       });
 
-      it('should add a single aliased named import when names are conflicting', async () => {
+      it.skip('should add a single aliased named import when names are conflicting', async () => {
         try {
           const ctrl = await ImportManager.create(document);
           const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
@@ -356,7 +353,7 @@ describe.only('ImportManager', () => {
         }
       });
 
-      it('should add a specifier to an existing import', async () => {
+      it.skip('should add a specifier to an existing import', async () => {
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
         ctrl.addDeclarationImport(declaration!);
@@ -365,7 +362,7 @@ describe.only('ImportManager', () => {
         document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
       });
 
-      it('should add multiple specifier to an existing import', async () => {
+      it.skip('should add multiple specifier to an existing import', async () => {
         const ctrl = await ImportManager.create(document);
         const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
@@ -376,7 +373,7 @@ describe.only('ImportManager', () => {
         document.lineAt(0).text.should.equals(`import { Class1, Class2, Class3 } from '../../server/indices';`);
       });
 
-      it('should add a specifier with a default (first) and a normal (second) import to the doc', async () => {
+      it.skip('should add a specifier with a default (first) and a normal (second) import to the doc', async () => {
         try {
           const ctrl = await ImportManager.create(document);
           const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
@@ -398,7 +395,7 @@ describe.only('ImportManager', () => {
         }
       });
 
-      it('should add a specifier to an import and a new import', async () => {
+      it.skip('should add a specifier to an import and a new import', async () => {
         const ctrl = await ImportManager.create(document);
         const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
         const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
@@ -413,7 +410,7 @@ describe.only('ImportManager', () => {
         document.lineAt(1).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
       });
 
-      it('should convert a default import when a normal specifier is added', async () => {
+      it.skip('should convert a default import when a normal specifier is added', async () => {
         try {
           const ctrl = await ImportManager.create(document);
           let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
@@ -434,7 +431,7 @@ describe.only('ImportManager', () => {
         }
       });
 
-      it('should convert a normal import when a default specifier is added', async () => {
+      it.skip('should convert a normal import when a default specifier is added', async () => {
         try {
           const ctrl = await ImportManager.create(document);
           let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
@@ -456,7 +453,7 @@ describe.only('ImportManager', () => {
         }
       });
 
-      it('should render the optimized import', async () => {
+      it.skip('should render the optimized import', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
         });
@@ -484,7 +481,7 @@ describe.only('ImportManager', () => {
         document.lineAt(1).text.should.equals('');
       });
 
-      it('should render sorted imports when optimizing', async () => {
+      it.skip('should render sorted imports when optimizing', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(
             new Position(0, 0),
@@ -504,7 +501,7 @@ describe.only('ImportManager', () => {
         );
       });
 
-      it('should render sorted specifiers when optimizing', async () => {
+      it.skip('should render sorted specifiers when optimizing', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(new Position(0, 9), 'Class2, ');
           builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
@@ -518,7 +515,7 @@ describe.only('ImportManager', () => {
         );
       });
 
-      describe('resolver.promptForSpecifiers: false', () => {
+      describe.skip('resolver.promptForSpecifiers: false', () => {
 
         before(async () => {
           const config = workspace.getConfiguration('typescriptHero');
