@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RegexImportGroup should correctly process a list of imports 1`] = `
+Array [
+  true,
+  true,
+  false,
+  false,
+  true,
+  true,
+]
+`;
+
+exports[`RegexImportGroup should generate the correct typescript (asc) 1`] = `
+"import './workspaceSideEffectLib';
+import 'sideEffectLib';
+import { AnotherModuleFoo } from 'anotherLib';
+import { ModuleFoobar } from 'myLib';
+"
+`;
+
+exports[`RegexImportGroup should generate the correct typescript (desc) 1`] = `
+"import 'sideEffectLib';
+import './workspaceSideEffectLib';
+import { ModuleFoobar } from 'myLib';
+import { AnotherModuleFoo } from 'anotherLib';
+"
+`;

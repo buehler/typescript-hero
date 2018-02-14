@@ -126,14 +126,15 @@ export default class DeclarationManager implements Disposable {
       this.activeWorkspaces--;
     }
     if (this.activeWorkspaces <= 0) {
+      this.activeWorkspaces = 0;
       this.logger.debug('[DeclarationManager] All workspaces are done syncing.');
       this.statusBarItem.text = ResolverState.ok;
     }
   }
 
-  private createWorkspace(folder: WorkspaceFolder): void {
+  private createWorkspace(folder: WorkspaceFolder): Promise<void> {
     this.workspaces[folder.uri.fsPath] = new WorkspaceDeclarations(folder);
     this.workspaces[folder.uri.fsPath].workspaceStateChanged(state => this.workspaceStateChanged(state));
-    this.workspaceStateChanged(WorkspaceDeclarationsState.Syncing);
+    return this.workspaces[folder.uri.fsPath].initialize();
   }
 }
