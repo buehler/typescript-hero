@@ -15,8 +15,8 @@ Array [
 exports[`ImportManager Typescript Constructor (via provider) should add an import proxy for a named import 1`] = `
 Array [
   NamedImport {
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -38,8 +38,8 @@ Array [
     "start": 0,
   },
   NamedImport {
-    "end": 131,
-    "libraryName": "../../server/indices",
+    "end": 128,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -87,8 +87,8 @@ exports[`ImportManager Typescript addDeclarationImport() should add a default im
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -111,8 +111,8 @@ exports[`ImportManager Typescript addDeclarationImport() should add a module imp
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -135,8 +135,8 @@ KeywordImportGroup {
   "imports": Array [
     NamedImport {
       "defaultAlias": undefined,
-      "end": 46,
-      "libraryName": "../../server/indices",
+      "end": 43,
+      "libraryName": "../server/indices",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
@@ -156,8 +156,8 @@ KeywordImportGroup {
   "imports": Array [
     NamedImport {
       "defaultAlias": undefined,
-      "end": 46,
-      "libraryName": "../../server/indices",
+      "end": 43,
+      "libraryName": "../server/indices",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
@@ -187,8 +187,8 @@ exports[`ImportManager Typescript addDeclarationImport() should add a normal imp
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -216,8 +216,8 @@ KeywordImportGroup {
   "imports": Array [
     NamedImport {
       "defaultAlias": undefined,
-      "end": 46,
-      "libraryName": "../../server/indices",
+      "end": 43,
+      "libraryName": "../server/indices",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
@@ -237,8 +237,8 @@ KeywordImportGroup {
   "imports": Array [
     NamedImport {
       "defaultAlias": undefined,
-      "end": 46,
-      "libraryName": "../../server/indices",
+      "end": 43,
+      "libraryName": "../server/indices",
       "specifiers": Array [
         SymbolSpecifier {
           "alias": undefined,
@@ -279,8 +279,8 @@ exports[`ImportManager Typescript addDeclarationImport() should add an import to
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -318,8 +318,8 @@ exports[`ImportManager Typescript addDeclarationImport() should add multiple imp
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -357,8 +357,8 @@ exports[`ImportManager Typescript addDeclarationImport() should not add the same
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -385,8 +385,8 @@ exports[`ImportManager Typescript addDeclarationImport() should not add the same
 Array [
   NamedImport {
     "defaultAlias": undefined,
-    "end": 46,
-    "libraryName": "../../server/indices",
+    "end": 43,
+    "libraryName": "../server/indices",
     "specifiers": Array [
       SymbolSpecifier {
         "alias": undefined,
@@ -428,9 +428,15 @@ exports[`ImportManager Typescript commit() should add a single new module import
 
 exports[`ImportManager Typescript commit() should add a specifier to an existing import 1`] = `"import { Class1, class2 } from '../server/indices';"`;
 
+exports[`ImportManager Typescript commit() should add a specifier to an import and a new import 1`] = `
+"import { class3 } from '../server/not-indices';
+import { Class1, class2 } from '../server/indices';
+"
+`;
+
 exports[`ImportManager Typescript commit() should add a specifier with a default (first) and a normal (second) import to the doc 1`] = `"import defaultExport, { defaultClass } from '../lib';"`;
 
-exports[`ImportManager Typescript commit() should add multiple specifier to an existing import 1`] = `"import { Class1, class2, class3 } from '../server/indices';"`;
+exports[`ImportManager Typescript commit() should add multiple specifier to an existing import 1`] = `"import { Class1 } from '../server/indices';"`;
 
 exports[`ImportManager Typescript commit() should add three new imports to the document top 1`] = `
 "import { newClass } from '../lib';
@@ -442,5 +448,33 @@ import { thirdnewClass } from '../not-same-lib-again';
 exports[`ImportManager Typescript commit() should add two new imports to the document top 1`] = `
 "import { newClass } from '../lib';
 import { secondnewClass } from '../not-same-lib';
+"
+`;
+
+exports[`ImportManager Typescript commit() should convert a default import when a normal specifier is added 1`] = `"import defaultExport, { Class1 } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should convert a default import when a normal specifier is added 2`] = `"import defaultExport, { Class1, defaultClass } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should convert a normal import when a default specifier is added 1`] = `"import { Class1, defaultClass } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should convert a normal import when a default specifier is added 2`] = `"import defaultExport, { Class1, defaultClass } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should render sorted imports when optimizing 1`] = `
+"import { Class1 } from '../server/indices';
+import { MultiExportClass } from '../server/indices/defaultExport/multiExport';
+"
+`;
+
+exports[`ImportManager Typescript commit() should render sorted specifiers when optimizing 1`] = `"import { Class1, Class2 } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should render the optimized import 1`] = `
+"import { SomeOtherClass } from '../server/not-indices';
+import { Class1, Class2 } from '../server/indices';
+"
+`;
+
+exports[`ImportManager Typescript commit() should render the optimized import 2`] = `
+"import { Class1, Class2 } from '../server/indices';
+
 "
 `;

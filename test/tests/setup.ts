@@ -1,6 +1,8 @@
 import { expect as chaiExpect, use } from 'chai';
+import { EOL } from 'os';
 import { join, parse } from 'path';
 import sinonChai = require('sinon-chai');
+import { TextDocument } from 'vscode';
 
 const chaiJestSnapshot = require('chai-jest-snapshot');
 
@@ -31,4 +33,12 @@ export const expect = chaiExpect;
 
 export function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(() => resolve(), ms));
+}
+
+export function getDocumentText(document: TextDocument, lineFrom: number, lineTo: number): string {
+  const lines: string[] = [];
+  for (let line = lineFrom; line <= lineTo; line++) {
+    lines.push(document.lineAt(line).text);
+  }
+  return lines.join(EOL) + EOL;
 }

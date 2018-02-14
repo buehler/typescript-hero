@@ -1,13 +1,13 @@
 import { join } from 'path';
-import { ClassDeclaration, DeclarationIndex, DefaultDeclaration, File, ModuleDeclaration } from 'typescript-parser';
+import { ClassDeclaration, DefaultDeclaration, File, ModuleDeclaration } from 'typescript-parser';
 import { Position, Range, TextDocument, Uri, window, workspace } from 'vscode';
 
 import ImportManager from '../../../src/imports/import-manager';
 import ioc from '../../../src/ioc';
 import iocSymbols, { ImportManagerProvider } from '../../../src/ioc-symbols';
-import { expect } from '../setup';
+import { expect, getDocumentText } from '../setup';
 
-describe.only('ImportManager', () => {
+describe('ImportManager', () => {
 
   describe('Typescript', () => {
 
@@ -246,7 +246,7 @@ describe.only('ImportManager', () => {
 
     });
 
-    describe.only('commit()', () => {
+    describe('commit()', () => {
 
       it('should not touch anything if nothing changed', async () => {
         const ctrl = await provider(document);
@@ -273,341 +273,176 @@ describe.only('ImportManager', () => {
 
       it('should add two new imports to the document top', async () => {
         const ctrl = await provider(document);
-        const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
-        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
+        const declaration = new ClassDeclaration('newClass', true);
+        const declaration2 = new ClassDeclaration('secondnewClass', true);
 
-        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
-        (await ctrl.commit()).should.be.true;
+        ctrl
+          .addDeclarationImport({ declaration, from: '../lib' })
+          .addDeclarationImport({ declaration: declaration2, from: '../not-same-lib' });
+        await ctrl.commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
-        );
-        document.lineAt(1).text.should.equals(
-          `import { isString } from '../../server/indices/HelperFunctions';`,
-        );
+        expect(getDocumentText(document, 0, 1)).to.matchSnapshot();
       });
 
-      it.skip('should add three new imports to the document top', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration = index.declarationInfos.find(o => o.declaration.name === 'NotBarelExported');
-        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'isString');
-        const declaration3 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
+      it('should add three new imports to the document top', async () => {
+        const ctrl = await provider(document);
+        const declaration = new ClassDeclaration('newClass', true);
+        const declaration2 = new ClassDeclaration('secondnewClass', true);
+        const declaration3 = new ClassDeclaration('thirdnewClass', true);
 
-        ctrl.addDeclarationImport(declaration!)
-          .addDeclarationImport(declaration2!)
-          .addDeclarationImport(declaration3!);
+        ctrl
+          .addDeclarationImport({ declaration, from: '../lib' })
+          .addDeclarationImport({ declaration: declaration2, from: '../not-same-lib' })
+          .addDeclarationImport({ declaration: declaration3, from: '../not-same-lib-again' });
+        await ctrl.commit();
 
-        (await ctrl.commit()).should.be.true;
-
-        document.lineAt(0).text.should.equals(
-          `import { NotBarelExported } from '../../server/indices/NotBarelExported';`,
-        );
-        document.lineAt(1).text.should.equals(
-          `import { isString } from '../../server/indices/HelperFunctions';`,
-        );
-        document.lineAt(2).text.should.equals(
-          `import { myComponent } from '../../server/indices/MyReactTemplate';`,
-        );
+        expect(getDocumentText(document, 0, 2)).to.matchSnapshot();
       });
 
-      it.skip('should add a single new module import to the document top', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration = index.declarationInfos.find(o => o.from === 'body-parser');
-        ctrl.addDeclarationImport(declaration!);
-        (await ctrl.commit()).should.be.true;
+      it('should add a single new module import to the document top', async () => {
+        const ctrl = await provider(document);
+        const declaration = new ModuleDeclaration('newModule');
+        ctrl.addDeclarationImport({ declaration, from: 'new-module' });
+        await ctrl.commit();
 
-        document.lineAt(0).text.should.equals(`import * as bodyParser from 'body-parser';`);
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
-      it.skip('should add a single default import to the document top', async () => {
-        try {
-          const ctrl = await ImportManager.create(document);
-          const declaration = index.declarationInfos.find(
-            o => o.declaration.name === 'myDefaultExportedFunction',
-          );
-          ctrl.addDeclarationImport(declaration!);
-          (await ctrl.commit()).should.be.true;
+      it('should add a single default import to the document top', async () => {
+        const ctrl = await provider(document);
+        const declaration = new DefaultDeclaration('defaultDeclaration', new File('file', rootPath, 1, 2));
+        ctrl.addDeclarationImport({ declaration, from: '../lib' });
+        await ctrl.commit();
 
-          stub.should.not.be.called;
-          document.lineAt(0).text.should.equals(
-            `import myDefaultExportedFunction from '../../server/indices/defaultExport/lateDefaultExportedElement';`,
-          );
-        } finally {
-        }
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
-      it.skip('should add a single aliased named import when names are conflicting', async () => {
-        try {
-          const ctrl = await ImportManager.create(document);
-          const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-          ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
-          (await ctrl.commit()).should.be.true;
+      it('should add a specifier to an existing import', async () => {
+        const ctrl = await provider(document);
+        const declaration = new ClassDeclaration('class2', true);
+        ctrl.addDeclarationImport({ declaration, from: '/server/indices' });
+        await ctrl.commit();
 
-          document.lineAt(0).text.should.equal(
-            `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
-          );
-          document.lineAt(1).text.should.equal(
-            `import { Class1, FancierLibraryClass as ALIASED_IMPORT } from '../../server/indices';`,
-          );
-        } finally {
-        }
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
-      it.skip('should add a specifier to an existing import', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
-        ctrl.addDeclarationImport(declaration!);
-        (await ctrl.commit()).should.be.true;
+      it('should add multiple specifier to an existing import', async () => {
+        const ctrl = await provider(document);
+        const declaration = new ClassDeclaration('class2', true);
+        const declaration2 = new ClassDeclaration('class3', true);
 
-        document.lineAt(0).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
-      });
-
-      it.skip('should add multiple specifier to an existing import', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration = index.declarationInfos.find(o => o.declaration.name === 'Class2');
-        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'Class3');
-
-        ctrl.addDeclarationImport(declaration!).addDeclarationImport(declaration2!);
-        (await ctrl.commit()).should.be.true;
-
-        document.lineAt(0).text.should.equals(`import { Class1, Class2, Class3 } from '../../server/indices';`);
-      });
-
-      it.skip('should add a specifier with a default (first) and a normal (second) import to the doc', async () => {
-        try {
-          const ctrl = await ImportManager.create(document);
-          const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
-          const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
-
-          try {
-            ctrl.addDeclarationImport(declaration!);
-            ctrl.addDeclarationImport(declaration2!);
-          } catch (e) {
-            console.log(e);
-          }
-          (await ctrl.commit()).should.be.true;
-
-          document.lineAt(0).text.should.equals(
-            `import multiExport, { MultiExportClass } ` +
-            `from '../../server/indices/defaultExport/multiExport';`,
-          );
-        } finally {
-        }
-      });
-
-      it.skip('should add a specifier to an import and a new import', async () => {
-        const ctrl = await ImportManager.create(document);
-        const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
-        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'myComponent');
-
-        await ctrl.addDeclarationImport(declaration1!)
-          .addDeclarationImport(declaration2!)
+        ctrl
+          .addDeclarationImport({ declaration, from: '/server/indices' })
+          .addDeclarationImport({ declaration: declaration2, from: '/server/indices' })
           .commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { myComponent } from '../../server/indices/MyReactTemplate';`,
-        );
-        document.lineAt(1).text.should.equals(`import { Class1, Class2 } from '../../server/indices';`);
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
-      it.skip('should convert a default import when a normal specifier is added', async () => {
-        try {
-          const ctrl = await ImportManager.create(document);
-          let declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
-          await ctrl.addDeclarationImport(declaration!).commit();
+      it('should add a specifier with a default (first) and a normal (second) import to the doc', async () => {
+        const ctrl = await provider(document);
+        const def = new DefaultDeclaration('defaultExport', new File(file.fsPath, rootPath, 1, 2));
+        const dec = new ClassDeclaration('defaultClass', true);
 
-          document.lineAt(0).text.should.equals(
-            `import multiExport from '../../server/indices/defaultExport/multiExport';`,
-          );
+        await ctrl
+          .addDeclarationImport({ declaration: def, from: '/lib' })
+          .addDeclarationImport({ declaration: dec, from: '/lib' })
+          .commit();
 
-          declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
-          await ctrl.addDeclarationImport(declaration!).commit();
-
-          document.lineAt(0).text.should.equals(
-            `import multiExport, { MultiExportClass } ` +
-            `from '../../server/indices/defaultExport/multiExport';`,
-          );
-        } finally {
-        }
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
-      it.skip('should convert a normal import when a default specifier is added', async () => {
-        try {
-          const ctrl = await ImportManager.create(document);
-          let declaration = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
-          await ctrl.addDeclarationImport(declaration!).commit();
+      it('should add a specifier to an import and a new import', async () => {
+        const ctrl = await provider(document);
+        const declaration1 = new ClassDeclaration('class2', true);
+        const declaration2 = new ClassDeclaration('class3', true);
 
-          document.lineAt(0).text.should.equals(
-            `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
-          );
+        await ctrl
+          .addDeclarationImport({ declaration: declaration1, from: '/server/indices' })
+          .addDeclarationImport({ declaration: declaration2, from: '/server/not-indices' })
+          .commit();
 
-          declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
-          ctrl.addDeclarationImport(declaration!);
-          await ctrl.commit();
-
-          document.lineAt(0).text.should.equals(
-            `import multiExport, { MultiExportClass } ` +
-            `from '../../server/indices/defaultExport/multiExport';`,
-          );
-        } finally {
-        }
+        expect(getDocumentText(document, 0, 1)).to.matchSnapshot();
       });
 
-      it.skip('should render the optimized import', async () => {
+      it('should convert a default import when a normal specifier is added', async () => {
+        const ctrl = await provider(document);
+        const def = new DefaultDeclaration('defaultExport', new File(file.fsPath, rootPath, 1, 2));
+        const dec = new ClassDeclaration('defaultClass', true);
+
+        await ctrl.addDeclarationImport({ declaration: def, from: '/server/indices' }).commit();
+
+        expect(document.lineAt(0).text).to.matchSnapshot();
+
+        await ctrl.addDeclarationImport({ declaration: dec, from: '/server/indices' }).commit();
+
+        expect(document.lineAt(0).text).to.matchSnapshot();
+      });
+
+      it('should convert a normal import when a default specifier is added', async () => {
+        const ctrl = await provider(document);
+        const def = new DefaultDeclaration('defaultExport', new File(file.fsPath, rootPath, 1, 2));
+        const dec = new ClassDeclaration('defaultClass', true);
+
+        await ctrl.addDeclarationImport({ declaration: dec, from: '/server/indices' }).commit();
+
+        expect(document.lineAt(0).text).to.matchSnapshot();
+
+        await ctrl.addDeclarationImport({ declaration: def, from: '/server/indices' }).commit();
+
+        expect(document.lineAt(0).text).to.matchSnapshot();
+      });
+
+      it('should render the optimized import', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
         });
 
-        const ctrl = await ImportManager.create(document);
-        const declaration1 = index.declarationInfos.find(o => o.declaration.name === 'Class2');
-        const declaration2 = index.declarationInfos.find(o => o.declaration.name === 'MultiExportClass');
+        const ctrl = await provider(document);
+        const declaration1 = new ClassDeclaration('Class2', true);
+        const declaration2 = new ClassDeclaration('SomeOtherClass', true);
 
-        await ctrl.addDeclarationImport(declaration1!)
-          .addDeclarationImport(declaration2!)
+        await ctrl
+          .addDeclarationImport({ declaration: declaration1, from: '/server/indices' })
+          .addDeclarationImport({ declaration: declaration2, from: '/server/not-indices' })
           .commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
-        );
-        document.lineAt(1).text.should.equals(
-          `import { Class1, Class2 } from '../../server/indices';`,
-        );
+        expect(getDocumentText(document, 0, 1)).to.matchSnapshot();
 
         await ctrl.organizeImports().commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { Class1, Class2 } from '../../server/indices';`,
-        );
-        document.lineAt(1).text.should.equals('');
+        expect(getDocumentText(document, 0, 1)).to.matchSnapshot();
       });
 
-      it.skip('should render sorted imports when optimizing', async () => {
+      it('should render sorted imports when optimizing', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(
             new Position(0, 0),
-            `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';\n`,
+            `import { MultiExportClass } from '../server/indices/defaultExport/multiExport';\n`,
           );
           builder.insert(new Position(5, 0), 'const foobar = new MultiExportClass();\n');
         });
-        const ctrl = await ImportManager.create(document);
+        const ctrl = await provider(document);
 
         await ctrl.organizeImports().commit();
 
-        document.lineAt(1).text.should.equals(
-          `import { MultiExportClass } from '../../server/indices/defaultExport/multiExport';`,
-        );
-        document.lineAt(0).text.should.equals(
-          `import { Class1 } from '../../server/indices';`,
-        );
+        expect(getDocumentText(document, 0, 1)).to.matchSnapshot();
       });
 
-      it.skip('should render sorted specifiers when optimizing', async () => {
+      it('should render sorted specifiers when optimizing', async () => {
         await window.activeTextEditor!.edit((builder) => {
           builder.insert(new Position(0, 9), 'Class2, ');
           builder.insert(new Position(5, 0), 'const foobar = new Class2();\n');
         });
-        const ctrl = await ImportManager.create(document);
+        const ctrl = await provider(document);
 
         await ctrl.organizeImports().commit();
 
-        document.lineAt(0).text.should.equals(
-          `import { Class1, Class2 } from '../../server/indices';`,
-        );
-      });
-
-      describe.skip('resolver.promptForSpecifiers: false', () => {
-
-        before(async () => {
-          const config = workspace.getConfiguration('typescriptHero');
-          await config.update('resolver.promptForSpecifiers', false);
-        });
-
-        after(async () => {
-          const config = workspace.getConfiguration('typescriptHero');
-          await config.update('resolver.promptForSpecifiers', true);
-        });
-
-        it('should not ask for a default alias', async () => {
-          try {
-            const ctrl = await ImportManager.create(document);
-            const declaration = index.declarationInfos.find(o => o.declaration.name === 'multiExport');
-            await ctrl.addDeclarationImport(declaration!).commit();
-
-            document.lineAt(0).text.should.equals(
-              `import multiExport from '../../server/indices/defaultExport/multiExport';`,
-            );
-
-            stub.should.not.be.called;
-          } finally {
-          }
-        });
-
-        it('should not ask for an alias on duplicate specifiers', async () => {
-          try {
-            const ctrl = await ImportManager.create(document);
-            const declarations = index.declarationInfos.filter(o => o.declaration.name === 'FancierLibraryClass');
-            ctrl.addDeclarationImport(declarations[0]).addDeclarationImport(declarations[1]);
-            (await ctrl.commit()).should.be.true;
-
-            document.lineAt(0).text.should.equal(
-              `import { FancierLibraryClass } from 'fancy-library/FancierLibraryClass';`,
-            );
-            document.lineAt(1).text.should.equal(
-              `import { Class1, FancierLibraryClass } from '../../server/indices';`,
-            );
-
-            stub.should.not.be.called;
-          } finally {
-          }
-        });
-
+        expect(document.lineAt(0).text).to.matchSnapshot();
       });
 
     });
 
-  });
-
-});
-
-describe.skip('ImportManager with .tsx files', () => {
-
-  const rootPath = workspace.workspaceFolders![0].uri.fsPath;
-  const file = join(rootPath, 'extension/managers/ImportManagerFile.tsx');
-  let document: TextDocument;
-  let documentText: string;
-  let index: DeclarationIndex;
-  let files: string[];
-
-  before(async () => {
-    const config = new VscodeExtensionConfig(workspace.workspaceFolders![0].uri);
-    files = await findFiles(config, workspace.workspaceFolders![0]);
-
-    index = new DeclarationIndex(Container.get(iocSymbols.typescriptParser), rootPath);
-    await index.buildIndex(files);
-
-    document = await workspace.openTextDocument(file);
-    await window.showTextDocument(document);
-
-    documentText = document.getText();
-  });
-
-  afterEach(async () => {
-    await window.activeTextEditor!.edit((builder) => {
-      builder.delete(new Range(
-        new Position(0, 0),
-        document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end,
-      ));
-      builder.insert(new Position(0, 0), documentText);
-    });
-
-  });
-
-  it('should not remove "react" since it is ignored in config', async () => {
-    const ctrl = await ImportManager.create(document);
-    ctrl.organizeImports();
-
-    (ctrl as any).imports.should.have.lengthOf(1);
-    (ctrl as any).imports[0].libraryName.should.equal('react');
   });
 
 });
