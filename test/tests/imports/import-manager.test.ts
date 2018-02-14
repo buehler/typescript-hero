@@ -331,7 +331,7 @@ describe('ImportManager', () => {
         const declaration = new ClassDeclaration('class2', true);
         const declaration2 = new ClassDeclaration('class3', true);
 
-        ctrl
+        await ctrl
           .addDeclarationImport({ declaration, from: '/server/indices' })
           .addDeclarationImport({ declaration: declaration2, from: '/server/indices' })
           .commit();

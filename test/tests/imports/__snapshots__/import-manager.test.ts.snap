@@ -436,7 +436,7 @@ import { Class1, class2 } from '../server/indices';
 
 exports[`ImportManager Typescript commit() should add a specifier with a default (first) and a normal (second) import to the doc 1`] = `"import defaultExport, { defaultClass } from '../lib';"`;
 
-exports[`ImportManager Typescript commit() should add multiple specifier to an existing import 1`] = `"import { Class1 } from '../server/indices';"`;
+exports[`ImportManager Typescript commit() should add multiple specifier to an existing import 1`] = `"import { Class1, class2, class3 } from '../server/indices';"`;
 
 exports[`ImportManager Typescript commit() should add three new imports to the document top 1`] = `
 "import { newClass } from '../lib';
