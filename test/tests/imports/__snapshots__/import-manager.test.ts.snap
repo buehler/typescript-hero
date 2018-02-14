@@ -420,4 +420,27 @@ Array [
 ]
 `;
 
+exports[`ImportManager Typescript commit() should add a single default import to the document top 1`] = `"import defaultDeclaration from '../lib';"`;
+
 exports[`ImportManager Typescript commit() should add a single new import to the document top 1`] = `"import { importedclass } from '../imp';"`;
+
+exports[`ImportManager Typescript commit() should add a single new module import to the document top 1`] = `"import * as newModule from 'new-module';"`;
+
+exports[`ImportManager Typescript commit() should add a specifier to an existing import 1`] = `"import { Class1, class2 } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should add a specifier with a default (first) and a normal (second) import to the doc 1`] = `"import defaultExport, { defaultClass } from '../lib';"`;
+
+exports[`ImportManager Typescript commit() should add multiple specifier to an existing import 1`] = `"import { Class1, class2, class3 } from '../server/indices';"`;
+
+exports[`ImportManager Typescript commit() should add three new imports to the document top 1`] = `
+"import { newClass } from '../lib';
+import { secondnewClass } from '../not-same-lib';
+import { thirdnewClass } from '../not-same-lib-again';
+"
+`;
+
+exports[`ImportManager Typescript commit() should add two new imports to the document top 1`] = `
+"import { newClass } from '../lib';
+import { secondnewClass } from '../not-same-lib';
+"
+`;
