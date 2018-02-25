@@ -42,7 +42,7 @@ export default class ImportsConfig {
   }
 
   public excludeFromOrganizeOnSave(resource: Uri): string[] {
-    return workspace.getConfiguration(sectionKey, resource).get('excludeFromOrganizeOnSave', ['polyfill\.ts']);
+    return workspace.getConfiguration(sectionKey, resource).get('excludeFromOrganizeOnSave', ['polyfills\.ts$']);
   }
 
   public organizeSortsByFirstSpecifier(resource: Uri): boolean {

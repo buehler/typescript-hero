@@ -242,7 +242,7 @@
             "type": "string"
           },
           "default": [
-            "polyfill\\.ts"
+            "polyfills\\.ts$"
           ],
           "uniqueItems": true,
           "description": "Defines files to be ignored when organizeOnSave is enabled.",
