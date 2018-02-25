@@ -1,11 +1,6 @@
 import { Uri, workspace } from 'vscode';
 
-import {
-  ImportGroup,
-  ImportGroupSetting,
-  ImportGroupSettingParser,
-  RemainImportGroup,
-} from '../import-organizer/import-grouping';
+import { ImportGroup, ImportGroupSetting, ImportGroupSettingParser, RemainImportGroup } from '../imports/import-grouping';
 
 const sectionKey = 'typescriptHero.imports';
 

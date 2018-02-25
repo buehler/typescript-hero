@@ -9,7 +9,7 @@ prepare-release.js
 config/**
 test/**
 src/**
-!src/extension/assets/**
+!src/assets/**
 tsconfig.json
 tslint.json
 coverage/**

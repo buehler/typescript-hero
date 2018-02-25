@@ -2,7 +2,7 @@ import { inject, injectable, multiInject } from 'inversify';
 import { Generatable, GENERATORS, TypescriptCodeGenerator, TypescriptGenerationOptions } from 'typescript-parser';
 
 import Activatable from './activatable';
-import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './import-organizer/import-grouping';
+import { KeywordImportGroup, RegexImportGroup, RemainImportGroup } from './imports/import-grouping';
 import iocSymbols from './ioc-symbols';
 import { Logger } from './utilities/logger';
 

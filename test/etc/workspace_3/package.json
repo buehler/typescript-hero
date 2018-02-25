@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "node-module": "*"
+  },
+  "devDependencies": {
+    "@types/my-module": "*"
+  }
+}

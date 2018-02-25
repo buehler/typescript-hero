@@ -21,11 +21,16 @@ If you'd like to buy me a beer :-)
 
 ## Features at a glance
 
-Here is a brief list, of what TypeScript Hero is capable of (more at the end):
+Here is a brief list, of what TypeScript Hero is capable of (more in the wiki):
 
 - Sort and organize your imports (sort and remove unused)
 - Code outline view of your open TS / TSX document
+- Add import to the document or add an import that is under the cursor to the document
 
 ## Known Issues
 
 Please visit [the issue list](https://github.com/buehler/typescript-hero/issues) :-)
+
+## Documentation
+
+Visit the wiki pages here: [Typescript Hero Wiki](https://github.com/buehler/typescript-hero/wiki)
