@@ -236,7 +236,7 @@
           "description": "Defines if the imports should be organized on save.",
           "scope": "resource"
         },
-        "typescriptHero.imports.excludeFromSave": {
+        "typescriptHero.imports.excludeFromOrganizeOnSave": {
           "type": "array",
           "items": {
             "type": "string"

@@ -32,13 +32,6 @@ export class ImportAppender implements Activatable {
         () => this.addImportUnderCursor(),
       ),
     );
-        if (this.config.imports.excludeFromSave(event.document.uri)
-          .some(regexString => new RegExp(regexString).test(event.document.fileName))) {
-          this.logger.debug(
-            '[ImportOrganizer] OrganizeOnSave is skipped through excludeFromSave for this file',
-          );
-          return;
-        }
   }
 
   public start(): void {
