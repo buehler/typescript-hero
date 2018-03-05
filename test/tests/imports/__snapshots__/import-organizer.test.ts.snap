@@ -43,3 +43,32 @@ import * as Foobar from './lol';
 export { Foobar, Barbaz }
 "
 `;
+
+exports[`ImportOrganizer import-organizer-file.tsx should not remove function that is used in tsx 1`] = `
+"import { f } from './somewhere';
+import * as React from 'react';
+
+export class Comp extends React.Component {
+  render() {
+    return (
+      <div>{f()}</div>
+    );
+  }
+}
+"
+`;
+
+exports[`ImportOrganizer import-organizer-file.tsx should not remove function that is used in tsx 2`] = `
+"import * as React from 'react';
+
+import { f } from './somewhere';
+
+export class Comp extends React.Component {
+  render() {
+    return (
+      <div>{f()}</div>
+    );
+  }
+}
+"
+`;
