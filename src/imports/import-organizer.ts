@@ -65,7 +65,7 @@ export class ImportOrganizer implements Activatable {
    * @private
    * @returns {Promise<boolean>}
    *
-   * @memberof ImportResolveExtension
+   * @memberof ImportOrganizer
    */
   private async organizeImports(): Promise<void> {
     if (!window.activeTextEditor) {

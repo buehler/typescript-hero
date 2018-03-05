@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { TypescriptGenerationOptions } from 'typescript-parser';
+import { MultiLineImportRule, TypescriptGenerationOptions } from 'typescript-parser';
 import { Event, EventEmitter, ExtensionContext, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
@@ -50,6 +50,7 @@ export default class Configuration {
   public typescriptGeneratorOptions(resource: Uri): TypescriptGenerationOptions {
     return {
       eol: this.imports.insertSemicolons(resource) ? ';' : '',
+      insertSpaces: true,
       multiLineTrailingComma: this.imports.multiLineTrailingComma(resource),
       multiLineWrapThreshold: this.imports.multiLineWrapThreshold(resource),
       spaceBraces: this.imports.insertSpaceBeforeAndAfterImportBraces(resource),
@@ -57,6 +58,7 @@ export default class Configuration {
       tabSize: window.activeTextEditor && window.activeTextEditor.options.tabSize ?
         (window.activeTextEditor.options.tabSize as any) * 1 :
         workspace.getConfiguration('editor', resource).get('tabSize', 4),
+      wrapMethod: MultiLineImportRule.oneImportPerLineOnlyAfterThreshold,
     };
   }
 }
