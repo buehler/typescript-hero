@@ -57,6 +57,13 @@ describe('utility functions', () => {
       expect(pos).to.matchSnapshot();
     });
 
+    it('should return correct position for js block comment open', () => {
+      const pos = getImportInsertPosition({
+        document: new MockDocument('/* yay\n'),
+      } as any);
+      expect(pos).to.matchSnapshot();
+    });
+
     it('should return correct position for jsdoc comment line', () => {
       const pos = getImportInsertPosition({
         document: new MockDocument(' * jsdoc line\n'),
@@ -67,6 +74,13 @@ describe('utility functions', () => {
     it('should return correct position for jsdoc comment close', () => {
       const pos = getImportInsertPosition({
         document: new MockDocument('*/\n'),
+      } as any);
+      expect(pos).to.matchSnapshot();
+    });
+
+    it('should return correct position for shebang (#!)', () => {
+      const pos = getImportInsertPosition({
+        document: new MockDocument('#!\n'),
       } as any);
       expect(pos).to.matchSnapshot();
     });
