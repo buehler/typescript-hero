@@ -7,7 +7,7 @@ import ioc from '../../../src/ioc';
 import iocSymbols from '../../../src/ioc-symbols';
 import { expect } from '../setup';
 
-describe.only('ImportAppender', () => {
+describe('ImportAppender', () => {
 
   describe('import-appender-file.ts', () => {
 
