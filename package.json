@@ -104,7 +104,7 @@
     "semantic-release": "^12.4.1",
     "semantic-release-vsce": "^2.0.0",
     "sinon": "^4.4.2",
-    "sinon-chai": "^2.14.0",
+    "sinon-chai": "^3.0.0",
     "tslint": "^5.9.1",
     "tsutils": "^2.22.2",
     "vscode": "^1.1.10"
