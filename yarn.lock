@@ -4219,8 +4219,8 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
 typescript-parser@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.3.0.tgz#76cc93b24f89fbaa3e82216748fd0adc6fc4e5e4"
+  version "2.3.1"
+  resolved "https://registry.yarnpkg.com/typescript-parser/-/typescript-parser-2.3.1.tgz#361f8e8450c8496ed53d15fbb1ef86934d92a458"
   dependencies:
     lodash "^4.17.5"
     lodash-es "^4.17.5"
@@ -4443,8 +4443,8 @@ vsce@^1.33.2:
     yazl "^2.2.2"
 
 vscode@^1.1.10:
-  version "1.1.10"
-  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.10.tgz#d1cba378ab24f1d3ddf9cd470d242ee1472dd35b"
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/vscode/-/vscode-1.1.11.tgz#c94ee258c2df41c2a1820ddca44812240d75052b"
   dependencies:
     glob "^7.1.2"
     gulp-chmod "^2.0.0"
