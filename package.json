@@ -137,10 +137,6 @@
       {
         "command": "typescriptHero.imports.organize",
         "title": "TS Hero: Organize imports (sort and remove unused)"
-      },
-      {
-        "command": "typescriptHero.codeOutline.gotoNode",
-        "title": "TS Hero (internal): Jump to the given nodes location"
       }
     ],
     "keybindings": [
@@ -182,6 +178,15 @@
           "default": "warn",
           "description": "Defines the log output level in the output window. In the log file, it's always info or debug.",
           "scope": "window"
+        },
+        "typescriptHero.codeCompletion.completionSortMode": {
+          "enum": [
+            "default",
+            "bottom"
+          ],
+          "default": "default",
+          "description": "Defines the sortmode of the code completion in intellisense (bottom means sorted to bottom).",
+          "scope": "resource"
         },
         "typescriptHero.codeOutline.enabled": {
           "type": "boolean",

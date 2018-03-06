@@ -5,6 +5,7 @@ import { TypescriptCodeGenerator, TypescriptParser } from 'typescript-parser';
 import { ExtensionContext, TextDocument, Uri } from 'vscode';
 
 import Activatable from './activatable';
+import { CodeCompletion } from './code-completion';
 import CodeOutline from './code-outline';
 import Configuration from './configuration';
 import DeclarationManager from './declarations/declaration-manager';
@@ -24,6 +25,7 @@ ioc.bind(TypescriptHero).to(TypescriptHero).inSingletonScope();
 ioc.bind<Activatable>(iocSymbols.activatables).to(CodeOutline).inSingletonScope();
 ioc.bind<Activatable>(iocSymbols.activatables).to(ImportOrganizer).inSingletonScope();
 ioc.bind<Activatable>(iocSymbols.activatables).to(ImportAppender).inSingletonScope();
+ioc.bind<Activatable>(iocSymbols.activatables).to(CodeCompletion).inSingletonScope();
 
 // Configuration
 ioc.bind<Configuration>(iocSymbols.configuration).to(Configuration).inSingletonScope();

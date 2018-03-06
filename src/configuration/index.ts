@@ -3,6 +3,7 @@ import { MultiLineImportRule, TypescriptGenerationOptions } from 'typescript-par
 import { Event, EventEmitter, ExtensionContext, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
+import { CodeCompletionConfig } from './code-completion-config';
 import DocumentOutlineConfig from './document-outline-config';
 import ImportsConfig from './imports-config';
 import IndexConfig from './index-config';
@@ -12,6 +13,7 @@ const sectionKey = 'typescriptHero';
 @injectable()
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
+  public readonly codeCompletion: CodeCompletionConfig = new CodeCompletionConfig();
   public readonly imports: ImportsConfig = new ImportsConfig();
   public readonly index: IndexConfig = new IndexConfig();
 

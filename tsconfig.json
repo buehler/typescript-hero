@@ -9,8 +9,6 @@
     "./test/**/*"
   ],
   "exclude": [
-    "./src/_old",
-    "./test/_old",
     "./test/etc"
   ]
 }
