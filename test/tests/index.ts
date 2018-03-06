@@ -11,7 +11,6 @@
 import { ensureFileSync, readFileSync, writeFileSync } from 'fs-extra';
 import * as glob from 'glob';
 import { hook, Instrumenter, Reporter } from 'istanbul';
-import { platform } from 'os';
 import { join, relative } from 'path';
 import { ExtensionContext, Memento } from 'vscode';
 
@@ -33,11 +32,7 @@ class ContextMock implements ExtensionContext {
 
 // Prepare for snapshot (sigh) tests.
 // HACK
-if (platform() === 'win32') {
-  global['rootPath'] = join(process.cwd(), '..');
-} else {
-  global['rootPath'] = process.cwd();
-}
+global['rootPath'] = join(__dirname, '..', '..', '..');
 // END HACK
 
 const testRunner = require('vscode/lib/testrunner');

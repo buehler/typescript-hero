@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`utility functions getImportInsertPosition() should return correct position for commented file 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for js block comment open 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for jsdoc comment close 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for jsdoc comment line 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for jsdoc comment open 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for shebang (#!) 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for use strict 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return the top position if empty file 1`] = `
+Object {
+  "character": 0,
+  "line": 0,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return top position if no editor is specified 1`] = `
+Object {
+  "character": 0,
+  "line": 0,
+}
+`;
+
+exports[`utility functions importSortByFirstSpecifier should sort according to first specifier/alias, falling back to module path 1`] = `
+Array [
+  "./anotherFile",
+  "coolEffectLib",
+  "./myFile",
+  "myLib",
+  "anotherLib",
+  "./workspaceSideEffectLib",
+]
+`;

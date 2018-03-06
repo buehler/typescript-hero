@@ -19,8 +19,5 @@
   },
   "include": [
     "../src/**/*"
-  ],
-  "exclude": [
-    "../src/_old"
   ]
 }

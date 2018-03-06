@@ -1,33 +1,33 @@
 import { basename, join, normalize, parse, relative } from 'path';
 import { ScriptKind } from 'typescript';
 import {
-    ClassDeclaration,
-    ConstructorDeclaration,
-    Declaration,
-    DeclarationInfo,
-    DefaultDeclaration,
-    EnumDeclaration,
-    ExternalModuleImport,
-    FunctionDeclaration,
-    GetterDeclaration,
-    Import,
-    InterfaceDeclaration,
-    MethodDeclaration,
-    ModuleDeclaration,
-    NamedImport,
-    NamespaceImport,
-    ParameterDeclaration,
-    PropertyDeclaration,
-    SetterDeclaration,
-    StringImport,
-    SymbolSpecifier,
-    TypeAliasDeclaration,
-    VariableDeclaration,
+  ClassDeclaration,
+  ConstructorDeclaration,
+  Declaration,
+  DeclarationInfo,
+  DefaultDeclaration,
+  EnumDeclaration,
+  ExternalModuleImport,
+  FunctionDeclaration,
+  GetterDeclaration,
+  Import,
+  InterfaceDeclaration,
+  MethodDeclaration,
+  ModuleDeclaration,
+  NamedImport,
+  NamespaceImport,
+  ParameterDeclaration,
+  PropertyDeclaration,
+  SetterDeclaration,
+  StringImport,
+  SymbolSpecifier,
+  TypeAliasDeclaration,
+  VariableDeclaration,
 } from 'typescript-parser';
 import { toPosix } from 'typescript-parser/utilities/PathHelpers';
 import { CompletionItemKind, Position, TextEditor } from 'vscode';
 
-import { ImportGroup, RegexImportGroup } from '../import-organizer/import-grouping';
+import { ImportGroup, RegexImportGroup } from '../imports/import-grouping';
 
 /**
  * String-Sort function.
@@ -320,7 +320,7 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
   return toPosix(relativePath);
 }
 
-const REGEX_IGNORED_LINE = /^\s*(?:\/\/|\/\*\*|\*\/|\*|(['"])use strict\1)/;
+const REGEX_IGNORED_LINE = /^\s*(?:\/\/|\/\*|\*\/|\*|#!|(['"])use strict\1)/;
 
 /**
  * Calculate the position, where a new import should be inserted.
