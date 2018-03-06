@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`CodeCompletion provideCompletionItems() should not provide a completion for the own file 1`] = `Array []`;
+
 exports[`CodeCompletion provideCompletionItems() should provide a completion list 1`] = `
 Array [
   Object {
@@ -19,6 +21,36 @@ Array [
     "insertText": undefined,
     "kind": "Class",
     "label": "CodeCompletionClass2",
+    "sortText": undefined,
+    "textEdit": undefined,
+  },
+]
+`;
+
+exports[`CodeCompletion provideCompletionItems() should provide a completion list for default imports 1`] = `
+Array [
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "File",
+    "label": "classes",
+    "sortText": undefined,
+    "textEdit": undefined,
+  },
+]
+`;
+
+exports[`CodeCompletion provideCompletionItems() should provide a completion list for interfaces 1`] = `
+Array [
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "Interface",
+    "label": "CodeCompletionInterface",
     "sortText": undefined,
     "textEdit": undefined,
   },

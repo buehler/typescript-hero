@@ -1,4 +1,5 @@
 import { join } from 'path';
+import { stub } from 'sinon';
 import { CancellationTokenSource, Position, TextDocument, Uri, window, workspace } from 'vscode';
 
 import { CodeCompletion } from '../../../src/code-completion';
@@ -14,12 +15,13 @@ describe.only('CodeCompletion', () => {
   const file = Uri.file(join(rootPath, 'code-completion', 'completions.ts'));
   let document: TextDocument;
   let extension: CodeCompletion;
+  let declarations: DeclarationManager;
 
   before(async () => {
     document = await workspace.openTextDocument(file);
     await window.showTextDocument(document);
 
-    const declarations = ioc.get<DeclarationManager>(iocSymbols.declarationManager);
+    declarations = ioc.get<DeclarationManager>(iocSymbols.declarationManager);
     extension = new CodeCompletion(
       ioc.get(iocSymbols.extensionContext),
       ioc.get(iocSymbols.logger),
@@ -39,25 +41,70 @@ describe.only('CodeCompletion', () => {
       expect(result).to.matchSnapshot();
     });
 
-    it('should provide a completion list for interfaces');
+    it('should provide a completion list for interfaces', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(1, 17), token);
+      expect(result).to.matchSnapshot();
+    });
 
-    it('should provide a completion list for default imports');
+    it('should provide a completion list for default imports', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(2, 6), token);
+      expect(result).to.matchSnapshot();
+    });
 
-    it('should not provide a completion list for non ready indices');
+    it('should not provide a completion list for non ready indices', async () => {
+      const mock = stub(declarations, 'getIndexForFile').callsFake(() => ({ indexReady: false }));
+      try {
+        const result = await extension.provideCompletionItems(document, new Position(0, 0), token);
+        expect(result).to.be.null;
+      } finally {
+        mock.restore();
+      }
+    });
 
-    it('should not provide a completion list for undefined workspaces');
+    it('should not provide a completion list for undefined workspaces', async () => {
+      const mock = stub(workspace, 'getWorkspaceFolder').callsFake(() => undefined);
+      try {
+        const result = await extension.provideCompletionItems(document, new Position(0, 0), token);
+        expect(result).to.be.null;
+      } finally {
+        mock.restore();
+      }
+    });
 
-    it('should not provide a completion list for undefined indices');
+    it('should not provide a completion list for undefined indices', async () => {
+      const mock = stub(declarations, 'getIndexForFile').callsFake(() => undefined);
+      try {
+        const result = await extension.provideCompletionItems(document, new Position(0, 0), token);
+        expect(result).to.be.null;
+      } finally {
+        mock.restore();
+      }
+    });
 
-    it('should not provide a completion list for typing in a string');
+    it('should not provide a completion list for typing in a string', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(3, 18), token);
+      expect(result).to.be.null;
+    });
 
-    it('should not provide a completion list for typing after a "."');
+    it('should not provide a completion list for typing after a "."', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(4, 24), token);
+      expect(result).to.be.null;
+    });
 
-    it('should not provide a completion list for typing in a comment');
+    it('should not provide a completion list for typing in a comment', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(5, 20), token);
+      expect(result).to.be.null;
+    });
 
-    it('should not provide a completion list for typing in an import');
+    it('should not provide a completion list for typing in an import', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(6, 24), token);
+      expect(result).to.be.null;
+    });
 
-    it('should not provide a completion for the own file');
+    it('should not provide a completion for the own file', async () => {
+      const result = await extension.provideCompletionItems(document, new Position(9, 5), token);
+      expect(result).to.matchSnapshot();
+    });
 
   });
 
