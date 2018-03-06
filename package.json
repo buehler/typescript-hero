@@ -137,10 +137,6 @@
       {
         "command": "typescriptHero.imports.organize",
         "title": "TS Hero: Organize imports (sort and remove unused)"
-      },
-      {
-        "command": "typescriptHero.codeOutline.gotoNode",
-        "title": "TS Hero (internal): Jump to the given nodes location"
       }
     ],
     "keybindings": [
