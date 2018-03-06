@@ -320,7 +320,7 @@ export function getRelativeLibraryName(library: string, actualFilePath: string, 
   return toPosix(relativePath);
 }
 
-const REGEX_IGNORED_LINE = /^\s*(?:\/\/|\/\*\*|\*\/|\*|(['"])use strict\1)/;
+const REGEX_IGNORED_LINE = /^\s*(?:\/\/|\/\*|\*\/|\*|(['"])use strict\1)/;
 
 /**
  * Calculate the position, where a new import should be inserted.
