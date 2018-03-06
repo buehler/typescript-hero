@@ -137,9 +137,9 @@ export class CodeCompletion implements Activatable, CompletionItemProvider {
         title: 'Execute intellisense insert',
         command: 'typescriptHero.codeCompletion.executeIntellisenseItem',
       };
-      // if (config.codeCompletion.completionSortMode === 'bottom') {
-      //   item.sortText = `9999-${declaration.declaration.name}`;
-      // }
+      if (this.config.codeCompletion.completionSortMode(document.uri) === 'bottom') {
+        item.sortText = `9999-${declaration.declaration.name}`;
+      }
       items.push(item);
     }
 
