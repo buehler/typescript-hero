@@ -39,6 +39,26 @@ describe.only('CodeCompletion', () => {
       expect(result).to.matchSnapshot();
     });
 
+    it('should provide a completion list for interfaces');
+
+    it('should provide a completion list for default imports');
+
+    it('should not provide a completion list for non ready indices');
+
+    it('should not provide a completion list for undefined workspaces');
+
+    it('should not provide a completion list for undefined indices');
+
+    it('should not provide a completion list for typing in a string');
+
+    it('should not provide a completion list for typing after a "."');
+
+    it('should not provide a completion list for typing in a comment');
+
+    it('should not provide a completion list for typing in an import');
+
+    it('should not provide a completion for the own file');
+
   });
 
 });
