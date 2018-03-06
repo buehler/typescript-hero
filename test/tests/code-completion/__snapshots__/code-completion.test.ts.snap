@@ -27,6 +27,31 @@ Array [
 ]
 `;
 
+exports[`CodeCompletion provideCompletionItems() should provide a completion list bottom sorted 1`] = `
+Array [
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "Class",
+    "label": "CodeCompletionClass1",
+    "sortText": "9999-CodeCompletionClass1",
+    "textEdit": undefined,
+  },
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "Class",
+    "label": "CodeCompletionClass2",
+    "sortText": "9999-CodeCompletionClass2",
+    "textEdit": undefined,
+  },
+]
+`;
+
 exports[`CodeCompletion provideCompletionItems() should provide a completion list for default imports 1`] = `
 Array [
   Object {
