@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CodeCompletion provideCompletionItems() should provide a completion list 1`] = `
+Array [
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "Class",
+    "label": "CodeCompletionClass1",
+    "sortText": undefined,
+    "textEdit": undefined,
+  },
+  Object {
+    "detail": "/code-completion/classes",
+    "documentation": undefined,
+    "filterText": undefined,
+    "insertText": undefined,
+    "kind": "Class",
+    "label": "CodeCompletionClass2",
+    "sortText": undefined,
+    "textEdit": undefined,
+  },
+]
+`;
