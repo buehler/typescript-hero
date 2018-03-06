@@ -12,7 +12,7 @@ import {
 } from '../../../src/utilities/utility-functions';
 import { expect } from '../setup';
 
-describe.only('utility functions', () => {
+describe('utility functions', () => {
 
   describe('getImportInsertPosition()', () => {
 
