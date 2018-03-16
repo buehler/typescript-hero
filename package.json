@@ -100,7 +100,7 @@
     "decache": "^4.4.0",
     "del-cli": "^1.1.0",
     "istanbul": "^0.4.5",
-    "remap-istanbul": "^0.10.1",
+    "remap-istanbul": "^0.11.0",
     "semantic-release": "^12.4.1",
     "semantic-release-vsce": "^2.0.0",
     "sinon": "^4.4.2",
