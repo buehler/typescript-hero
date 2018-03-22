@@ -90,7 +90,7 @@
     "@smartive/tslint-config": "^2.1.0",
     "@types/chai": "^4.1.2",
     "@types/istanbul": "^0.4.29",
-    "@types/mocha": "^2.2.48",
+    "@types/mocha": "^5.0.0",
     "@types/node": "^9.4.6",
     "@types/reflect-metadata": "0.1.0",
     "@types/sinon": "^4.3.0",
