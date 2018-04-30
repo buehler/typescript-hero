@@ -107,7 +107,7 @@
     "remap-istanbul": "^0.11.0",
     "semantic-release": "^15.1.5",
     "semantic-release-vsce": "^2.0.0",
-    "sinon": "^4.5.0",
+    "sinon": "^5.0.1",
     "sinon-chai": "^3.0.0",
     "tslint": "^5.9.1",
     "tsutils": "^2.26.0",
