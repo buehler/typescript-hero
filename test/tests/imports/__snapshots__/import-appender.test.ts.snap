@@ -1,0 +1,50 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ImportAppender import-appender-file.ts should add a double normal named import 1`] = `
+"import { MyClass, MyClass2 } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add a normal default import 1`] = `
+"import defaultDec from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add a normal named import 1`] = `
+"import { MyClass } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add an import below a block comment 1`] = `
+"/* 
+ * copy right by me!
+ */
+import { MyClass } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add an import below a comment 1`] = `
+"// my fancy comment
+import { MyClass } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add an import below a jsdoc comment 1`] = `
+"/** 
+ * js documentation!
+ */
+import { MyClass } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add an import below a shebang 1`] = `
+"#! /usr/bin/env node
+import { MyClass } from '../lib';
+"
+`;
+
+exports[`ImportAppender import-appender-file.ts should add an import below a use strict 1`] = `
+"\\"use strict\\"
+import { MyClass } from '../lib';
+"
+`;

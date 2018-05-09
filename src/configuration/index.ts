@@ -1,8 +1,9 @@
 import { inject, injectable } from 'inversify';
-import { TypescriptGenerationOptions } from 'typescript-parser';
+import { MultiLineImportRule, TypescriptGenerationOptions } from 'typescript-parser';
 import { Event, EventEmitter, ExtensionContext, Uri, window, workspace } from 'vscode';
 
 import iocSymbols from '../ioc-symbols';
+import { CodeCompletionConfig } from './code-completion-config';
 import DocumentOutlineConfig from './document-outline-config';
 import ImportsConfig from './imports-config';
 import IndexConfig from './index-config';
@@ -12,6 +13,7 @@ const sectionKey = 'typescriptHero';
 @injectable()
 export default class Configuration {
   public readonly codeOutline: DocumentOutlineConfig = new DocumentOutlineConfig();
+  public readonly codeCompletion: CodeCompletionConfig = new CodeCompletionConfig();
   public readonly imports: ImportsConfig = new ImportsConfig();
   public readonly index: IndexConfig = new IndexConfig();
 
@@ -50,6 +52,7 @@ export default class Configuration {
   public typescriptGeneratorOptions(resource: Uri): TypescriptGenerationOptions {
     return {
       eol: this.imports.insertSemicolons(resource) ? ';' : '',
+      insertSpaces: true,
       multiLineTrailingComma: this.imports.multiLineTrailingComma(resource),
       multiLineWrapThreshold: this.imports.multiLineWrapThreshold(resource),
       spaceBraces: this.imports.insertSpaceBeforeAndAfterImportBraces(resource),
@@ -57,6 +60,7 @@ export default class Configuration {
       tabSize: window.activeTextEditor && window.activeTextEditor.options.tabSize ?
         (window.activeTextEditor.options.tabSize as any) * 1 :
         workspace.getConfiguration('editor', resource).get('tabSize', 4),
+      wrapMethod: MultiLineImportRule.oneImportPerLineOnlyAfterThreshold,
     };
   }
 }

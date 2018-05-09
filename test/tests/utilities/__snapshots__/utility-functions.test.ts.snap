@@ -7,6 +7,13 @@ Object {
 }
 `;
 
+exports[`utility functions getImportInsertPosition() should return correct position for js block comment open 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
 exports[`utility functions getImportInsertPosition() should return correct position for jsdoc comment close 1`] = `
 Object {
   "character": 0,
@@ -22,6 +29,13 @@ Object {
 `;
 
 exports[`utility functions getImportInsertPosition() should return correct position for jsdoc comment open 1`] = `
+Object {
+  "character": 0,
+  "line": 1,
+}
+`;
+
+exports[`utility functions getImportInsertPosition() should return correct position for shebang (#!) 1`] = `
 Object {
   "character": 0,
   "line": 1,

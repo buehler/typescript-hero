@@ -155,7 +155,10 @@ export default class ImportManager {
           const defaultSpec = actImport.defaultAlias;
           const libraryAlreadyImported = keep.find(d => d.libraryName === actImport.libraryName);
           if (actImport.specifiers.length ||
-            (!!defaultSpec && this._parsedDocument.nonLocalUsages.indexOf(defaultSpec) >= 0)) {
+            (!!defaultSpec && [
+              ...this._parsedDocument.nonLocalUsages,
+              ...this._parsedDocument.usages,
+            ].indexOf(defaultSpec) >= 0)) {
             if (libraryAlreadyImported) {
               if (actImport.defaultAlias) {
                 (<NamedImport>libraryAlreadyImported).defaultAlias = actImport.defaultAlias;

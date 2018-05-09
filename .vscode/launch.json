@@ -50,15 +50,14 @@
       "env": {
         "EXT_DEBUG": "true",
         "LOCAL_TEST": "true",
-        "COVERAGE": "true",
-        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
+        "COVERAGE": "",
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": ""
       },
       "stopOnEntry": false,
       "sourceMaps": true,
       "smartStep": true,
       "outFiles": [
-        "${workspaceRoot}/out/src/**/*.js",
-        "${workspaceRoot}/out/test/tests/**/*.js"
+        "${workspaceRoot}/out/**/*.js"
       ]
     },
     {
@@ -74,15 +73,14 @@
       "env": {
         "EXT_DEBUG": "true",
         "LOCAL_TEST": "true",
-        "COVERAGE": "true",
-        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": "true"
+        "COVERAGE": "",
+        "CHAI_JEST_SNAPSHOT_UPDATE_ALL": ""
       },
       "stopOnEntry": false,
       "sourceMaps": true,
       "smartStep": true,
       "outFiles": [
-        "${workspaceRoot}/out/src/**/*.js",
-        "${workspaceRoot}/out/test/tests/**/*.js"
+        "${workspaceRoot}/out/**/*.js"
       ]
     }
   ],
