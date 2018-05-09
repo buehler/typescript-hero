@@ -36,6 +36,20 @@ export class ImportOrganizer implements Activatable {
           return;
         }
 
+        const excludePatterns = this.config.imports.excludeFromOrganizeOnSave(event.document.uri);
+        if (excludePatterns && excludePatterns.length > 0) {
+          for (let i = 0; i < excludePatterns.length; i++) {
+            const excludePattern = excludePatterns[i];
+            if (new RegExp(excludePattern).test(event.document.fileName)) {
+              this.logger.debug(
+                '[ImportOrganizer] OrganizeOnSave is skipped through excludeFromOrganizeOnSave for this file',
+                { excludePattern, file: event.document.fileName },
+              );
+              return;
+            }
+          }
+        }
+
         this.logger.info(
           '[ImportOrganizer] OrganizeOnSave for file',
           { file: event.document.fileName },
