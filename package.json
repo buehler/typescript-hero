@@ -90,7 +90,7 @@
     "fail": false
   },
   "devDependencies": {
-    "@semantic-release/git": "^4.0.1",
+    "@semantic-release/git": "^5.0.0",
     "@smartive/tslint-config": "^3.0.1",
     "@types/chai": "^4.1.2",
     "@types/istanbul": "^0.4.30",
