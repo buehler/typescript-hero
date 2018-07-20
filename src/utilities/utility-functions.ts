@@ -27,7 +27,7 @@ import {
 import { toPosix } from 'typescript-parser/utilities/PathHelpers';
 import { CompletionItemKind, Position, TextEditor } from 'vscode';
 
-import { ImportGroup, RegexImportGroup } from '../imports/import-grouping';
+import { ImportGroup, ImportGroupKeyword, KeywordImportGroup, RegexImportGroup } from '../imports/import-grouping';
 
 /**
  * String-Sort function.
@@ -65,7 +65,7 @@ export function importGroupSortForPrecedence(importGroups: ImportGroup[]): Impor
   const regexGroups: ImportGroup[] = [];
   const otherGroups: ImportGroup[] = [];
   for (const ig of importGroups) {
-    if (ig instanceof KeywordImportGroup && ig.keyword === ImportGroupKeyword.Plains) {
+    if (ig instanceof KeywordImportGroup && (ig as KeywordImportGroup).keyword === ImportGroupKeyword.Plains) {
       plainsGroups.push(ig);
     } else {
       (ig instanceof RegexImportGroup ? regexGroups : otherGroups).push(ig);
