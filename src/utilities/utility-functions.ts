@@ -61,12 +61,17 @@ export function stringSort(strA: string, strB: string, order: 'asc' | 'desc' = '
 * @returns {ImportGroup[]} The same list, with Regex import groups appearing first.
 */
 export function importGroupSortForPrecedence(importGroups: ImportGroup[]): ImportGroup[] {
+  const plainsGroups: ImportGroup[] = [];
   const regexGroups: ImportGroup[] = [];
   const otherGroups: ImportGroup[] = [];
   for (const ig of importGroups) {
-    (ig instanceof RegexImportGroup ? regexGroups : otherGroups).push(ig);
+    if (ig instanceof KeywordImportGroup && ig.keyword === ImportGroupKeyword.Plains) {
+      plainsGroups.push(ig);
+    } else {
+      (ig instanceof RegexImportGroup ? regexGroups : otherGroups).push(ig);
+    }
   }
-  return regexGroups.concat(otherGroups);
+  return plainsGroups.concat(regexGroups.concat(otherGroups));
 }
 
 /**
