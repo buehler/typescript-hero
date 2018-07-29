@@ -110,7 +110,7 @@
     "sinon": "^4.5.0",
     "sinon-chai": "^3.0.0",
     "tslint": "^5.9.1",
-    "tsutils": "^2.26.0",
+    "tsutils": "^3.0.0",
     "vscode": "^1.1.14"
   },
   "dependencies": {
