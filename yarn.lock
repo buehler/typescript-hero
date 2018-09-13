@@ -3911,9 +3911,9 @@ registry-url@^3.0.3:
   dependencies:
     rc "^1.0.1"
 
-remap-istanbul@^0.11.0:
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/remap-istanbul/-/remap-istanbul-0.11.0.tgz#201f55ffaedfb2fddb693b05ea2f7382b23b877a"
+remap-istanbul@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/remap-istanbul/-/remap-istanbul-0.12.0.tgz#7215642017d01a8c4a51bdb41be35297ec71fc4e"
   dependencies:
     amdefine "^1.0.0"
     istanbul "0.4.5"
